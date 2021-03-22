@@ -1,0 +1,3 @@
+wheel
+gitpython
+setuptools_rust

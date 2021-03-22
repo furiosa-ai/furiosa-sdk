@@ -1,0 +1,8 @@
+{
+  "apiDocs": false,
+  "apiTests": false,
+  "modelDocs": false,
+  "modelTests": false,
+  "generateSourceCodeOnly": true,
+  "packageName": "furiosa.openapi"
+}

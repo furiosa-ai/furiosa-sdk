@@ -1,0 +1,10 @@
+env
+*.pyc
+.idea
+venv
+.eggs
+build/*
+dist/*
+npu_sim_log
+.openapi-generator
+*.egg-info
