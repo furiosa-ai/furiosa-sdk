@@ -23,7 +23,6 @@ from furiosa.openapi.model_utils import (  # noqa: F401
     validate_and_convert_types
 )
 from furiosa.openapi.model.api_response import ApiResponse
-from furiosa.openapi.model.dynamic_range import DynamicRange
 
 
 class DssApi(object):
@@ -203,7 +202,6 @@ class DssApi(object):
                 input_tensors (str): an array of input tensor names
 
             Keyword Args:
-                dynamic_ranges (DynamicRange): [optional]
                 _return_http_data_only (bool): response data without head status
                     code and headers. Default is True.
                 _preload_content (bool): if False, the urllib3.HTTPResponse object
@@ -273,7 +271,6 @@ class DssApi(object):
                     'x_request_id',
                     'source',
                     'input_tensors',
-                    'dynamic_ranges',
                 ],
                 'required': [
                     'x_request_id',
@@ -299,20 +296,16 @@ class DssApi(object):
                         (file_type,),
                     'input_tensors':
                         (str,),
-                    'dynamic_ranges':
-                        (DynamicRange,),
                 },
                 'attribute_map': {
                     'x_request_id': 'X-Request-ID',
                     'source': 'source',
                     'input_tensors': 'input_tensors',
-                    'dynamic_ranges': 'dynamic_ranges',
                 },
                 'location_map': {
                     'x_request_id': 'header',
                     'source': 'form',
                     'input_tensors': 'form',
-                    'dynamic_ranges': 'form',
                 },
                 'collection_format_map': {
                 }

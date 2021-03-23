@@ -1,8 +1,10 @@
+default: compile
+
 compile:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
 
 build:
-	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py build
+	python -m build
 
 lint:
 	pylint furiosa
@@ -21,5 +23,3 @@ doc:
 
 clean:
 	rm -rf build dist/* *.egg-info
-
-default: compile

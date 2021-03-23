@@ -23,7 +23,6 @@ from furiosa.openapi.model_utils import (  # noqa: F401
     validate_and_convert_types
 )
 from furiosa.openapi.model.api_response import ApiResponse
-from furiosa.openapi.model.kv_config import KvConfig
 
 
 class PerfeyeApi(object):
@@ -58,8 +57,6 @@ class PerfeyeApi(object):
                 source (file_type): a byte array of a source image
 
             Keyword Args:
-                target_npu_spec (KvConfig): [optional]
-                compiler_config (KvConfig): [optional]
                 _return_http_data_only (bool): response data without head status
                     code and headers. Default is True.
                 _preload_content (bool): if False, the urllib3.HTTPResponse object
@@ -126,8 +123,6 @@ class PerfeyeApi(object):
                 'all': [
                     'x_request_id',
                     'source',
-                    'target_npu_spec',
-                    'compiler_config',
                 ],
                 'required': [
                     'x_request_id',
@@ -150,22 +145,14 @@ class PerfeyeApi(object):
                         (str,),
                     'source':
                         (file_type,),
-                    'target_npu_spec':
-                        (KvConfig,),
-                    'compiler_config':
-                        (KvConfig,),
                 },
                 'attribute_map': {
                     'x_request_id': 'X-Request-ID',
                     'source': 'source',
-                    'target_npu_spec': 'target_npu_spec',
-                    'compiler_config': 'compiler_config',
                 },
                 'location_map': {
                     'x_request_id': 'header',
                     'source': 'form',
-                    'target_npu_spec': 'form',
-                    'compiler_config': 'form',
                 },
                 'collection_format_map': {
                 }

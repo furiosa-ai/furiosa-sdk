@@ -109,4 +109,7 @@ class ParserTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    if os.environ['FURIOSA_USERNAME'] is not None:
+        unittest.main()
+    else:
+        pass

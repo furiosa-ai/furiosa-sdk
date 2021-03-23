@@ -4,7 +4,7 @@ import unittest
 import uuid
 
 from furiosa.cli import argparser
-from . import test_data
+from tests import test_data
 
 
 class CommandTests(unittest.TestCase):

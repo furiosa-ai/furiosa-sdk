@@ -17,13 +17,13 @@ from setuptools_rust import Binding, RustExtension
 # It is turned on by default in case of development environments such as Breeze
 # And it is particularly useful when you add a new provider and there is no
 # PyPI version to install the provider package from
-INSTALL_PROVIDERS_FROM_SOURCES = 'INSTALL_PROVIDERS_FROM_SOURCES'
+INSTALL_EXTRAS_FROM_SOURCES = 'INSTALL_EXTRAS_FROM_SOURCES'
 
 PREINSTALLED_PROVIDERS = []
 
 logger = logging.getLogger(__name__)
 
-version = '0.1.0.dev0'
+version = '0.1.0.dev1'
 
 my_dir = dirname(__file__)
 
@@ -59,7 +59,7 @@ class FuriosaSdkDistribution(Distribution):
         Providers manager can find package information.
         """
         super().parse_config_files(*args, **kwargs)
-        if os.getenv(INSTALL_PROVIDERS_FROM_SOURCES) == 'true':
+        if os.getenv(INSTALL_EXTRAS_FROM_SOURCES) == 'true':
             self.install_requires = [  # noqa  pylint: disable=attribute-defined-outside-init
                 req for req in self.install_requires if not req.startswith('furiosa-sdk-')
             ]
@@ -120,14 +120,14 @@ def git_version(version_: str) -> str:
     branch head. Finally, a "dirty" suffix is appended to indicate that uncommitted
     changes are present.
     :param str version_: Semver version
-    :return: Found Airflow version in Git repo
+    :return: Found Furiosa SDK version in Git repo
     :rtype: str
     """
     try:
         import git
 
         try:
-            repo = git.Repo(os.path.join(*[my_dir, '..', '.git']))
+            repo = git.Repo(os.path.join(*[my_dir, '..', '..', '.git']))
         except git.NoSuchPathError:
             logger.warning('.git directory not found: Cannot compute the git version')
             return ''
@@ -308,13 +308,11 @@ def do_setup() -> None:
         including airflow and provider packages, otherwise defaults from setup.cfg control this.
         The kwargs in setup() call override those that are specified in setup.cfg.
         """
-        if os.getenv(INSTALL_PROVIDERS_FROM_SOURCES) == 'true':
-            setup_kwargs['packages'] = find_namespace_packages(include=['furiosa*'])
-            setup_kwargs['packages'].append('furiosa.runtime')
-            setup_kwargs['package_dir']={'furiosa.runtime': '../furiosa-sdk-runtime/furiosa/runtime'}
+        if os.getenv(INSTALL_EXTRAS_FROM_SOURCES) == 'true':
+            setup_kwargs['packages'] = find_namespace_packages(include=['furiosa*', '../furiosa*'])
 
     include_extra_namespace_packages_when_installing_from_sources()
-    if os.getenv(INSTALL_PROVIDERS_FROM_SOURCES) == 'true':
+    if os.getenv(INSTALL_EXTRAS_FROM_SOURCES) == 'true':
         print("Installing providers from sources. Skip adding providers as dependencies")
     else:
         add_all_provider_packages()
