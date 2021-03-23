@@ -3,13 +3,12 @@
 import ctypes
 from ctypes import c_void_p, byref, c_int32
 from typing import Union
-import io
 
 import numpy as np
 
-from .errors import into_exception, is_ok, UnsupportedTensorType, is_err
 from ._api import LIBNUX
 from ._api.v1 import increase_ref_count, decref
+from .errors import into_exception, is_ok, UnsupportedTensorType, is_err
 from .model import Model, TensorArray
 from .tensor import TensorDesc
 
