@@ -9,7 +9,7 @@ from furiosa.openapi.api.compiler_v1_api import CompilerV1Api
 PENDING = 'Pending'
 RUNNING = 'Running'
 SUCCEEDED = 'Succeeded'
-FAILED = 'Succeeded'
+FAILED = 'Failed'
 
 
 class CompileTask(object):

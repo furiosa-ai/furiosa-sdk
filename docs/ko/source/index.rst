@@ -1,4 +1,4 @@
-.. Furiosa SDK Documents documentation master file, created by
+.. Furiosa SDK Documents master file, created by
    sphinx-quickstart on Tue Mar 23 11:18:50 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -13,8 +13,7 @@ FuriosaAI SDK는 명령형 실행 도구, 런타임 라이브러리,
 FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(End User License Agreement)에 따라
 배포되며 다운로드는 평가 프로그램에서 제공되는 채널을 통해 할 수 있습니다.
 
-평가 프로그램을 사용을 원하신다면 contact@furiosa.ai 로 메일을 보내 문의하시기 바랍니다.
-
+평가 프로그램의 사용을 원하시면 contact@furiosa.ai 로 문의하시기 바랍니다.
 
 .. toctree::
    :maxdepth: 1
