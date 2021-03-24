@@ -2,8 +2,8 @@ import warnings
 
 from onnx import numpy_helper
 from onnx.helper import make_model, make_tensor_value_info, make_opsetid
-from quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
-from quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
+from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
+from furiosa_sdk_quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 
 
 def name_nodes(model):

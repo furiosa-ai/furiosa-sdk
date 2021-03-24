@@ -26,9 +26,9 @@ import onnxruntime as ort
 from onnx import TensorProto, ModelProto
 from onnx.helper import make_node, make_tensor_value_info
 
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.frontend.onnx.utils.check_model import check_model
-from quantizer.frontend.onnx.quantizer.utils import __DYNAMIC_RANGE_COLLECTORS__, get_input_tensors, get_vi_dtype
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import __DYNAMIC_RANGE_COLLECTORS__, get_input_tensors, get_vi_dtype
 
 __ALL_COLLECTORS__ = sum(__DYNAMIC_RANGE_COLLECTORS__.values(), [])
 

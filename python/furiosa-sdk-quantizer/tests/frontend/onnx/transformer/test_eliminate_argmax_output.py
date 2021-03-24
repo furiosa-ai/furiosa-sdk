@@ -3,7 +3,7 @@ import abc
 import torch
 import torch.nn as nn
 
-from quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
+from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
 from tests.frontend.onnx.transformer import TestTransformer
 
 

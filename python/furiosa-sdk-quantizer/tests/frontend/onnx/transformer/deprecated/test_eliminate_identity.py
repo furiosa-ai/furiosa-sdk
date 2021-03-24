@@ -5,9 +5,9 @@ import torch.nn as nn
 from onnx import TensorProto
 from onnx.helper import make_node, make_model, make_tensor_value_info
 
-from quantizer.frontend.onnx.transformer.deprecated.eliminate_identity import EliminateIdentity
-from quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
-from quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.frontend.onnx.transformer.deprecated.eliminate_identity import EliminateIdentity
+from furiosa_sdk_quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 from tests import torch_to_onnx
 from tests.frontend.onnx.transformer import TestTransformer

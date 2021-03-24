@@ -3,7 +3,7 @@ import abc
 import torch
 import torch.nn as nn
 
-from quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 
 from tests.frontend.onnx.transformer import TestTransformer
 

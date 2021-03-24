@@ -4,10 +4,10 @@ import warnings
 import onnx
 from onnx import numpy_helper
 
-from quantizer.frontend.onnx.spec import spec_utils
-from quantizer.ir import spec
-from quantizer.ir.common.operator import HeightWidth, Padding
-from quantizer.interfaces.export_spec import ExportSpec
+from furiosa_sdk_quantizer.frontend.onnx.spec import spec_utils
+from furiosa_sdk_quantizer.ir import spec
+from furiosa_sdk_quantizer.ir.common.operator import HeightWidth, Padding
+from furiosa_sdk_quantizer.interfaces.export_spec import ExportSpec
 
 
 class OnnxExportSpec(ExportSpec):

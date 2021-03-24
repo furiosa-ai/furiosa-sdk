@@ -3,8 +3,8 @@ import abc
 import onnx
 import numpy as np
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
 
 
 class ConvertConv1dToConv2d(Transformer):
@@ -81,7 +81,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return False
 
     def get_attrs(self, mid_node):
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(mid_node.attribute)
         dilations = attrs.get('dilations', [1])
         group = attrs.get('group', 1)

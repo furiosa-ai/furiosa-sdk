@@ -4,8 +4,8 @@ import onnxoptimizer as optimizer
 from onnx import numpy_helper
 from onnx.helper import make_tensor_value_info, make_model, make_tensor
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 
 
 class ExtractConstantToInitializer(Transformer):

@@ -2,8 +2,8 @@ import onnx
 
 from onnx import version_converter
 
-from quantizer.frontend.onnx.utils.check_model import check_model
-from quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
 
 
 class CheckVersion(Transformer[onnx.ModelProto]):

@@ -5,24 +5,24 @@ import onnx
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 12
 
-from quantizer.frontend.onnx import spec
-from quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from quantizer.frontend.onnx.utils.version_checker import CheckVersion
-from quantizer.frontend.onnx.transformer.polish_model import PolishModel
-from quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
-from quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
-from quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
-from quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
-from quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
-from quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
-from quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
-from quantizer.frontend.onnx.transformer.fuse_layer_normalization import FuseLayerNormalization
-from quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import FuseRedundantReshapePattern
-from quantizer.frontend.onnx.transformer.fuse_pad import FusePad
-from quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import EliminateRedundantReshapePattern
-from quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
-from quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
-from quantizer.frontend.onnx.quantizer import quantizer
+from furiosa_sdk_quantizer.frontend.onnx import spec
+from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
+from furiosa_sdk_quantizer.frontend.onnx.utils.version_checker import CheckVersion
+from furiosa_sdk_quantizer.frontend.onnx.transformer.polish_model import PolishModel
+from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
+from furiosa_sdk_quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_layer_normalization import FuseLayerNormalization
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import FuseRedundantReshapePattern
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_pad import FusePad
+from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import EliminateRedundantReshapePattern
+from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
+from furiosa_sdk_quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
+from furiosa_sdk_quantizer.frontend.onnx.quantizer import quantizer
 
 
 def _transform(transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],

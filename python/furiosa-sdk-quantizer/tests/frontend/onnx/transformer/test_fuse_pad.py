@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from quantizer.frontend.onnx.transformer.fuse_pad import (Pattern_1, Pattern_2, FusePad)
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_pad import (Pattern_1, Pattern_2, FusePad)
 from tests.frontend.onnx.transformer import TestTransformer
 
 

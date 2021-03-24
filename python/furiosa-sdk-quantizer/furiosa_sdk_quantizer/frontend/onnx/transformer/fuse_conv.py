@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
 
 
 class FuseConv(Transformer):
@@ -232,7 +232,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         return new_arr
 
     def get_attrs(self, node):
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(node.attribute)
         alpha = attrs['alpha']
         beta = attrs['beta']

@@ -5,7 +5,7 @@ import collections
 import yaml
 from yaml import representer
 
-from quantizer.ir import spec
+from furiosa_sdk_quantizer.ir import spec
 
 
 class ExportSpec:

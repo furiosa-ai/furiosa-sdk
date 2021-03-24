@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
 
 
 class FusePad(Transformer):
@@ -104,7 +104,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return False
 
     def get_pad_mode(self, node_attr):
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
 
         return attribute_to_kwargs(node_attr).get('mode', 'constant').decode("utf-8")
 
@@ -118,7 +118,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         rank = len(self.get_value_info_shape(node.input[0]))
         nspatial_dim = (rank - 2)
 
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(node.attribute)
         ceil_mode = attrs.get('ceil_mode', 0)
         dilations = attrs.get('dilations', [1, ] * nspatial_dim)
@@ -194,7 +194,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         rank = len(self.get_value_info_shape(node.input[0]))
         nspatial_dim = (rank - 2)
 
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(node.attribute)
         ceil_mode = attrs.get('ceil_mode', 0)
         count_include_pad = attrs.get('count_include_pad', 0)

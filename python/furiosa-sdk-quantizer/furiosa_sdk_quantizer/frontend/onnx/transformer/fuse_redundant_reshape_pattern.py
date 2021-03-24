@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
 
 
 class FuseRedundantReshapePattern(Transformer):

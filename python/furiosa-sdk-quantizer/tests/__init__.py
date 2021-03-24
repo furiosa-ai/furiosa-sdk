@@ -8,7 +8,7 @@ import numpy as np
 
 from onnx import helper
 
-from quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
+from furiosa_sdk_quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 
 
 def torch_to_onnx(torch_model: torch.nn.Module, input_shapes: List[Tuple[int, ...]]) -> onnx.ModelProto:

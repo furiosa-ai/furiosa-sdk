@@ -4,8 +4,8 @@ import warnings
 import onnx
 import numpy as np
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
 
 default_conv_attrs = {
     'dilations': [1, 1],
@@ -96,7 +96,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         mean = self.get_initializer_array(node.input[3])
         var = self.get_initializer_array(node.input[4])
 
-        from quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(node.attribute)
         eps = attrs.get('epsilon', 1e-05)
 

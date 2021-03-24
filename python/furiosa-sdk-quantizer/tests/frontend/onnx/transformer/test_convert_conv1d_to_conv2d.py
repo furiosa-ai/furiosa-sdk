@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
+from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
 from tests.frontend.onnx.transformer import TestTransformer
 
 

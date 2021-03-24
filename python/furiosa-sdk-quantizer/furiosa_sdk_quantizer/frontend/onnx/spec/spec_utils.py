@@ -1,6 +1,6 @@
 import onnx
 
-from quantizer.ir.common.operator import HorizontalPadding
+from furiosa_sdk_quantizer.ir.common.operator import HorizontalPadding
 
 
 def horizontal_pads(f1, f2, f3, f4, s1, s2, s3, s4):

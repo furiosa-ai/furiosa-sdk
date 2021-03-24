@@ -6,8 +6,8 @@ import argparse
 
 import onnx
 
-import quantizer.frontend.onnx
-from quantizer.frontend.onnx.quantizer import quantizer
+import furiosa_sdk_quantizer.frontend.onnx
+from furiosa_sdk_quantizer.frontend.onnx.quantizer import quantizer
 
 
 def main():
@@ -74,14 +74,14 @@ def export_spec(input: Optional[Text] = None, output: Optional[Text] = None):
     model = _read_model(input)
     if output is not None:
         with open(output, 'w') as writable:
-            quantizer.frontend.onnx.export_spec(model, writable)
+            furiosa_sdk_quantizer.frontend.onnx.export_spec(model, writable)
     else:
-        quantizer.frontend.onnx.export_spec(model, sys.stdout)
+        furiosa_sdk_quantizer.frontend.onnx.export_spec(model, sys.stdout)
 
 
 def optimize(input: Optional[Text] = None, output: Optional[Text] = None):
     model = _read_model(input)
-    model = quantizer.frontend.onnx.optimize_model(model)
+    model = furiosa_sdk_quantizer.frontend.onnx.optimize_model(model)
     if output is not None:
         onnx.save_model(model, output)
     else:
@@ -90,7 +90,7 @@ def optimize(input: Optional[Text] = None, output: Optional[Text] = None):
 
 def build_calibration_model(input: Optional[Text] = None, output: Optional[Text] = None):
     model = _read_model(input)
-    model = quantizer.frontend.onnx.build_calibration_model(model)
+    model = furiosa_sdk_quantizer.frontend.onnx.build_calibration_model(model)
     if output is not None:
         onnx.save_model(model, output)
     else:
@@ -103,10 +103,10 @@ def quantize(input: Optional[Text] = None,
     model = _read_model(input)
     with open(dynamic_ranges, 'r') as readable:
         dynamic_ranges = json.load(readable)
-    model = quantizer.frontend.onnx.quantize(model,
+    model = furiosa_sdk_quantizer.frontend.onnx.quantize(model,
                                        per_channel=True,
                                        static=True,
-                                       mode=quantizer.frontend.onnx.quantizer.QuantizationMode.dfg,
+                                       mode=furiosa_sdk_quantizer.frontend.onnx.quantizer.QuantizationMode.dfg,
                                        dynamic_ranges=dynamic_ranges)
     if output is not None:
         onnx.save_model(model, output)
@@ -128,7 +128,7 @@ def post_training_quantization_with_random_calibration(input: Optional[Text] = N
                                                        output: Optional[Text] = None,
                                                        num_data: Optional[int] = None):
     model = _read_model(input)
-    model = quantizer.frontend.onnx.post_training_quantization_with_random_calibration(
+    model = furiosa_sdk_quantizer.frontend.onnx.post_training_quantization_with_random_calibration(
         model,
         static=True,
         per_channel=True,
@@ -145,7 +145,7 @@ def calibrate_with_random(input: Optional[Text] = None,
                           output: Optional[Text] = None,
                           num_data: Optional[int] = None):
     model = _read_model(input)
-    dynamic_ranges = quantizer.frontend.onnx.calibrate_with_random(model, num_data)
+    dynamic_ranges = furiosa_sdk_quantizer.frontend.onnx.calibrate_with_random(model, num_data)
     if output is not None:
         with open(output, 'w') as f:
             json.dump(dynamic_ranges, f, ensure_ascii=True, indent=2)

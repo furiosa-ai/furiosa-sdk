@@ -5,8 +5,8 @@ import onnxruntime as ort
 import onnx
 
 from onnx import numpy_helper, shape_inference
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 from onnx.helper import make_tensor, make_tensor_value_info, TensorProto
 
 

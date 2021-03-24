@@ -18,7 +18,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 import torch
 import torch.nn as nn
 
-from quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
+from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from tests.frontend.onnx.transformer import TestTransformer
 
 

@@ -4,7 +4,7 @@ import torch.nn as nn
 
 import numpy as np
 
-from quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
+from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
                                                                                Pattern_4, Pattern_5, Pattern_6,
                                                                                Pattern_7,
                                                                                EliminateRedundantReshapePattern)

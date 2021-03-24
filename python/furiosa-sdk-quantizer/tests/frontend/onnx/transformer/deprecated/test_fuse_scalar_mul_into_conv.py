@@ -5,7 +5,7 @@ import torch.nn as nn
 
 import numpy as np
 
-from quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
+from furiosa_sdk_quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
 from tests.frontend.onnx.transformer import TestTransformer, init_to_numpy
 
 

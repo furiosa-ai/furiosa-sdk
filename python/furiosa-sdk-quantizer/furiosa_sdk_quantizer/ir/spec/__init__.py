@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from quantizer.ir.common.operator import HeightWidth, Padding, HorizontalPadding
+from furiosa_sdk_quantizer.ir.common.operator import HeightWidth, Padding, HorizontalPadding
 
 
 class Spec:

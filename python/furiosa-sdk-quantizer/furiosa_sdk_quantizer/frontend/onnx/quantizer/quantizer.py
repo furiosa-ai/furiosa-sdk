@@ -25,13 +25,13 @@ from onnx import numpy_helper
 from onnx.helper import make_node, make_tensor, make_tensor_value_info, ModelProto
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.frontend.onnx.quantizer.utils import (QuantizationMode, make_tensor_annotation,
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import (QuantizationMode, make_tensor_annotation,
                                                calculate_activation_quant_params,
                                                calculate_weight_quant_params,
                                                attribute_to_kwargs, append_suffix, get_input_tensors,
                                                is_float_tensor)
-from quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 
 class FuriosaONNXQuantizer:

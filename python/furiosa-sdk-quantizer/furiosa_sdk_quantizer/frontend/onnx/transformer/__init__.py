@@ -7,8 +7,8 @@ import numpy as np
 from onnx import numpy_helper
 from onnx.helper import make_node, make_tensor, make_tensor_value_info
 
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 
 class ONNXTransformer:

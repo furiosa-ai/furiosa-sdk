@@ -1,9 +1,9 @@
 import onnx
 from onnx.helper import ModelProto
 
-from quantizer.interfaces.transformer import Transformer
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 from onnxruntime_tools.transformers.onnx_model import OnnxModel
 from onnxruntime_tools.transformers.fusion_gelu import FusionGelu

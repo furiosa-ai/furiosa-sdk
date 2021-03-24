@@ -1,11 +1,11 @@
 import onnx
 
-from quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
-from quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
-from quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
-from quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from quantizer.frontend.onnx.transformer import utils
-from quantizer.interfaces.transformer import Transformer
+from furiosa_sdk_quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
+from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
+from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
+from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
+from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
+from furiosa_sdk_quantizer.interfaces.transformer import Transformer
 
 
 class PolishModel(Transformer[onnx.ModelProto]):
