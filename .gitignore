@@ -8,3 +8,4 @@ git_version
 .vscode
 dist
 build
+*.enf
