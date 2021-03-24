@@ -16,7 +16,7 @@ def get_sdk_git_version():
     """Returns the git commit hash representing the current version of the application."""
     git_version = None
     try:
-        git_version = str(pkgutil.get_data('furiosa.runtime', 'git_version'), encoding="UTF-8")
+        git_version = str(pkgutil.get_data('furiosa_sdk_runtime', 'git_version'), encoding="UTF-8")
     except Exception as err:  # pylint: disable=broad-except
         LOG.debug(err)
 

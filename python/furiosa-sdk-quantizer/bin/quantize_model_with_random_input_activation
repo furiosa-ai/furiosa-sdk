@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import argparse
+import onnx
+
+from pathlib import Path
+from quantizer.frontend.onnx import post_training_quantization_with_random_calibration
+from quantizer.frontend.onnx.quantizer.utils import QuantizationMode
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Get input and output directories.')
+    parser.add_argument("-i", required=True, dest='input', type=str, help='input model file')
+    parser.add_argument("-o", required=False, dest='output', type=str, default='quantized_model.onnx',
+                        help='output file name (default: quantized_model.onnx)')
+    args = parser.parse_args()
+
+    input_file = Path(args.input)
+    output_file = args.output
+
+    if not input_file.exists():
+        print(f'input file {input_file} does not exist')
+
+    # Try quantization on input models
+    print(f'quantizing model {input_file.name}')
+    quantized_model = post_training_quantization_with_random_calibration(model=onnx.load_model(input_file),
+                                                                         per_channel=True,
+                                                                         static=True,
+                                                                         mode=QuantizationMode.dfg,
+                                                                         num_data=10)
+    onnx.save_model(quantized_model, output_file)

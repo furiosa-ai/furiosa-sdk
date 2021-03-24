@@ -1,0 +1,132 @@
+def onnxModelExporterCommitHash = "47ed615d6e09ee1c5a1f0573f59620526b15f3b4"
+
+def pod = """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins: dss
+spec:
+  imagePullSecrets:
+  - name: ecr-docker-login
+  containers:
+  - name: dss
+    image: 408994520673.dkr.ecr.ap-northeast-2.amazonaws.com/dss:latest
+    imagePullPolicy: Always
+    command:
+    - cat
+    tty: true
+    securityContext:
+      runAsGroup: 2000
+      fsGroup: 2000
+    env:
+    - name: MLMD_HOST
+      value: portal-db-dev-200201.cluster-cyo7vznuclmv.ap-northeast-2.rds.amazonaws.com
+    - name: MLMD_PORT
+      value: 3306
+    - name: MLMD_DATABASE
+      valueFrom:
+        secretKeyRef:
+          name: mlmd-dev
+          key: MLMD_DATABASE
+    - name: MLMD_USER
+      valueFrom:
+        secretKeyRef:
+          name: mlmd-dev
+          key: MLMD_USER
+    - name: MLMD_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: mlmd-dev
+          key: MLMD_PASSWORD
+    volumeMounts:
+    - mountPath: /artifact
+      name: artifact
+      readOnly: false
+    - mountPath: /onnx-model-exporter-artifact
+      name: onnx-model-exporter-artifact
+      readOnly: true
+    - mountPath: /dss-ci
+      name: dss-ci
+      readOnly: false
+      subPath: "dss"
+  volumes:
+  - name: artifact
+    persistentVolumeClaim:
+      claimName: dss
+  - name: onnx-model-exporter-artifact
+    persistentVolumeClaim:
+      claimName: onnx-model-exporter
+  - name: dss-ci
+    nfs:
+      server: 10.4.0.200
+      path: "/mnt/data/ci"
+"""
+
+pipeline {
+  agent { kubernetes {
+    cloud "k8s-office"
+    yaml pod
+  } }
+  stages {
+    stage('pylint & unittest dss') {
+      steps {
+        container("dss") {
+          sh "env"
+          sh "id"
+
+          script {
+            cacheDir = "/dss-ci/cache"
+            sh "mkdir -p ${cacheDir}"
+            sh "rm -rf /root/.cache"
+            sh "ln -s ${cacheDir} /root/.cache"
+          }
+
+          withCredentials([usernamePassword(
+            credentialsId: 'GitHub-account-infra.furiosa.ai-k8s-aws-repo-access',
+            passwordVariable: 'GIT_PASSWORD',
+            usernameVariable: 'GIT_USERNAME')]) {
+            sh("""
+              git config --global credential.username ${GIT_USERNAME}
+              git config --global credential.helper "!echo password=${GIT_PASSWORD}; echo"
+              pip install -r requirements.txt
+            """)
+          }
+
+          sh "python setup.py install"
+          // It should be enable after cleanup code & setup the rules.
+          sh "pylint ./quantizer || true"
+          sh "python -m unittest"
+        }
+      }
+    }
+    stage("quantize all onnx models & export specs") {
+      steps {
+        container("dss") {
+          script {
+            // Use nfs when the branch is staging, use emptyDir otherwise.
+            if ("${BRANCH_NAME}" == "staging") {
+              outputDir = "/artifact"
+            } else {
+              outputDir = "./output"
+            }
+          }
+          sh """python scripts/run_quantizer_all.py \
+            --num-calib-data 2 \
+            --max-concurrent-tasks 4 \
+            --mlmd-onnx-model-exporter-root-path /onnx-model-exporter-artifact \
+            --mlmd-onnx-model-exporter-commit-hash ${onnxModelExporterCommitHash} \
+            --claim-root-path ${outputDir} \
+            --claim-name dss
+          """
+        }
+      }
+    }
+  }
+  post { unsuccessful { container("dss") { script {
+    if ("${BRANCH_NAME}" == "staging") {
+      outputDir = "/artifact/${GIT_COMMIT}"
+      sh "rm -rf ${outputDir}"
+    }
+  } } } }
+}

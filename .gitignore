@@ -1,0 +1,10 @@
+*.pyc
+.idea
+venv
+.openapi-generator
+git_version
+*.egg-info
+.eggs
+.vscode
+dist
+build
