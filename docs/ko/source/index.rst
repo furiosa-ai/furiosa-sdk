@@ -19,10 +19,22 @@ FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(
 .. toctree::
    :maxdepth: 1
    :caption: 차례
-   
 
    installation
    cli
+
+
+
+* **FuriosaAI Python 런타임**:
+  :doc:`Python Runtime 빠르게 시작하기 </python_runtime/getting_started>`
+
+.. toctree::
+   :maxdepth: 2
+   :caption: FuriosaAI Python 런타임
+   :hidden:
+
+   /python_runtime/getting_started
+
 
 기타 링크
 **************************
