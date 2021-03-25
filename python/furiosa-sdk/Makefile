@@ -30,8 +30,9 @@ test:
 	python -m unittest discover -v -s ./tests
 
 doc:
-	mkdir -p build/docs/src
-	cp -a ../furiosa-sdk-runtime/furiosa build/docs/src
+	mkdir -p build/docs/src/furiosa
+	cp -a ../furiosa-sdk-runtime/furiosa_sdk_runtime build/docs/src/furiosa/runtime
+	cp -a ../furiosa-sdk-quantizer/furiosa_sdk_quantizer build/docs/src/furiosa/quantizer
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
 
