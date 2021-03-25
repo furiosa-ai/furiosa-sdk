@@ -137,7 +137,7 @@ def do_setup() -> None:
         cmdclass={
             'develop': Develop,
         },
-        scripts=['bin/furiosa'],
+        scripts=['bin/furiosa', 'bin/furiosa_validate_model'],
         **setup_kwargs,
     )
 
