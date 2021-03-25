@@ -64,3 +64,6 @@ html_static_path = ['_static']
 
 
 autosectionlabel_prefix_document = True
+html_theme_options = {
+    'navigation_depth': 3,
+}

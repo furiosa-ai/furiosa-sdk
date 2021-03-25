@@ -34,7 +34,7 @@ FuriosaAI NPU 사용을 위해서는 SDK 설치가 필요하며
 
 
 .. toctree::
-  :hidden:
+  :hidden:  
 
   installation/driver
   installation/runtime

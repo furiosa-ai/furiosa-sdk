@@ -97,18 +97,18 @@ Python SDK는 PIP 커맨드를 이용하여 다음 extra 패키지를 선택적�
   * analyzer: 모델 분석 도구를 설치합니다.
   * quantizer: 모델의 양자화 도구를 설치합니다.
 
-예를 들어 명령형 도구와 모델 추론을 위한 개발환경이 필요한 경우 아래와 같이 설치합니다.
+예를 들어 모델 추론을 위한 개발환경과 모델 양자화 도구가 필요한 경우 아래와 같이 설치합니다.
 
 .. code-block:: sh
 
-  pip install furiosa-sdk[cli, runtime]
+  pip install --upgrade furiosa-sdk[runtime, quantizer]
 
 
-어떤 도구가 필요한지 잘 모르는 경우 ``full`` 을 통해 모두 설치해도 좋습니다.
+extra 패키지가 필요한지 잘 모르는 경우 ``full`` 을 통해 모두 설치할 수 있습니다.
 
 .. code-block:: sh
 
-  pip install furiosa-sdk[full]
+  pip install --upgrade furiosa-sdk[full]
 
 
 

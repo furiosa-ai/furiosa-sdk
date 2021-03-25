@@ -1,5 +1,8 @@
+__all__ = ["frontend", "interfaces", "ir", "scripts"]
+
 import logging
 import pkgutil
+from . import frontend, interfaces, ir, scripts
 
 logging.basicConfig()
 LOG = logging.getLogger(__name__)
