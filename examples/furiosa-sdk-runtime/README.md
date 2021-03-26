@@ -1,4 +1,4 @@
-# Examples of Python Library of FuriosaAI SDK Runtime
+# Examples of FuriosaAI SDK Python Runtime
 
 This contains examples of FuriosaAI Python SDK
 
