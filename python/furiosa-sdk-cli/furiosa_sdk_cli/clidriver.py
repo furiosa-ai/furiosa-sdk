@@ -1,3 +1,4 @@
+import importlib
 import logging
 import os
 import sys
@@ -5,8 +6,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from furiosa import consts
-from . import argparser, commands
+consts = importlib.import_module('furiosa').consts
+
+from . import argparser, commands, utils
 from .exceptions import NoCommandException, CliError
 
 
@@ -23,8 +25,9 @@ class Session(object):
         if self.api_endpoint is None:
             self.api_endpoint = consts.DEFAULT_API_ENDPOINT
 
+    def ensure_apikey(self):
         if self.access_key_id is None or self.secret_key_access is None:
-            raise CliError('FURIOSA_ACCESS_KEY_ID, FURIOSA_SECRET_ACCESS_KEY must be set', 1)
+          raise CliError('FURIOSA_ACCESS_KEY_ID, FURIOSA_SECRET_ACCESS_KEY must be set', 1)
 
 
 class CLIDriver(object):
@@ -65,6 +68,12 @@ class CLIDriver(object):
                 cmd = commands.ToolchainList(self.session, self.args, self.args_map)
             else:
                 raise CliError('toolchain requires one of following subcommands: list')
+        elif self.args.command == 'validate':
+            validate = utils.which("furiosa-validate")
+            if validate is not None:
+                cmd = commands.ValidateModel(None, self.args, self.args_map)
+            else:
+                raise CliError('Unknown command: {}'.format(self.args.command), 2)
         else:
             raise CliError('Unknown command: {}'.format(self.args.command), 2)
 

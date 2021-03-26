@@ -12,33 +12,42 @@ from furiosa.openapi.models import VersionInfo, LoginRequest, ApiKeyRequest, Api
 from furiosa.utils import login_account
 from tests import test_data
 
-load_furiosa_config()
-client = login_account(ApiClient())
-account_api = AccountV1Api(api_client=client)
-version_api = VersionApi(api_client=client)
 
-
-class ParserTest(unittest.TestCase):
+class TestOpenAPIs(unittest.TestCase):
     client = None
+    account_api = None
+    version_api = None
+    access_key_id= None
+    compiler_api= None
 
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
+        load_furiosa_config()
+        cls.client = ApiClient()
+        if os.getenv('FURIOSA_USERNAME') is not None:
+            cls.client = login_account(ApiClient())
+        cls.account_api = AccountV1Api(api_client=cls.client)
+        cls.version_api = VersionApi(api_client=cls.client)
+
         request = ApiKeyRequest(name=uuid.uuid4().__str__())
-        apikey: ApiKey = account_api.create_api_key(request=request)
-        self.access_key_id = apikey.access_key_id
-        set_apikey(client.configuration, apikey)
-        self.compiler_api = CompilerV1Api(api_client=client)
+        apikey: ApiKey = cls.account_api.create_api_key(request=request)
+        # keep for cleaning
+        cls.access_key_id = apikey.access_key_id
+        set_apikey(cls.client.configuration, apikey.access_key_id, apikey.secret_access_key)
+        cls.compiler_api = CompilerV1Api(api_client=cls.client)
 
-    def tearDown(self) -> None:
-        account_api.patch_api_key(self.access_key_id,
-                                  request=ApiKeyPatch(active=False))
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.account_api.patch_api_key(cls.access_key_id,
+                                       request=ApiKeyPatch(active=False))
 
     def test_version(self):
-        version: VersionInfo = version_api.version()
+        version: VersionInfo = self.version_api.version()
         self.assertEqual(version.version, "0.2.0")
 
     def test_login(self):
         request = LoginRequest(email=os.environ['FURIOSA_USERNAME'], password=os.environ['FURIOSA_PASSWORD'])
-        authenticated = account_api.login(request=request)
+        authenticated = self.account_api.login(request=request)
         self.assertTrue(authenticated.access_token is not None)
         self.assertTrue(authenticated.expires_at is not None)
         self.assertEqual(authenticated.token_type, 'Bearer')
@@ -51,12 +60,12 @@ class ParserTest(unittest.TestCase):
         for name in names:
             name = name.__str__()
             request = ApiKeyRequest(name=name, description=name)
-            apikey: ApiKey = account_api.create_api_key(request=request)
+            apikey: ApiKey = self.account_api.create_api_key(request=request)
             self.assertEqual(apikey.name, name)
             self.assertEqual(apikey.description, name)
             self.assertTrue(apikey.active)
 
-        apikey_list: [ApiKey] = account_api.list_api_keys()
+        apikey_list: [ApiKey] = self.account_api.list_api_keys()
         apikey_dict = {key.name: key for key in apikey_list}
 
         for name in names:
@@ -64,7 +73,7 @@ class ParserTest(unittest.TestCase):
 
         for name in names:
             apikey = apikey_dict[name]
-            account_api.patch_api_key(apikey.access_key_id,
+            self.account_api.patch_api_key(apikey.access_key_id,
                                       request=ApiKeyPatch(active=False))
 
     def test_compile(self):
@@ -109,7 +118,7 @@ class ParserTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    if os.environ['FURIOSA_USERNAME'] is not None:
+    if os.getenv('FURIOSA_USERNAME') is not None:
         unittest.main()
     else:
         pass

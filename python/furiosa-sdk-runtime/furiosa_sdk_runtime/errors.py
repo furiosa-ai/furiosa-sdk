@@ -37,7 +37,7 @@ def is_err(self) -> bool:
     return self != NativeError.SUCCESS
 
 
-class NuxException(BaseException):
+class NuxException(Exception):
     """general exception caused by Nuxpy"""
     native_err: Optional[NativeError]
     msg: str

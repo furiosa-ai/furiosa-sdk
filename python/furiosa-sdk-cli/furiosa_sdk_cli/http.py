@@ -1,4 +1,8 @@
 import sys
+import importlib
+
+consts = importlib.import_module('furiosa').consts
+__version__ = importlib.import_module('furiosa').__version__
 
 from furiosa import consts, __version__
 

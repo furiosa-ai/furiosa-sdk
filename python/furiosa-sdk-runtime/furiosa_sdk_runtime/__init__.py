@@ -1,26 +1,10 @@
 """Provide high-level Python APIs to access Furiosa AI's NPUs and its eco-system"""
 __all__ = ["model", "session", "tensor", "errors"]
 
-import logging
-import pkgutil
-
 from . import session, model, tensor, errors
 from ._api import LIBNUX
-
-logging.basicConfig()
-LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
-
-
-def _get_sdk_git_version():
-    """Returns the git commit hash representing the current version of the application."""
-    git_version = None
-    try:
-        git_version = str(pkgutil.get_data('furiosa_sdk_runtime', 'git_version'), encoding="UTF-8")
-    except Exception as err:  # pylint: disable=broad-except
-        LOG.debug(err)
-
-    return git_version
+import importlib
+utils = importlib.import_module('furiosa').utils
 
 def _full_version() -> str:
     """Returns a full version string including the native library version"""
@@ -31,5 +15,5 @@ def _full_version() -> str:
                 LIBNUX.build_timestamp().decode('utf-8'))
 
 
-__version__ = _get_sdk_git_version()
+__version__ = utils.get_sdk_version(__name__)
 __full_version__ = _full_version()

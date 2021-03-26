@@ -23,7 +23,7 @@ PREINSTALLED_PROVIDERS = []
 
 logger = logging.getLogger(__name__)
 
-version = '0.1.0.dev8'
+version = '0.1.0.dev11'
 
 my_dir = dirname(__file__)
 
@@ -47,6 +47,7 @@ if os.getenv('BUILD_NPU_TOOLS', 'False') == '1':
 
 
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
+    "cli": ["furiosa-sdk-cli"],
     "runtime": ["furiosa-sdk-runtime"],
     "quantizer": ["furiosa-sdk-quantizer"]
 }
@@ -137,7 +138,6 @@ def do_setup() -> None:
         cmdclass={
             'develop': Develop,
         },
-        scripts=['bin/furiosa', 'bin/furiosa_validate_model'],
         **setup_kwargs,
     )
 

@@ -8,7 +8,7 @@ from setuptools import setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.1.0.dev6'
+version = '0.1.0.dev7'
 
 my_dir = dirname(__file__)
 

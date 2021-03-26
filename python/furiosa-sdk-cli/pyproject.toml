@@ -1,0 +1,12 @@
+[tool.black]
+line-length = 110
+target-version = ['py36', 'py37', 'py38']
+skip-string-normalization = true
+
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "gitpython",
+]
+build-backend = "setuptools.build_meta"

@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 
 import requests
 import yaml
+
 from furiosa import consts, __version__
 from furiosa.client import CompilerClient
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -74,6 +75,7 @@ class Version(Command):
         super().__init__(session, args, args_map)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
         request_url = '{}/version'.format(self.session.api_endpoint)
 
         r = requests.get(request_url,
@@ -107,6 +109,7 @@ class Compile(Command):
         super().__init__(session, args, args_map)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
         source_path = self.args_map['source']
         compiler_config = read_yaml_config(self.args.config)
         target_npu_spec = read_yaml_config(self.args.target_npu_spec)
@@ -156,6 +159,7 @@ class Perf(Command):
         self.content_type = content_type
 
     def run(self) -> int:
+        self.session.ensure_apikey()
         source_path = self.args_map['source']
         target_npu_spec = handle_target_npu_spec(self.args)
         compiler_config = handle_compiler_config(self.args)
@@ -241,6 +245,7 @@ class Optimize(Command):
             raise ApiError('fail to build calibration model {}'.format(model_path), r)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
         source_path = self.args_map['source']
 
         if 'o' in self.args and self.args_map['o'] is not None:
@@ -290,6 +295,7 @@ class BuildCalibrationModel(Command):
             raise ApiError('fail to build calibration model {}'.format(model_path), r)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
         source_path = self.args_map['source']
 
         if 'o' in self.args and self.args_map['o'] is not None:
@@ -344,6 +350,8 @@ class Quantize(Command):
             raise ApiError('fail to quantize th model {}'.format(model_path), r)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
+
         source_path = self.args_map['source']
         dynamic_ranges = self.args_map['dynamic_ranges']
 
@@ -368,6 +376,8 @@ class ToolchainList(Command):
         super().__init__(session, args, args_map)
 
     def run(self) -> int:
+        self.session.ensure_apikey()
+
         request_url = '{}/api/v1/compiler'.format(self.session.api_endpoint)
         r = requests.get(request_url,
                          headers=http.DEFAULT_HEADERS,
@@ -387,3 +397,32 @@ class ToolchainList(Command):
         else:
             print("Client version: {}".format(__version__))
             raise ApiError('fail to get version', r)
+
+
+class ValidateModel(Command):
+    def __init__(self, session, args, args_map):
+        super().__init__(session, args, args_map)
+
+    def run(self) -> int:
+        import subprocess
+
+        result = subprocess.run(['furiosa-validate', self.args.model_path], capture_output=True, universal_newlines=True)
+
+        if result.returncode == 0:
+            print("Passed")
+        else:
+            with open(self.args.output, "w") as output:
+                output.write("Stdout:\n")
+                output.write(str(result.stdout))
+                output.write("\n")
+
+                output.write("Stderr:\n")
+                output.write(str(result.stderr))
+                output.write("\n")
+
+            print(f"Model validation has failed. The result has been written to {self.args.output}")
+            return 1
+
+        return 0
+
+

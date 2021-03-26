@@ -8,7 +8,7 @@ from setuptools import setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.1.0.dev7'
+version = '0.1.0.dev0'
 
 my_dir = dirname(__file__)
 
@@ -50,7 +50,7 @@ def git_version(version_: str) -> str:
     return 'no_git_version'
 
 
-def write_version(filename: str = os.path.join(*[my_dir, "furiosa_sdk_quantizer", "git_version"])):
+def write_version(filename: str = os.path.join(*[my_dir, "furiosa_sdk_model_validator", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
     :param str filename: Destination file to write
@@ -67,6 +67,6 @@ if __name__ == "__main__":
 
     setup(
         version=version,
-        scripts=['bin/quantizer', 'bin/quantize_model_with_random_input_activation'],
+        scripts=['bin/furiosa-validate'],
         **setup_kwargs,
     )

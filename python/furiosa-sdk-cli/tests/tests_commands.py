@@ -3,7 +3,7 @@ import subprocess
 import unittest
 import uuid
 
-from furiosa.cli import argparser
+from furiosa_sdk_cli import argparser
 from tests import test_data
 
 

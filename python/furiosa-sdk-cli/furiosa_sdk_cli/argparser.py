@@ -1,5 +1,6 @@
 import argparse
 
+from furiosa_sdk_cli import utils
 
 def create_argparser():
     parser = argparse.ArgumentParser(description='Furiosa AI Web Service CLI')
@@ -59,6 +60,13 @@ def create_argparser():
     toolchain_cmd = subparsers.add_parser("toolchain", help='Compile your model and generate a binary for Furiosa NPU')
     toolchain_subcmd = toolchain_cmd.add_subparsers(dest="subcmd")
     toolchain_subcmd.add_parser("list", help='List all toolchains')
+
+    validate = utils.which("furiosa-validate")
+    if validate is not None:
+        validate_cmd = subparsers.add_parser("validate", help='Validate an onnx model')
+        validate_cmd.add_argument('model_path', type=str, help='Path to onnx model')
+        validate_cmd.add_argument('-o', dest="output", type=str, default='validation.txt', help='Path to the validation output')
+
     return parser
 
 
