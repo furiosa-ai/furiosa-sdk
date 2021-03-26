@@ -22,7 +22,7 @@ FuriosaAI NPU Python SDK 라이브러리를 사용하면 NPU 를 사용하는 �
 
 .. code-block:: sh
 
-  pip install furiosa-sdk[runtime]
+  pip install --upgrade furiosa-sdk[runtime]~=0.1.0
 
 Python 환경 구성과 다양한 설치 옵션에 대해서는 :doc:`/installation/python-sdk` 에서 자세히 살펴볼 수 있다.
 
