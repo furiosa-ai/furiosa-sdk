@@ -10,7 +10,7 @@ import onnx
 from furiosa_sdk_quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 
-#from furiosa_sdk_runtime import session
+from furiosa_sdk_runtime import session
 
 utils = importlib.import_module('furiosa').utils
 __version__ = utils.get_sdk_version(__name__)
@@ -53,11 +53,9 @@ def validate(model_path: Path):
 
     print(f'[Step 2] Checking the model can be compiled to a NPU program ...')
     try:
-        # skip this step for now
-        pass
-        # with open(tmpfile.name, "rb") as model_file:
-        #     model = model_file.read()
-        #     session.create(model=model)
+        with open(tmpfile.name, "rb") as model_file:
+            model = model_file.read()
+            session.create(model=model)
     except Exception as e:
         _eprint("[Step 2] Failed\n")
         raise e
