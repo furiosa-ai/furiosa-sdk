@@ -45,14 +45,16 @@ def validate(model_path: Path):
     print(f'[Step 1] Passed)')
 
     try:
-        onnx.save_model(quantized_model, tmpfile)
+        onnx.save_model(quantized_model, tmpfile.name)
     except Exception as e:
         _eprint("[ERROR] Fail to save the model\n")
         raise e
 
     print(f'[Step 2] Checking the model can be compiled to a NPU program ...')
     try:
-        session.create(model=output_path)
+        with open(tmpfile.name, "rb") as model_file:
+            model = model_file.read()
+            session.create(model=model)
     except Exception as e:
         _eprint("[Step 2] Failed\n")
         raise e

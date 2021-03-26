@@ -409,7 +409,7 @@ class ValidateModel(Command):
         result = subprocess.run(['furiosa-validate', self.args.model_path], capture_output=True, universal_newlines=True)
 
         if result.returncode == 0:
-            print("Passed")
+            print("Passed!")
         else:
             with open(self.args.output, "w") as output:
                 output.write("Stdout:\n")
@@ -420,7 +420,7 @@ class ValidateModel(Command):
                 output.write(str(result.stderr))
                 output.write("\n")
 
-            print(f"Model validation has failed. The result has been written to {self.args.output}")
+            print(f"Failed. The result has been written to {self.args.output}")
             return 1
 
         return 0
