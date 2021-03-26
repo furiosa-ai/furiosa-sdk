@@ -14,7 +14,7 @@ SDK 설치를 위한 최소 요구사항
   * Ubuntu 18.04 LTS (Bionic Beaver) 또는 Debian buster
     또는 상위 버전
   * 시스템의 관리자 권한 (root)
-  * Python 3.6+
+  * Python 3.7+
   * GitHub 및 PyPi 로 연결 가능한 네트워크 환경
   * onnxruntime 1.6.0 (모델 quantization & calibration, NPU 에서 지원하지 않는 오퍼레이터 처리를 위해 설치 필요)
 
@@ -32,7 +32,7 @@ SDK 구성 요소별 설치 안내
 
   * :doc:`FuriosaAI NPU Python SDK 설치 [Required]<python-sdk>` : NPU 사용을 위한 Python 라이브러리 및 명령도구 (cli)
 
-    * :doc:`FuriosaAI NPU Python SDK 설치를 위한 Python 환경 구성 [Optional]<python-sdk-setup-python>` : FuriosaAI NPU Python SDK 설치를 위한 Python 3.6+ 환경 구성 안내
+    * :doc:`FuriosaAI NPU Python SDK 설치를 위한 Python 환경 구성 [Optional]<python-sdk-setup-python>` : FuriosaAI NPU Python SDK 설치를 위한 Python 3.7+ 환경 구성 안내
 
   * :doc:`FuriosaAI API 키 설정 [Optional]<apikey>` : FuriosaAI에서 웹 서비스로 제공하는 도구를 사용하기 위한 설정
 
