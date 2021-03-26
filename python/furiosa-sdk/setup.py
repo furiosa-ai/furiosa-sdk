@@ -23,7 +23,7 @@ PREINSTALLED_PROVIDERS = []
 
 logger = logging.getLogger(__name__)
 
-version = '0.1.0.dev13'
+version = '0.1.0-rc0'
 
 my_dir = dirname(__file__)
 
@@ -47,10 +47,10 @@ if os.getenv('BUILD_NPU_TOOLS', 'False') == '1':
 
 
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
-    "cli": ["furiosa-sdk-cli>=0.1.0.dev3"],
-    "runtime": ["furiosa-sdk-runtime"],
-    "quantizer": ["furiosa-sdk-quantizer"],
-    "validator": ["furiosa-sdk-model-validator>=0.1.0.dev4"]
+    "cli": ["furiosa-sdk-cli~=0.1.0"],
+    "runtime": ["furiosa-sdk-runtime~=0.1.0"],
+    "quantizer": ["furiosa-sdk-quantizer~=0.1.0"],
+    "validator": ["furiosa-sdk-model-validator~=0.1.0"]
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need
