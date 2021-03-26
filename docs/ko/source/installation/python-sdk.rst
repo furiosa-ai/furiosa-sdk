@@ -12,7 +12,7 @@ FuriosaAI NPU Python SDK 는 모델을 NPU 에서 가속시키기 위한 각종 
 
 요구 사항
 ----------------------------------------
-* Pyrhon 3.6+
+* Pyrhon 3.7+
 
   * :doc:`./python-sdk-setup-python`
 
