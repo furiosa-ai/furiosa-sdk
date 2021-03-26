@@ -1,10 +1,11 @@
-# Examples of Python Library of FuriosaAI SDK Runtime
+# Examples of FuriosaAI SDK Python Runtime
 
 This contains examples of FuriosaAI Python SDK
 
 ## Setup
 ```
 git clone https://github.com/furiosa-ai/furiosa-sdk
+cd furiosa-sdk/examples/furiosa-sdk-runtime
 pip install -r requirements.txt
 ```
 
@@ -14,13 +15,9 @@ The following example tries to classify the object on the following image:
 
 ![A Car](images/car.jpg)
 
-You can also try to use other images. 
+You can also try to use other images. `image_classify.py` internally 1) loads an image classification model located in `models` folder, 2) compile the model, and 3) classify an object.
 
-`image_classify.py` internally 1) loads an image classification model located in `models` folder, 2) compile the model, and 3) classify an object.
-
-The compilation can take some time up to tens of secs.
-In most production environments, you need to load a model only once
-when you start your application and service. So, the first compilation time wouldn't matter in most cases.
+The compilation can take some time up to tens of secs. In most production environments, you need to load a model only once when you start your application and service. So, the first compilation time wouldn't matter in most cases.
 
 ```
 $ ./image_classify.py images/car.jpg
