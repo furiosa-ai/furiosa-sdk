@@ -14,8 +14,20 @@ SDK 설치를 위한 최소 요구사항
   * Ubuntu 18.04 LTS (Bionic Beaver) 또는 Debian buster
     또는 상위 버전
   * 시스템의 관리자 권한 (root)
-  * Python 3.7+
+  * Python 3.7+ 및 최신 버전의 PIP
+
+    .. code-block::
+
+      $ pip3 install --upgrade pip
+
   * GitHub 및 PyPi 로 연결 가능한 네트워크 환경
+  * build-essential 및 cmake 설치
+
+    .. code-block::
+
+      $ apt-get update
+      $ apt-get install cmake build-essential
+
   * onnxruntime 1.6.0 (모델 quantization & calibration, NPU 에서 지원하지 않는 오퍼레이터 처리를 위해 설치 필요)
 
     .. code-block::
