@@ -1,19 +1,24 @@
 **********************************************
-Python 런타임 빠르게 시작하기
+FuriosaAI NPU Python SDK 빠르게 시작하기
 **********************************************
 
-FuriosaAI의 Python 런타임(runtime) 라이브러리를 사용하면
-Python으로 NPU를 사용하는 프로그램을 쉽게 작성할 수 있다.
+FuriosaAI NPU Python SDK 라이브러리를 사용하면 NPU 를 사용하는 프로그램을 Python 으로 쉽게 작성할 수 있다.
 
 설치
 ================================
 
 요구사항
-  * Python 3.6 또는 그 이상
+
+  * Python 3.6+
+
+    * :doc:`/installation/python-sdk-setup-python`
+
   * :doc:`/installation/driver`
+
   * :doc:`/installation/runtime`
 
-위 요구 사항을 만족하는 경우 Python 환경이 준비된 경우 pip 을 통해 쉽게 설치할 수 있다.
+
+위 요구 사항을 만족하는 경우 Python 환경이 준비된 경우 PyPi 를 통해 설치할 수 있다.
 
 .. code-block:: sh
 

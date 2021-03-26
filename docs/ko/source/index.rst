@@ -6,33 +6,28 @@
 FuriosaAI SDK 문서
 =================================================
 
-이 페이지는 FuriosaAI SDK의 설치 방법과 사용 방법을 안내 합니다.
+이 페이지는 FuriosaAI SDK의 설치 방법과 사용 방법을 안내 한다.
 
 FuriosaAI SDK는 명령형 실행 도구, 런타임 라이브러리,
-파이썬 라이브러리를 포함합니다. FuriosaAI NPU의 커널 드라이버, 펌웨어 및 런타임은
+파이썬 라이브러리를 포함한다. FuriosaAI NPU의 커널 드라이버, 펌웨어 및 런타임은
 FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(End User License Agreement)에 따라
-배포되며 다운로드는 평가 프로그램에서 제공되는 채널을 통해 할 수 있습니다.
-
-평가 프로그램의 사용을 원하시면 contact@furiosa.ai 로 문의하시기 바랍니다.
+배포되며, contact@furiosa.ai 로 문의하여 프로그램 다운로드 및 평가를 진행 할 수 있다.
 
 .. toctree::
    :maxdepth: 1
    :caption: 차례
 
-   installation
-   cli
+   /installation/index
+   /references/index
 
 
-
-* **FuriosaAI Python 런타임**:
-  :doc:`Python Runtime 빠르게 시작하기 </python_runtime/getting_started>`
 
 .. toctree::
    :maxdepth: 2
-   :caption: FuriosaAI Python 런타임
+   :caption: FuriosaAI SDK 빠르게 시작하기
    :hidden:
 
-   /python_runtime/getting_started
+   /quickstart/index
 
 
 기타 링크
