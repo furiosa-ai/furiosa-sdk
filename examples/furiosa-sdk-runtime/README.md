@@ -5,6 +5,7 @@ This contains examples of FuriosaAI Python SDK
 ## Setup
 ```
 git clone https://github.com/furiosa-ai/furiosa-sdk
+cd furiosa-sdk/examples/furiosa-sdk-runtime
 pip install -r requirements.txt
 ```
 
