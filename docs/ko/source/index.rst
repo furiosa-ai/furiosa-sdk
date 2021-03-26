@@ -20,11 +20,12 @@ FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(
    /installation/index
    /references/index
 
-
+* **Quick Start**:
+  :doc:`FuriosaAI NPU Python SDK 빠르게 시작하기 </quickstart/index>`
 
 .. toctree::
    :maxdepth: 2
-   :caption: FuriosaAI SDK 빠르게 시작하기
+   :caption: Quick Start
    :hidden:
 
    /quickstart/index
@@ -36,3 +37,4 @@ FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(
 * `FuriosaAI SDK Github <https://github.com/furiosa-ai/furiosa-sdk>`_
 * `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/docs/0.2.0/c_sdk/>`_
 * `Python SDK 레퍼런스 <https://furiosa-ai.github.io/docs/0.2.0/python_sdk/>`_
+
