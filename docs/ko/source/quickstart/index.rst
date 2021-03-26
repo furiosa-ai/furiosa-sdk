@@ -9,7 +9,7 @@ FuriosaAI NPU Python SDK 라이브러리를 사용하면 NPU 를 사용하는 �
 
 요구사항
 
-  * Python 3.6+
+  * Python 3.7+
 
     * :doc:`/installation/python-sdk-setup-python`
 

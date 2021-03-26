@@ -1,5 +1,5 @@
 ********************************************************************
-FuriosaAI NPU Python SDK 설치를 위한 Python 3.6+ 환경 구성
+FuriosaAI NPU Python SDK 설치를 위한 Python 3.7+ 환경 구성
 ********************************************************************
 
 
@@ -37,7 +37,7 @@ Anaconda를 이용한 Python 환경 구성
 
 
 Anaconda 설치 후에는 독립된 환경을 셋업하고 필요에 따라 활성화 할 수 있다.
-FuriosaAI Python SDK는 Python 3.6-3.8 버전과 호환된다. 따라서 python 3.8 새로운 환경을
+FuriosaAI Python SDK는 Python 3.7-3.8 버전과 호환된다. 따라서 python 3.8 새로운 환경을
 ``furiosa`` 라는 이름으로 생성한다.
 
 .. code-block::
