@@ -1,0 +1,2 @@
+matplotlib >= 3
+furiosa-sdk[runtime] >= 0.1.0dev0
