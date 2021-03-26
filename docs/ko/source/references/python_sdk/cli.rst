@@ -85,6 +85,36 @@ FuriosaAI SDK는 모델 컴파일 및 최적화, 모델 양자화를 돕는
 
   outout.enf has been generated (elapsed: 513.661 ms)
 
+모델 적합 여부 검사
+--------------------
+
+``validate`` 커맨드는 `tflite <https://www.tensorflow.org/lite>`_, `onnx <https://onnx.ai/>`_
+포맷의 모델을 받아 자동으로 quantization 하고 이어서 최종 바이너리까지 컴파일을 시도한다.
+성공하면 Furiosa NPU에서 실행 가능한 모델이다.
+
+.. code-block:: sh
+
+  $ furiosa validate yolov4.onxx
+
+  Passed!
+
+
+.. code-block:: sh
+
+  $ furiosa validate efficientnet-lite4-11.onnx
+
+  Failed. The result has been written to validation.txt
+
+  $ cat validation.txt
+
+    Stdout:
+    [Step 1] Checking if the model can be transformed into a quantized model ...
+    Stderr:
+    /root/miniconda3/envs/furiosa/lib/python3.8/site-packages/onnx/__init__.py:97: RuntimeWarning: Unexpected end-group tag: Not all data was converted
+        decoded = cast(Optional[int], proto.ParseFromString(s))
+    [Step 1] Failed
+
+
 
 컴파일 분석 및 최적화 도구
 -------------------------------------
