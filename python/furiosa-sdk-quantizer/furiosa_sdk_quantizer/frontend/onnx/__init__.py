@@ -22,6 +22,7 @@ from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_pad import FusePad
 from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import EliminateRedundantReshapePattern
 from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
+from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa_sdk_quantizer.frontend.onnx.quantizer import quantizer
 
 
@@ -32,10 +33,14 @@ def _transform(transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],
     return model
 
 
-def _inference_shape(model: onnx.ModelProto) -> onnx.ModelProto:
+def _polish_model(model: onnx.ModelProto) -> onnx.ModelProto:
     return _transform([
         PolishModel().transform,
     ], model)
+
+
+def _inference_shape(model: onnx.ModelProto) -> onnx.ModelProto:
+    return InferenceShape(model).inference_shape()
 
 
 def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
@@ -62,12 +67,24 @@ def export_spec(model: onnx.ModelProto, output: IO[Text]):
 
 def optimize_model(model: onnx.ModelProto) -> onnx.ModelProto:
     model = _transform([CheckVersion().transform], model)
+    model = _transform([_polish_model], model)
 
-    # TODO hotfix if _inference_shape is not applied
-    if any(vi_name not in model.graph.value_info for node in model.graph.node for vi_name in node.output):
-        model = _transform([_inference_shape, _reify], model)
+    # Apply _inference_shape if there exists 1) a node output whose value
+    # information is not stored in model.graph.value_info or
+    # model.graph.output or 2) a value_info in model.graph.value_info whose
+    # shape information is empty.
+    value_names = set(value_info.name for value_info in model.graph.value_info)
+    value_names.update(value_info.name for value_info in model.graph.output)
 
-    # TODO coldfix if graph_transformation is not applied
+    if (any(value_name not in value_names
+            for node in model.graph.node
+            for value_name in node.output) or
+            any(not value_info.type.tensor_type.shape.dim
+                for value_info in model.graph.value_info)):
+        model = _transform([_inference_shape], model)
+
+    # TODO check if graph_transform should apply.
+    model = _transform([_reify], model)
 
     return model
 
