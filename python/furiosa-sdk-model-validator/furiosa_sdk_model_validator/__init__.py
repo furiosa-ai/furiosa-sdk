@@ -44,7 +44,7 @@ def validate(model_path: Path):
     except Exception as e:
         _eprint("[Step 1] Failed\n")
         raise e
-    print(f'[Step 1] Passed)')
+    print(f'[Step 1] Passed')
 
     try:
         onnx.save_model(quantized_model, tmpfile.name)
@@ -60,7 +60,7 @@ def validate(model_path: Path):
     except Exception as e:
         _eprint("[Step 2] Failed\n")
         raise e
-    print(f'[Step 2] Passed)')
+    print(f'[Step 2] Passed')
 
 
 def main():

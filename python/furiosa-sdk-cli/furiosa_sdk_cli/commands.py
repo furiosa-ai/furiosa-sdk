@@ -5,7 +5,6 @@ from typing import Dict, Tuple
 
 import requests
 import yaml
-
 from furiosa import consts, __version__
 from furiosa.client import CompilerClient
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -405,24 +404,28 @@ class ValidateModel(Command):
 
     def run(self) -> int:
         import subprocess
+        import os
 
-        result = subprocess.run(['furiosa-validate', self.args.model_path], capture_output=True, universal_newlines=True)
+        report_file = self.args.output
+        this_envs = os.environ.copy()
+        this_envs['RUST_LOG'] = "info"
+        result = subprocess.run(['furiosa-validate', self.args.model_path], env=this_envs, capture_output=True,
+                                universal_newlines=True)
+
+        with open(report_file, "w") as output:
+            output.write("Stdout:\n")
+            output.write(str(result.stdout))
+            output.write("\n")
+
+            output.write("Stderr:\n")
+            output.write(str(result.stderr))
+            output.write("\n")
+
+        print(f"{report_file} has been generated")
 
         if result.returncode == 0:
             print("Passed!")
+            return 0
         else:
-            with open(self.args.output, "w") as output:
-                output.write("Stdout:\n")
-                output.write(str(result.stdout))
-                output.write("\n")
-
-                output.write("Stderr:\n")
-                output.write(str(result.stderr))
-                output.write("\n")
-
-            print(f"Failed. The result has been written to {self.args.output}")
+            print(f"Failed.")
             return 1
-
-        return 0
-
-
