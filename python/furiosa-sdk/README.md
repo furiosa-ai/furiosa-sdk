@@ -11,7 +11,7 @@ pip install furiosa-sdk
 
 You can install furiosa-sdk with extra packages (for example runtime, quantizer):
 ```sh
-pip install furiosa-sdk[runtime, quantizer]
+pip install furiosa-sdk[runtime,quantizer]
 ```
 
 ### Extra packages
