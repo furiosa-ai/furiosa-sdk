@@ -30,11 +30,11 @@ Python 라이브러리 인터페이스 이외에도 명령줄 도구 및 다양�
 .. code-block:: sh
 
   # FuriosaAI NPU Python SDK 설치, Python 인터페이스 사용 가능, e.g. `import furiosa`
-  pip install furiosa-sdk
+  pip install --upgrade furiosa-sdk~=0.1.0
   # 부가 도구 설치, 자세한 목록은 아래 참조
-  pip install furiosa-sdk[runtime,quantizer, ...]
+  pip install --upgrade furiosa-sdk[runtime,quantizer]~=0.1.0
   # 부가 도구 전체 설치
-  pip install furiosa-sdk[full]
+  pip install --upgrade furiosa-sdk[full]~=0.1.0
 
 PIP 커맨드를 이용하여 다음 부가 패키지를 설치할 수 있다.
 
