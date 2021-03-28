@@ -41,6 +41,6 @@ FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(
 **************************
 
 * `FuriosaAI SDK Github <https://github.com/furiosa-ai/furiosa-sdk>`_
-* `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/docs/0.2.0/c_sdk/>`_
-* `Python SDK 레퍼런스 <https://furiosa-ai.github.io/docs/0.2.0/python_sdk/>`_
+* `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/renegade-manual/references/nux/>`_
+* `Python SDK 레퍼런스 <https://furiosa-ai.github.io/renegade-manual/references/python/>`_
 
