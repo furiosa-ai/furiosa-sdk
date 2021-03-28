@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from furiosa.runtime import session
-from . import test_data
+from tests import test_data
 
 
 def model_path(name: str) -> str:
