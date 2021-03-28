@@ -10,15 +10,19 @@ import numpy as np
 from PIL import Image
 
 
+
+
 def classify(image_path):
     from furiosa.runtime import session
-    from helper import model_path, load_labels
+    from helper import load_labels
 
     image = Image.open(image_path)
-    path = model_path("imagenet_224x224_mobilenet_v1_uint8_quantization-aware-trained_dm_1.0_without_softmax.tflite")
+    current_path = Path(__file__).absolute().parent
+    path = current_path \
+        .joinpath("../assets/quantized_models/imagenet_224x224_mobilenet_v1_uint8_quantization-aware-trained_dm_1.0_without_softmax.tflite")
 
     print(f"Loading and compiling the model {path}")
-    with session.create(path) as sess:
+    with session.create(str(path)) as sess:
         print(f"Model has been compiled successfully")
 
         print("Model input and output:")
@@ -36,7 +40,7 @@ def classify(image_path):
         print('Prediction elapsed {:.2f} secs'.format(time.time() - start_time))
 
         classified = np.squeeze(outputs[0].numpy())
-        imagenet_labels = load_labels('ImageNetLabels.txt')
+        imagenet_labels = load_labels(current_path.joinpath('../assets/labels/ImageNetLabels.txt'))
         Class = collections.namedtuple('Class', ['id', 'score'])
         objects = []
         for idx, n in np.ndenumerate(classified):

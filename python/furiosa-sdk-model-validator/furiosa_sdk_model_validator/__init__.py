@@ -9,7 +9,6 @@ from pathlib import Path
 import onnx
 from furiosa_sdk_quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa_sdk_runtime import session
 
 from furiosa_sdk_runtime import session
 

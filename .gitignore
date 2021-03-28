@@ -9,3 +9,4 @@ git_version
 dist
 build
 *.enf
+.DS_Store
