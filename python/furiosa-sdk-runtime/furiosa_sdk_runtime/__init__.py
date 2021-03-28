@@ -1,8 +1,8 @@
 """Provide high-level Python APIs to access Furiosa AI's NPUs and its eco-system"""
 __all__ = ["model", "session", "tensor", "errors"]
 
-from . import session, model, tensor, errors
-from ._api import LIBNUX
+from furiosa_sdk_runtime import session, model, tensor, errors
+from furiosa_sdk_runtime._api import LIBNUX
 import importlib
 utils = importlib.import_module('furiosa').utils
 
@@ -17,3 +17,6 @@ def _full_version() -> str:
 
 __version__ = utils.get_sdk_version(__name__)
 __full_version__ = _full_version()
+
+
+del importlib

@@ -1,6 +1,6 @@
 import unittest
 
-from furiosa.runtime._api import LIBNUX
+from furiosa.runtime import LIBNUX
 
 
 class TestTensor(unittest.TestCase):
