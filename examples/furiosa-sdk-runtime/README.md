@@ -1,6 +1,10 @@
-# Examples of FuriosaAI SDK Python Runtime
+# Examples of FuriosaAI NPU SDK Python Runtime
 
-This contains examples of FuriosaAI Python SDK
+This contains examples of FuriosaAI NPU Python SDK
+
+## Preliminaries
+* [FuriosaAI NPU SDK insatllation](https://furiosa-ai.github.io/renegade-manual/sdk/latest/ko/installation/index.html)
+* Input model must be quantized via FuriosaAI Quantizer. See [FuriosaAI NPU Python SDK Quantizer Examples](../furiosa-sdk-quantizer)
 
 ## Setup
 ```
@@ -13,14 +17,14 @@ pip install -r requirements.txt
 
 The following example tries to classify the object on the following image:
 
-![A Car](images/car.jpg)
+![A Car](../assets/images/car.jpg)
 
 You can also try to use other images. `image_classify.py` internally 1) loads an image classification model located in `models` folder, 2) compile the model, and 3) classify an object.
 
 The compilation can take some time up to tens of secs. In most production environments, you need to load a model only once when you start your application and service. So, the first compilation time wouldn't matter in most cases.
 
 ```
-$ ./image_classify.py images/car.jpg
+$ ./image_classify.py ../assets/images/car.jpg
 
 INFO:furiosa_sdk_runtime._api.v1:successfully loaded dynamic library libnux.so.1.0.0
 [1/6] 🔍   Compiling from tflite to dfg

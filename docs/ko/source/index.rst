@@ -23,6 +23,12 @@ FuriosaAI의 평가 프로그램 등록과 최종 사용자 라이센스 동의(
 * **Quick Start**:
   :doc:`FuriosaAI NPU Python SDK 빠르게 시작하기 </quickstart/index>`
 
+* **Examples**:
+
+  * `FuriosaAI NPU Python SDK Quantization 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-quantizer>`_
+
+  * `FuriosaAI NPU Python SDK Inference 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-runtime>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: Quick Start
