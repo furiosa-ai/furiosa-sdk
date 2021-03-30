@@ -105,3 +105,7 @@ FuriosaAI NPU Python SDK 라이브러리를 사용하면 NPU를 사용하는 프
 에서 찾을 수 있다.
 
 
+관련 문서
+=================================
+* `Python SDK Reference <https://furiosa-ai.github.io/renegade-manual/references/python/>`_
+* `Python SDK Runtime examples <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-runtime>`_
