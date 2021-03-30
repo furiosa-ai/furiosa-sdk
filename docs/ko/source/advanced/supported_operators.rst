@@ -1,0 +1,39 @@
+******************************************
+지원되는 연산자 목록
+******************************************
+* Add
+* AveragePool2d
+* Broadcast
+* Clip
+* Concatenation
+* Conv2d
+* DepthToSpace
+* DepthwiseConv2d
+* Exp
+* Expand
+* Flatten
+* FullyConnected
+* Gemm
+* LpNorm
+* Mask
+* MatMul
+* MaxPool2d
+* Mean
+* Mul
+* Pad
+* Pad
+* ReduceL2
+* ReduceSum
+* Relu
+* Requantize
+* Reshape
+* Resize
+* Sigmoid
+* Slice
+* Softmax
+* Softplus
+* Split
+* TableLookup
+* Transpose
+* TransposeConv
+* Unsqueeze

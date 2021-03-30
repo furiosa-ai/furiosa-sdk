@@ -1,5 +1,5 @@
 **********************************
-FuriosaAI API 키 설정
+API 키 설정
 **********************************
 
 FuriosaAI NPU Runtime 및 FuriosaAI NPU Python SDK 는 FuriosaAI 에서 제공하는
@@ -8,7 +8,7 @@ FuriosaAI NPU Runtime 및 FuriosaAI NPU Python SDK 는 FuriosaAI 에서 제공�
 .. note::
 
   만약 API 키가 없다면 contact@furiosa.ai 으로 메일을 보내
-  FuriosaAI SDK 및 NPU 평가판 사용에 대해 문의 할 수 있다.
+  FuriosaAI SDK 및 NPU 평가프로그램 과정을 통해 얻을 수 있다.
 
 소유한 API 키를 ``$HOME/.furiosa/credentials`` 파일에 아래와 쓰고 저장한다.
 

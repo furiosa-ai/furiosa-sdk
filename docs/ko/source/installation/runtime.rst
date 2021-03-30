@@ -1,5 +1,5 @@
 **********************************
-FuriosaAI NPU Runtime 설치
+NPU Runtime 설치
 **********************************
 
 FuriosaAI NPU Runtime 는 딥 러닝 모델을 NPU 위에서 가속하기 위한 NPU 런타임 및 이를 실행시키기 위한 인터페이스,
