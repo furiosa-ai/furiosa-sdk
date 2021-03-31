@@ -1,39 +1,34 @@
 ******************************************
-지원되는 연산자 목록
+Furiosa NPU 에서 가속되는 연산자
 ******************************************
+
+`ONNX <https://onnx.ai/>`_ 연산자 기준으로 아래 28 종의 연산자를 Furiosa NPU로 가속 할 수 있다.
+
 * Add
-* AveragePool2d
-* Broadcast
+* AveragePool
 * Clip
-* Concatenation
-* Conv2d
+* Concat
+* Conv
+* ConvTranspose
 * DepthToSpace
-* DepthwiseConv2d
 * Exp
 * Expand
 * Flatten
-* FullyConnected
 * Gemm
-* LpNorm
-* Mask
+* LpNormalization (when p = 2)
 * MatMul
-* MaxPool2d
+* MaxPool
 * Mean
 * Mul
-* Pad
 * Pad
 * ReduceL2
 * ReduceSum
 * Relu
-* Requantize
 * Reshape
-* Resize
 * Sigmoid
 * Slice
 * Softmax
 * Softplus
 * Split
-* TableLookup
 * Transpose
-* TransposeConv
 * Unsqueeze
