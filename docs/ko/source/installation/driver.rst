@@ -40,8 +40,11 @@ AWS F1 커널 드라이버 및 펌웨어 설치
 
 요구 사항
 ---------------------------------
-* FuriosaAI에서 제공하는 평가용 AWS F1 FPGA 이미지 접근 권한이 필요 하다. AWS account ID를 Furiosa AI에게 공유하면 권한을 받을 수 있다.
-* AWS F1 인스턴스가 필요하며 현재 f1.2xlarge 타입만 지원 하며, f1 인스턴스는 AWS의 일부 지역에서만 사용 가능하다. (예, `US East (N. Virginia)`)
+* FuriosaAI에서 제공하는 평가용 AWS F1 FPGA 이미지 접근 권한
+  * AWS account ID를 FuriosaAI에게 공유하면 권한을 받을 수 있다.
+* AWS F1 인스턴스
+  * 현재는 f1.2xlarge 타입만 지원한다.
+  * f1 인스턴스는 AWS의 일부 지역에서만 사용 가능하다. (예. `US East (N. Virginia)`)
 
 FuriosaAI AWS F1 FPGA 이미지 접근 권한 획득 (AWS Account ID 전달)
 --------------------------------------------------------------------
@@ -53,7 +56,7 @@ FuriosaAI AWS F1 FPGA 이미지 접근 권한 획득 (AWS Account ID 전달)
 설치
 ===================
 
-``f1.2xlarge`` 인스턴스 생성후 인스턴스 내에서 아래 커맨드를 통해 커널 드라이버 및 펌웨어 설치 가능.
+``f1.2xlarge`` 인스턴스 생성후 인스턴스 내에서 아래 명령을 통해 커널 드라이버와 펌웨어를 설치할 수 있다.
 
 .. code-block::
 
