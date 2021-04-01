@@ -59,7 +59,7 @@ SDK 설치
 고급 주제
 -------------------
 * :doc:`모델 양자화 </advanced/quantization>`
-* :doc:`지원 연산자 목록 </advanced/supported_operators>`
+* :doc:`NPU 가속 연산자 목록 </advanced/supported_operators>`
    
 
 코드 예제
