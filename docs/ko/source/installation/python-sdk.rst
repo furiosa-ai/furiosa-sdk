@@ -1,31 +1,26 @@
 **********************************
-FuriosaAI NPU Python SDK 설치
+FuriosaAI Python SDK 설치
 **********************************
 
-.. toctree::
-  :hidden:
-
-  python-sdk-setup-python
-
-FuriosaAI NPU Python SDK 는 모델을 NPU 에서 가속시키기 위한 각종 인터페이스를 제공하며, Python 라이브러리 및
-명령줄 도구 (cli)를 포함한다.
+FuriosaAI NPU Python SDK는 NPU 에서 모델을 가속시키기 위한 각종 인터페이스를 제공하며, Python 라이브러리 및
+명령 줄 도구(command line tool)를 포함한다.
 
 요구 사항
 ----------------------------------------
-* Pyrhon 3.7+
-
-  * :doc:`./python-sdk-setup-python`
-
 * :doc:`./driver`
-
 * :doc:`./runtime`
+* Python 3.7 또는 상위 버전 (Python 환경 구성은 :any:`SetupPython` 를 참고)
+* pip 최신 버전 (다음 방법으로 pip를 최신버전으로 업그레이드)
 
+  .. code-block::
+
+        $ pip3 install --upgrade pip
 
 설치
 ----------------------------------------
 
-FuriosaAI NPU Python SDK는 PyPi를 활용하여 설치할 수 있도록 PyPi 저장소에 준비되어 있다.
-Python 라이브러리 인터페이스 이외에도 명령줄 도구 및 다양한 기능을 사용할 수 있고, 다음의 예시대로 설치 가능하다.
+FuriosaAI Python SDK는 PyPi를 활용하여 설치할 수 있도록 PyPi 저장소에 준비되어 있다.
+Python 라이브러리 인터페이스 이외에도 명령 줄 도구 및 다양한 기능을 사용할 수 있고, 다음의 예시대로 설치 가능하다.
 
 .. code-block:: sh
 
@@ -38,29 +33,29 @@ Python 라이브러리 인터페이스 이외에도 명령줄 도구 및 다양�
 
 PIP 커맨드를 이용하여 다음 부가 패키지를 설치할 수 있다.
 
-  * cli: 명령줄 도구 설치, 사용 방법은 :doc:`/references/python_sdk/cli` 를 참고
+* ``cli``: 명령 줄 도구 설치, 사용 방법은 :doc:`/quickstart/cli` 를 참고
 
-    .. code-block::
+  .. code-block::
 
-      pip install --upgrade furiosa-sdk[cli]
+    pip install --upgrade furiosa-sdk[cli]
 
-  * runtime: FuriosaAI NPU Runtime 을 사용하여 NPU 위에서 모델을 가속시키기 위한 각종 라이브러리 설치, **NPU 위에서 모델 가속을 위해 필수**
+* ``runtime``: FuriosaAI NPU Runtime 을 사용하여 NPU 위에서 모델을 가속시키기 위한 각종 라이브러리 설치, **NPU 위에서 모델 가속을 위해 필수**
 
-    .. code-block::
+  .. code-block::
 
-      pip install --upgrade furiosa-sdk[runtime]~=0.1.0
+    pip install --upgrade furiosa-sdk[runtime]~=0.1.0
 
-  * quantizer: 모델의 양자화 도구 설치
+* ``quantizer``: 모델의 양자화 도구 설치 (:doc:`/advanced/quantization` 참고)
 
-    .. code-block::
+  .. code-block::
 
-      pip install --upgrade furiosa-sdk[quantizer]~=0.1.0
+    pip install --upgrade furiosa-sdk[quantizer]~=0.1.0
 
-  * validator: 모델 분석 도구 설치, 해당 모델이 NPU 위에서 가속되기 위해 양자화, 컴파일이 잘 수행되는지 확인하는 도구를 포함
+* ``validator``: 모델 분석 도구 설치, 해당 모델이 NPU 위에서 가속되기 위해 양자화, 컴파일이 잘 수행되는지 확인하는 도구를 포함
 
-    .. code-block::
+  .. code-block::
 
-      pip install --upgrade furiosa-sdk[quantizer,runtime,validator,cli]~=0.1.0
+    pip install --upgrade furiosa-sdk[quantizer,runtime,validator,cli]~=0.1.0
 
 
 예를 들어 모델 추론을 위한 개발환경과 모델 양자화 도구가 필요한 경우 아래와 같이 설치한다.
@@ -74,14 +69,13 @@ Jupyter Notebook 사용 안내
 ----------------------------------------
 
 Jupyter Notebook을 사용하는 경우
-FuriosaAI Python SDK와 다양한 Python 에코시스템의 다양한
+FuriosaAI Python SDK와 다양한 Python 생태계의 다양한
 라이브러리를 편하게 사용할 수 있다.
 
 위 설명에 따라 Python SDK를 이미 설치했다면 
-pip를 이용해 Jupyter notebook을 간단히 설치해 사용할 수 있다.
-
+아래와 같이 pip를 이용해 Jupyter notebook을 간단히 설치해 사용할 수 있다.
 Jupyter notebook은 아주 다양한 의존된 패키지를 설치하기 때문에
-:ref:`AnacondaInstall` 를 이용하여 Python 환경을 구성하기를 권장한다.
+:ref:`CondaInstall` 을 권장한다.
 
 .. code-block:: sh
   

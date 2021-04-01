@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Furiosa SDK Documents'
+project = 'Furiosa SDK 문서'
 copyright = '2021, FuriosaAI Inc.'
 author = 'FuriosaAI Inc.'
 
