@@ -23,7 +23,7 @@ PREINSTALLED_PROVIDERS = []
 
 logger = logging.getLogger(__name__)
 
-version = '0.2.0.dev0'
+version = '0.2.0.dev1'
 
 my_dir = dirname(__file__)
 

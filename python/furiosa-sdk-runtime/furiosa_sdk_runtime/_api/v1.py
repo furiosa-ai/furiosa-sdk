@@ -86,8 +86,8 @@ LIBNUX.git_short_hash.restype = c_char_p
 LIBNUX.build_timestamp.argtypes = []
 LIBNUX.build_timestamp.restype = c_char_p
 
-LIBNUX.enable_logging.argtypes = []
-LIBNUX.enable_logging.restype = None
+LIBNUX.enable_furiosa_logging.argtypes = []
+LIBNUX.enable_furiosa_logging.restype = None
 
 LIBNUX.nux_session_option_create.argtypes = []
 LIBNUX.nux_session_option_create.restype = c_void_p
@@ -192,5 +192,5 @@ decref = ctypes.pythonapi.Py_DecRef
 decref.argtypes = [ctypes.py_object]
 decref.restype = None
 
-# Enable Rust env logger
-LIBNUX.enable_logging()
+# Enable FUriosa logger
+LIBNUX.enable_furiosa_logging()
