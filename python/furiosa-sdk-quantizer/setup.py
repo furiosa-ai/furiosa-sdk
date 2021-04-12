@@ -8,7 +8,7 @@ from setuptools import setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.2.0.dev0'
+version = '0.2.0'
 
 my_dir = dirname(__file__)
 
@@ -67,6 +67,5 @@ if __name__ == "__main__":
 
     setup(
         version=version,
-        scripts=['bin/quantizer', 'bin/quantize_model_with_random_input_activation'],
         **setup_kwargs,
     )
