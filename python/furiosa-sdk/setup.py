@@ -23,7 +23,7 @@ PREINSTALLED_PROVIDERS = []
 
 logger = logging.getLogger(__name__)
 
-version = '0.2.0'
+version = '0.2.1'
 
 my_dir = dirname(__file__)
 
@@ -49,8 +49,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "cli": ["furiosa-sdk-cli>=0.2.0"],
     "runtime": ["furiosa-sdk-runtime>=0.2.0"],
-    "quantizer": ["furiosa-sdk-quantizer>=0.2.0"],
-    "validator": ["furiosa-sdk-model-validator>=0.2.0"]
+    "quantizer": ["furiosa-sdk-quantizer>=0.2.1"],
+    "validator": ["furiosa-sdk-model-validator>=0.2.1"]
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need

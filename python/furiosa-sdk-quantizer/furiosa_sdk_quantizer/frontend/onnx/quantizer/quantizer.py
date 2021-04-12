@@ -27,10 +27,10 @@ from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import (QuantizationMode, make_tensor_annotation,
-                                               calculate_activation_quant_params,
-                                               calculate_weight_quant_params,
-                                               attribute_to_kwargs, append_suffix, get_input_tensors,
-                                               is_float_tensor)
+                                                                 calculate_activation_quant_params,
+                                                                 calculate_weight_quant_params,
+                                                                 attribute_to_kwargs, append_suffix, get_input_tensors,
+                                                                 is_float_tensor)
 from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 
@@ -341,6 +341,9 @@ class FuriosaONNXQuantizer:
                        weight_scale: onnx.TensorProto) -> None:
         bias = numpy_helper.to_array(b_init)
         b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
+        # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
+        # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
+        b_scale = np.clip(b_scale, 2 ** -149, None)
 
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
@@ -438,6 +441,8 @@ class FuriosaONNXQuantizer:
                 assert init_dtype == onnx.TensorProto.FLOAT, \
                     'Wrong data type for %s.' % init.name
                 assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
+                assert all(np.isfinite(scale) and scale > 0.0 for scale in init.float_data), \
+                    f"scale tensor '{init.name}' contains an invalid element that is infinite, NaN, or nonpositive: {init.float_data}"
             elif init.name.split('_')[-1] == 'quantized' and '_'.join(
                     init.name.split('_')[-2:]) != 'fake_quantized':
                 assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
