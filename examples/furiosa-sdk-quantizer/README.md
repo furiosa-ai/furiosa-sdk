@@ -19,11 +19,9 @@ of FuriosaAI Quantizer only provides functionalities for performance evaluations
 Proper accuracy will be achieved via further releases.
 
 ```
-$ ./quantize.py ../assets/fp32_models/MobileNetV2_10c_10d.onnx ./quantized.onnx
-[version: 12
-]
-Calibration: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 5/5 [00:00<00:00,  6.86it/s]
-Quantization: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:02<00:00, 43.65it/s]
+$ ./quantize.py
+Calibration: 100%|██████████████████████████████| 50/50 [00:02<00:00, 19.33it/s]
+Quantization: 100%|███████████████████████████| 100/100 [00:01<00:00, 98.63it/s]
 ```
 
 Then you can run the quantized model on FuriosaAI NPU. See [FuriosaAI NPU Python SDK Runtime Examples](../furiosa-sdk-runtime)
