@@ -36,5 +36,8 @@ doc:
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
 
+easy_install:
+	python setup.py build easy_install furiosa-sdk[full]
+
 clean:
 	rm -rf build dist *.egg-info doc_srcs
