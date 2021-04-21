@@ -1,5 +1,6 @@
 import warnings
 
+import onnx
 from onnx import numpy_helper
 from onnx.helper import make_model, make_tensor_value_info, make_opsetid
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
@@ -155,5 +156,33 @@ def fix_batch_size_as_one(model):
                 "Dynamic batch size is detected at input_name: {}. "
                 "Fix batch_size=1 for valid shape inference.".format(input.name))
             input.type.tensor_type.shape.dim[0].dim_value = 1
+
+    return model
+
+
+def make_conv_bias_name_unique(model):
+    # Renames Conv operators' biases, if necessary, to make their names
+    # unique so that the biases can be associated with different
+    # quantization scale parameters.
+    initializer = {init.name: init for init in model.graph.initializer}
+    seen = set()
+    for node in model.graph.node:
+        if node.op_type != "Conv" or len(node.input) < 3:
+            continue
+
+        bias = node.input[2]
+        if bias not in seen:
+            seen.add(bias)
+            continue
+
+        tensor = onnx.TensorProto()
+        tensor.CopyFrom(initializer[bias])
+        # HACK: This attempts to give the bias tensor a new unique name.
+        # Although it is unlikely, there is a possibility that the new
+        # name is already occupied by a tensor in the model.
+        tensor.name = f"{bias}_{node.output[0]}"
+
+        node.input[2] = tensor.name
+        model.graph.initializer.append(tensor)
 
     return model
