@@ -38,3 +38,6 @@ doc:
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs
+
+easy_install:
+	python setup.py build easy_install furiosa-sdk[full]
