@@ -18,13 +18,13 @@ Write and save your own API key in ``$HOME/.furiosa/credentials`` file as follow
   FURIOSA_SECRET_ACCESS_KEY=YYYYYYYYYYYYYYYYYYYYYYYYYYYYY
 
 
-Authentication Verification
-==========================
+Authentication Testing
+======================
 You can verify that the API key is set up correctly by using the Python SDK
 or the command line tools included with the FuriosaAI SDK.
 
-Authentication Verification using Command Line Tools
------------------------------------------
+Authentication Testing using Command Line Tools
+-----------------------------------------------
 .. code-block:: sh
 
   $ furiosa toolchain list    

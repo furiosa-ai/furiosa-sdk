@@ -2,7 +2,7 @@
 Python SDK Quickstart
 **********************************************
 
-Using the FuriosaAI NPU Python SDK library, you can easily write Python programs that leverage the NPU.
+Using the FuriosaAI NPU Python SDK library, you can easily write Python programs that utilize the NPU.
 
 
 **Minimum Requirements**
@@ -36,8 +36,8 @@ and outputting the version information.
 
 Inference can be executed by loading the model and creating a ``session`` object.
 When first loading the model, the process of compiling and optimizing the model is performed internally. 
-This process is performed only when the model is initially loaded and may take from several seconds to 
-tens of seconds depending on the model. (Very awk, no set time frame?*)
+Initially, loading a model takes up to tens of seconds to compile and optimize an DNN model. 
+Once you load a model, ``session`` will become ready to execute inferences immediately.
 
 .. code-block::
 
@@ -75,7 +75,7 @@ After loading a model, you can print its information and see a list of input/out
 
 You can run the inference by calling ``session.run()``. ``run()`` 
 can take a list of `numpy.ndarray <https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html>`_
-or `numpy.ndarray` as arguments.
+or a single `numpy.ndarray` as arguments.
 
 
 For simple execution, let's use ``numpy`` to create a random tensor according to the input tensor 
@@ -95,7 +95,7 @@ and call ``run`` as follows.
 
 
 The ``session.run(input)`` call uses the NPU to run the inference and returns a list of tensors. 
-Since the returned result is a list, execute the following to get the numpy.ndarray of the first tensor.
+Since the returned result is a list, execute the following to get the ``numpy.ndarray`` of the first tensor.
 
 .. code-block::
 

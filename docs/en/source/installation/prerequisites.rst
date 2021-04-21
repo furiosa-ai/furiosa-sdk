@@ -1,6 +1,6 @@
-**********************************
+********************************************
 FuriosaAI SDK Installation + Prerequisites
-**********************************
+********************************************
 
 .. note::
 
@@ -13,7 +13,7 @@ Minimum Requirements
 =====================================================================
 * Ubuntu 18.04 LTS (Bionic Beaver), Debian buster, or higher
 * System administrator privileges (root)
-* A Network Environment able to connect to `GitHub <https://github.com/>`_ and `PyPi <https://pypi.org/>`_ 
+* A Network Environment/Internet connection able to connect to `GitHub <https://github.com/>`_ and `PyPi <https://pypi.org/>`_ 
 
 
 Installing Dependencies (Linux)
@@ -38,7 +38,7 @@ onnxruntime is used for `ONNX <https://onnx.ai/>`_ model format support and mode
 
 .. _SetupPython:
 
-Configuring the Python SDK execution environment
+Configuring the Python SDK Runtime Environment
 ================================================================
 
 Python 3.7 or above is required to use the FuriosaAI Python SDK.
@@ -59,22 +59,22 @@ you can configure a Python enviroment with one of the following methods.
 * :ref:`CondaInstall` (recommended):
   `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ can 
   be used to configure a dedicated Python environment for specific Python applications. 
-  Conda helps to prevent common package dependency issues or Python version issues
-  that occur when installing Python applications.
+  Conda helps to prevent package dependency issues and Python version issues
+  that can occur when installing complicated Python applications.
 * :ref:`SetupPythonOnUbuntu`: This option is for users who have a good understanding 
   of the Python execution environment on their Linux system and want to configure 
   the Python environment directly on their system.
 
 .. _CondaInstall:
 
-Configuring the Python environment using Conda
+Configuring the Python Environment Using Conda
 -------------------------------------------------------
 
 You can use Conda to configure a dedicated Python environment for specific Python applications.
 Please refer to the documents in `Conda`_ for more information on Conda.
 
 
-tart the installation process by downloading the installation program as follows:
+Start the installation process by downloading the installation program as follows:
 Run ``./Miniconda3-latest-Linux-x86_64.sh`` and select `yes`.
 
 .. code-block::
@@ -86,7 +86,7 @@ Run ``./Miniconda3-latest-Linux-x86_64.sh`` and select `yes`.
   conda 4.8.3
 
 
-After installing Anaconda, you can configure an independent Python execution environment 
+After installing Anaconda, you can configure an isolated Python runtime environment 
 and activate it as needed. The FuriosaAI Python SDK is compatible with Python 3.7-3.8 versions. 
 The following uses the latest Python 3.8 version to create an execution environment named ``furiosa``.
 
@@ -123,7 +123,7 @@ Packages that have already been installed do not need to be reinstalled after ac
 
 .. _SetupPythonOnUbuntu:
 
-Configuring the Python environment using Linux packages:
+Configuring the Python Environment Using Linux Packages
 -------------------------------------------------------
 If a Python environment can be configured directly from the system, 
 install the following dependencies as shown below. 

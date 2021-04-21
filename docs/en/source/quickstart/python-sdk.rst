@@ -19,7 +19,7 @@ If the above requirements have been fulfilled, you can install the FuriosaAI NPU
   pip install --upgrade furiosa-sdk[runtime]~=0.1.0
 
 
-Running Simple Python Code
+Running Basic Python Code
 =================================
 
 After the installation is complete, you can check whether the package is installed correctly by running the Python code as follows 
