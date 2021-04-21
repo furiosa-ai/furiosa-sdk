@@ -14,7 +14,9 @@
 # is strictly forbidden unless prior written permission is obtained
 # from FuriosaAI Inc.
 # --------------------------------------------------------------------------
-from typing import Dict, Tuple, Optional
+from collections import defaultdict
+import math
+from typing import Dict, List, Optional, Tuple
 
 import onnx
 import os
@@ -51,6 +53,20 @@ class ONNXCalibrator:
 
     def build_calibration_model(self) -> onnx.ModelProto:
         return self.augment_model()
+
+    def calibrate(
+        self, dataset: List[Dict[str, np.ndarray]]
+    ) -> Dict[str, Tuple[float, float]]:
+        """Estimates the range of tensors, based on a dataset.
+
+        Args:
+            dataset: A calibration dataset.
+
+        Returns:
+            A dict mapping tensors that precede ReduceMin and ReduceMax
+            to their minimum and maximum values.
+        """
+        return calibrate(self.model, dataset)
 
     def calibrate_with_random(self, num_data: Optional[int] = None) -> Dict[str, Tuple[float, float]]:
         '''
@@ -138,3 +154,43 @@ class ONNXCalibrator:
 
         self.model.graph.output.extend([reduce_min_info, reduce_max_info])
         return reduce_min_node, reduce_max_node
+
+
+def calibrate(
+    model: ModelProto, dataset: List[Dict[str, np.ndarray]]
+) -> Dict[str, Tuple[float, float]]:
+    """Estimates the range of tensors in a model, based on a dataset.
+
+    Args:
+        model: An ONNX model augmented with ReduceMin and ReduceMax.
+        dataset: A calibration dataset.
+
+    Returns:
+        A dict mapping tensors that precede ReduceMin and ReduceMax to
+        their minimum and maximum values.
+    """
+    ort.set_default_logger_severity(3)
+    session = ort.InferenceSession(model.SerializeToString())
+
+    reduces = [
+        output.name
+        for output in session.get_outputs()
+        if (output.name.endswith("_ReduceMin") or output.name.endswith("_ReduceMax"))
+    ]
+
+    minimum = defaultdict(lambda: math.inf)
+    maximum = defaultdict(lambda: -math.inf)
+    if not os.environ.get("TQDM_DISABLE"):
+        dataset = tqdm.tqdm(dataset, desc="Calibration")
+    for inputs in dataset:
+        reduce_vals = session.run(reduces, inputs)
+        for reduce, reduce_val in zip(reduces, reduce_vals):
+            if reduce.endswith("_ReduceMin"):
+                name = reduce[: reduce.rfind("_ReduceMin")]
+                if minimum[name] > reduce_val:
+                    minimum[name] = reduce_val
+            elif reduce.endswith("_ReduceMax"):
+                name = reduce[: reduce.rfind("_ReduceMax")]
+                if maximum[name] < reduce_val:
+                    maximum[name] = reduce_val
+    return {name: (minimum[name], maximum[name]) for name in minimum}

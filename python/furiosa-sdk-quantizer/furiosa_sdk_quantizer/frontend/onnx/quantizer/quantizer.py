@@ -504,6 +504,21 @@ class FuriosaONNXQuantizer:
                 if all(v == 0. for v in init.float_data):
                     assert 'quantization scale parameter should not be zero: %s' % init.name
 
+        # check if conv bias scale is correct
+        for node in self.model.graph.node:
+            if node.op_type != 'QLinearConv':
+                continue
+
+            if len(node.input) != 9:
+                continue
+
+            i_scale_arr = numpy_helper.to_array(self._quant_param[node.input[1]])
+            w_scale_arr = numpy_helper.to_array(self._quant_param[node.input[4]])
+            b_scale_name = node.input[-1].split('_quantized')[0] + '_scale'
+            b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
+
+            assert np.allclose(b_scale_arr, i_scale_arr * w_scale_arr), f'Conv bias scale is incorrect: {b_scale_name}'
+
     def _get_quant_param(self, origin, postfix=None):
         result = self._quant_param.get(f'{origin}{postfix or ""}', None)
         if result is None:

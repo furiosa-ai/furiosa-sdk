@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple, Callable, Text, IO, Optional
 
+import numpy as np
 import onnx
 
 __DOMAIN__ = ''
@@ -23,7 +24,7 @@ from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape
 from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
 from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from furiosa_sdk_quantizer.frontend.onnx.quantizer import quantizer
+from furiosa_sdk_quantizer.frontend.onnx.quantizer import calibrator, quantizer
 
 
 def _transform(transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],
@@ -54,7 +55,6 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FuseLayerNormalization().transform,
         FuseLpNormalization().transform,
         FuseRedundantReshapePattern().transform,
-        EliminateArgmaxOutput().transform,
         EliminateRedundantReshapePattern().transform,
     ]
     return _transform(transformers, model)
@@ -106,6 +106,28 @@ def quantize(model: onnx.ModelProto,
                                           dynamic_ranges).quantize()
 
 
+def post_training_quantize(
+    model: onnx.ModelProto,
+    dataset: List[Dict[str, np.ndarray]],
+    per_channel: bool = True,
+) -> onnx.ModelProto:
+    """Post-training-quantizes an ONNX model with a calibration dataset.
+
+    Args:
+        model: An ONNX model to quantize.
+        dataset: A calibration dataset.
+        per_channel: If per_channel is True, Conv's filters are
+          per-channel quantized. Otherwise, they are per-tensor
+          quantized.
+    Returns:
+        An ONNX model post-training-quantized with the calibration
+        dataset.
+    """
+    model = optimize_model(model)
+    ranges = calibrate(model, dataset)
+    return quantize(model, per_channel, True, quantizer.QuantizationMode.dfg, ranges)
+
+
 def post_training_quantization_with_random_calibration(model: onnx.ModelProto,
                                                        per_channel: bool,
                                                        static: bool,
@@ -120,6 +142,23 @@ def post_training_quantization_with_random_calibration(model: onnx.ModelProto,
     calibration_model = build_calibration_model(model)
     dynamic_ranges = ONNXCalibrator(calibration_model).calibrate_with_random(num_data)
     return quantize(model, per_channel, static, mode, dynamic_ranges)
+
+
+def calibrate(
+    model: onnx.ModelProto, dataset: List[Dict[str, np.ndarray]]
+) -> Dict[str, Tuple[float, float]]:
+    """Estimates the range of tensors in a model, based on a dataset.
+
+    Args:
+        model: An ONNX model to calibrate.
+        dataset: A calibration dataset.
+
+    Returns:
+        A dict mapping tensors in the model to their minimum and maximum
+        values.
+    """
+    augmented_model = ONNXCalibrator(model).build_calibration_model()
+    return calibrator.calibrate(augmented_model, dataset)
 
 
 def calibrate_with_random(model: onnx.ModelProto, num_data: Optional[int] = None) -> Dict[str, Tuple[float, float]]:
