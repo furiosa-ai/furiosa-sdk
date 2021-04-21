@@ -6,7 +6,7 @@
 FuriosaAI SDK Documentation
 =================================================
 
-This Documentation covers the process for installing and using the FuriosaAI SDK. 
+This document covers the process for installing and using the FuriosaAI SDK. 
 
 .. note::
 
@@ -15,13 +15,13 @@ This Documentation covers the process for installing and using the FuriosaAI SDK
    FuriosaAI's evaluation program registration and End User License Agreement. 
    For questions about downloading and evaluating the program, please contact us at contact@furiosa.ai.
 
-SDK installation 
+SDK Installation 
 -------------------------------------------------
-* :doc:`SDK installation prerequisites (required) </installation/prerequisites>`
-* :doc:`NPU kernel driver and firmware installation (required) </installation/driver>` : NPU runtime and NPU application tools
-* :doc:`NPU Runtime Installation (required)</installation/runtime>` : NPU runtime and application tools
-* :doc:`NPU Python SDK Installation (optional)</installation/python-sdk>` : Python library and command line tool for NPU usage
-* :doc:`Web Service API key setting (optional)</installation/apikey>` : API key setting for using tools provided as web services
+* :doc:`SDK Installation Prerequisites (Required) </installation/prerequisites>`
+* :doc:`NPU Kernel Driver and Firmware Installation (Required) </installation/driver>`
+* :doc:`NPU Runtime Installation (Required)</installation/runtime>` : NPU Runtime and Application Tools
+* :doc:`NPU Python SDK Installation (Optional)</installation/python-sdk>` : Python Library and Command Line Tool for NPU Usage
+* :doc:`Web Service API key setting (Optional)</installation/apikey>` : API Key Setting for Using Tools Provided as Web Services
 
 .. toctree::
    :maxdepth: 2
@@ -52,13 +52,13 @@ SDK installation
 
 Quickstart
 -------------------
-* :doc:`Command line tools Quickstart </quickstart/cli>`
+* :doc:`Command Line Tools Quickstart </quickstart/cli>`
 * :doc:`Python SDK Quickstart </quickstart/python-sdk>`
 
 Advanced Topics
 -------------------
 * :doc:`Model Quantization </advanced/quantization>`
-* :doc:`NPU acceleration operators list </advanced/supported_operators>`
+* :doc:`NPU Acceleration Operators List </advanced/supported_operators>`
    
 
 Code Examples

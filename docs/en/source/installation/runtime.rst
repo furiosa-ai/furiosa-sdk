@@ -2,10 +2,10 @@
 NPU Runtime Installation
 **********************************
 
-FuriosaAI NPU Runtime includes the NPU runtime for accelerating a deep learning model on the NPU,
-an interface for executing it, and various tools required for NPU application development.
-FuriosaAI NPU Runtime can be used by installing the following two packages, while the deb package 
-configuration is delivered through a separate channel after the accepting the End User License Agreement 
+FuriosaAI NPU Runtime includes the NPU runtime for accelerating deep learning models on the NPU,
+inference API, and various tools required for NPU application development.
+FuriosaAI NPU Runtime can be used by installing the following two packages, while the deb packages 
+will be delivered through a separate channel after the accepting the End User License Agreement 
 (under the evaluation program process).
 
   * ``furiosa-libnux-[x.y.z]_amd64.deb``:  FuriosaAI NPU Runtime library
