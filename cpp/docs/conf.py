@@ -22,7 +22,7 @@ author = 'FuriosaAI Inc.'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [ "breathe", 'm2r2' ]
+extensions = [ "breathe", 'm2r2', "sphinx_rtd_theme" ]
 
 # source_suffix = '.rst'
 source_suffix = ['.rst', '.md']
@@ -49,4 +49,8 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 # Breathe Configuration
+
+breathe_projects_source = {
+     "nux" : ( "../nux", ["nux.h"] )
+     }
 breathe_default_project = "nux"
