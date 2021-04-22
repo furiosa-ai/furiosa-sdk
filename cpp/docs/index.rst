@@ -8,8 +8,8 @@ Introduction
 
 .. mdinclude:: ../README.md
 
-Documentation
+Reference
 =============
 
-.. doxygenfile:: nux.h
+.. autodoxygenfile:: nux.h
    :project: nux
