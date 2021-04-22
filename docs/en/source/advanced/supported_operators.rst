@@ -1,5 +1,5 @@
 ******************************************
-List of NPU acceleration operators 
+List of NPU Acceleration Operators 
 ******************************************
 
 In FuriosaAI NPU and SDK 0.2.1,

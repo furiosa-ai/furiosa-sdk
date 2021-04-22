@@ -31,7 +31,7 @@ Verifying the Installation
   Client version: 0.1.0
 
 
-Introduction to the Commands
+Command Quickstart
 ==============================
 
 Checking the toolchain version
@@ -49,7 +49,7 @@ Currently, it provides a function to print the version of the provided toolchain
   [0] 0.1.0 (rev: 952707e5f built_at: 2020-12-15 23:38:22)
 
 
-Model compilation
+Model Compilation
 --------------------
 
 The ``compile`` command creates a program that uses the FuriosaAI NPU by compiling models in 
@@ -85,8 +85,8 @@ The ``--conf`` option allows you to use yaml files when specifying different com
 
   outout.enf has been generated (elapsed: 513.661 ms)
 
-Checking the Model fit 
---------------------
+Checking the Model Fit 
+----------------------
 
 The ``validate`` command takes a `TFLite`_ or `ONNX`_ as an argument, 
 automatically quantizes it, and tries to compile to a final binary.
@@ -116,8 +116,8 @@ Success indicates that the model can be run on the FuriosaAI NPU..
 
 
 
-Compilation analysis and optimization tool
--------------------------------------
+Compilation Analysis and Optimization Tool
+------------------------------------------
 
 Both additional options given during compilation 
 and separate commands generate NPU utilization level

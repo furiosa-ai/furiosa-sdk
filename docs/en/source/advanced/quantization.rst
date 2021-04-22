@@ -2,12 +2,11 @@
 Model Quantization
 *************************************
 
-Warboy is a FuriosaAI NPU that only supports 8-bit integer models.
-To support models based on real data types, the Furiosa SDK provides a tool that quantizes*
+As the FuriosaAI Warboy NPU only supports 8-bit integer models, the Furiosa SDK provides a tool that quantizes\*
 FP16 and FP32 real data type based models and converts them into 8-bit integer data type models.
 The quantization tool provided by the FuriosaAI SDK allows for the acceleration a wider variety of models using the NPU.
 
-*Quantization is a common technique used to increase the processing performance of a model or accelerate hardware.
+\*Quantization is a common technique used to increase the processing performance of a model or accelerate hardware.
 
 The quantization method supported by FuriosaAI SDK is based on *post-training 8-bit quantization* and follows
 `Tensorflow Lite 8-bit quantization specification <https://www.tensorflow.org/lite/performance/quantization_spec>`_.
