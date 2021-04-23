@@ -44,11 +44,11 @@ Minimum Requirements
     * You can receive permission by sharing your AWS account ID with FuriosaAI.
 * AWS F1 instance
     * Currently, only the f1.2xlarge type is supported.
-    * f1 f1 instances are exclusive to specific AWS regions. (Ex. `US East (N. Virginia)`)
+    * f1 instances are exclusive to specific AWS regions. (Ex. `US East (N. Virginia)`)
 
 Getting access to the FuriosaAI AWS F1 FPGA image (enter AWS Account ID)
 ------------------------------------------------------------------------
-After logging in to the  `AWS console <https://console.aws.amazon.com/>`_ click the Account name in the top right corner,
+After logging in to the  `AWS console <https://console.aws.amazon.com/>`_, click the Account name in the top right corner,
 and a pop-up window will appear. Enter the 12-digit AWS Account ID in the red box next to My account to FuriosaAI.
 
 .. image:: ../../../imgs/aws_account_id.png
