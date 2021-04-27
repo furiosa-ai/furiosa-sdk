@@ -1,0 +1,5 @@
+Consts
+======
+
+.. automodule:: consts
+   :members:

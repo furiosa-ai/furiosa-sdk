@@ -16,8 +16,11 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../furiosa'))
-
-
+sys.path.insert(0, os.path.abspath('../furiosa/client'))
+sys.path.insert(0, os.path.abspath('../../furiosa-sdk-runtime/furiosa-sdk-runtime'))
+sys.path.insert(0, os.path.abspath('../../furiosa-sdk-quantizer/furiosa_sdk_quantizer/frontend/onnx'))
+sys.path.insert(0, os.path.abspath('../../furiosa-sdk-quantizer/furiosa_sdk_quantizer/ir/common'))
+sys.path.insert(0, os.path.abspath('../../furiosa-sdk-quantizer/furiosa_sdk_quantizer/spec'))
 # -- Project information -----------------------------------------------------
 
 project = 'FuriosaAI Python SDK'

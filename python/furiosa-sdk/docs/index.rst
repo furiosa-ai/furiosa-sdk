@@ -4,49 +4,26 @@
    contain the root `toctree` directive.
 
 Python SDK Documentation
-========================
-
-Setup
-=====
-
-.. automodule:: setup
-   :members:
-
-Config
-======
-
-.. automodule:: config
-   :members:
-
-Consts
-======
-
-.. automodule:: consts
-   :members:
-
-Quantizer
-=========
-
-.. automodule:: quantizer
-   :members:
-
-Utils
-=====
-
-.. automodule:: utils
-   :members:
-
-
+-------------------------------------------------
+* :doc:`Setup<setup>` 
+* :doc:`Client<client>`
+* :doc:`Config<config>`
+* :doc:`Const<const>` 
+* :doc:`Quantizer<quantizer>`
+* :doc:`Runtime<runtime>`
+* :doc:`Utils<utils>` 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+   :caption: Python SDK Documentation
+
+   setup
+   client
+   config
+   const
+   quantizer
+   runtime
+   utils
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
