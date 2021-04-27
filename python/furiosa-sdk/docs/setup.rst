@@ -1,5 +1,0 @@
-Setup
-=====
-
-.. automodule:: setup
-   :members:

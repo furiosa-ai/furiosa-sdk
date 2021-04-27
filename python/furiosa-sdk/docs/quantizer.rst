@@ -1,25 +1,22 @@
 Quantizer
 =========
 
-.. automodule:: quantizer
-   :members:
-   :undoc-members:
-
 Onnx
 ----
 
-.. automodule:: onnx.__init__
+.. automodule:: furiosa.quantizer.frontend.onnx.__init__
    :members:
    :undoc-members:
 
 IR
 --
 
-.. automodule:: operator
+.. automodule:: furiosa.quantizer.ir.common.operator
    :members:
+   :undoc-members:
 
 Spec
 ----
 
-.. automodule:: spec.__init__
+.. automodule:: furiosa.quantizer.ir.spec.__init__
    :members:

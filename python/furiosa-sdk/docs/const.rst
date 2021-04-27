@@ -1,5 +1,5 @@
 Consts
 ======
 
-.. automodule:: consts
+.. automodule:: furiosa.consts
    :members:

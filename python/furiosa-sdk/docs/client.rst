@@ -1,21 +1,13 @@
 Client
 ======
 
-Furiosa Client
-
 Compiler
-========
+--------
 
-CompileTask
------------
-
-.. autoclass:: compiler.CompileTask
+.. autoclass:: furiosa.client.compiler.CompileTask
    :members: 
    :undoc-members:
 
-CompilerClient
---------------
-
-.. autoclass:: compiler.CompilerClient
+.. autoclass:: furiosa.client.compiler.CompilerClient
    :members:
    :undoc-members:

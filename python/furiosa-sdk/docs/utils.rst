@@ -1,6 +1,6 @@
 Utils
 =====
 
-.. automodule:: utils
+.. automodule:: furiosa.utils
    :members:
    :undoc-members:

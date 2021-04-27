@@ -5,7 +5,6 @@
 
 Python SDK Documentation
 -------------------------------------------------
-* :doc:`Setup<setup>` 
 * :doc:`Client<client>`
 * :doc:`Config<config>`
 * :doc:`Const<const>` 
@@ -14,11 +13,10 @@ Python SDK Documentation
 * :doc:`Utils<utils>` 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :hidden:
    :caption: Python SDK Documentation
 
-   setup
    client
    config
    const
