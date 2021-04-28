@@ -27,7 +27,8 @@ To install ``build-essential`` and ``cmake``:
   $ apt-get install cmake build-essential
 
 
-To install ``onnxruntime 1.6.0``:
+To install ``onnxruntime`` 1.6.0:
+
 ``onnxruntime`` is used for `ONNX <https://onnx.ai/>`_ model format support and model quantization.
 
 .. code-block::

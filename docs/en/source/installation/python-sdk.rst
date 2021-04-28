@@ -31,27 +31,27 @@ of command line tools and functions. The FuriosaAI Python SDK can be installed w
   # Install all additional tools
   pip install --upgrade furiosa-sdk[full]~=0.1.0
 
-The following additional packages can be installed by using ``pip``. 
+The following additional packages can be installed by using pip. 
 
-* ``cli``: command line tool installation, refer to :doc:`/quickstart/cli` for usage
+* ``cli``: Installs the command line tool. Refer to :doc:`/quickstart/cli` for usage
 
   .. code-block::
 
     pip install --upgrade furiosa-sdk[cli]
 
-* ``runtime``:  Install a number of libraries to accelerate models using the NPU using the FuriosaAI NPU Runtime, **Required for model acceleration using the NPU**
+* ``runtime``:  Installs various libraries to accelerating models using the NPU using the FuriosaAI NPU Runtime. **Required for model acceleration using the NPU**
 
   .. code-block::
 
     pip install --upgrade furiosa-sdk[runtime]~=0.1.0
 
-* ``quantizer``: Install the model quantization tool (see :doc:`/advanced/quantization`)
+* ``quantizer``: Installs the model quantization tool (see :doc:`/advanced/quantization`)
 
   .. code-block::
 
     pip install --upgrade furiosa-sdk[quantizer]~=0.1.0
 
-* ``validator``: Installs model analysis tools, quantizes for accelerating corresponding models on the NPU, and includes compilation success verification tools. 
+* ``validator``: Installs model analysis tools, quantizes for accelerating corresponding models on the NPU, and includes compilation success verification tools.
 
   .. code-block::
 
