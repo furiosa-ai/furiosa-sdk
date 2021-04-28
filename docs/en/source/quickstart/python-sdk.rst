@@ -9,7 +9,7 @@ Using the FuriosaAI NPU Python SDK library, you can easily write Python programs
 
 * :doc:`/installation/driver`
 * :doc:`/installation/runtime`  
-* Python 3.7 or higher (refer to :any:`SetupPython` if necessary)    
+* Python 3.7 or later (refer to :any:`SetupPython` if necessary)    
   
 
 If the above requirements have been fulfilled, you can install the FuriosaAI NPU Python SDK library through PyPi.
@@ -95,7 +95,7 @@ and call ``run`` as follows.
 
 
 The ``session.run(input)`` call uses the NPU to run the inference and returns a list of tensors. 
-Since the returned result is a list, execute the following to get the numpy.ndarray of the first tensor.
+Since the returned result is a list, execute the following to get the `numpy.ndarray` of the first tensor.
 
 .. code-block::
 

@@ -11,7 +11,7 @@ FuriosaAI SDK Installation + Prerequisites
 
 Minimum Requirements 
 =====================================================================
-* Ubuntu 18.04 LTS (Bionic Beaver), Debian buster, or higher
+* Ubuntu 18.04 LTS (Bionic Beaver), Debian buster, or later
 * System administrator privileges (root)
 * A Network Environment/Internet connection able to connect to `GitHub <https://github.com/>`_ and `PyPi <https://pypi.org/>`_ 
 
@@ -19,7 +19,7 @@ Minimum Requirements
 Installing Dependencies (Linux)
 =====================================================================
 
-Installing ``build-essential`` and ``cmake``.
+To install ``build-essential`` and ``cmake``:
 
 .. code-block::
 
@@ -27,8 +27,8 @@ Installing ``build-essential`` and ``cmake``.
   $ apt-get install cmake build-essential
 
 
-Installing onnxruntime 1.6.0.
-onnxruntime is used for `ONNX <https://onnx.ai/>`_ model format support and model quantization.
+To install ``onnxruntime 1.6.0``:
+``onnxruntime`` is used for `ONNX <https://onnx.ai/>`_ model format support and model quantization.
 
 .. code-block::
 
@@ -41,7 +41,7 @@ onnxruntime is used for `ONNX <https://onnx.ai/>`_ model format support and mode
 Configuring the Python SDK Runtime Environment
 ================================================================
 
-Python 3.7 or above is required to use the FuriosaAI Python SDK.
+Python 3.7 or later is required to use the FuriosaAI Python SDK.
 
 .. note::
 
@@ -53,8 +53,8 @@ Python 3.7 or above is required to use the FuriosaAI Python SDK.
   Python 3.8.5
 
 The above command checks the version of Python available on the current system.
-If the Python command is not recognized or your system doesn't have a recent enough version of Python, 
-you can configure a Python enviroment with one of the following methods.
+If your system doesn't have Python or only has a lower version of it, 
+you can configure a Python environment with one of the following methods.
 
 * :ref:`CondaInstall` (recommended):
   `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ can 
@@ -105,7 +105,7 @@ The newly created Python 3.8 environment is activated with the ``activate`` comm
 
 
 Now you can install furiosa-sdk with additional dependencies using pip as shown below.
-or more detailed instructions for installation, refer to  :doc:`/installation/python-sdk`.
+For more detailed instructions for installation, refer to  :doc:`/installation/python-sdk`.
 
 .. code-block::
 
@@ -113,6 +113,7 @@ or more detailed instructions for installation, refer to  :doc:`/installation/py
 
 
 To deactivate the use of the user created Python environment, use the ``deactivate`` command.
+
 .. code-block::
 
   $ conda deactivate
