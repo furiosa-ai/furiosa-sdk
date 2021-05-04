@@ -7,6 +7,7 @@ SPHINXBUILD   = sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 ALLSPHINXOPTS = "$(BUILDDIR)"
+FURIOSADOCS   = furiosa
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -20,11 +21,15 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 doc:
-	mkdir -p "$(BUILDDIR)"/furiosa
-	cp -a ../../furiosa-sdk-runtime/furiosa_sdk_runtime $(BUILDDIR)/furiosa/runtime
-	cp -a ../../furiosa-sdk-quantizer/furiosa_sdk_quantizer $(BUILDDIR)/furiosa/quantizer
-	cp -a ../furiosa $(BUILDDIR)/
-	@$(SPHINXBUILD) -c ./ -b html . $(BUILDDIR)/html 
+	mkdir -p $(BUILDDIR)/src/$(FURIOSADOCS)
+	cp -a ../../furiosa-sdk-runtime/furiosa_sdk_runtime $(BUILDDIR)/src/$(FURIOSADOCS)/runtime
+	cp -a ../../furiosa-sdk-quantizer/furiosa_sdk_quantizer $(BUILDDIR)/src/$(FURIOSADOCS)/quantizer
+	cp -a ../furiosa $(BUILDDIR)/src
+	sphinx-apidoc -F $(BUILDDIR)/src -o .
+	make html
+	
 
 clean:
 	rm -rf $(BUILDDIR)
+	rm -rf $(FURIOSADOCS)
+	rm furiosa.*.rst

@@ -144,7 +144,7 @@ Class | Method | HTTP request | Description
 
 ## Author
 
-contact@furisa.ai
+contact@furiosa.ai
 
 
 ## Notes for Large OpenAPI documents

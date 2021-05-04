@@ -1,27 +1,21 @@
-.. pythonsdk documentation master file, created by
-   sphinx-quickstart on Mon Apr 26 10:50:32 2021.
+.. src documentation master file, created by
+   sphinx-quickstart on Tue May  4 09:11:51 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Python SDK Documentation
--------------------------------------------------
-* :doc:`Client<client>`
-* :doc:`Config<config>`
-* :doc:`Const<const>` 
-* :doc:`Quantizer<quantizer>`
-* :doc:`Runtime<runtime>`
-* :doc:`Utils<utils>` 
+Welcome to FuriosaAI Python SDK's documentation!
+================================================
 
 .. toctree::
-   :maxdepth: 3
-   :hidden:
-   :caption: Python SDK Documentation
+   :maxdepth: 4
+   :caption: Contents:
 
-   client
-   config
-   const
-   quantizer
-   runtime
-   utils
+   furiosa
 
 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
