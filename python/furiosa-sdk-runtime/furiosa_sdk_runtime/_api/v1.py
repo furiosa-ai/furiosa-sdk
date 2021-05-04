@@ -25,6 +25,7 @@ def _find_local_libs():
 
 
 def _find_user_libs():
+    libnux_path = None
     for lib_path in os.getenv('LD_LIBRARY_PATH').split(":"):
         if platform == "linux":
             for name in glob.glob("{}/libnux.so*".format(lib_path)):
