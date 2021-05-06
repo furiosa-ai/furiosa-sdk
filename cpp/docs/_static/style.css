@@ -1,0 +1,29 @@
+dt {
+    display: table-cell !important;
+}
+
+html.writer-html4 .rst-content dl:not(.docutils) .property, html.writer-html5 .rst-content dl[class]:not(.option-list):not(.field-list):not(.footnote):not(.glossary):not(.simple) .property {
+    display: inline-block;
+    padding-right: 0px;
+}
+
+em + em {
+    margin-left: 4px;
+}
+
+em + code {
+    margin-left: 4px;
+}
+
+em.span {
+    font-size: 99px;
+    margin-left: 4px;
+}
+
+em.property + span.pre {
+    padding-left: 4px;
+}
+
+em.property + a {
+    padding-left: 4px;
+}
