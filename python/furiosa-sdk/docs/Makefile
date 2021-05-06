@@ -24,12 +24,7 @@ doc:
 	mkdir -p $(BUILDDIR)/src/$(FURIOSADOCS)
 	cp -a ../../furiosa-sdk-runtime/furiosa_sdk_runtime $(BUILDDIR)/src/$(FURIOSADOCS)/runtime
 	cp -a ../../furiosa-sdk-quantizer/furiosa_sdk_quantizer $(BUILDDIR)/src/$(FURIOSADOCS)/quantizer
-	cp -a ../furiosa $(BUILDDIR)/src
-	for redundancies in $(BUILDDIR)/src/$(FURIOSADOCS)/runtime/*.py; do \
-	   echo $${redundancies%.*} ; \
-	   rm -rf $${redundancies%.*} ; \
-	   echo "deleted" ; \
-	done
+	rsync -av --progress ../furiosa $(BUILDDIR)/src --exclude runtime
 	sphinx-apidoc -o . $(BUILDDIR)/src $(BUILDDIR)/src/$(FURIOSADOCS)/runtime/errors/*
 	make html
 	
