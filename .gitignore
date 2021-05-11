@@ -8,5 +8,6 @@ git_version
 .vscode
 dist
 build
+_build
 *.enf
 .DS_Store
