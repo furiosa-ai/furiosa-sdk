@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-
-"""Image segmentation example"""
+"""Image segmentation example
+FP32 model `deeplabv3 resnet50` is required
+The model can be downloaded via command `gdown --id 1MjuG6mk13Bca3bXdEWQF6R9tBngBcJER`
+"""
 from typing import Tuple
 
 import sys
@@ -54,11 +56,11 @@ def decode_segmap(image: np.array) -> np.array:
 def run_segmentation(model_path: str, image_path: str) -> None:
     height = width = 520
 
-    # preprocess
+    # preprocessing input image
     input_image = Image.open(image_path)
     input_array = preprocess(input_image, (height, width))
 
-    # NOTE: replace here with npu runtime
+    # ONNX runtime inference with FP32 model
     ort.set_default_logger_severity(3)
     sess = ort.InferenceSession(model_path)
     output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
@@ -66,14 +68,19 @@ def run_segmentation(model_path: str, image_path: str) -> None:
     # decode
     rgb = decode_segmap(output_tensor.squeeze())
 
-    # save
-    result = Image.fromarray(rgb).resize(input_image.size)
-    result.save(f'{image_path.split(".")[0]}_seg.jpg')
+    # show images
+    output_image = Image.fromarray(rgb).resize(input_image.size)
+    result_image = Image.new(mode='RGB', size=(input_image.width + output_image.width, input_image.height))
+    mask = Image.new("L", input_image.size, 128)
+    composite_image = Image.composite(input_image, output_image, mask)
+    result_image.paste(composite_image)
+    result_image.paste(output_image, (input_image.width, 0))
+    result_image.show()
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        sys.stderr.write("./demo.py <model> <image>\n")
+        sys.stderr.write("./image_segmentation.py <model> <image>\n")
         sys.exit(-1)
 
     model_path = Path(sys.argv[1])
