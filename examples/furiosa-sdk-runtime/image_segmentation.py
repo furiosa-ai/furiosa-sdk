@@ -3,13 +3,12 @@
 FP32 model `deeplabv3 resnet50` is required
 The model can be downloaded via command `gdown --id 1MjuG6mk13Bca3bXdEWQF6R9tBngBcJER`
 """
-from typing import Tuple
-
 import sys
-
+import time
 import numpy as np
 import onnxruntime as ort
 
+from typing import Tuple
 from PIL import Image
 from pathlib import Path
 
@@ -53,20 +52,36 @@ def decode_segmap(image: np.array) -> np.array:
     return rgb
 
 
-def run_segmentation(model_path: str, image_path: str) -> None:
+def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
+    from furiosa.runtime import session
+
     height = width = 520
 
     # preprocessing input image
     input_image = Image.open(image_path)
     input_array = preprocess(input_image, (height, width))
 
-    # ONNX runtime inference with FP32 model
-    ort.set_default_logger_severity(3)
-    sess = ort.InferenceSession(model_path)
-    output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
+    start_time = time.time()
 
-    # decode
-    rgb = decode_segmap(output_tensor.squeeze())
+    if is_fp32:
+        # ONNX runtime inference with the given FP32 model
+        ort.set_default_logger_severity(3)
+        sess = ort.InferenceSession(model_path)
+        output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
+        rgb = decode_segmap(output_tensor.squeeze())
+    else:
+        # Furiosa runtime inference with the quantized model
+        with session.create(str(model_path)) as sess:
+            print("Model has been compiled successfully")
+            print("Model input and output:")
+            print(sess.print_summary())
+            output_tensor = sess.run(input_array)
+            output_tensor = output_tensor[0].numpy()
+            np_array = np.squeeze(output_tensor)
+            print(np_array)
+            rgb = decode_segmap(np_array)
+
+    print('Prediction elapsed {:.2f} secs'.format(time.time() - start_time))
 
     # show images
     output_image = Image.fromarray(rgb).resize(input_image.size)
@@ -75,16 +90,26 @@ def run_segmentation(model_path: str, image_path: str) -> None:
     composite_image = Image.composite(input_image, output_image, mask)
     result_image.paste(composite_image)
     result_image.paste(output_image, (input_image.width, 0))
+    result_image.save(f'{image_path.split(".")[0]}_result.jpg')
     result_image.show()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.stderr.write("./image_segmentation.py <model> <image>\n")
+    if len(sys.argv) == 2:
+        print("Inference using the existing quantized model")
+        current_path = Path(__file__).absolute().parent
+        model_path = current_path.joinpath("../assets/quantized_models/deeplabv3_resnet50_argmax_int8.onnx")
+        is_fp32 = False
+    elif len(sys.argv) == 3:
+        print("Inference using given FP32 model")
+        model_path = Path(sys.argv[2])
+        is_fp32 = True
+    else:
+        sys.stderr.write("python image_segmentation.py <image> <model: optional>\n")
         sys.exit(-1)
 
-    model_path = Path(sys.argv[1])
-    image_path = Path(sys.argv[2])
+    image_path = Path(sys.argv[1])
+
     if not image_path.exists():
         sys.stderr.write(f"{image_path} not found")
         sys.exit(-1)
@@ -93,4 +118,4 @@ if __name__ == "__main__":
         sys.stderr.write(f"{model_path} not found")
         sys.exit(-1)
 
-    run_segmentation(str(model_path.resolve()), str(image_path.resolve()))
+    run_segmentation(str(image_path.resolve()), str(model_path.resolve()), is_fp32)
