@@ -37,7 +37,7 @@ doc:
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
 
 full_install:
-	pip install .[full]
+	pip install --quiet .[full]
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs

@@ -47,10 +47,10 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
-    "cli": ["furiosa-sdk-cli~=0.3.0"],
-    "runtime": ["furiosa-sdk-runtime~=0.3.0"],
-    "quantizer": ["furiosa-sdk-quantizer~=0.3.0"],
-    "validator": ["furiosa-sdk-model-validator~=0.3.0"]
+    "cli": ["furiosa-sdk-cli~=" + version],
+    "runtime": ["furiosa-sdk-runtime~=" + version],
+    "quantizer": ["furiosa-sdk-quantizer~=" + version],
+    "validator": ["furiosa-sdk-model-validator~=" + version]
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need
