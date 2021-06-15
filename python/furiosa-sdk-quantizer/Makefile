@@ -1,6 +1,6 @@
-default: compile
+default: install 
 
-compile:
+install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
 
 build:

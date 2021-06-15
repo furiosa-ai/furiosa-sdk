@@ -2,7 +2,7 @@ ifndef OPENAPI_SPEC_URI
 OPENAPI_SPEC_URI=https://api.furiosa.ai/openapi.yaml
 endif
 
-default: compile
+default: install
 
 generate-openapi:
 	@OPENAPI_GENERATOR_VERSION=3.0.2 \
@@ -11,7 +11,7 @@ generate-openapi:
 	-i ${OPENAPI_SPEC_URI} -g python -c share/default.json \
   -o ./;
 
-compile:
+install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
 
 build:
@@ -36,11 +36,8 @@ doc:
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
 
-easy_install:
-	python setup.py build easy_install furiosa-sdk[full]
+full_install:
+	pip install .[full]
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs
-
-easy_install:
-	python setup.py build easy_install furiosa-sdk[full]==0.4.0.dev0
