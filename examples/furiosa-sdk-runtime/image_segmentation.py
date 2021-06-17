@@ -26,7 +26,7 @@ def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:
 
     img_arr = img_arr.transpose([2, 0, 1])
 
-    return img_arr
+    return np.ascontiguousarray(img_arr)
 
 
 def decode_segmap(image: np.array) -> np.array:
