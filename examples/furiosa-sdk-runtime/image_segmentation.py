@@ -75,7 +75,7 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
             print("Model has been compiled successfully")
             print("Model input and output:")
             print(sess.print_summary())
-            output_tensor = sess.run(input_array)
+            output_tensor = sess.run(np.expand_dims(input_array, axis=0))
             output_tensor = output_tensor[0].numpy()
             np_array = np.squeeze(output_tensor)
             print(np_array)
