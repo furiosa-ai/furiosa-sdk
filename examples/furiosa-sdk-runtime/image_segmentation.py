@@ -62,12 +62,11 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
     input_image = Image.open(image_path)
     input_array = preprocess(input_image, (height, width))
 
-    start_time = time.time()
-
     if is_fp32:
         # ONNX runtime inference with the given FP32 model
         ort.set_default_logger_severity(3)
         sess = ort.InferenceSession(model_path)
+        start_time = time.time()
         output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
         rgb = decode_segmap(output_tensor.squeeze())
     else:
@@ -76,6 +75,7 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
             print("Model has been compiled successfully")
             print("Model input and output:")
             print(sess.print_summary())
+            start_time = time.time()
             output_tensor = sess.run(np.expand_dims(input_array, axis=0))
             output_tensor = output_tensor[0].numpy()
             np_array = np.squeeze(output_tensor)
