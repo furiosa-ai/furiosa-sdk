@@ -1,2 +1,2 @@
 tensorflow >= 2.2
-numpy >= 1.16, < 1.19
+numpy >= 1.16
