@@ -14,6 +14,13 @@ generate-openapi:
 install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
 
+uninstall:
+	pip uninstall -y --quiet furiosa-sdk-runtime; \
+	pip uninstall -y --quiet furiosa-sdk-quantizer; \
+	pip uninstall -y --quiet furiosa-sdk-model-validator; \
+	pip uninstall -y --quiet furiosa-sdk-cli; \
+	pip uninstall -y --quiet furiosa-sdk
+
 build:
 	python -m build
 
