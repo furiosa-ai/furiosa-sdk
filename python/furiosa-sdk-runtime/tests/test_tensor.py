@@ -17,6 +17,10 @@ class TestTensor(unittest.TestCase):
     def setUpClass(cls):
         cls.sess = SessionTester(MNIST_MOBINENET_V2).session
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.sess.close()
+
     def test_dtype(self):
         tensor = self.sess.input(0)
         self.assertEqual(np.uint8, numpy_dtype(tensor.dtype()))

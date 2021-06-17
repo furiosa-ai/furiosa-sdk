@@ -16,6 +16,10 @@ class TestSession(unittest.TestCase):
     def setUpClass(cls):
         cls.tester = SessionTester(MNIST_MOBINENET_V2)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.tester.close()
+
     def test_run(self):
         sess = self.tester.session
 
