@@ -147,6 +147,8 @@ class Tensor:
 
     def copy_from(self, data: Union[np.ndarray, np.generic]):
         """Copy the contents of Numpy ndarray to this tensor"""
+        if isinstance(data, np.ndarray):
+            data = np.ascontiguousarray(data)
         if isinstance(data, (np.ndarray, np.generic)):
             buf_ptr = data.ctypes.data_as(POINTER(c_uint8))
             buf_size_in_bytes = data.nbytes
