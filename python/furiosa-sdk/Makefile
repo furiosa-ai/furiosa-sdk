@@ -21,6 +21,9 @@ uninstall:
 	pip uninstall -y --quiet furiosa-sdk-cli; \
 	pip uninstall -y --quiet furiosa-sdk
 
+install_full:
+	pip install --quiet .[full]
+
 build:
 	python -m build
 
@@ -42,9 +45,6 @@ doc:
 	cp -a ../furiosa-sdk-quantizer/furiosa_sdk_quantizer build/docs/src/furiosa/quantizer
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
-
-full_install:
-	pip install --quiet .[full]
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs
