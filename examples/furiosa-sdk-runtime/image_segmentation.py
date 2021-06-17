@@ -7,6 +7,7 @@ import sys
 import time
 import numpy as np
 import onnxruntime as ort
+import os
 
 from typing import Tuple
 from PIL import Image
@@ -90,8 +91,8 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
     composite_image = Image.composite(input_image, output_image, mask)
     result_image.paste(composite_image)
     result_image.paste(output_image, (input_image.width, 0))
-    result_image.save(f'{image_path.split(".")[0]}_result.jpg')
-    result_image.show()
+    result_image.save(f'{os.path.basename(image_path).split(".")[0]}_result.jpg')
+    print(f'{os.path.basename(image_path).split(".")[0]}_result.jpg has been written.')
 
 
 if __name__ == "__main__":
