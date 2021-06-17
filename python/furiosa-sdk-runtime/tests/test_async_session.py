@@ -16,6 +16,10 @@ class TestAsyncSession(unittest.TestCase):
     def setUpClass(cls):
         cls.tester = AsyncSessionTester(MNIST_MOBINENET_V2)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.tester.close()
+
     def test_run_async(self):
         async_sess = self.tester.session
 

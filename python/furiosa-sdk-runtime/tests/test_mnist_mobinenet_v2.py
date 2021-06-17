@@ -18,6 +18,8 @@ class MnistMobilenetV2(unittest.TestCase):
             idx = random.randrange(0, 9999, 1)
             tester.assert_equals(np.array(self.x_test[idx:idx + 1], dtype=np.uint8))
 
+        tester.close()
+
     def test_async_session(self):
         tester = AsyncPredictionTester(MNIST_MOBINENET_V2)
 
@@ -25,6 +27,7 @@ class MnistMobilenetV2(unittest.TestCase):
             idx = random.randrange(0, 9999, 1)
             tester.assert_equals(np.array(self.x_test[idx:idx + 1], dtype=np.uint8))
 
+        tester.close()
 
 if __name__ == '__main__':
     unittest.main()
