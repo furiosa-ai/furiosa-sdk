@@ -86,5 +86,5 @@ class AsyncPredictionTester(PredictionTester):
         return outputs[0].numpy()
 
     def close(self):
-        self.nux_sess.close()
         self.nux_queue.close()
+        self.nux_sess.close()

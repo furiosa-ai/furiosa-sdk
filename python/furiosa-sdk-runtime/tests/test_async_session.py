@@ -30,7 +30,7 @@ class TestAsyncSession(unittest.TestCase):
             async_sess.submit([ndarray_value], i)
 
         keys = set()
-        for key, _ in TestAsyncSession.tester.queue:
+        for key, _ in self.tester.queue:
             keys.add(key)
 
             if len(keys) == items:
