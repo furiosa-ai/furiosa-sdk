@@ -29,23 +29,6 @@ my_dir = dirname(__file__)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# rust_extensions = None
-# if os.getenv('BUILD_NPU_TOOLS', 'False') == '1':
-
-#     if os.getenv('NPU_TOOLS_PATH') is None:
-#         print('NPU_TOOLS_PATH is not set')
-#         exit(1)
-
-#     nux_cargo_path = "{}/crates/nux/Cargo.toml".format(os.getenv('NPU_TOOLS_PATH'))
-#     rust_extensions = [RustExtension(
-#         "nux/_api/nux",
-#         path=nux_cargo_path,
-#         binding=Binding.NoBinding,
-#         debug=False,
-#         features=["use_web_api"],
-#     )]
-
-
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "cli": ["furiosa-sdk-cli~=" + version],
     "runtime": ["furiosa-sdk-runtime~=" + version],

@@ -6,7 +6,8 @@ from furiosa_sdk_runtime._api import LIBNUX
 import importlib
 utils = importlib.import_module('furiosa').utils
 
-def _full_version() -> str:
+
+def full_version() -> str:
     """Returns a full version string including the native library version"""
     return "Furiosa SDK Runtime {} (libnux {} {} {})" \
         .format(__version__,
@@ -16,7 +17,7 @@ def _full_version() -> str:
 
 
 __version__ = utils.get_sdk_version(__name__)
-__full_version__ = _full_version()
+__full_version__ = full_version()
 
 
 del importlib

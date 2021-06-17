@@ -68,7 +68,17 @@ def _find_native_libs():
     libnux_ = CDLL(libnux_path)
 
     if libnux_ is not None:
-        LOG.info('successfully loaded dynamic library %s', libnux_path)
+        libnux_.version.argtypes = []
+        libnux_.version.restype = c_char_p
+        libnux_.git_short_hash.argtypes = []
+        libnux_.git_short_hash.restype = c_char_p
+        libnux_.build_timestamp.argtypes = []
+        libnux_.build_timestamp.restype = c_char_p
+
+        LOG.info('loaded dynamic library %s (%s %s)',
+                 libnux_path,
+                 libnux_.version().decode('utf-8'),
+                 libnux_.git_short_hash().decode('utf-8'))
     else:
         raise SystemExit('fail to load native library')
 
