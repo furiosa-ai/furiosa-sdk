@@ -7,6 +7,7 @@ import sys
 import time
 import numpy as np
 import onnxruntime as ort
+import os
 
 from typing import Tuple
 from PIL import Image
@@ -26,7 +27,7 @@ def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:
 
     img_arr = img_arr.transpose([2, 0, 1])
 
-    return np.ascontiguousarray(img_arr)
+    return img_arr
 
 
 def decode_segmap(image: np.array) -> np.array:
@@ -61,12 +62,11 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
     input_image = Image.open(image_path)
     input_array = preprocess(input_image, (height, width))
 
-    start_time = time.time()
-
     if is_fp32:
         # ONNX runtime inference with the given FP32 model
         ort.set_default_logger_severity(3)
         sess = ort.InferenceSession(model_path)
+        start_time = time.time()
         output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
         rgb = decode_segmap(output_tensor.squeeze())
     else:
@@ -75,6 +75,7 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
             print("Model has been compiled successfully")
             print("Model input and output:")
             print(sess.print_summary())
+            start_time = time.time()
             output_tensor = sess.run(np.expand_dims(input_array, axis=0))
             output_tensor = output_tensor[0].numpy()
             np_array = np.squeeze(output_tensor)
@@ -90,8 +91,8 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
     composite_image = Image.composite(input_image, output_image, mask)
     result_image.paste(composite_image)
     result_image.paste(output_image, (input_image.width, 0))
-    result_image.save(f'{image_path.split(".")[0]}_result.jpg')
-    result_image.show()
+    result_image.save(f'{os.path.basename(image_path).split(".")[0]}_result.jpg')
+    print(f'{os.path.basename(image_path).split(".")[0]}_result.jpg has been written.')
 
 
 if __name__ == "__main__":
