@@ -13,11 +13,10 @@ def model_path(name: str) -> str:
 
 
 MNIST_MOBINENET_V2 = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
-#COCO_SSD_MOBILENET_V1 = model_path("tflite/mscoco_300x300_ssd_mobilenet_v1_uint8_quantization-aware-trained.tflite")
 
 
 def assert_tensors_equal(expected, result):
-    assert np.array_equal(expected, result), "{} was expected, but the result was {}".format(expected, result)
+    assert np.allclose(expected, result, atol=1.0), "{} was expected, but the result was {}".format(expected, result)
 
 
 class SessionTester:
