@@ -22,7 +22,7 @@ uninstall:
 	pip uninstall -y --quiet furiosa-sdk
 
 install_full:
-	pip install --quiet .[full]
+	pip install --quiet --use-feature=in-tree-build .[full]
 
 build:
 	python -m build
