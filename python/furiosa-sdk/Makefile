@@ -48,3 +48,12 @@ doc:
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs
+
+update_version:
+ifndef SDK_VERSION
+	$(error "SDK_VERSION is not set")
+endif
+	find ../ -name setup.py -exec sed -i "s/version = '[^']*'/version = '${SDK_VERSION}'/" '{}' \;
+	sed -i "s/furiosa-sdk-runtime ~= [^\n]*/furiosa-sdk-runtime ~= ${SDK_VERSION}/" ../furiosa-sdk-model-validator/setup.cfg
+	sed -i "s/furiosa-sdk-quantizer ~= [^\n]*/furiosa-sdk-quantizer ~= ${SDK_VERSION}/" ../furiosa-sdk-model-validator/setup.cfg
+
