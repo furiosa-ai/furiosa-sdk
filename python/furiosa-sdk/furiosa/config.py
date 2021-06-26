@@ -5,10 +5,10 @@ from pathlib import Path
 import dotenv
 from furiosa.openapi.configuration import Configuration
 
-DEFAULT_API_ENDPOINT = 'https://api.furiosa.ai'
-FURIOSA_API_ENDPOINT_ENV = 'FURIOSA_API_ENDPOINT'
-FURIOSA_ACCESS_KEY_ID_ENV = 'FURIOSA_ACCESS_KEY_ID'
-SECRET_ACCESS_KEY_ENV = 'FURIOSA_SECRET_ACCESS_KEY'
+DEFAULT_API_ENDPOINT = "https://api.furiosa.ai"
+FURIOSA_API_ENDPOINT_ENV = "FURIOSA_API_ENDPOINT"
+FURIOSA_ACCESS_KEY_ID_ENV = "FURIOSA_ACCESS_KEY_ID"
+SECRET_ACCESS_KEY_ENV = "FURIOSA_SECRET_ACCESS_KEY"
 
 
 class ConfigLoader:  # pylint: disable=too-few-public-methods
@@ -18,8 +18,8 @@ class ConfigLoader:  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         home = str(Path.home())
-        dotenv.load_dotenv('{}/.furiosa/config'.format(home), verbose=False, override=False)
-        dotenv.load_dotenv('{}/.furiosa/credential'.format(home), verbose=False, override=False)
+        dotenv.load_dotenv("{}/.furiosa/config".format(home), verbose=False, override=False)
+        dotenv.load_dotenv("{}/.furiosa/credential".format(home), verbose=False, override=False)
 
         self.api_endpoint = os.environ.get(FURIOSA_API_ENDPOINT_ENV)
         self.access_key_id = os.environ.get(FURIOSA_ACCESS_KEY_ID_ENV)
@@ -29,7 +29,7 @@ class ConfigLoader:  # pylint: disable=too-few-public-methods
             self.api_endpoint = DEFAULT_API_ENDPOINT
 
         if self.access_key_id is None or self.secret_key_access is None:
-            raise Exception('FURIOSA_ACCESS_KEY_ID, FURIOSA_SECRET_ACCESS_KEY must be set', 1)
+            raise Exception("FURIOSA_ACCESS_KEY_ID, FURIOSA_SECRET_ACCESS_KEY must be set", 1)
 
     def apply(self, client_configuration: Configuration) -> None:
         """
@@ -70,5 +70,5 @@ def set_apikey(client_configuration, access_key_id: str, secret_access_key: str)
     :param secret_access_key: Secret access key
     :return:
     """
-    client_configuration.api_key['AccessKeyIdAuth'] = access_key_id
-    client_configuration.api_key['SecretAccessKeyAuth'] = secret_access_key
+    client_configuration.api_key["AccessKeyIdAuth"] = access_key_id
+    client_configuration.api_key["SecretAccessKeyAuth"] = secret_access_key

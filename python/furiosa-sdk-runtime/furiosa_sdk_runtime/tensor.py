@@ -14,6 +14,7 @@ from ._api import LIBNUX
 
 class Axis(IntEnum):
     """Axis of Tensor"""
+
     WIDTH = 0
     HEIGHT = 1
     CHANNEL = 2
@@ -34,6 +35,7 @@ class Axis(IntEnum):
 
 class DataType(IntEnum):
     """Tensor data type"""
+
     FLOAT32 = 0
     UINT8 = 1
     INT8 = 2
@@ -57,6 +59,7 @@ class DataType(IntEnum):
 
 class TensorDesc:
     """Tensor description including dimension, shape, and data type"""
+
     ref = c_void_p(None)
 
     def __init__(self, ref):
@@ -108,16 +111,24 @@ class TensorDesc:
         return self.dtype().numpy_dtype()
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + \
-               ': shape=' + str(self.shape()) + \
-               ', dtype=' + self.dtype().__repr__() + \
-               ', format=' + self.format() + \
-               ', size=' + str(self.size()) + \
-               ', len=' + str(self.length())
+        return (
+            self.__class__.__name__
+            + ": shape="
+            + str(self.shape())
+            + ", dtype="
+            + self.dtype().__repr__()
+            + ", format="
+            + self.format()
+            + ", size="
+            + str(self.size())
+            + ", len="
+            + str(self.length())
+        )
 
 
 class Tensor:
     """A tensor which contains data and tensor description including shape"""
+
     ref = c_void_p(None)
     allocated: bool = False
     desc = TensorDesc
@@ -174,10 +185,17 @@ class Tensor:
         return arr.copy()
 
     def __repr__(self):
-        return '<' + self.__class__.__name__ + \
-               ': shape=' + str(self.desc.shape()) + \
-               ', dtype=' + str(self.desc.dtype()) + \
-               ', numpy=' + str(self.numpy()) + '>'
+        return (
+            "<"
+            + self.__class__.__name__
+            + ": shape="
+            + str(self.desc.shape())
+            + ", dtype="
+            + str(self.desc.dtype())
+            + ", numpy="
+            + str(self.numpy())
+            + ">"
+        )
 
     def __del__(self):
         if self.allocated and self.ref:
@@ -196,6 +214,7 @@ class TensorArray:
 
     It is used for input and output values of model inferences.
     """
+
     ref = c_void_p(None)
     should_drop: bool = False
     descs: [TensorDesc]
@@ -224,8 +243,9 @@ class TensorArray:
             if key >= len(self):
                 raise IndexError("tensor index (%d) out of range [0, %d)" % (key, len(self)))
 
-            return Tensor(LIBNUX.nux_tensor_array_get(self, key),
-                          desc=self.descs[key], allocated=False)
+            return Tensor(
+                LIBNUX.nux_tensor_array_get(self, key), desc=self.descs[key], allocated=False
+            )
 
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))

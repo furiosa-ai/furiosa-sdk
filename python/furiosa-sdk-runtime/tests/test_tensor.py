@@ -33,8 +33,10 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(DataType.UINT8, tensor.dtype())
         self.assertEqual(np.uint8, numpy_dtype(tensor))
         self.assertEqual(784, tensor.length())
-        self.assertEqual(tensor.__repr__(),
-                         "TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784")
+        self.assertEqual(
+            tensor.__repr__(),
+            "TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784",
+        )
 
     def test_tensor(self):
         sess = self.sess
@@ -49,12 +51,15 @@ class TestTensor(unittest.TestCase):
 
         # Testing TensorArray.__repr__()
         inputs[0] = np.zeros(inputs[0].shape(), np.uint8)
-        self.assertTrue(inputs[0].__repr__()
-                        .startswith("<Tensor: shape=(1, 28, 28, 1), dtype=DataType.UINT8, numpy=[[[[0]"))
+        self.assertTrue(
+            inputs[0]
+            .__repr__()
+            .startswith("<Tensor: shape=(1, 28, 28, 1), dtype=DataType.UINT8, numpy=[[[[0]")
+        )
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)
-            ndarray_value = self.x_test[idx:idx + 1]
+            ndarray_value = self.x_test[idx : idx + 1]
 
             inputs[0] = ndarray_value
             assert_tensors_equal(ndarray_value, inputs[0].numpy())
@@ -67,5 +72,5 @@ class TestTensor(unittest.TestCase):
             self.assertEqual(inputs[0], inputs2[0])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -23,18 +23,21 @@ class TestSession(unittest.TestCase):
     def test_run(self):
         sess = self.tester.session
 
-        self.assertEqual("""Inputs:
+        self.assertEqual(
+            """Inputs:
 {0: TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784}
 Outputs:
-{0: TensorDesc: shape=(1, 1, 1, 10), dtype=uint8, format=NHWC, size=10, len=10}""", sess.summary())
+{0: TensorDesc: shape=(1, 1, 1, 10), dtype=uint8, format=NHWC, size=10, len=10}""",
+            sess.summary(),
+        )
 
         idx = random.randrange(0, 9999, 1)
-        ndarray_value = self.x_test[idx:idx + 1]
+        ndarray_value = self.x_test[idx : idx + 1]
 
         result1 = sess.run(ndarray_value)
         result2 = sess.run([ndarray_value])
         np.array_equal(result1.numpy(), result2.numpy())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

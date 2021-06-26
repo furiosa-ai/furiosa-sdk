@@ -20,7 +20,7 @@ from furiosa.openapi.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
 from furiosa.openapi.model.api_key import ApiKey
 from furiosa.openapi.model.api_key_patch import ApiKeyPatch
@@ -45,10 +45,7 @@ class AccountV1Api(object):
             api_client = ApiClient()
         self.api_client = api_client
 
-        def __create_api_key(
-            self,
-            **kwargs
-        ):
+        def __create_api_key(self, **kwargs):
             """Generate new API key  # noqa: E501
 
             Generate a new API key  # noqa: E501
@@ -86,83 +83,51 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.create_api_key = _Endpoint(
             settings={
-                'response_type': (ApiKey,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/apikeys',
-                'operation_id': 'create_api_key',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (ApiKey,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/apikeys",
+                "operation_id": "create_api_key",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'request',
+                "all": [
+                    "request",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "request": (ApiKeyRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "request": "body",
                 },
-                'openapi_types': {
-                    'request':
-                        (ApiKeyRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
             api_client=api_client,
-            callable=__create_api_key
+            callable=__create_api_key,
         )
 
-        def __get_account(
-            self,
-            **kwargs
-        ):
+        def __get_account(self, **kwargs):
             """Get my account information  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -198,78 +163,42 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.get_account = _Endpoint(
             settings={
-                'response_type': (InlineResponse200,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/me',
-                'operation_id': 'get_account',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (InlineResponse200,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/me",
+                "operation_id": "get_account",
+                "http_method": "GET",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_account
+            callable=__get_account,
         )
 
-        def __get_api_key(
-            self,
-            access_key_id,
-            **kwargs
-        ):
+        def __get_api_key(self, access_key_id, **kwargs):
             """Get a API key  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -307,86 +236,59 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['access_key_id'] = \
-                access_key_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["access_key_id"] = access_key_id
             return self.call_with_http_info(**kwargs)
 
         self.get_api_key = _Endpoint(
             settings={
-                'response_type': (ApiKey,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/apikeys/{access_key_id}',
-                'operation_id': 'get_api_key',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (ApiKey,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/apikeys/{access_key_id}",
+                "operation_id": "get_api_key",
+                "http_method": "GET",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'access_key_id',
+                "all": [
+                    "access_key_id",
                 ],
-                'required': [
-                    'access_key_id',
+                "required": [
+                    "access_key_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "access_key_id": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "access_key_id": "access_key_id",
                 },
-                'openapi_types': {
-                    'access_key_id':
-                        (str,),
+                "location_map": {
+                    "access_key_id": "path",
                 },
-                'attribute_map': {
-                    'access_key_id': 'access_key_id',
-                },
-                'location_map': {
-                    'access_key_id': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_api_key
+            callable=__get_api_key,
         )
 
-        def __list_api_keys(
-            self,
-            **kwargs
-        ):
+        def __list_api_keys(self, **kwargs):
             """List generated API keys  # noqa: E501
 
             List all generated API keys  # noqa: E501
@@ -423,77 +325,42 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.list_api_keys = _Endpoint(
             settings={
-                'response_type': ([ApiKey],),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/apikeys',
-                'operation_id': 'list_api_keys',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": ([ApiKey],),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/apikeys",
+                "operation_id": "list_api_keys",
+                "http_method": "GET",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__list_api_keys
+            callable=__list_api_keys,
         )
 
-        def __login(
-            self,
-            **kwargs
-        ):
+        def __login(self, **kwargs):
             """Login  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -530,82 +397,51 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.login = _Endpoint(
             settings={
-                'response_type': (LoginOutput,),
-                'auth': [],
-                'endpoint_path': '/api/account/v1alpha1/login',
-                'operation_id': 'login',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (LoginOutput,),
+                "auth": [],
+                "endpoint_path": "/api/account/v1alpha1/login",
+                "operation_id": "login",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'request',
+                "all": [
+                    "request",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "request": (LoginRequest,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "request": "body",
                 },
-                'openapi_types': {
-                    'request':
-                        (LoginRequest,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
             api_client=api_client,
-            callable=__login
+            callable=__login,
         )
 
-        def __patch_api_key(
-            self,
-            access_key_id,
-            **kwargs
-        ):
+        def __patch_api_key(self, access_key_id, **kwargs):
             """Update a API key  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -644,92 +480,59 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['access_key_id'] = \
-                access_key_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["access_key_id"] = access_key_id
             return self.call_with_http_info(**kwargs)
 
         self.patch_api_key = _Endpoint(
             settings={
-                'response_type': (ApiResponse,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/apikeys/{access_key_id}',
-                'operation_id': 'patch_api_key',
-                'http_method': 'PATCH',
-                'servers': None,
+                "response_type": (ApiResponse,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/apikeys/{access_key_id}",
+                "operation_id": "patch_api_key",
+                "http_method": "PATCH",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'access_key_id',
-                    'request',
+                "all": [
+                    "access_key_id",
+                    "request",
                 ],
-                'required': [
-                    'access_key_id',
+                "required": [
+                    "access_key_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "access_key_id": (str,),
+                    "request": (ApiKeyPatch,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "access_key_id": "access_key_id",
                 },
-                'openapi_types': {
-                    'access_key_id':
-                        (str,),
-                    'request':
-                        (ApiKeyPatch,),
+                "location_map": {
+                    "access_key_id": "path",
+                    "request": "body",
                 },
-                'attribute_map': {
-                    'access_key_id': 'access_key_id',
-                },
-                'location_map': {
-                    'access_key_id': 'path',
-                    'request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
             api_client=api_client,
-            callable=__patch_api_key
+            callable=__patch_api_key,
         )
 
-        def __update_account(
-            self,
-            **kwargs
-        ):
+        def __update_account(self, **kwargs):
             """Update my account information  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -766,83 +569,51 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.update_account = _Endpoint(
             settings={
-                'response_type': (ApiResponse,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/me',
-                'operation_id': 'update_account',
-                'http_method': 'PUT',
-                'servers': None,
+                "response_type": (ApiResponse,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/me",
+                "operation_id": "update_account",
+                "http_method": "PUT",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'inline_object',
+                "all": [
+                    "inline_object",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "inline_object": (InlineObject,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "inline_object": "body",
                 },
-                'openapi_types': {
-                    'inline_object':
-                        (InlineObject,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'inline_object': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
             api_client=api_client,
-            callable=__update_account
+            callable=__update_account,
         )
 
-        def __update_password(
-            self,
-            **kwargs
-        ):
+        def __update_password(self, **kwargs):
             """Change my account password  # noqa: E501
 
             This method makes a synchronous HTTP request by default. To make an
@@ -879,75 +650,46 @@ class AccountV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.update_password = _Endpoint(
             settings={
-                'response_type': (ApiResponse,),
-                'auth': [
-                    'BearerAuth'
-                ],
-                'endpoint_path': '/api/account/v1alpha1/me/password',
-                'operation_id': 'update_password',
-                'http_method': 'PUT',
-                'servers': None,
+                "response_type": (ApiResponse,),
+                "auth": ["BearerAuth"],
+                "endpoint_path": "/api/account/v1alpha1/me/password",
+                "operation_id": "update_password",
+                "http_method": "PUT",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'request',
+                "all": [
+                    "request",
                 ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "required": [],
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "request": (InlineObject1,),
                 },
-                'allowed_values': {
+                "attribute_map": {},
+                "location_map": {
+                    "request": "body",
                 },
-                'openapi_types': {
-                    'request':
-                        (InlineObject1,),
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                    'request': 'body',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'application/json'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["application/json"]},
             api_client=api_client,
-            callable=__update_password
+            callable=__update_password,
         )

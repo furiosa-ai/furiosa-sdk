@@ -5,6 +5,7 @@ from typing import Optional
 
 class NativeError(IntEnum):
     """Python object correspondnig to nux_error_t in Nux C API"""
+
     SUCCESS = 0
     NUX_CREATION_FAILED = 1
     MODEL_DEPLOY_FAILED = 2
@@ -39,6 +40,7 @@ def is_err(self) -> bool:
 
 class NuxException(Exception):
     """general exception caused by Nuxpy"""
+
     native_err: Optional[NativeError]
     msg: str
 
@@ -57,9 +59,9 @@ class NuxException(Exception):
 
     def __repr__(self):
         if self.native_err is None:
-            return '{}'.format(self.msg)
+            return "{}".format(self.msg)
 
-        return '{} (native error code: {})'.format(self.msg, self.native_err)
+        return "{} (native error code: {})".format(self.msg, self.native_err)
 
     def __str__(self):
         return self.__repr__()
@@ -69,22 +71,22 @@ class IncompatibleModel(NuxException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("Model binary is not compatible",
-                         NativeError.INCOMPATIBLE_MODEL)
+        super().__init__("Model binary is not compatible", NativeError.INCOMPATIBLE_MODEL)
 
 
 class CompilationFailed(NuxException):
     """when Nux fails to compile a given model image to NPU model binary"""
 
     def __init__(self):
-        super().__init__("fail to compile a given model to NPU binary",
-                         NativeError.COMPILATION_FAILED)
+        super().__init__(
+            "fail to compile a given model to NPU binary", NativeError.COMPILATION_FAILED
+        )
 
 
 class InternalError(NuxException):
     """internal error or no corresponding error in Python binding"""
 
-    def __init__(self, cause='unknown'):
+    def __init__(self, cause="unknown"):
         super().__init__("{}".format(cause), NativeError.INTERNAL_ERROR)
 
 
@@ -92,8 +94,9 @@ class UnsupportedTensorType(NuxException):
     """Unsupported tensor type"""
 
     def __init__(self):
-        super().__init__("numpy.ndarray, TensorArray are only supported",
-                         NativeError.INVALID_INPUTS)
+        super().__init__(
+            "numpy.ndarray, TensorArray are only supported", NativeError.INVALID_INPUTS
+        )
 
 
 class UnsupportedDataType(NuxException):
@@ -107,32 +110,30 @@ class IncompatibleApiClientError(NuxException):
     """When both API client and server are incompatible"""
 
     def __init__(self):
-        super().__init__("incompatible client with Furiosa API server",
-                         NativeError.INCOMPATIBLE_API_CLIENT_ERROR)
+        super().__init__(
+            "incompatible client with Furiosa API server", NativeError.INCOMPATIBLE_API_CLIENT_ERROR
+        )
 
 
 class InvalidYamlException(NuxException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("Compiler config is not valid YAML",
-                         NativeError.INVALID_YAML)
+        super().__init__("Compiler config is not valid YAML", NativeError.INVALID_YAML)
 
 
 class ApiClientInitFailed(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("fail to initialize API client",
-                         NativeError.API_CLIENT_INIT_FAILED)
+        super().__init__("fail to initialize API client", NativeError.API_CLIENT_INIT_FAILED)
 
 
 class NoApiKeyException(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("No API keys. Please check your API keys.",
-                         NativeError.NO_API_KEY)
+        super().__init__("No API keys. Please check your API keys.", NativeError.NO_API_KEY)
 
 
 _errors_to_exceptions = {
@@ -154,7 +155,7 @@ def into_exception(err: NativeError) -> NuxException:
     :return: NuxException
     """
     if err == NativeError.SUCCESS:
-        return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
+        return RuntimeError(msg="NuxErr.SUCCESS cannot be NuxException")
 
     if err in _errors_to_exceptions.keys():
         return _errors_to_exceptions[err]

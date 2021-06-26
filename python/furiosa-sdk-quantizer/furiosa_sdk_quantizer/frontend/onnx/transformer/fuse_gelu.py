@@ -35,10 +35,16 @@ class FuseGELU(Transformer):
         optimizer.fuse_gelu()
 
         model = optimizer.model
-        gelu_by_input_name = {node.input[0]: node for node in model.graph.node if node.op_type == 'Gelu'}
+        gelu_by_input_name = {
+            node.input[0]: node for node in model.graph.node if node.op_type == "Gelu"
+        }
 
-        value_info = {vi.name: vi for vi in
-                      list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)}
+        value_info = {
+            vi.name: vi
+            for vi in list(model.graph.value_info)
+            + list(model.graph.input)
+            + list(model.graph.output)
+        }
 
         # nodes are not topologically sorted as a result of onnxruntime_tools optimization
         sorted_nodes = []

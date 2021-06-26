@@ -16,19 +16,27 @@ class FuseScalarMulIntoConv(Transformer):
     """
 
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
-        nodes_by_output_name = {node_output: node for node in model.graph.node for node_output in node.output}
-        nodes_by_input_name = {node_input: node for node in model.graph.node for node_input in node.input}
-        value_info = {vi.name: vi for vi in
-                      list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)}
+        nodes_by_output_name = {
+            node_output: node for node in model.graph.node for node_output in node.output
+        }
+        nodes_by_input_name = {
+            node_input: node for node in model.graph.node for node_input in node.input
+        }
+        value_info = {
+            vi.name: vi
+            for vi in list(model.graph.value_info)
+            + list(model.graph.input)
+            + list(model.graph.output)
+        }
         initializer = {init.name: init for init in model.graph.initializer}
 
         # assume Conv is followed by Mul(Conv --> Mul) & Mul takes one data input and one init input
         # a * (x * w + b) = (x * aw + ab)
-        post_fix = '_scalar_mul_fused'
+        post_fix = "_scalar_mul_fused"
         optimized_nodes = []
         removed_nodes = []
         for node in model.graph.node:
-            if node.op_type != 'Mul':
+            if node.op_type != "Mul":
                 optimized_nodes.append(node)
                 continue
 
@@ -41,9 +49,14 @@ class FuseScalarMulIntoConv(Transformer):
             def _is_input_init(node_input, initializer_keys):
                 return node_input in initializer_keys
 
-            idx_conv = list(filter(lambda enum: _is_input_op_type(enum[1], 'Conv'), enumerate(node.input)))
+            idx_conv = list(
+                filter(lambda enum: _is_input_op_type(enum[1], "Conv"), enumerate(node.input))
+            )
             idx_init = list(
-                filter(lambda enum: _is_input_init(enum[1], initializer.keys()), enumerate(node.input)))
+                filter(
+                    lambda enum: _is_input_init(enum[1], initializer.keys()), enumerate(node.input)
+                )
+            )
 
             # Expect one of the inputs is Exp and the other is ReduceSum
             if not idx_conv or not idx_init:
@@ -73,8 +86,11 @@ class FuseScalarMulIntoConv(Transformer):
                     model.graph.initializer.remove(w_init)
                     model.graph.initializer.append(fused_w_init)
                     model.graph.input.append(
-                        make_tensor_value_info(name=fused_w_init.name, elem_type=fused_w_init.data_type,
-                                               shape=fused_w_arr.shape)
+                        make_tensor_value_info(
+                            name=fused_w_init.name,
+                            elem_type=fused_w_init.data_type,
+                            shape=fused_w_arr.shape,
+                        )
                     )
                     model.graph.input.remove(value_info[w_init.name])
 
