@@ -39,11 +39,23 @@ class Pattern_1(ONNXTransformer, abc.ABC):
             return inputs
 
         top_node, mid_node, base_node = matched_nodes
-        new_mid_input_shape = [*self.get_value_info_shape(mid_node.input[0]), 1]
-        new_top_reshape_shape = [*self.get_initializer_array(top_node.input[1]), 1]
-        new_mid_output_shape = [*self.get_value_info_shape(mid_node.output[0]), 1]
-        new_mid_weight_shape = [*self.get_value_info_shape(mid_node.input[1]), 1]
 
+        # Inserts an axis of length one at the position of the H axis.
+        # In other words, a tensor of shape (N, C, D) will be reshaped
+        # into (N, C, 1, D). We chose the H axis as an insertion point
+        # rather than the W axis, i.e. (N, C, D, 1), because the current
+        # implemention of our compiler parallelizes computation with
+        # tensors with a large W axis better than those with a large H
+        # axis. Refer to
+        # <https://github.com/furiosa-ai/dss/pull/183#issuecomment-861137438>.
+        new_mid_input_shape = self.get_value_info_shape(mid_node.input[0])
+        new_mid_input_shape.insert(-1, 1)
+        new_top_reshape_shape = self.get_initializer_array(top_node.input[1]).tolist()
+        new_top_reshape_shape.insert(-1, 1)
+        new_mid_output_shape = self.get_value_info_shape(mid_node.output[0])
+        new_mid_output_shape.insert(-1, 1)
+        new_mid_weight_shape = self.get_value_info_shape(mid_node.input[1])
+        new_mid_weight_shape.insert(-1, 1)
         self.transform_to_convert(matched_nodes,
                                   nodes_to_add=[
                                       self.make_node('Reshape', [top_node.input[0], top_node.input[1] + '_converted'],
@@ -83,14 +95,20 @@ class Pattern_1(ONNXTransformer, abc.ABC):
     def get_attrs(self, mid_node):
         from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
         attrs = attribute_to_kwargs(mid_node.attribute)
+        auto_pad = attrs.get('auto_pad', 'NOTSET')
         dilations = attrs.get('dilations', [1])
         group = attrs.get('group', 1)
         kernel_shape = attrs['kernel_shape']
-        pads = attrs.get('pads', [0, 0])
         strides = attrs.get('strides', [1])
 
-        return {'dilations': [*dilations, 1],
-                'group': group,
-                'kernel_shape': [*kernel_shape, 1],
-                'pads': [pads[0], 0, pads[1], 0],
-                'strides': [strides[0], 1]}
+        new_attrs = {'auto_pad': auto_pad,
+                     'dilations': [1, *dilations],
+                     'group': group,
+                     'kernel_shape': [1, *kernel_shape],
+                     'strides': [1, strides[0]]}
+
+        if auto_pad == 'NOTSET':
+            pads = attrs.get('pads', [0, 0])
+            new_attrs.update({'pads': [0, pads[0], 0, pads[1]], })
+
+        return new_attrs

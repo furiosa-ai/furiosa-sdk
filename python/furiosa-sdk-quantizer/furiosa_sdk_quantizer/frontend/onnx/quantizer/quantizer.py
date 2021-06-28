@@ -40,13 +40,21 @@ class FuriosaONNXQuantizer:
                  per_channel: bool,
                  static: bool,
                  mode: QuantizationMode,
-                 dynamic_ranges: Dict[str, Tuple[float, float]]):
+                 dynamic_ranges: Dict[str, Tuple[float, float]],
+                 raw_data=True):
+        """
+        - raw_data:
+                if True, quantized weight/bias/scale/zero_point/etc.. will be stored in bytes.
+                Else, in data_type
+        """
         # copy model
         copy_model = ModelProto()
         copy_model.CopyFrom(model)
         self.model = copy_model
 
-        self.input_tensors = get_input_tensors(model)
+        self.raw_data = raw_data
+
+        self.input_tensors = list(map(lambda tensor: tensor[0], get_input_tensors(model)))
 
         # raise Exception if input_tensor is not defined in model.graph.input
         for input_tensor in self.input_tensors:
@@ -172,9 +180,9 @@ class FuriosaONNXQuantizer:
                                  proto=self._quant_annotation.values())
 
         if self.mode == QuantizationMode.dfg:
-            self.model = DFGImportable(self.model).transform()
+            self.model = DFGImportable(self.model, self.raw_data).transform()
         elif self.mode == QuantizationMode.fake:
-            self.model = ONNXRuntimeExecutable(self.model).transform()
+            self.model = ONNXRuntimeExecutable(self.model, self.raw_data).transform()
         else:
             raise Exception('Unsupported mode.')
 
@@ -262,7 +270,11 @@ class FuriosaONNXQuantizer:
             self.model.graph.input.append(vi)
             self.value_info.update({name: vi})
 
-            w_init = make_tensor(name=name, data_type=onnx.TensorProto.FLOAT, dims=[], vals=[float(0)])
+            if not self.raw_data:
+                w_init = make_tensor(name=name, data_type=onnx.TensorProto.FLOAT, dims=[], vals=[float(0)])
+            else:
+                w_init = numpy_helper.from_array(np.array(0.0), name=name)
+
             self.model.graph.initializer.append(w_init)
             self.initializer.update({name: w_init})
 
@@ -307,7 +319,7 @@ class FuriosaONNXQuantizer:
 
     def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
         weight = numpy_helper.to_array(weight_init)
-        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype)
+        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -326,7 +338,7 @@ class FuriosaONNXQuantizer:
         for i in range(num_output_channels):
             # for each channel, compute quantization data. Assuming (M x C/group x kH x kW)
             per_channel_weight = weight[i, :, :, :].flatten()
-            zp, s = calculate_weight_quant_params(per_channel_weight, self.weight_qtype)
+            zp, s = calculate_weight_quant_params(per_channel_weight, self.weight_qtype, weight_init.name)
             zp_list.append(zp)
             s_list.append(s)
 
@@ -341,9 +353,6 @@ class FuriosaONNXQuantizer:
                        weight_scale: onnx.TensorProto) -> None:
         bias = numpy_helper.to_array(b_init)
         b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
-        # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
-        # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
-        b_scale = np.clip(b_scale, 2 ** -149, None)
 
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
@@ -377,10 +386,15 @@ class FuriosaONNXQuantizer:
             return
 
         # make quantization parameters initializer proto
-        init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims,
-                              vals=vals_zp)
-        init_scale = make_tensor(name=name_scale, data_type=onnx.TensorProto.FLOAT, dims=dims,
-                                 vals=vals_scale)
+        if self.raw_data:
+            init_zp = numpy_helper.from_array(np.array(vals_zp).astype(TENSOR_TYPE_TO_NP_TYPE[data_type_zp]),
+                                              name=name_zp)
+            init_scale = numpy_helper.from_array(np.array(vals_scale).astype(np.float32), name=name_scale)
+        else:
+            init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims,
+                                  vals=vals_zp)
+            init_scale = make_tensor(name=name_scale, data_type=onnx.TensorProto.FLOAT, dims=dims,
+                                     vals=vals_scale)
 
         # stack quantization parameters
         self._quant_param.update({
@@ -440,19 +454,20 @@ class FuriosaONNXQuantizer:
             if init.name.split('_')[-1] == 'scale':
                 assert init_dtype == onnx.TensorProto.FLOAT, \
                     'Wrong data type for %s.' % init.name
-                assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
-                assert all(np.isfinite(scale) and scale > 0.0 for scale in init.float_data), \
-                    f"scale tensor '{init.name}' contains an invalid element that is infinite, NaN, or nonpositive: {init.float_data}"
+                if not self.raw_data:
+                    assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
             elif init.name.split('_')[-1] == 'quantized' and '_'.join(
                     init.name.split('_')[-2:]) != 'fake_quantized':
                 assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
                     'Wrong data type for %s.' % init.name
-                assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
+                if not self.raw_data:
+                    assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
             elif any(['_'.join(init.name.split('_')[-2:]) == word for word in
                       ['zero_point', 'quantized_min', 'quantized_max']]):
                 assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
                     'Wrong data type for %s.' % init.name
-                assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
+                if not self.raw_data:
+                    assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
             elif '_'.join(init.name.split('_')[-2:]) == 'fake_quantized':
                 assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s' % init.name
             else:
@@ -527,10 +542,11 @@ class FuriosaONNXQuantizer:
 
 
 class DFGImportable:
-    def __init__(self, model):
+    def __init__(self, model, raw_data):
         copy_model = ModelProto()
         copy_model.CopyFrom(model)
         self.model = copy_model
+        self.raw_data = raw_data
 
         self.node = {node.name: node for node in self.model.graph.node}
         self.node_by_output = {node_output: node for node in self.model.graph.node for node_output in
@@ -570,9 +586,13 @@ class DFGImportable:
             quantized_data = self._quantize_data(init, s, zp)
 
             # node.output[0] to be updated to model.graph.initializer instead
+            flattened = quantized_data.flatten()
+            if self.raw_data:
+                flattened = flattened.tobytes()
             self.initializer.update({node.output[0]: make_tensor(node.output[0], zp.data_type,
                                                                  init.dims,
-                                                                 quantized_data.flatten())})
+                                                                 flattened,
+                                                                 raw=self.raw_data)})
 
             # node.output[0] to be removed from model.graph.value_info
             vi = self.value_info.pop(node.output[0])
@@ -683,7 +703,7 @@ class DFGImportable:
 
 
 class ONNXRuntimeExecutable(DFGImportable):
-    def __init__(self, model):
+    def __init__(self, model, raw_data):
         super(ONNXRuntimeExecutable, self).__init__(model)
 
     def transform(self):
@@ -729,11 +749,15 @@ class ONNXRuntimeExecutable(DFGImportable):
 
                 fake_quantized_data = self._fake_quantize_data(init, s, zp)
 
+                flattened = fake_quantized_data.flatten()
+                if self.raw_data:
+                    flattened = flattened.tobytes()
                 self.initializer.update({
                     init_name + '_fake_quantized': make_tensor(name=init_name + '_fake_quantized',
                                                                data_type=onnx.TensorProto.FLOAT,
                                                                dims=init.dims,
-                                                               vals=fake_quantized_data.flatten())
+                                                               vals=flattened,
+                                                               raw=self.raw_data)
                 })
 
         self.model = utils.rebuild_model(model=self.model,
@@ -764,10 +788,12 @@ class ONNXRuntimeExecutable(DFGImportable):
                             zero_point: onnx.TensorProto) -> np.array:
 
         quantized_data = self._quantize_data(data, scale, zero_point)
-
+        flattened = quantized_data.flatten()
+        if self.raw_data:
+            flattened = flattened.tobytes()
         dequantized_data = self._dequantize_data(
             make_tensor(name=data.name, data_type=zero_point.data_type, dims=data.dims,
-                        vals=quantized_data.flatten()),
+                        vals=flattened, raw=self.raw_data),
             scale, zero_point)
 
         return dequantized_data

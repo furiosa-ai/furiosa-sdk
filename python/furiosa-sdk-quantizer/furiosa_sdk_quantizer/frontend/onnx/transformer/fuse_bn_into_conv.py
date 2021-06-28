@@ -1,11 +1,14 @@
 import abc
-import warnings
+import logging
 
 import onnx
 import numpy as np
 
 from furiosa_sdk_quantizer.interfaces.transformer import Transformer
 from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
+
+logger = logging.getLogger('Furiosa-Quantizer')
+logging.basicConfig(level=logging.INFO)
 
 default_conv_attrs = {
     'dilations': [1, 1],
@@ -90,7 +93,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
     def get_bn_params(self, node):
         scale = self.get_initializer_array(node.input[1])
         if all(v == 0. for v in scale):
-            warnings.warn(f'BatchNormalization.scale is a zero tensor: {node.input[1]}')
+            logger.warning(f'BatchNormalization.scale is a zero tensor: {node.input[1]}')
 
         B = self.get_initializer_array(node.input[2])
         mean = self.get_initializer_array(node.input[3])

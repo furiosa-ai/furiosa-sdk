@@ -1,6 +1,7 @@
 from typing import List, Dict, Set, Callable, Tuple, Optional
 
-import warnings
+import logging
+
 import onnx
 from onnx import numpy_helper
 
@@ -8,6 +9,9 @@ from furiosa_sdk_quantizer.frontend.onnx.spec import spec_utils
 from furiosa_sdk_quantizer.ir import spec
 from furiosa_sdk_quantizer.ir.common.operator import HeightWidth, Padding
 from furiosa_sdk_quantizer.interfaces.export_spec import ExportSpec
+
+logger = logging.getLogger('Furiosa-Quantizer')
+logging.basicConfig(level=logging.INFO)
 
 
 class OnnxExportSpec(ExportSpec):
@@ -104,7 +108,7 @@ class OnnxExportSpec(ExportSpec):
                 continue
             # Check the ambiguity
             if found is not None:
-                warnings.warn(
+                logger.warning(
                     "Find two or more ways of exporting as spec from multi-node for the the node {}, ".format(
                         node.op_type)
                 )
