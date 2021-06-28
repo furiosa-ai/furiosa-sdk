@@ -16,18 +16,16 @@
 # --------------------------------------------------------------------------
 from collections import defaultdict
 import math
-from typing import Dict, Tuple, Optional, List, Iterable
-
-import onnx
+from typing import Dict, Tuple, Optional, Iterable
 import os
-import tqdm
 
+import tqdm
+import onnx
 import numpy as np
 import onnxruntime as ort
-
-from torch.utils.data import DataLoader
 from onnx import TensorProto, ModelProto
 from onnx.helper import make_node, make_tensor_value_info
+from torch.utils.data import DataLoader
 
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model

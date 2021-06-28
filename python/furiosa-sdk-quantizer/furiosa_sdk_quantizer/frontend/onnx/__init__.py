@@ -1,8 +1,10 @@
-from torch.utils.data.dataloader import DataLoader
 from typing import Dict, List, Tuple, Callable, Text, IO, Optional
 
 import numpy as np
 import onnx
+# To prevent seg fault in Mac OS X
+import onnxruntime
+from torch.utils.data.dataloader import DataLoader
 
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 12

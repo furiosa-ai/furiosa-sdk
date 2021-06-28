@@ -2,10 +2,8 @@ from typing import List, Tuple, Dict
 
 import logging
 
-import onnx
-
 import numpy as np
-
+import onnx
 from onnx import TensorProto, TensorAnnotation, StringStringEntryProto
 import onnxruntime as ort
 from onnxruntime_tools.quantization.quantize import _attribute_to_kwarg
