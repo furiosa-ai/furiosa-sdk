@@ -13,9 +13,8 @@ from .model import Model, TensorArray
 from .tensor import TensorDesc
 
 
-def _fill_tensors(
-    values: Union[np.ndarray, np.generic, TensorArray], targets: TensorArray
-) -> TensorArray:
+def _fill_tensors(values: Union[np.ndarray, np.generic, TensorArray],
+                  targets: TensorArray) -> TensorArray:
     """
     Fills `targets` with buffers copied from `values`
     """
@@ -36,7 +35,6 @@ def _fill_tensors(
 
 class Session(Model):
     """Provides a blocking API to run an inference task with a given model"""
-
     ref = c_void_p(None)
 
     def __init__(self, model):
@@ -98,7 +96,6 @@ class Session(Model):
 
 class CompletionQueue:
     """Receives the completion results asynchronously from AsyncSession"""
-
     ref = c_void_p(None)
     context_ty: type
     output_descs: [TensorDesc]
@@ -125,9 +122,10 @@ class CompletionQueue:
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
-        self.queue_ok = LIBNUX.nux_completion_queue_next(
-            self.ref, byref(context_ref), byref(outputs_ref), byref(err)
-        )
+        self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
+                                                         byref(context_ref),
+                                                         byref(outputs_ref),
+                                                         byref(err))
         context_val = context_ref.value
         decref(context_ref)
 
@@ -166,7 +164,6 @@ class CompletionQueue:
 
 class AsyncSession(Model):
     """An asynchronous session for a given model allows to submit predictions"""
-
     ref = c_void_p(None)
     inputs: TensorArray
 
@@ -180,9 +177,8 @@ class AsyncSession(Model):
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_async_session_get_model(self)
 
-    def submit(
-        self, values: Union[np.ndarray, np.generic, TensorArray], context: object = None
-    ) -> None:
+    def submit(self, values: Union[np.ndarray, np.generic, TensorArray],
+               context: object = None) -> None:
         """
         Submit a prediction request
 
@@ -222,7 +218,7 @@ class AsyncSession(Model):
 
 
 def _read_file(path):
-    with open(path, "rb") as file:
+    with open(path, 'rb') as file:
         contents = file.read()
         return contents
 
@@ -272,9 +268,8 @@ def create_async(model, context_ty: type = None) -> (AsyncSession, CompletionQue
         options: c_void_p = LIBNUX.nux_session_option_create()
         sess_ref = c_void_p(None)
         queue_ref = c_void_p(None)
-        err = LIBNUX.nux_async_session_create(
-            model_image, len(model_image), options, byref(sess_ref), byref(queue_ref)
-        )
+        err = LIBNUX.nux_async_session_create(model_image, len(model_image), options,
+                                              byref(sess_ref), byref(queue_ref))
         if is_ok(err):
             sess = AsyncSession(sess_ref)
             return sess, CompletionQueue(queue_ref, context_ty, sess.outputs())

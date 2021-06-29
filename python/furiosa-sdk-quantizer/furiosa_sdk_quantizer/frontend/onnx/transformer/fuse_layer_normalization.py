@@ -35,9 +35,8 @@ class FuseLayerNormalization(Transformer):
         optimizer.fuse_layer_normalization()
 
         model = optimizer.model
-        layer_norm_by_input_name = {
-            node.input[0]: node for node in model.graph.node if node.op_type == "LayerNormalization"
-        }
+        layer_norm_by_input_name = {node.input[0]: node for node in model.graph.node
+                                    if node.op_type == 'LayerNormalization'}
 
         # nodes are not topologically sorted as a result of onnxruntime_tools optimization
         sorted_nodes = []

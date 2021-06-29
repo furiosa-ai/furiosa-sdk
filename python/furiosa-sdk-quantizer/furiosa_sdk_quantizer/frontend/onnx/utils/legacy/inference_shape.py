@@ -16,12 +16,10 @@ class InferenceShape:
         self.initializer = {init.name: init for init in self.model.graph.initializer}
         self.initializer_key = self.initializer.keys()
         self.value_info = {vi.name: vi for vi in self.model.graph.value_info}
-        self.nodes_by_input_name = {
-            node_input: node for node in self.model.graph.node for node_input in node.input
-        }
-        self.nodes_by_output_name = {
-            node_output: node for node in self.model.graph.node for node_output in node.output
-        }
+        self.nodes_by_input_name = {node_input: node for node in self.model.graph.node
+                                    for node_input in node.input}
+        self.nodes_by_output_name = {node_output: node for node in self.model.graph.node
+                                     for node_output in node.output}
 
     def inference_shape(self) -> onnx.ModelProto:
         self.to_static_shape_graph()
@@ -41,43 +39,32 @@ class InferenceShape:
         tensor_to_be_value_analyzed = list()
         dynamic_shape_nodes = self.get_dynamic_shape_nodes()
 
-        tensor_to_be_value_analyzed.extend(
-            self.get_value_analysis_nodes(
-                removed_nodes=dynamic_shape_nodes,
-                target_op_types=["Reshape", "Pad", "Resize", "Expand"],
-                value_analysis_op_types=["Concat", "Cast", "Shape"],
-                dtype=TensorProto.INT64,
-                rank=1,
-            )
-        )
+        tensor_to_be_value_analyzed.extend(self.get_value_analysis_nodes(
+            removed_nodes=dynamic_shape_nodes,
+            target_op_types=['Reshape', 'Pad', 'Resize', 'Expand'],
+            value_analysis_op_types=['Concat', 'Cast', 'Shape'],
+            dtype=TensorProto.INT64,
+            rank=1
+        ))
 
         # find input of broad-casting mul/div operators with Gather/Add node as its input
         scalar_nodes = self.get_scalar_nodes()
-        tensor_to_be_value_analyzed.extend(
-            self.get_value_analysis_nodes(
-                removed_nodes=scalar_nodes,
-                target_op_types=["Mul", "Div"],
-                value_analysis_op_types=["Gather", "Add"],
-                dtype=TensorProto.FLOAT,
-                rank=0,
-            )
-        )
+        tensor_to_be_value_analyzed.extend(self.get_value_analysis_nodes(
+            removed_nodes=scalar_nodes,
+            target_op_types=['Mul', 'Div'],
+            value_analysis_op_types=['Gather', 'Add'],
+            dtype=TensorProto.FLOAT,
+            rank=0
+        ))
 
         if tensor_to_be_value_analyzed:
-            print("Run model on ONNXRuntime for value analysis. It will take some time..")
+            print('Run model on ONNXRuntime for value analysis. It will take some time..')
             # assign value-analyzed shape to dynamic-shaping operator as its initializer
             self.assign_value_analyzed_shapes_to_initializer(
-                value_dict=self.run_onnx_model(
-                    self.model.SerializeToString(), tensor_to_be_value_analyzed
-                )
-            )
+                value_dict=self.run_onnx_model(self.model.SerializeToString(), tensor_to_be_value_analyzed))
 
             new_nodes = list(
-                filter(
-                    lambda node: node not in dynamic_shape_nodes + scalar_nodes,
-                    self.model.graph.node,
-                )
-            )
+                filter(lambda node: node not in dynamic_shape_nodes + scalar_nodes, self.model.graph.node))
 
             # rebuild model graph without nodes in shaping subgraph
             self.model = utils.rebuild_model(self.model, new_nodes, renaming=False)
@@ -89,33 +76,28 @@ class InferenceShape:
         tensor_to_be_value_analyzed = list()
 
         for node in self.model.graph.node:
-            if node.op_type == "ConstantOfShape":
+            if node.op_type == 'ConstantOfShape':
                 vi = value_info[node.output[0]]
                 dtype = vi.type.tensor_type.elem_type
                 rank = len([dim for dim in vi.type.tensor_type.shape.dim])
                 start_vertex = node.output[0]
-                traversal.extend(self.depth_first_search(start_vertex, end_op_type="Shape"))
+                traversal.extend(self.depth_first_search(start_vertex, end_op_type='Shape'))
                 tensor_to_be_value_analyzed.append(start_vertex)
-                vi = make_tensor_value_info(node.output[0], dtype, ("",) * rank)
+                vi = make_tensor_value_info(node.output[0], dtype, ('',) * rank)
                 self.model.graph.output.append(vi)
 
         new_nodes = list(filter(lambda node: node not in traversal, self.model.graph.node))
 
         if tensor_to_be_value_analyzed:
             self.assign_value_analyzed_shapes_to_initializer(
-                value_dict=self.run_onnx_model(
-                    self.model.SerializeToString(), tensor_to_be_value_analyzed
-                )
-            )
+                value_dict=self.run_onnx_model(self.model.SerializeToString(), tensor_to_be_value_analyzed))
 
             # rebuild model graph without nodes in shaping subgraph
             self.model = utils.rebuild_model(self.model, new_nodes)
             check_model(self.model)
         self.model = shape_inference.infer_shapes(self.model)
 
-    def get_value_analysis_nodes(
-        self, removed_nodes, target_op_types, value_analysis_op_types, dtype, rank
-    ):
+    def get_value_analysis_nodes(self, removed_nodes, target_op_types, value_analysis_op_types, dtype, rank):
         tensor_to_be_value_analyzed = list()
         for node in removed_nodes:
             if self.nodes_by_input_name[node.output[0]].op_type not in target_op_types:
@@ -123,7 +105,7 @@ class InferenceShape:
             if node.op_type not in value_analysis_op_types:
                 continue
             tensor_to_be_value_analyzed.append(node.output[0])
-            vi = make_tensor_value_info(node.output[0], dtype, ("",) * rank)
+            vi = make_tensor_value_info(node.output[0], dtype, ('',) * rank)
             self.model.graph.output.append(vi)
 
         return tensor_to_be_value_analyzed
@@ -132,9 +114,9 @@ class InferenceShape:
         new_tensor_protos = list()
         new_vi_protos = list()
         for k, v in value_dict.items():
-            if v.dtype == "float32":
+            if v.dtype == 'float32':
                 proto_dtype = TensorProto.FLOAT
-            elif v.dtype == "int64":
+            elif v.dtype == 'int64':
                 proto_dtype = TensorProto.INT64
             else:
                 raise Exception()
@@ -142,11 +124,9 @@ class InferenceShape:
             vals = v.flatten().tolist()
 
             new_tensor_protos.append(
-                make_tensor(name=k, data_type=proto_dtype, dims=v.shape, vals=vals)
-            )
+                make_tensor(name=k, data_type=proto_dtype, dims=v.shape, vals=vals))
             new_vi_protos.append(
-                make_tensor_value_info(name=k, elem_type=proto_dtype, shape=v.shape)
-            )
+                make_tensor_value_info(name=k, elem_type=proto_dtype, shape=v.shape))
 
         self.model.graph.initializer.extend(new_tensor_protos)
         self.model.graph.input.extend(new_vi_protos)
@@ -155,23 +135,23 @@ class InferenceShape:
         traversal = list()
 
         for idx, node in enumerate(self.model.graph.node):
-            if node.op_type == "Reshape":
+            if node.op_type == 'Reshape':
                 start_vertex = node.input[1]
-            elif node.op_type == "Pad":
+            elif node.op_type == 'Pad':
                 start_vertex = node.input[1]
-            elif node.op_type == "Resize":
+            elif node.op_type == 'Resize':
                 # sizes(=node.input[3]) is optional according to ONNX operator spec
                 try:
                     start_vertex = node.input[3]
                 except IndexError:
                     continue
-            elif node.op_type == "Expand":
+            elif node.op_type == 'Expand':
                 start_vertex = node.input[1]
             else:
                 continue
 
             # apply dfs algorithm
-            traversal.extend(self.depth_first_search(start_vertex, end_op_type="Shape"))
+            traversal.extend(self.depth_first_search(start_vertex, end_op_type='Shape'))
 
         return traversal
 
@@ -179,7 +159,7 @@ class InferenceShape:
         traversal = list()
 
         for idx, node in enumerate(self.model.graph.node):
-            if node.op_type != "Mul" and node.op_type != "Div":
+            if node.op_type != 'Mul' and node.op_type != 'Div':
                 continue
 
             for node_input in node.input:
@@ -193,7 +173,7 @@ class InferenceShape:
                     continue
                 start_vertex = node_input
 
-                if prev_node.op_type != "Gather" and prev_node.op_type != "Add":
+                if prev_node.op_type != 'Gather' and prev_node.op_type != 'Add':
                     continue
                 start_vertex = node_input
 
@@ -206,11 +186,11 @@ class InferenceShape:
                     except KeyError:
                         continue
 
-                    if prevprev_node.op_type != "Relu" and prevprev_node.op_type != "ReduceSum":
+                    if prevprev_node.op_type != 'Relu' and prevprev_node.op_type != 'ReduceSum':
                         continue
 
                     # apply dfs algorithm
-                    traversal.extend(self.depth_first_search(start_vertex, end_op_type="Relu"))
+                    traversal.extend(self.depth_first_search(start_vertex, end_op_type='Relu'))
 
         return traversal
 
@@ -237,7 +217,7 @@ class InferenceShape:
     @staticmethod
     def run_onnx_model(model: onnx.ModelProto, output_name: List[str]) -> Dict[str, np.ndarray]:
         """
-        This function run onnx model on onnxruntime and get values for given output names.
+            This function run onnx model on onnxruntime and get values for given output names.
         """
 
         # Log severity level 3(Error)
@@ -250,12 +230,12 @@ class InferenceShape:
             name = attr.name
             shape = attr.shape
             type = attr.type
-            if type == "tensor(float)":
+            if type == 'tensor(float)':
                 dtype = np.float32
-            elif type == "tensor(int64)":
+            elif type == 'tensor(int64)':
                 dtype = np.int64
             else:
-                raise Exception("Unknown dtype: %s" % type)
+                raise Exception('Unknown dtype: %s' % type)
 
             feed_dict[name] = np.ones(shape).astype(dtype)
 

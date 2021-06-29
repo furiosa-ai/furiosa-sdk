@@ -23,14 +23,13 @@ class EliminateRedundantReshapePattern(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-    transform
-        prev --> Flatten/Squeeze --> Unsqueeze --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Flatten/Squeeze --> Unsqueeze --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Flatten/Squeeze", "Unsqueeze"]
+    pattern_to_match = ['Flatten/Squeeze', 'Unsqueeze']
 
     def pattern_matching(self, base_node):
         inputs = base_node.input
@@ -58,72 +57,66 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
 class Pattern_2(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Flatten/Squeeze --> Unsqueeze --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Reshape --> Flatten/Squeeze --> Unsqueeze --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Flatten/Squeeze", "Unsqueeze"]
+    pattern_to_match = ['Reshape', 'Flatten/Squeeze', 'Unsqueeze']
 
 
 class Pattern_3(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Reshape --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape"]
+    pattern_to_match = ['Reshape']
 
 
 class Pattern_4(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Expand --> Expand --> Reshape --> next
+        transform
+            prev --> Reshape --> Expand --> Expand --> Reshape --> next
 
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Expand", "Expand", "Reshape"]
+    pattern_to_match = ['Reshape', 'Expand', 'Expand', 'Reshape']
 
 
 class Pattern_5(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Expand --> Reshape --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Reshape --> Expand --> Reshape --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Expand", "Reshape"]
+    pattern_to_match = ['Reshape', 'Expand', 'Reshape']
 
 
 class Pattern_6(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Reshape --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Reshape --> Reshape --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Reshape"]
+    pattern_to_match = ['Reshape', 'Reshape']
 
 
 class Pattern_7(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Reshape --> Reshape --> next
-    to
-        prev --> (   ) --> next
-    if prev.output[0].shape == next.input[0].shape
+        transform
+            prev --> Reshape --> Reshape --> Reshape --> next
+        to
+            prev --> (   ) --> next
+        if prev.output[0].shape == next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Reshape", "Reshape"]
+    pattern_to_match = ['Reshape', 'Reshape', 'Reshape']

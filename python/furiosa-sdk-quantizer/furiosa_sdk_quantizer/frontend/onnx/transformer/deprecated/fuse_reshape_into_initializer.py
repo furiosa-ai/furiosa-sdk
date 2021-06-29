@@ -24,7 +24,7 @@ class FuseReshapeIntoInitializer(Transformer):
                     optimized_nodes.append(node)
                     continue
 
-                if prev_node.op_type != "Reshape":
+                if prev_node.op_type != 'Reshape':
                     optimized_nodes.append(node)
                     continue
 
@@ -39,12 +39,8 @@ class FuseReshapeIntoInitializer(Transformer):
                 reshaped_init_arr = init_arr.reshape(shape_init_arr)
 
                 model.graph.initializer.append(
-                    make_tensor(
-                        name=node_input,
-                        data_type=init.data_type,
-                        dims=shape_init_arr,
-                        vals=reshaped_init_arr.flatten(),
-                    )
+                    make_tensor(name=node_input, data_type=init.data_type,
+                                dims=shape_init_arr, vals=reshaped_init_arr.flatten())
                 )
 
                 model.graph.initializer.remove(init)

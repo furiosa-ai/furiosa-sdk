@@ -18,18 +18,18 @@ class FuseDepthToSpace(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Transpose --> Reshape --> next
-    to
-        prev --> DepthToSpace --> next
+        transform
+            prev --> Reshape --> Transpose --> Reshape --> next
+        to
+            prev --> DepthToSpace --> next
 
-    if Transpose.perm == [0, 1, 4, 2, 5, 3] or == [0, 3, 4, 1, 5, 2]
+        if Transpose.perm == [0, 1, 4, 2, 5, 3] or == [0, 3, 4, 1, 5, 2]
     """
 
     def pattern_matching(self, base_node):
         inputs = base_node.input
 
-        pattern_to_match = ["Reshape", "Transpose", "Reshape"]
+        pattern_to_match = ['Reshape', 'Transpose', 'Reshape']
         matched_nodes = self.pattern_matcher(base_node, pattern_to_match)
         if not matched_nodes:
             return inputs
@@ -38,18 +38,12 @@ class Pattern_1(ONNXTransformer, abc.ABC):
             return inputs
 
         top_node, mid_node, _ = matched_nodes
-        self.transform_to_fuse(
-            matched_nodes,
-            nodes_to_add=[
-                self.make_node(
-                    "DepthToSpace",
-                    [top_node.input[0]],
-                    [base_node.output[0]],
-                    top_node.name,
-                    **self.get_attrs(top_node, mid_node)
-                )
-            ],
-        )
+        self.transform_to_fuse(matched_nodes,
+                               nodes_to_add=[
+                                   self.make_node('DepthToSpace', [top_node.input[0]], [base_node.output[0]],
+                                                  top_node.name,
+                                                  **self.get_attrs(top_node, mid_node))
+                               ])
 
         return top_node.input
 
@@ -64,12 +58,12 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         permutation = mid_node.attribute[0].ints
         reshaped_shape = self.get_value_info_shape(top_node.output[0])
         if all(x == y for (x, y) in zip(permutation, [0, 1, 4, 2, 5, 3])):
-            mode = "CRD"
+            mode = 'CRD'
             blocksize = reshaped_shape[2]
         elif all(x == y for (x, y) in zip(permutation, [0, 3, 4, 1, 5, 2])):
-            mode = "DCR"
+            mode = 'DCR'
             blocksize = reshaped_shape[1]
         else:
             raise Exception()
 
-        return {"blocksize": blocksize, "mode": mode}
+        return {'blocksize': blocksize, 'mode': mode}
