@@ -16,7 +16,7 @@ class MnistMobilenetV2(unittest.TestCase):
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)
-            tester.assert_equals(np.array(self.x_test[idx:idx + 1], dtype=np.uint8))
+            tester.assert_equals(np.array(self.x_test[idx : idx + 1], dtype=np.uint8))
 
         tester.close()
 
@@ -25,10 +25,10 @@ class MnistMobilenetV2(unittest.TestCase):
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)
-            tester.assert_equals(np.array(self.x_test[idx:idx + 1], dtype=np.uint8))
+            tester.assert_equals(np.array(self.x_test[idx : idx + 1], dtype=np.uint8))
 
         tester.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,7 +9,7 @@ from furiosa_sdk_quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 
 def name_nodes(model):
     for idx, node in enumerate(model.graph.node):
-        node.name = '%s_%d' % (node.op_type, idx)
+        node.name = "%s_%d" % (node.op_type, idx)
 
     return model
 
@@ -18,8 +18,11 @@ def eliminate_unused_initializer(model):
     model = _eliminate_unused_quantization_annotation(model)
 
     node_input_names = [node_input for node in model.graph.node for node_input in node.input]
-    qtensor_names = [qtensor_name.value for annot in model.graph.quantization_annotation
-                     for qtensor_name in annot.quant_parameter_tensor_names]
+    qtensor_names = [
+        qtensor_name.value
+        for annot in model.graph.quantization_annotation
+        for qtensor_name in annot.quant_parameter_tensor_names
+    ]
 
     unused_initializer = list()
     for init in model.graph.initializer:
@@ -122,7 +125,7 @@ def include_initializer_to_graph_input(model):
 
 def rebuild_model(model, new_nodes, eliminate=True, renaming=True):
     # remove all nodes and re-make model.graph based on newly given nodes.
-    model.graph.ClearField('node')
+    model.graph.ClearField("node")
     model.graph.node.extend(new_nodes)
     default_opset = make_opsetid(__DOMAIN__, __OPSET_VERSION__)
     model = make_model(model.graph, opset_imports=[default_opset])
@@ -154,7 +157,8 @@ def fix_batch_size_as_one(model):
         if batch_dim.dim_param:
             warnings.warn(
                 "Dynamic batch size is detected at input_name: {}. "
-                "Fix batch_size=1 for valid shape inference.".format(input.name))
+                "Fix batch_size=1 for valid shape inference.".format(input.name)
+            )
             input.type.tensor_type.shape.dim[0].dim_value = 1
 
     return model

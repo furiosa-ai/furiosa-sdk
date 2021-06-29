@@ -17,7 +17,9 @@ class EliminateSoftmaxOutput(Transformer):
         return model
 
     def remove_softmax_new_pattern(self, model):
-        nodes_by_output_name = {node_output: node for node in model.graph.node for node_output in node.output}
+        nodes_by_output_name = {
+            node_output: node for node in model.graph.node for node_output in node.output
+        }
         vi_by_output_name = {vi.name: vi for vi in model.graph.value_info}
         outputs_by_output_name = {output.name: output for output in model.graph.output}
 
@@ -28,7 +30,7 @@ class EliminateSoftmaxOutput(Transformer):
             if node in removed_nodes:
                 continue
 
-            if node.op_type != 'Transpose':
+            if node.op_type != "Transpose":
                 optimized_nodes.append(node)
                 continue
 
@@ -37,12 +39,12 @@ class EliminateSoftmaxOutput(Transformer):
                 continue
 
             prev_node = nodes_by_output_name[node.input[0]]
-            if prev_node.op_type != 'Softmax':
+            if prev_node.op_type != "Softmax":
                 optimized_nodes.append(node)
                 continue
 
             pprev_node = nodes_by_output_name[prev_node.input[0]]
-            if pprev_node.op_type != 'Transpose':
+            if pprev_node.op_type != "Transpose":
                 optimized_nodes.append(node)
                 continue
 
@@ -78,7 +80,7 @@ class EliminateSoftmaxOutput(Transformer):
         removed_nodes = []
 
         for node in model.graph.node:
-            if node.op_type != 'Softmax':
+            if node.op_type != "Softmax":
                 optimized_nodes.append(node)
                 continue
 

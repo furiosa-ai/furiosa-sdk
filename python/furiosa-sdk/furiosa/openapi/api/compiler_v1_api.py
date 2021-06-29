@@ -20,7 +20,7 @@ from furiosa.openapi.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types
+    validate_and_convert_types,
 )
 from furiosa.openapi.model.api_response import ApiResponse
 from furiosa.openapi.model.artifact_meta import ArtifactMeta
@@ -40,12 +40,7 @@ class CompilerV1Api(object):
             api_client = ApiClient()
         self.api_client = api_client
 
-        def __create_task(
-            self,
-            x_request_id,
-            source,
-            **kwargs
-        ):
+        def __create_task(self, x_request_id, source, **kwargs):
             """Compile  # noqa: E501
 
             Create a task to compile a model binary (e.g., tflite, onnx)  # noqa: E501
@@ -90,124 +85,82 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['x_request_id'] = \
-                x_request_id
-            kwargs['source'] = \
-                source
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["x_request_id"] = x_request_id
+            kwargs["source"] = source
             return self.call_with_http_info(**kwargs)
 
         self.create_task = _Endpoint(
             settings={
-                'response_type': (CompileTask,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks',
-                'operation_id': 'create_task',
-                'http_method': 'POST',
-                'servers': None,
+                "response_type": (CompileTask,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks",
+                "operation_id": "create_task",
+                "http_method": "POST",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'x_request_id',
-                    'source',
-                    'target_npu_spec',
-                    'compiler_config',
-                    'target_ir',
-                    'compiler_report',
-                    'mem_alloc_report',
+                "all": [
+                    "x_request_id",
+                    "source",
+                    "target_npu_spec",
+                    "compiler_config",
+                    "target_ir",
+                    "compiler_report",
+                    "mem_alloc_report",
                 ],
-                'required': [
-                    'x_request_id',
-                    'source',
+                "required": [
+                    "x_request_id",
+                    "source",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "x_request_id": (str,),
+                    "source": (file_type,),
+                    "target_npu_spec": (str,),
+                    "compiler_config": (str,),
+                    "target_ir": (str,),
+                    "compiler_report": (bool,),
+                    "mem_alloc_report": (bool,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "x_request_id": "X-Request-ID",
+                    "source": "source",
+                    "target_npu_spec": "target_npu_spec",
+                    "compiler_config": "compiler_config",
+                    "target_ir": "target_ir",
+                    "compiler_report": "compiler_report",
+                    "mem_alloc_report": "mem_alloc_report",
                 },
-                'openapi_types': {
-                    'x_request_id':
-                        (str,),
-                    'source':
-                        (file_type,),
-                    'target_npu_spec':
-                        (str,),
-                    'compiler_config':
-                        (str,),
-                    'target_ir':
-                        (str,),
-                    'compiler_report':
-                        (bool,),
-                    'mem_alloc_report':
-                        (bool,),
+                "location_map": {
+                    "x_request_id": "header",
+                    "source": "form",
+                    "target_npu_spec": "form",
+                    "compiler_config": "form",
+                    "target_ir": "form",
+                    "compiler_report": "form",
+                    "mem_alloc_report": "form",
                 },
-                'attribute_map': {
-                    'x_request_id': 'X-Request-ID',
-                    'source': 'source',
-                    'target_npu_spec': 'target_npu_spec',
-                    'compiler_config': 'compiler_config',
-                    'target_ir': 'target_ir',
-                    'compiler_report': 'compiler_report',
-                    'mem_alloc_report': 'mem_alloc_report',
-                },
-                'location_map': {
-                    'x_request_id': 'header',
-                    'source': 'form',
-                    'target_npu_spec': 'form',
-                    'compiler_config': 'form',
-                    'target_ir': 'form',
-                    'compiler_report': 'form',
-                    'mem_alloc_report': 'form',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
-            headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [
-                    'multipart/form-data'
-                ]
-            },
+            headers_map={"accept": ["application/json"], "content_type": ["multipart/form-data"]},
             api_client=api_client,
-            callable=__create_task
+            callable=__create_task,
         )
 
-        def __get_artifact(
-            self,
-            task_id,
-            name,
-            **kwargs
-        ):
+        def __get_artifact(self, task_id, name, **kwargs):
             """Gets resources of a specific compile task  # noqa: E501
 
             Returns resources of a compile task. You can specify multiple resources  # noqa: E501
@@ -247,100 +200,71 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['task_id'] = \
-                task_id
-            kwargs['name'] = \
-                name
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["task_id"] = task_id
+            kwargs["name"] = name
             return self.call_with_http_info(**kwargs)
 
         self.get_artifact = _Endpoint(
             settings={
-                'response_type': (str,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks/{task_id}/artifacts/{name}',
-                'operation_id': 'get_artifact',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (str,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks/{task_id}/artifacts/{name}",
+                "operation_id": "get_artifact",
+                "http_method": "GET",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'task_id',
-                    'name',
+                "all": [
+                    "task_id",
+                    "name",
                 ],
-                'required': [
-                    'task_id',
-                    'name',
+                "required": [
+                    "task_id",
+                    "name",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "task_id": (str,),
+                    "name": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "task_id": "task_id",
+                    "name": "name",
                 },
-                'openapi_types': {
-                    'task_id':
-                        (str,),
-                    'name':
-                        (str,),
+                "location_map": {
+                    "task_id": "path",
+                    "name": "path",
                 },
-                'attribute_map': {
-                    'task_id': 'task_id',
-                    'name': 'name',
-                },
-                'location_map': {
-                    'task_id': 'path',
-                    'name': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'text/html',
-                    'text/plain',
-                    'application/octet-stream',
-                    'text/vnd.graphviz',
-                    'application/json'
+                "accept": [
+                    "text/html",
+                    "text/plain",
+                    "application/octet-stream",
+                    "text/vnd.graphviz",
+                    "application/json",
                 ],
-                'content_type': [],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_artifact
+            callable=__get_artifact,
         )
 
-        def __get_log(
-            self,
-            task_id,
-            **kwargs
-        ):
+        def __get_log(self, task_id, **kwargs):
             """Get compilation task log  # noqa: E501
 
             Get a compilation task log  # noqa: E501
@@ -379,89 +303,59 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['task_id'] = \
-                task_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["task_id"] = task_id
             return self.call_with_http_info(**kwargs)
 
         self.get_log = _Endpoint(
             settings={
-                'response_type': (str,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks/{task_id}/logs',
-                'operation_id': 'get_log',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (str,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks/{task_id}/logs",
+                "operation_id": "get_log",
+                "http_method": "GET",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'task_id',
+                "all": [
+                    "task_id",
                 ],
-                'required': [
-                    'task_id',
+                "required": [
+                    "task_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "task_id": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "task_id": "task_id",
                 },
-                'openapi_types': {
-                    'task_id':
-                        (str,),
+                "location_map": {
+                    "task_id": "path",
                 },
-                'attribute_map': {
-                    'task_id': 'task_id',
-                },
-                'location_map': {
-                    'task_id': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'text/html',
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["text/html", "application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_log
+            callable=__get_log,
         )
 
-        def __get_task(
-            self,
-            task_id,
-            **kwargs
-        ):
+        def __get_task(self, task_id, **kwargs):
             """Get compilation task status  # noqa: E501
 
             Get a compilation task status  # noqa: E501
@@ -500,87 +394,59 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['task_id'] = \
-                task_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["task_id"] = task_id
             return self.call_with_http_info(**kwargs)
 
         self.get_task = _Endpoint(
             settings={
-                'response_type': (CompileTask,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks/{task_id}',
-                'operation_id': 'get_task',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (CompileTask,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks/{task_id}",
+                "operation_id": "get_task",
+                "http_method": "GET",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'task_id',
+                "all": [
+                    "task_id",
                 ],
-                'required': [
-                    'task_id',
+                "required": [
+                    "task_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "task_id": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "task_id": "task_id",
                 },
-                'openapi_types': {
-                    'task_id':
-                        (str,),
+                "location_map": {
+                    "task_id": "path",
                 },
-                'attribute_map': {
-                    'task_id': 'task_id',
-                },
-                'location_map': {
-                    'task_id': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_task
+            callable=__get_task,
         )
 
-        def __get_toolchains(
-            self,
-            **kwargs
-        ):
+        def __get_toolchains(self, **kwargs):
             """Get compiler toolchains  # noqa: E501
 
             Get compiler toolchain information  # noqa: E501
@@ -617,79 +483,42 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.get_toolchains = _Endpoint(
             settings={
-                'response_type': (Toolchains,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/toolchains',
-                'operation_id': 'get_toolchains',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": (Toolchains,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/toolchains",
+                "operation_id": "get_toolchains",
+                "http_method": "GET",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__get_toolchains
+            callable=__get_toolchains,
         )
 
-        def __kill_task(
-            self,
-            task_id,
-            **kwargs
-        ):
+        def __kill_task(self, task_id, **kwargs):
             """Kill the compilation task  # noqa: E501
 
             Kill the compilation task  # noqa: E501
@@ -728,88 +557,59 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['task_id'] = \
-                task_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["task_id"] = task_id
             return self.call_with_http_info(**kwargs)
 
         self.kill_task = _Endpoint(
             settings={
-                'response_type': (ApiResponse,),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks/{task_id}',
-                'operation_id': 'kill_task',
-                'http_method': 'DELETE',
-                'servers': None,
+                "response_type": (ApiResponse,),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks/{task_id}",
+                "operation_id": "kill_task",
+                "http_method": "DELETE",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'task_id',
+                "all": [
+                    "task_id",
                 ],
-                'required': [
-                    'task_id',
+                "required": [
+                    "task_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "task_id": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "task_id": "task_id",
                 },
-                'openapi_types': {
-                    'task_id':
-                        (str,),
+                "location_map": {
+                    "task_id": "path",
                 },
-                'attribute_map': {
-                    'task_id': 'task_id',
-                },
-                'location_map': {
-                    'task_id': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__kill_task
+            callable=__kill_task,
         )
 
-        def __list_artifacts(
-            self,
-            task_id,
-            **kwargs
-        ):
+        def __list_artifacts(self, task_id, **kwargs):
             """Gets summary of artifacts  # noqa: E501
 
             Returns a list of artifacts generated by a specific compile task.  # noqa: E501
@@ -848,87 +648,59 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
-            kwargs['task_id'] = \
-                task_id
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
+            kwargs["task_id"] = task_id
             return self.call_with_http_info(**kwargs)
 
         self.list_artifacts = _Endpoint(
             settings={
-                'response_type': ([ArtifactMeta],),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks/{task_id}/artifacts',
-                'operation_id': 'list_artifacts',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": ([ArtifactMeta],),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks/{task_id}/artifacts",
+                "operation_id": "list_artifacts",
+                "http_method": "GET",
+                "servers": None,
             },
             params_map={
-                'all': [
-                    'task_id',
+                "all": [
+                    "task_id",
                 ],
-                'required': [
-                    'task_id',
+                "required": [
+                    "task_id",
                 ],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
+                "nullable": [],
+                "enum": [],
+                "validation": [],
             },
             root_map={
-                'validations': {
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {
+                    "task_id": (str,),
                 },
-                'allowed_values': {
+                "attribute_map": {
+                    "task_id": "task_id",
                 },
-                'openapi_types': {
-                    'task_id':
-                        (str,),
+                "location_map": {
+                    "task_id": "path",
                 },
-                'attribute_map': {
-                    'task_id': 'task_id',
-                },
-                'location_map': {
-                    'task_id': 'path',
-                },
-                'collection_format_map': {
-                }
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__list_artifacts
+            callable=__list_artifacts,
         )
 
-        def __list_tasks(
-            self,
-            **kwargs
-        ):
+        def __list_tasks(self, **kwargs):
             """List compilation tasks  # noqa: E501
 
             List all running compilation tasks  # noqa: E501
@@ -965,70 +737,37 @@ class CompilerV1Api(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs['async_req'] = kwargs.get(
-                'async_req', False
-            )
-            kwargs['_return_http_data_only'] = kwargs.get(
-                '_return_http_data_only', True
-            )
-            kwargs['_preload_content'] = kwargs.get(
-                '_preload_content', True
-            )
-            kwargs['_request_timeout'] = kwargs.get(
-                '_request_timeout', None
-            )
-            kwargs['_check_input_type'] = kwargs.get(
-                '_check_input_type', True
-            )
-            kwargs['_check_return_type'] = kwargs.get(
-                '_check_return_type', True
-            )
-            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs["async_req"] = kwargs.get("async_req", False)
+            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
+            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
+            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
+            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
+            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
+            kwargs["_host_index"] = kwargs.get("_host_index")
             return self.call_with_http_info(**kwargs)
 
         self.list_tasks = _Endpoint(
             settings={
-                'response_type': ([CompileTask],),
-                'auth': [
-                    'AccessKeyIdAuth',
-                    'SecretAccessKeyAuth'
-                ],
-                'endpoint_path': '/api/compiler/v1alpha1/tasks',
-                'operation_id': 'list_tasks',
-                'http_method': 'GET',
-                'servers': None,
+                "response_type": ([CompileTask],),
+                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
+                "endpoint_path": "/api/compiler/v1alpha1/tasks",
+                "operation_id": "list_tasks",
+                "http_method": "GET",
+                "servers": None,
             },
-            params_map={
-                'all': [
-                ],
-                'required': [],
-                'nullable': [
-                ],
-                'enum': [
-                ],
-                'validation': [
-                ]
-            },
+            params_map={"all": [], "required": [], "nullable": [], "enum": [], "validation": []},
             root_map={
-                'validations': {
-                },
-                'allowed_values': {
-                },
-                'openapi_types': {
-                },
-                'attribute_map': {
-                },
-                'location_map': {
-                },
-                'collection_format_map': {
-                }
+                "validations": {},
+                "allowed_values": {},
+                "openapi_types": {},
+                "attribute_map": {},
+                "location_map": {},
+                "collection_format_map": {},
             },
             headers_map={
-                'accept': [
-                    'application/json'
-                ],
-                'content_type': [],
+                "accept": ["application/json"],
+                "content_type": [],
             },
             api_client=api_client,
-            callable=__list_tasks
+            callable=__list_tasks,
         )

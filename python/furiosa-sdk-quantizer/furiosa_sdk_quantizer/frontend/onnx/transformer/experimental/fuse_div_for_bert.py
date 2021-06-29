@@ -36,12 +36,12 @@ class FuseDivForBert(Transformer):
 
         # Handle Case1: MatMul + Add
         for node in model.graph.node:
-            if node.op_type != 'Div':
+            if node.op_type != "Div":
                 optimized_nodes.append(node)
                 continue
 
             prev_node_1 = self.nodes_by_output_name[node.input[0]]
-            if prev_node_1.op_type != 'MatMul':
+            if prev_node_1.op_type != "MatMul":
                 optimized_nodes.append(node)
                 continue
 
@@ -49,19 +49,20 @@ class FuseDivForBert(Transformer):
             prev_node_3 = self.nodes_by_output_name[prev_node_2.input[0]]
             prev_node_4 = self.nodes_by_output_name[prev_node_3.input[0]]
 
-            assert prev_node_4.op_type == 'Add'
+            assert prev_node_4.op_type == "Add"
 
             scalar = numpy_helper.to_array(self.initializers[node.input[1]])
             arr = numpy_helper.to_array(self.initializers[prev_node_4.input[1]])
 
             model.graph.initializer.append(
-                numpy_helper.from_array(arr / scalar, name=prev_node_4.input[1] + '_div_fused'))
-            prev_node_4.input[1] = prev_node_4.input[1] + '_div_fused'
+                numpy_helper.from_array(arr / scalar, name=prev_node_4.input[1] + "_div_fused")
+            )
+            prev_node_4.input[1] = prev_node_4.input[1] + "_div_fused"
             prev_node_1.output[0] = node.output[0]
             removed_nodes.append(node)
 
         new_nodes = list(filter(lambda node: node not in removed_nodes, optimized_nodes))
-        model.graph.ClearField('node')
+        model.graph.ClearField("node")
         model.graph.node.extend(new_nodes)
         model = make_model(model.graph)
 

@@ -26,7 +26,7 @@ class TestAsyncSession(unittest.TestCase):
         items = 50
         for i in range(0, items):
             idx = random.randrange(0, 9999, 1)
-            ndarray_value = self.x_test[idx:idx + 1]
+            ndarray_value = self.x_test[idx : idx + 1]
             async_sess.submit([ndarray_value], i)
 
         keys = set()
@@ -39,5 +39,5 @@ class TestAsyncSession(unittest.TestCase):
         self.assertEqual(set(range(0, items)), keys)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

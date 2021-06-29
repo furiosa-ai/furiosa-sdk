@@ -20,14 +20,16 @@ def random_input_inference(model_path, num_inf):
         print(sess.print_summary())
 
         for idx in range(num_inf):
-            print(f'Iteration {idx}...')
+            print(f"Iteration {idx}...")
 
             inputs = []
             for session_input in sess.inputs():
                 if session_input.dtype() == DataType.UINT8:
                     inputs.append(np.random.randint(0, 255, session_input.shape(), dtype=np.uint8))
                 elif session_input.dtype() == DataType.INT8:
-                    inputs.append(np.random.randint(-128, 127, session_input.shape(), dtype=np.int8))
+                    inputs.append(
+                        np.random.randint(-128, 127, session_input.shape(), dtype=np.int8)
+                    )
                 elif session_input.dtype() == DataType.FLOAT32:
                     inputs.append(np.random.random(session_input.shape()).astype(np.float32))
                 else:

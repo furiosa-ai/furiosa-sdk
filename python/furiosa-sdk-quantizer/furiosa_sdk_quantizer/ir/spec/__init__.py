@@ -13,11 +13,11 @@ class Spec:
 
     def as_dict(self) -> Dict[str, any]:
         return {
-            'name': self.name,
-            'option': {
+            "name": self.name,
+            "option": {
                 # quantizer only supports 'OperatorSpec'.
-                'Operator': self.option.as_dict(),
-            }
+                "Operator": self.option.as_dict(),
+            },
         }
 
 
@@ -26,12 +26,14 @@ class OperatorSpec:
         raise NotImplementedError()
 
     def as_dict(self) -> Dict[str, any]:
-        return {self.kind(): dict(map(lambda item: self._handle_nested_spec(*item), vars(self).items()))}
+        return {
+            self.kind(): dict(map(lambda item: self._handle_nested_spec(*item), vars(self).items()))
+        }
 
     @staticmethod
     def _handle_nested_spec(k, v):
-        if hasattr(v, 'as_dict'):
-            return k, getattr(v, 'as_dict')()
+        if hasattr(v, "as_dict"):
+            return k, getattr(v, "as_dict")()
         else:
             return k, v
 
@@ -43,10 +45,20 @@ class PaddingSpecCustom:
 
 class Conv2d(OperatorSpec):
     def kind(self):
-        return 'Conv2d'
+        return "Conv2d"
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, input_channel: int, output_channel: int, groups: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        input_channel: int,
+        output_channel: int,
+        groups: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -60,15 +72,23 @@ class Conv2d(OperatorSpec):
 
 class TrasnposeConv(Conv2d):
     def kind(self):
-        return 'TransposeConv'
+        return "TransposeConv"
 
 
 class MaxPool2d(OperatorSpec):
     def kind(self):
-        return 'MaxPool2d'
+        return "MaxPool2d"
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, channel: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        channel: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -80,10 +100,18 @@ class MaxPool2d(OperatorSpec):
 
 class AveragePool2d(OperatorSpec):
     def kind(self):
-        return 'AveragePool2d'
+        return "AveragePool2d"
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, channel: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        channel: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -95,7 +123,7 @@ class AveragePool2d(OperatorSpec):
 
 class Gemm(OperatorSpec):
     def kind(self):
-        return 'Gemm'
+        return "Gemm"
 
     def __init__(self, alpha: float, beta: float, m: int, k: int, n: int):
         self.alpha = alpha
@@ -107,7 +135,7 @@ class Gemm(OperatorSpec):
 
 class MatMul(OperatorSpec):
     def kind(self):
-        return 'MatMul'
+        return "MatMul"
 
     def __init__(self, lhs_shape: List[int], rhs_shape: List[int]):
         self.lhs_shape = lhs_shape
@@ -116,9 +144,11 @@ class MatMul(OperatorSpec):
 
 class DepthToSpace(OperatorSpec):
     def kind(self):
-        return 'DepthToSpace'
+        return "DepthToSpace"
 
-    def __init__(self, batch: int, height: int, width: int, channel: int, block_size: int, mode: str):
+    def __init__(
+        self, batch: int, height: int, width: int, channel: int, block_size: int, mode: str
+    ):
         self.batch = batch
         self.height = height
         self.width = width
@@ -129,7 +159,7 @@ class DepthToSpace(OperatorSpec):
 
 class Resize(OperatorSpec):
     def kind(self):
-        return 'Resize'
+        return "Resize"
 
     def __init__(self, shape: List[int], roi: List[int], scales: List[float], sizes: List[int]):
         self.shape = shape
@@ -140,7 +170,7 @@ class Resize(OperatorSpec):
 
 class Add(OperatorSpec):
     def kind(self):
-        return 'Add'
+        return "Add"
 
     def __init__(self, shape: List[int]):
         self.shape = shape
@@ -148,32 +178,32 @@ class Add(OperatorSpec):
 
 class Sub(Add):
     def kind(self):
-        return 'Sub'
+        return "Sub"
 
 
 class Mul(Add):
     def kind(self):
-        return 'Mul'
+        return "Mul"
 
 
 class Div(Add):
     def kind(self):
-        return 'Div'
+        return "Div"
 
 
 class Exp(Add):
     def kind(self):
-        return 'Exp'
+        return "Exp"
 
 
 class Sigmoid(Add):
     def kind(self):
-        return 'Sigmoid'
+        return "Sigmoid"
 
 
 class Softplus(OperatorSpec):
     def kind(self):
-        return 'Softplus'
+        return "Softplus"
 
     def __init__(self, input_shape: List[int]):
         self.input_shape = input_shape
@@ -181,12 +211,12 @@ class Softplus(OperatorSpec):
 
 class Gelu(Add):
     def kind(self):
-        return 'Gelu'
+        return "Gelu"
 
 
 class ReduceMean(OperatorSpec):
     def kind(self):
-        return 'ReduceMean'
+        return "ReduceMean"
 
     def __init__(self, shape: List[int], axes: List[int]):
         self.shape = shape
@@ -195,27 +225,27 @@ class ReduceMean(OperatorSpec):
 
 class ReduceSum(ReduceMean):
     def kind(self):
-        return 'ReduceSum'
+        return "ReduceSum"
 
 
 class ReduceL2(ReduceMean):
     def kind(self):
-        return 'ReduceL2'
+        return "ReduceL2"
 
 
 class Squeeze(ReduceMean):
     def kind(self):
-        return 'Squeeze'
+        return "Squeeze"
 
 
 class Unsqueeze(ReduceMean):
     def kind(self):
-        return 'Unsqueeze'
+        return "Unsqueeze"
 
 
 class Reshape(OperatorSpec):
     def kind(self):
-        return 'Reshape'
+        return "Reshape"
 
     def __init__(self, input_shape: List[int], output_shape: List[int]):
         self.input_shape = input_shape
@@ -224,12 +254,12 @@ class Reshape(OperatorSpec):
 
 class Expand(Reshape):
     def kind(self):
-        return 'Expand'
+        return "Expand"
 
 
 class Concatenation(OperatorSpec):
     def kind(self):
-        return 'Concatenation'
+        return "Concatenation"
 
     def __init__(self, tensors: List[List[int]], axis: int):
         self.tensors = tensors
@@ -238,7 +268,7 @@ class Concatenation(OperatorSpec):
 
 class Transpose(OperatorSpec):
     def kind(self):
-        return 'Transpose'
+        return "Transpose"
 
     def __init__(self, shape: List[int], permutation: List[int]):
         self.shape = shape
@@ -247,7 +277,7 @@ class Transpose(OperatorSpec):
 
 class Slice(OperatorSpec):
     def kind(self):
-        return 'Slice'
+        return "Slice"
 
     def __init__(self, shape: List[int], offset: List[int]):
         self.shape = shape
@@ -256,7 +286,7 @@ class Slice(OperatorSpec):
 
 class Flatten(OperatorSpec):
     def kind(self):
-        return 'Flatten'
+        return "Flatten"
 
     def __init__(self, shape: List[int], axis: int):
         self.shape = shape
@@ -266,7 +296,7 @@ class Flatten(OperatorSpec):
 
 class Pad(OperatorSpec):
     def kind(self):
-        return 'Pad'
+        return "Pad"
 
     def __init__(self, shape: List[int], pad: List[HorizontalPadding]):
         self.shape = shape
@@ -275,7 +305,7 @@ class Pad(OperatorSpec):
 
 class Split(OperatorSpec):
     def kind(self):
-        return 'Split'
+        return "Split"
 
     def __init__(self, shape: List[int], split: List[int], axis: int):
         self.shape = shape
@@ -285,7 +315,7 @@ class Split(OperatorSpec):
 
 class Softmax(OperatorSpec):
     def kind(self):
-        return 'Softmax'
+        return "Softmax"
 
     def __init__(self, input_shape: List[int], beta: float, axis: int):
         self.input_shape = input_shape
@@ -295,9 +325,11 @@ class Softmax(OperatorSpec):
 
 class Clip(OperatorSpec):
     def kind(self):
-        return 'Clip'
+        return "Clip"
 
-    def __init__(self, input_shape: List[int], min: Optional[float] = None, max: Optional[float] = None):
+    def __init__(
+        self, input_shape: List[int], min: Optional[float] = None, max: Optional[float] = None
+    ):
         self.input_shape = input_shape
         self.min = min
         self.max = max
@@ -305,7 +337,7 @@ class Clip(OperatorSpec):
 
 class LpNorm(OperatorSpec):
     def kind(self):
-        return 'LpNorm'
+        return "LpNorm"
 
     def __init__(self, input_shape: List[int], p: int, axis: int):
         self.input_shape = input_shape
@@ -315,7 +347,7 @@ class LpNorm(OperatorSpec):
 
 class LayerNorm(OperatorSpec):
     def kind(self):
-        return 'LayerNorm'
+        return "LayerNorm"
 
     def __init__(self, input_shape: List[int], eps: float):
         self.input_shape = input_shape

@@ -16,7 +16,9 @@ MNIST_MOBINENET_V2 = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
 
 
 def assert_tensors_equal(expected, result):
-    assert np.allclose(expected, result, atol=1.0), "{} was expected, but the result was {}".format(expected, result)
+    assert np.allclose(expected, result, atol=1.0), "{} was expected, but the result was {}".format(
+        expected, result
+    )
 
 
 class SessionTester:
@@ -48,9 +50,9 @@ class PredictionTester:
         tf_inputs = self.tf_sess.get_input_details()
         tf_outputs = self.tf_sess.get_output_details()
 
-        self.tf_sess.set_tensor(tf_inputs[0]['index'], inputs)
+        self.tf_sess.set_tensor(tf_inputs[0]["index"], inputs)
         self.tf_sess.invoke()
-        return self.tf_sess.get_tensor(tf_outputs[0]['index'])
+        return self.tf_sess.get_tensor(tf_outputs[0]["index"])
 
     def assert_equals(self, inputs: np.ndarray):
         tf_results = self._run_tf(inputs)
@@ -80,7 +82,7 @@ class AsyncPredictionTester(PredictionTester):
 
     def _run_nux(self, inputs: np.ndarray) -> np.ndarray:
         key = random.randint(0, 100)
-        self.nux_sess.submit(inputs, context={'key': key})
+        self.nux_sess.submit(inputs, context={"key": key})
         _, outputs = self.nux_queue.recv()
         return outputs[0].numpy()
 

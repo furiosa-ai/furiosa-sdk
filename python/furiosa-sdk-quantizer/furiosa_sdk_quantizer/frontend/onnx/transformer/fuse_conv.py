@@ -19,16 +19,17 @@ class FuseConv(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> MatMul --> Add --> next
-        to
-            prev --> Unsqueeze --> Conv --> Squeeze --> next
+    transform
+        prev --> MatMul --> Add --> next
+    to
+        prev --> Unsqueeze --> Conv --> Squeeze --> next
 
-        if 1. MatMul.ndim == 2
-           2. MatMul must have at most one initializer
-           3. Add must have at most one initializer
+    if 1. MatMul.ndim == 2
+       2. MatMul must have at most one initializer
+       3. Add must have at most one initializer
     """
-    pattern_to_match = ['MatMul', 'Add']
+
+    pattern_to_match = ["MatMul", "Add"]
 
     def pattern_matching(self, base_node):
         inputs = base_node.input
@@ -42,16 +43,12 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
         top_node = matched_nodes[0]
 
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[
-                                   *self.make_nodes(**self.get_new_node_args(matched_nodes))
-                               ],
-                               inits_to_add=[
-                                   *self.make_initializers(**self.get_new_init_args(matched_nodes))
-                               ],
-                               vis_to_add=[
-                                   *self.make_value_infos(**self.get_new_vi_args(matched_nodes))
-                               ])
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[*self.make_nodes(**self.get_new_node_args(matched_nodes))],
+            inits_to_add=[*self.make_initializers(**self.get_new_init_args(matched_nodes))],
+            vis_to_add=[*self.make_value_infos(**self.get_new_vi_args(matched_nodes))],
+        )
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -88,7 +85,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         fnode_input = self.get_data_node_input(top_node)
         fnode_output = base_node.output[0]
 
-        return {'node_input': fnode_input, 'node_output': fnode_output}
+        return {"node_input": fnode_input, "node_output": fnode_output}
 
     def get_new_init_args(self, matched_nodes):
         top_node = matched_nodes[0]
@@ -97,7 +94,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         fw_input = self.get_init_node_input(top_node)
         fb_input = self.get_init_node_input(base_node)
 
-        return {'w_input': fw_input, 'b_input': fb_input}
+        return {"w_input": fw_input, "b_input": fb_input}
 
     def get_new_node_args(self, matched_nodes):
         args = dict()
@@ -108,37 +105,47 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return args
 
     def make_nodes(self, node_input, node_output, w_input, b_input, **kwargs):
-        unsqueeze_node = self.make_node('Unsqueeze', inputs=[node_input],
-                                        outputs=[node_input + '_unsqueezed'], name=node_input + '_1',
-                                        **{'axes': [2, 3]})
+        unsqueeze_node = self.make_node(
+            "Unsqueeze",
+            inputs=[node_input],
+            outputs=[node_input + "_unsqueezed"],
+            name=node_input + "_1",
+            **{"axes": [2, 3]}
+        )
 
-        conv_node = self.make_node('Conv',
-                                   inputs=[unsqueeze_node.output[0], w_input + '_fused',
-                                           b_input + '_fused'],
-                                   outputs=[node_input + '_fused'], name=node_input + '_2',
-                                   **{
-                                       'dilations': [1, 1],
-                                       'group': 1,
-                                       'kernel_shape': [1, 1],
-                                       'pads': [0, 0, 0, 0],
-                                       'strides': [1, 1]
-                                   })
+        conv_node = self.make_node(
+            "Conv",
+            inputs=[unsqueeze_node.output[0], w_input + "_fused", b_input + "_fused"],
+            outputs=[node_input + "_fused"],
+            name=node_input + "_2",
+            **{
+                "dilations": [1, 1],
+                "group": 1,
+                "kernel_shape": [1, 1],
+                "pads": [0, 0, 0, 0],
+                "strides": [1, 1],
+            }
+        )
 
-        squeeze_node = self.make_node('Squeeze', inputs=[conv_node.output[0]],
-                                      outputs=[node_output], name=node_input + '_3',
-                                      **{'axes': [2, 3]})
+        squeeze_node = self.make_node(
+            "Squeeze",
+            inputs=[conv_node.output[0]],
+            outputs=[node_output],
+            name=node_input + "_3",
+            **{"axes": [2, 3]}
+        )
         return unsqueeze_node, conv_node, squeeze_node
 
     def make_initializers(self, w_input, b_input=None, **kwargs):
         new_inits = []
         w_arr = self.get_initializer_array(w_input)
         new_w_arr = self.weight_transformation(w_arr, **kwargs)
-        new_w_init = self.make_initializer_from_array(new_w_arr, w_input + '_fused')
+        new_w_init = self.make_initializer_from_array(new_w_arr, w_input + "_fused")
         new_inits.append(new_w_init)
 
         if b_input:
             b_arr = self.get_initializer_array(b_input)
-            new_b_init = self.make_initializer_from_array(b_arr, b_input + '_fused')
+            new_b_init = self.make_initializer_from_array(b_arr, b_input + "_fused")
             new_inits.append(new_b_init)
 
         return new_inits
@@ -150,28 +157,33 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     def make_value_infos(self, node_input, node_output):
 
-        conv_input_vi = self.make_tensor_value_info(node_input + '_unsqueezed',
-                                                    onnx.TensorProto.FLOAT,
-                                                    self.get_value_info_shape(node_input) + [1, 1])
+        conv_input_vi = self.make_tensor_value_info(
+            node_input + "_unsqueezed",
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(node_input) + [1, 1],
+        )
 
-        conv_output_vi = self.make_tensor_value_info(node_input + '_fused',
-                                                     onnx.TensorProto.FLOAT,
-                                                     self.get_value_info_shape(node_output) + [1, 1])
+        conv_output_vi = self.make_tensor_value_info(
+            node_input + "_fused",
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(node_output) + [1, 1],
+        )
 
         return conv_input_vi, conv_output_vi
 
 
 class Pattern_2(Pattern_1, abc.ABC):
     """
-        transform
-            prev --> Gemm --> next
-        to
-            prev --> Unsqueeze --> Conv --> Squeeze --> next
+    transform
+        prev --> Gemm --> next
+    to
+        prev --> Unsqueeze --> Conv --> Squeeze --> next
 
-        if 1. one of Gemm.A and Gemm.B must have initializer
-           2. Gemm.C must have initializer if defined
+    if 1. one of Gemm.A and Gemm.B must have initializer
+       2. Gemm.C must have initializer if defined
     """
-    pattern_to_match = ['Gemm']
+
+    pattern_to_match = ["Gemm"]
 
     def pattern_condition_checker(self, nodes_to_check):
         node = nodes_to_check[0]
@@ -209,7 +221,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         if len(node.input) == 3:
             fb_input = node.input[2]
 
-        args = {'w_input': fw_input, 'b_input': fb_input}
+        args = {"w_input": fw_input, "b_input": fb_input}
         args.update(self.get_attrs(node))
 
         return args
@@ -219,10 +231,10 @@ class Pattern_2(Pattern_1, abc.ABC):
         fnode_input = node.input[0]
         fnode_output = node.output[0]
 
-        return {'node_input': fnode_input, 'node_output': fnode_output}
+        return {"node_input": fnode_input, "node_output": fnode_output}
 
     def weight_transformation(self, w_arr, **kwargs):
-        transB = kwargs['transB']
+        transB = kwargs["transB"]
         if transB == 0:
             w_arr = w_arr.transpose()
 
@@ -233,11 +245,12 @@ class Pattern_2(Pattern_1, abc.ABC):
 
     def get_attrs(self, node):
         from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+
         attrs = attribute_to_kwargs(node.attribute)
-        alpha = attrs['alpha']
-        beta = attrs['beta']
+        alpha = attrs["alpha"]
+        beta = attrs["beta"]
         assert alpha == beta == 1.0, "Assume alpha = beta = 1.0"
 
-        transB = attrs['transB']
+        transB = attrs["transB"]
 
-        return {'transB': transB}
+        return {"transB": transB}

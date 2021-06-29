@@ -19,7 +19,7 @@ class ConvertClipAttrToInput(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         optimized_nodes = []
         for node in model.graph.node:
-            if node.op_type != 'Clip':
+            if node.op_type != "Clip":
                 optimized_nodes.append(node)
                 continue
 
@@ -33,20 +33,22 @@ class ConvertClipAttrToInput(Transformer):
             input_names = dict()
             added_inits = dict()
 
-            input_names['min'] = ''
-            input_names['max'] = ''
+            input_names["min"] = ""
+            input_names["max"] = ""
             # The filter() method constructs an iterator from elements of an iterable for which a function returns true.
-            for attr in filter(lambda x: x.name == 'min' or x.name == 'max', node.attribute):
-                tensor_name = f'{node.input[0]}_clip_{attr.name}'
+            for attr in filter(lambda x: x.name == "min" or x.name == "max", node.attribute):
+                tensor_name = f"{node.input[0]}_clip_{attr.name}"
                 tensor = make_tensor(tensor_name, TensorProto.FLOAT, (), [attr.f])
                 input_names[attr.name] = tensor_name
                 added_inits[attr.name] = tensor
 
             model.graph.initializer.extend([*added_inits.values()])
 
-            new_node = make_node('Clip',
-                                 inputs=[node_input, input_names['min'], input_names['max']],
-                                 outputs=[node_output])
+            new_node = make_node(
+                "Clip",
+                inputs=[node_input, input_names["min"], input_names["max"]],
+                outputs=[node_output],
+            )
 
             optimized_nodes.append(new_node)
 

@@ -30,7 +30,7 @@ def implicit_axis_to_explicit(axes, input_shape):
         else:
             return axis
     else:
-        raise Exception('Unknown type: %s. axes must be int or list.' % type(axes))
+        raise Exception("Unknown type: %s. axes must be int or list." % type(axes))
 
 
 def gemm_shapes(input_shapes, transA, transB):
@@ -48,7 +48,9 @@ def gemm_shapes(input_shapes, transA, transB):
 
 
 def slice_offset_dict(starts, axes, input_shape):
-    offsets = [0, ] * len(input_shape)
+    offsets = [
+        0,
+    ] * len(input_shape)
     for start, axis in zip(starts, axes):
         offsets[axis] = start
 

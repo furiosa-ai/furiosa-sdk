@@ -8,7 +8,7 @@ from setuptools import setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.5.0.dev0'
+version = "0.5.0.dev0"
 
 my_dir = dirname(__file__)
 
@@ -31,23 +31,23 @@ def git_version(version_: str) -> str:
         import git
 
         try:
-            repo = git.Repo(os.path.join(*[my_dir, '..', '..', '.git']))
+            repo = git.Repo(os.path.join(*[my_dir, "..", "..", ".git"]))
         except git.NoSuchPathError:
-            logger.warning('.git directory not found: Cannot compute the git version')
-            return ''
+            logger.warning(".git directory not found: Cannot compute the git version")
+            return ""
         except git.InvalidGitRepositoryError:
-            logger.warning('Invalid .git directory not found: Cannot compute the git version')
-            return ''
+            logger.warning("Invalid .git directory not found: Cannot compute the git version")
+            return ""
     except ImportError:
-        logger.warning('gitpython not found: Cannot compute the git version.')
-        return ''
+        logger.warning("gitpython not found: Cannot compute the git version.")
+        return ""
     if repo:
         sha = repo.head.commit.hexsha
         if repo.is_dirty():
-            return f'.dev0+{sha}.dirty'
+            return f".dev0+{sha}.dirty"
         # commit is clean
-        return f'.release:{version_}+{sha}'
-    return 'no_git_version'
+        return f".release:{version_}+{sha}"
+    return "no_git_version"
 
 
 def write_version(filename: str = os.path.join(*[my_dir, "furiosa_sdk_cli", "git_version"])):
@@ -56,7 +56,7 @@ def write_version(filename: str = os.path.join(*[my_dir, "furiosa_sdk_cli", "git
     :param str filename: Destination file to write
     """
     text = f"{git_version(version)}"
-    with open(filename, 'w') as file:
+    with open(filename, "w") as file:
         file.write(text)
 
 
@@ -67,6 +67,6 @@ if __name__ == "__main__":
 
     setup(
         version=version,
-        scripts=['bin/furiosa'],
+        scripts=["bin/furiosa"],
         **setup_kwargs,
     )
