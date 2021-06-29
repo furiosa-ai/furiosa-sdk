@@ -24,10 +24,7 @@ class OnnxExportSpec(ExportSpec):
             for node_output in node.output:
                 if node_output in self.producer_map:
                     raise Exception(
-                        "Invalid form of graph, a tensor {} has two or more producers.".format(
-                            node_output
-                        )
-                    )
+                        "Invalid form of graph, a tensor {} has two or more producers.".format(node_output))
                 self.producer_map[node_output] = node
 
         # Followings will be lazily initialized.
@@ -82,24 +79,18 @@ class OnnxExportSpec(ExportSpec):
 
         return specs, unsupported_ops
 
-    def traverse_single_node_spec(
-        self, node: onnx.NodeProto
-    ) -> Optional[Tuple[spec.Spec, List[str]]]:
+    def traverse_single_node_spec(self, node: onnx.NodeProto) -> Optional[Tuple[spec.Spec, List[str]]]:
         """
         Returns (Spec, list of inputs of the node)
         """
         if node.op_type not in self.single_node_spec:
             return None
 
-        data_flow_input = list(
-            filter(lambda input: input not in self.initializer.keys(), node.input)
-        )
+        data_flow_input = list(filter(lambda input: input not in self.initializer.keys(), node.input))
 
         return self.single_node_spec[node.op_type](node), data_flow_input
 
-    def traverse_multi_node_spec(
-        self, node: onnx.NodeProto
-    ) -> Optional[Tuple[spec.Spec, List[str]]]:
+    def traverse_multi_node_spec(self, node: onnx.NodeProto) -> Optional[Tuple[spec.Spec, List[str]]]:
         """
         Returns (Spec, list of inputs of the node)
         """
@@ -115,8 +106,7 @@ class OnnxExportSpec(ExportSpec):
             if found is not None:
                 warnings.warn(
                     "Find two or more ways of exporting as spec from multi-node for the the node {}, ".format(
-                        node.op_type
-                    )
+                        node.op_type)
                 )
                 return found
             found = result
@@ -125,15 +115,16 @@ class OnnxExportSpec(ExportSpec):
     @property
     def skip_node(self) -> Set[str]:
         if self._SKIP_NODE is None:
-            self._SKIP_NODE = {"Relu", "BatchNormalization"}
+            self._SKIP_NODE = {'Relu', 'BatchNormalization'}
         return self._SKIP_NODE
 
     @property
-    def multi_node_spec(
-        self,
-    ) -> Dict[str, List[Callable[[onnx.NodeProto], Optional[Tuple[spec.Spec, List[str]]]]]]:
+    def multi_node_spec(self) -> Dict[
+        str, List[Callable[[onnx.NodeProto], Optional[Tuple[spec.Spec, List[str]]]]]]:
         if self._MULTI_NODE_SPEC is None:
-            self._MULTI_NODE_SPEC = {"Div": [self.multi_node_lp_norm]}
+            self._MULTI_NODE_SPEC = {
+                'Div': [self.multi_node_lp_norm]
+            }
         return self._MULTI_NODE_SPEC
 
     @property
@@ -142,40 +133,40 @@ class OnnxExportSpec(ExportSpec):
             return self._SINGLE_NODE_SPEC
 
         self._SINGLE_NODE_SPEC = {
-            "Conv": self.conv2d,
-            "ConvTranspose": self.convtranspose2d,
-            "MaxPool": self.maxpool2d,
-            "AveragePool": self.avgpool2d,
-            "GlobalAveragePool": self.avgpool2d,
-            "Gemm": self.gemm,
-            "MatMul": self.matmul,
-            "DepthToSpace": self.depthtospace,
-            "Resize": self.resize,
-            "Add": self.add,
-            "Sub": self.sub,
-            "Mul": self.mul,
-            "Div": self.div,
-            "Exp": self.exp,
-            "Sigmoid": self.sigmoid,
-            "Softplus": self.softplus,
-            "Gelu": self.gelu,
-            "ReduceMean": self.reduce_mean,
-            "ReduceSum": self.reduce_sum,
-            "ReduceL2": self.reduce_l2,
-            "Squeeze": self.squeeze,
-            "Unsqueeze": self.unsqueeze,
-            "Reshape": self.reshape,
-            "Expand": self.expand,
-            "Concat": self.concatenation,
-            "Transpose": self.transpose,
-            "Slice": self.slice,
-            "Flatten": self.flatten,
-            "Pad": self.pad,
-            "Split": self.split,
-            "Softmax": self.softmax,
-            "Clip": self.clip,
-            "LayerNormalization": self.layer_norm,
-            "LpNormalization": self.lp_norm,
+            'Conv': self.conv2d,
+            'ConvTranspose': self.convtranspose2d,
+            'MaxPool': self.maxpool2d,
+            'AveragePool': self.avgpool2d,
+            'GlobalAveragePool': self.avgpool2d,
+            'Gemm': self.gemm,
+            'MatMul': self.matmul,
+            'DepthToSpace': self.depthtospace,
+            'Resize': self.resize,
+            'Add': self.add,
+            'Sub': self.sub,
+            'Mul': self.mul,
+            'Div': self.div,
+            'Exp': self.exp,
+            'Sigmoid': self.sigmoid,
+            'Softplus': self.softplus,
+            'Gelu': self.gelu,
+            'ReduceMean': self.reduce_mean,
+            'ReduceSum': self.reduce_sum,
+            'ReduceL2': self.reduce_l2,
+            'Squeeze': self.squeeze,
+            'Unsqueeze': self.unsqueeze,
+            'Reshape': self.reshape,
+            'Expand': self.expand,
+            'Concat': self.concatenation,
+            'Transpose': self.transpose,
+            'Slice': self.slice,
+            'Flatten': self.flatten,
+            'Pad': self.pad,
+            'Split': self.split,
+            'Softmax': self.softmax,
+            'Clip': self.clip,
+            'LayerNormalization': self.layer_norm,
+            'LpNormalization': self.lp_norm,
         }
         return self._SINGLE_NODE_SPEC
 
@@ -209,18 +200,17 @@ class OnnxExportSpec(ExportSpec):
                 elif attr.type == 7:
                     attrs[attr.name] = attr.ints
                 else:
-                    raise Exception("Unknown data type: %s" % attr.type)
+                    raise Exception('Unknown data type: %s' % attr.type)
 
             attributes[node.name] = attrs
 
         return attributes
 
-    def get_inputs_for_gen_spec(
-        self, node: onnx.NodeProto
-    ) -> Tuple[List[Tuple[int]], List[Tuple[int]], Dict]:
+    def get_inputs_for_gen_spec(self, node: onnx.NodeProto) \
+            -> Tuple[List[Tuple[int]], List[Tuple[int]], Dict]:
         input_shapes = []
         for input in node.input:
-            if input == "":
+            if input == '':
                 input_shapes.append([])
                 continue
 
@@ -229,19 +219,15 @@ class OnnxExportSpec(ExportSpec):
 
             if input in self.initializer.keys():
                 continue
-            assert input_shape, "input_shape: %s. shape_inference might have failed at %s" % (
-                input_shape,
-                node.name,
-            )
+            assert input_shape, \
+                'input_shape: %s. shape_inference might have failed at %s' % (input_shape, node.name)
 
         output_shapes = []
         for output in node.output:
             output_shape = self.tensor_shapes[output]
             output_shapes.append(output_shape)
-            assert output_shape, "output_shape: %s. shape_inference might have failed at %s" % (
-                output_shape,
-                node.name,
-            )
+            assert output_shape, \
+                'output_shape: %s. shape_inference might have failed at %s' % (output_shape, node.name)
 
         attrs = self.attributes[node.name]
 
@@ -257,18 +243,18 @@ class OnnxExportSpec(ExportSpec):
 
         # TODO assert -> warning. refer to https://docs.python.org/3/tutorial/errors.html#user-defined-exceptions
         # ONNX Conv assumes n-d array as its kernel.
-        assert len(attributes["kernel_shape"]) == 2
+        assert len(attributes['kernel_shape']) == 2
 
         operator_spec_option = spec.Conv2d(
             input=HeightWidth(input_shape[2], input_shape[3]),
-            kernel=HeightWidth(*attributes["kernel_shape"]),
-            stride=HeightWidth(*attributes.get("strides", (1, 1))),
-            dilation=HeightWidth(*attributes.get("dilations", (1, 1))),
+            kernel=HeightWidth(*attributes['kernel_shape']),
+            stride=HeightWidth(*attributes.get('strides', (1, 1))),
+            dilation=HeightWidth(*attributes.get('dilations', (1, 1))),
             batch=input_shape[0],
             input_channel=input_shape[1],
             output_channel=output_shape[1],
-            groups=attributes.get("group", 1),
-            padding=Padding(*attributes.get("pads", (0, 0, 0, 0))),
+            groups=attributes.get('group', 1),
+            padding=Padding(*attributes.get('pads', (0, 0, 0, 0))),
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -279,18 +265,18 @@ class OnnxExportSpec(ExportSpec):
 
         # TODO assert -> warning. refer to https://docs.python.org/3/tutorial/errors.html#user-defined-exceptions
         # ONNX Conv assumes n-d array as its kernel.
-        assert len(attributes["kernel_shape"]) == 2
+        assert len(attributes['kernel_shape']) == 2
 
         operator_spec_option = spec.TrasnposeConv(
             input=HeightWidth(input_shape[2], input_shape[3]),
-            kernel=HeightWidth(*attributes["kernel_shape"]),
-            stride=HeightWidth(*attributes.get("strides", (1, 1))),
-            dilation=HeightWidth(*attributes.get("dilations", (1, 1))),
+            kernel=HeightWidth(*attributes['kernel_shape']),
+            stride=HeightWidth(*attributes.get('strides', (1, 1))),
+            dilation=HeightWidth(*attributes.get('dilations', (1, 1))),
             batch=input_shape[0],
             input_channel=input_shape[1],
             output_channel=output_shape[1],
-            groups=attributes.get("group", 1),
-            padding=Padding(*attributes.get("pads", (0, 0, 0, 0))),
+            groups=attributes.get('group', 1),
+            padding=Padding(*attributes.get('pads', (0, 0, 0, 0))),
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -302,16 +288,16 @@ class OnnxExportSpec(ExportSpec):
         output_shape = output_shapes[0]
 
         # ONNX MaxPool assumes n-d array as its kernel.
-        assert len(attributes["kernel_shape"]) == 2
+        assert len(attributes['kernel_shape']) == 2
 
         operator_spec_option = spec.MaxPool2d(
             input=HeightWidth(input_shape[2], input_shape[3]),
-            kernel=HeightWidth(*attributes["kernel_shape"]),
-            stride=HeightWidth(*attributes.get("strides", (1, 1))),
-            dilation=HeightWidth(*attributes.get("dilations", (1, 1))),
+            kernel=HeightWidth(*attributes['kernel_shape']),
+            stride=HeightWidth(*attributes.get('strides', (1, 1))),
+            dilation=HeightWidth(*attributes.get('dilations', (1, 1))),
             batch=input_shape[0],
             channel=output_shape[1],
-            padding=Padding(*attributes.get("pads", (0, 0, 0, 0))),
+            padding=Padding(*attributes.get('pads', (0, 0, 0, 0))),
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -323,29 +309,29 @@ class OnnxExportSpec(ExportSpec):
         output_shape = output_shapes[0]
 
         # ONNX AveragePool assumes n-d array as its kernel.
-        if node.op_type == "AveragePool":
-            assert len(attributes["kernel_shape"]) == 2
-        elif node.op_type == "GlobalAveragePool":
-            attributes = {"kernel_shape": (input_shape[2:])}
+        if node.op_type == 'AveragePool':
+            assert len(attributes['kernel_shape']) == 2
+        elif node.op_type == 'GlobalAveragePool':
+            attributes = {'kernel_shape': (input_shape[2:])}
 
         operator_spec_option = spec.AveragePool2d(
             input=HeightWidth(input_shape[2], input_shape[3]),
-            kernel=HeightWidth(*attributes["kernel_shape"]),
-            stride=HeightWidth(*attributes.get("strides", (1, 1))),
-            dilation=HeightWidth(*attributes.get("dilations", (1, 1))),
+            kernel=HeightWidth(*attributes['kernel_shape']),
+            stride=HeightWidth(*attributes.get('strides', (1, 1))),
+            dilation=HeightWidth(*attributes.get('dilations', (1, 1))),
             batch=input_shape[0],
             channel=output_shape[1],
-            padding=Padding(*attributes.get("pads", (0, 0, 0, 0))),
+            padding=Padding(*attributes.get('pads', (0, 0, 0, 0))),
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def gemm(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
-        alpha = attributes.get("alpha", float(1.0))
-        beta = attributes.get("beta", float(1.0))
-        m, k, n = spec_utils.gemm_shapes(
-            input_shapes, attributes.get("transA", int(0)), attributes.get("transB", int(0))
-        )
+        alpha = attributes.get('alpha', float(1.0))
+        beta = attributes.get('beta', float(1.0))
+        m, k, n = spec_utils.gemm_shapes(input_shapes,
+                                         attributes.get('transA', int(0)),
+                                         attributes.get('transB', int(0)))
         operator_spec_option = spec.Gemm(alpha=alpha, beta=beta, m=m, k=k, n=n)
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -362,11 +348,11 @@ class OnnxExportSpec(ExportSpec):
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
 
-        mode = attributes.get("mode", "DCR")
-        if mode == "CRD":
-            mode = "ColumnRowDepth"
-        elif mode == "DCR":
-            mode = "DepthColumnRow"
+        mode = attributes.get('mode', 'DCR')
+        if mode == 'CRD':
+            mode = 'ColumnRowDepth'
+        elif mode == 'DCR':
+            mode = 'DepthColumnRow'
         else:
             raise Exception('Unknown mode: %s. Mode must be one of "DCR" or "CRD".' % mode)
 
@@ -375,8 +361,8 @@ class OnnxExportSpec(ExportSpec):
             height=input_shape[2],
             width=input_shape[3],
             channel=input_shape[1],
-            block_size=attributes["blocksize"],
-            mode=mode,
+            block_size=attributes['blocksize'],
+            mode=mode
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -390,9 +376,7 @@ class OnnxExportSpec(ExportSpec):
         except IndexError:
             sizes = []
 
-        operator_spec_option = spec.Resize(
-            shape=[*input_shape], roi=roi, scales=scales, sizes=sizes
-        )
+        operator_spec_option = spec.Resize(shape=[*input_shape], roi=roi, scales=scales, sizes=sizes)
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def add(self, node: onnx.NodeProto) -> spec.Spec:
@@ -451,84 +435,80 @@ class OnnxExportSpec(ExportSpec):
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.ReduceMean(
-            shape=[*input_shape],
-            axes=spec_utils.implicit_axis_to_explicit([*attributes["axes"]], input_shape),
-        )
+        operator_spec_option = spec.ReduceMean(shape=[*input_shape],
+                                               axes=spec_utils.implicit_axis_to_explicit(
+                                                   [*attributes['axes']],
+                                                   input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def reduce_sum(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.ReduceSum(
-            shape=[*input_shape],
-            axes=spec_utils.implicit_axis_to_explicit([*attributes["axes"]], input_shape),
-        )
+        operator_spec_option = spec.ReduceSum(shape=[*input_shape],
+                                              axes=spec_utils.implicit_axis_to_explicit([*attributes['axes']],
+                                                                                        input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def reduce_l2(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.ReduceL2(
-            shape=[*input_shape],
-            axes=spec_utils.implicit_axis_to_explicit([*attributes["axes"]], input_shape),
-        )
+        operator_spec_option = spec.ReduceL2(shape=[*input_shape],
+                                             axes=spec_utils.implicit_axis_to_explicit([*attributes['axes']],
+                                                                                       input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def squeeze(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.Squeeze(
-            shape=[*input_shape],
-            axes=spec_utils.implicit_axis_to_explicit([*attributes["axes"]], input_shape),
-        )
+        operator_spec_option = spec.Squeeze(shape=[*input_shape],
+                                            axes=spec_utils.implicit_axis_to_explicit([*attributes['axes']],
+                                                                                      input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def unsqueeze(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.Unsqueeze(
-            shape=[*input_shape],
-            axes=spec_utils.implicit_axis_to_explicit([*attributes["axes"]], input_shape),
-        )
+        operator_spec_option = spec.Unsqueeze(shape=[*input_shape],
+                                              axes=spec_utils.implicit_axis_to_explicit([*attributes['axes']],
+                                                                                        input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def reshape(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, output_shapes, _ = self.get_inputs_for_gen_spec(node)
         input_shape = input_shapes[0]
         output_shape = output_shapes[0]
-        operator_spec_option = spec.Reshape(
-            input_shape=[*input_shape], output_shape=[*output_shape]
-        )
+        operator_spec_option = spec.Reshape(input_shape=[*input_shape],
+                                            output_shape=[*output_shape])
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def expand(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, output_shapes, _ = self.get_inputs_for_gen_spec(node)
         input_shape = input_shapes[0]
         output_shape = output_shapes[0]
-        operator_spec_option = spec.Expand(input_shape=[*input_shape], output_shape=[*output_shape])
+        operator_spec_option = spec.Expand(input_shape=[*input_shape],
+                                           output_shape=[*output_shape])
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def concatenation(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
-        operator_spec_option = spec.Concatenation(
-            tensors=list(map(list, input_shapes)),
-            axis=spec_utils.implicit_axis_to_explicit(attributes["axis"], input_shapes[0]),
-        )
+        operator_spec_option = spec.Concatenation(tensors=list(map(list, input_shapes)),
+                                                  axis=spec_utils.implicit_axis_to_explicit(
+                                                      attributes['axis'],
+                                                      input_shapes[0]))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def transpose(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.Transpose(
-            shape=[*input_shape],
-            permutation=spec_utils.implicit_axis_to_explicit([*attributes["perm"]], input_shape),
-        )
+        operator_spec_option = spec.Transpose(shape=[*input_shape],
+                                              permutation=spec_utils.implicit_axis_to_explicit(
+                                                  [*attributes['perm']],
+                                                  input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def slice(self, node: onnx.NodeProto) -> spec.Spec:
@@ -536,19 +516,17 @@ class OnnxExportSpec(ExportSpec):
         input_shape = input_shapes[0]
         starts = self.get_initializer_for_gen_spec(node.input[1])
         axes = self.get_initializer_for_gen_spec(node.input[3])
-        operator_spec_option = spec.Slice(
-            shape=[*input_shape], offset=spec_utils.slice_offset_dict(starts, axes, input_shape)
-        )
+        operator_spec_option = spec.Slice(shape=[*input_shape],
+                                          offset=spec_utils.slice_offset_dict(starts, axes, input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def flatten(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.Flatten(
-            shape=[*input_shape],
-            axis=spec_utils.implicit_axis_to_explicit(attributes["axis"], input_shape),
-        )
+        operator_spec_option = spec.Flatten(shape=[*input_shape],
+                                            axis=spec_utils.implicit_axis_to_explicit(attributes['axis'],
+                                                                                      input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def pad(self, node: onnx.NodeProto) -> spec.Spec:
@@ -556,25 +534,23 @@ class OnnxExportSpec(ExportSpec):
         input_shape = input_shapes[0]
         assert len(input_shape) == 4
         pads = self.get_initializer_for_gen_spec(node.input[1])
-        operator_spec_option = spec.Pad(shape=[*input_shape], pad=spec_utils.horizontal_pads(*pads))
+        operator_spec_option = spec.Pad(shape=[*input_shape],
+                                        pad=spec_utils.horizontal_pads(*pads))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def layer_norm(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
-        operator_spec_option = spec.LayerNorm(
-            input_shape=[*input_shapes[0]], eps=attributes["epsilon"]
-        )
+        operator_spec_option = spec.LayerNorm(input_shape=[*input_shapes[0]],
+                                              eps=attributes['epsilon'])
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def split(self, node: onnx.NodeProto) -> spec.Spec:
         input_shapes, _, attributes = self.get_inputs_for_gen_spec(node)
         assert len(input_shapes) == 1
         input_shape = input_shapes[0]
-        operator_spec_option = spec.Split(
-            shape=[*input_shape],
-            split=[*attributes["split"]],
-            axis=spec_utils.implicit_axis_to_explicit(attributes.get("axis", 0), input_shape),
-        )
+        operator_spec_option = spec.Split(shape=[*input_shape], split=[*attributes['split']],
+                                          axis=spec_utils.implicit_axis_to_explicit(attributes.get('axis', 0),
+                                                                                    input_shape))
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def softmax(self, node: onnx.NodeProto) -> spec.Spec:
@@ -584,8 +560,8 @@ class OnnxExportSpec(ExportSpec):
 
         operator_spec_option = spec.Softmax(
             input_shape=[*input_shape],
-            beta=attributes.get("beta", float(1.0)),
-            axis=spec_utils.implicit_axis_to_explicit(attributes["axis"], input_shape),
+            beta=attributes.get('beta', float(1.0)),
+            axis=spec_utils.implicit_axis_to_explicit(attributes['axis'], input_shape)
         )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -597,33 +573,39 @@ class OnnxExportSpec(ExportSpec):
         if node.attribute:
             for attr in node.attribute:
                 if attr.name == "min":
-                    kwargs["min"] = float(attr.f)
+                    kwargs['min'] = float(attr.f)
                 elif attr.name == "max":
-                    kwargs["max"] = float(attr.f)
+                    kwargs['max'] = float(attr.f)
         else:
             assert len(node.input) == 3
             for idx, node_input in enumerate(node.input):
                 if idx == 1:
                     try:
-                        kwargs["min"] = float(numpy_helper.to_array(self.initializer[node_input]))
+                        kwargs['min'] = float(numpy_helper.to_array(self.initializer[node_input]))
                     except KeyError:
-                        kwargs["min"] = None
+                        kwargs['min'] = None
 
                 elif idx == 2:
                     try:
-                        kwargs["max"] = float(numpy_helper.to_array(self.initializer[node_input]))
+                        kwargs['max'] = float(numpy_helper.to_array(self.initializer[node_input]))
                     except KeyError:
-                        kwargs["max"] = None
+                        kwargs['max'] = None
 
         if not kwargs:
-            raise Exception("Empty min and/or max.")
+            raise Exception('Empty min and/or max.')
 
-        operator_spec_option = spec.Clip(input_shape=[*input_shape], **kwargs)
+        operator_spec_option = spec.Clip(
+            input_shape=[*input_shape],
+            **kwargs
+        )
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
     def lp_norm(self, node: onnx.NodeProto) -> spec.Spec:
         input_shape, _, attrs = self.get_inputs_for_gen_spec(node)
-        operator_spec_option = spec.LpNorm(input_shape=[*input_shape], **attrs)
+        operator_spec_option = spec.LpNorm(
+            input_shape=[*input_shape],
+            **attrs
+        )
 
         return spec.Spec(spec_utils.node_identifier(node), operator_spec_option)
 
@@ -644,24 +626,21 @@ class OnnxExportSpec(ExportSpec):
                 continue
 
             prev_node = self.producer_map[input]
-            if prev_node.op_type != "Expand":
+            if prev_node.op_type != 'Expand':
                 continue
 
             pprev_node = self.producer_map[prev_node.input[0]]
-            if pprev_node.op_type != "Clip":
+            if pprev_node.op_type != 'Clip':
                 continue
 
             ppprev_node = self.producer_map[pprev_node.input[0]]
-            if ppprev_node.op_type != "ReduceL2":
+            if ppprev_node.op_type != 'ReduceL2':
                 continue
             p = 2
 
             inputs_of_lp_norm.append(ppprev_node.input[0])
             input_shapes, _, attributes = self.get_inputs_for_gen_spec(ppprev_node)
-            axis = attributes["axes"][0]
+            axis = attributes['axes'][0]
 
             operator_spec_option = spec.LpNorm(input_shape=[*input_shapes[0]], p=p, axis=axis)
-            return (
-                spec.Spec(spec_utils.node_identifier(node), operator_spec_option),
-                inputs_of_lp_norm,
-            )
+            return spec.Spec(spec_utils.node_identifier(node), operator_spec_option), inputs_of_lp_norm

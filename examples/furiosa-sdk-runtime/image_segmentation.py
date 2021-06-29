@@ -16,12 +16,12 @@ from pathlib import Path
 
 def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:
     img = img.resize(size)
-    img_arr = np.asarray(img, dtype="float32")
+    img_arr = np.asarray(img, dtype='float32')
 
     mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
     std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-    img_arr /= 255.0
+    img_arr /= 255.
     img_arr -= mean
     img_arr /= std
 
@@ -32,35 +32,15 @@ def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:
 
 def decode_segmap(image: np.array) -> np.array:
     # https://learnopencv.com/pytorch-for-beginners-semantic-segmentation-using-torchvision/
-    label_colors = np.array(
-        [
-            (0, 0, 0),  # 0=background
-            # 1=aeroplane, 2=bicycle, 3=bird, 4=boat, 5=bottle
-            (128, 0, 0),
-            (0, 128, 0),
-            (128, 128, 0),
-            (0, 0, 128),
-            (128, 0, 128),
-            # 6=bus, 7=car, 8=cat, 9=chair, 10=cow
-            (0, 128, 128),
-            (128, 128, 128),
-            (64, 0, 0),
-            (192, 0, 0),
-            (64, 128, 0),
-            # 11=dining table, 12=dog, 13=horse, 14=motorbike, 15=person
-            (192, 128, 0),
-            (64, 0, 128),
-            (192, 0, 128),
-            (64, 128, 128),
-            (192, 128, 128),
-            # 16=potted plant, 17=sheep, 18=sofa, 19=train, 20=tv/monitor
-            (0, 64, 0),
-            (128, 64, 0),
-            (0, 192, 0),
-            (128, 192, 0),
-            (0, 64, 128),
-        ]
-    )
+    label_colors = np.array([(0, 0, 0),  # 0=background
+                             # 1=aeroplane, 2=bicycle, 3=bird, 4=boat, 5=bottle
+                             (128, 0, 0), (0, 128, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128),
+                             # 6=bus, 7=car, 8=cat, 9=chair, 10=cow
+                             (0, 128, 128), (128, 128, 128), (64, 0, 0), (192, 0, 0), (64, 128, 0),
+                             # 11=dining table, 12=dog, 13=horse, 14=motorbike, 15=person
+                             (192, 128, 0), (64, 0, 128), (192, 0, 128), (64, 128, 128), (192, 128, 128),
+                             # 16=potted plant, 17=sheep, 18=sofa, 19=train, 20=tv/monitor
+                             (0, 64, 0), (128, 64, 0), (0, 192, 0), (128, 192, 0), (0, 64, 128)])
     r = np.zeros_like(image).astype(np.uint8)
     g = np.zeros_like(image).astype(np.uint8)
     b = np.zeros_like(image).astype(np.uint8)
@@ -87,9 +67,7 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
         ort.set_default_logger_severity(3)
         sess = ort.InferenceSession(model_path)
         start_time = time.time()
-        output_tensor = sess.run(
-            ["out"], input_feed={"input": np.expand_dims(input_array, axis=0)}
-        )[0]
+        output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]
         rgb = decode_segmap(output_tensor.squeeze())
     else:
         # Furiosa runtime inference with the quantized model
@@ -104,13 +82,11 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
             print(np_array)
             rgb = decode_segmap(np_array)
 
-    print("Prediction elapsed {:.2f} secs".format(time.time() - start_time))
+    print('Prediction elapsed {:.2f} secs'.format(time.time() - start_time))
 
     # show images
     output_image = Image.fromarray(rgb).resize(input_image.size)
-    result_image = Image.new(
-        mode="RGB", size=(input_image.width + output_image.width, input_image.height)
-    )
+    result_image = Image.new(mode='RGB', size=(input_image.width + output_image.width, input_image.height))
     mask = Image.new("L", input_image.size, 128)
     composite_image = Image.composite(input_image, output_image, mask)
     result_image.paste(composite_image)
@@ -123,9 +99,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         print("Inference using the existing quantized model")
         current_path = Path(__file__).absolute().parent
-        model_path = current_path.joinpath(
-            "../assets/quantized_models/deeplabv3_resnet50_argmax_int8.onnx"
-        )
+        model_path = current_path.joinpath("../assets/quantized_models/deeplabv3_resnet50_argmax_int8.onnx")
         is_fp32 = False
     elif len(sys.argv) == 3:
         print("Inference using given FP32 model")

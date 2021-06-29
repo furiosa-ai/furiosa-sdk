@@ -16,46 +16,46 @@ __PRODUCER__ = "jason_furiosa"
 # Integer_math and Integer_non_math ops can handle int8 inputs whereas Sandwich ops can not.
 # Note: Concat is exceptional. As it requires re-quantizing multiple inputs.
 __DYNAMIC_RANGE_COLLECTORS__ = {
-    "integer_math": [
-        "Conv",
-        "MatMul",
+    'integer_math': [
+        'Conv',
+        'MatMul',
     ],
-    "integer_non_math": [
-        "MaxPool",
-        "Squeeze",
-        "Unsqueeze",
-        "Gather",
-        "Transpose",
-        "Reshape",
-        "DepthToSpace",
-        "Expand",
-        "Clip",
-        "Split",
-        "Pad",
-        "Resize",
-        "Flatten",
-        "Slice",
+    'integer_non_math': [
+        'MaxPool',
+        'Squeeze',
+        'Unsqueeze',
+        'Gather',
+        'Transpose',
+        'Reshape',
+        'DepthToSpace',
+        'Expand',
+        'Clip',
+        'Split',
+        'Pad',
+        'Resize',
+        'Flatten',
+        'Slice',
     ],
-    "sandwich": [
-        "Gemm",
-        "Add",
-        "ReduceMean",
-        "Softmax",
-        "Relu",
-        "Concat",
-        "Softmax",
-        "Softplus",
-        "ReduceL2",
-        "LayerNormalization",
-        "Gelu",
-        "GlobalAveragePool",
-        "Sigmoid",
-        "Mul",
-        "AveragePool",
-        "ReduceSum",
-        "Div",
-        "ConvTranspose",
-        "LpNormalization",
+    'sandwich': [
+        'Gemm',
+        'Add',
+        'ReduceMean',
+        'Softmax',
+        'Relu',
+        'Concat',
+        'Softmax',
+        'Softplus',
+        'ReduceL2',
+        'LayerNormalization',
+        'Gelu',
+        'GlobalAveragePool',
+        'Sigmoid',
+        'Mul',
+        'AveragePool',
+        'ReduceSum',
+        'Div',
+        'ConvTranspose',
+        'LpNormalization',
     ],
 }
 
@@ -76,7 +76,7 @@ def get_qrange(qtype):
     elif qtype == TensorProto.INT8:
         return 254  # [-(2^{b-1}-1), 2^{b-1}-1]: [-127, 127] for 8 bits.
     else:
-        raise ValueError("unsupported quantization data type")
+        raise ValueError('unsupported quantization data type')
 
 
 def get_vi_dtype(vi):
@@ -119,44 +119,31 @@ def asymmetric_scale_zeropoint(rmin, rmax, input_qtype):
         zero_point = np.int8(round(max(-128, min(127, initial_zero_point))))
         return np.array(zero_point), np.array(scale)
     else:
-        Exception("qType must be one of UINT8 or INT8")
+        Exception('qType must be one of UINT8 or INT8')
 
 
-def calculate_activation_quant_params(
-    dynamic_ranges: Dict,
-    node_list: List[onnx.NodeProto],
-    input_qtype: TensorProto,
-    value_info: Dict,
-) -> Dict:
+def calculate_activation_quant_params(dynamic_ranges: Dict,
+                                      node_list: List[onnx.NodeProto],
+                                      input_qtype: TensorProto,
+                                      value_info: Dict) -> Dict:
     quantization_params = {}
     for node in node_list:
         # Quantize activation input/output, following TFLite's quantization specification
-        if node.op_type in [
-            "MaxPool",
-            "Squeeze",
-            "Unsqueeze",
-            "Gather",
-            "Transpose",
-            "Reshape",
-            "DepthToSpace",
-            "Expand",
-            "Flatten",
-            "GlobalAveragePool",
-            "AveragePool",
-        ]:
+        if node.op_type in ['MaxPool', 'Squeeze', 'Unsqueeze', 'Gather', 'Transpose', 'Reshape',
+                            'DepthToSpace', 'Expand', 'Flatten', 'GlobalAveragePool', 'AveragePool']:
             if not is_float_tensor(value_info[node.input[0]]):
                 continue
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
-                    *dynamic_ranges[node.input[0]], input_qtype
-                )
+                    *dynamic_ranges[node.input[0]],
+                    input_qtype)
 
             quantization_params[node.output[0]] = quantization_params[node.input[0]]
-        elif node.op_type in ["Softmax", "Sigmoid"]:
+        elif node.op_type in ['Softmax', 'Sigmoid']:
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
-                    *dynamic_ranges[node.input[0]], input_qtype
-                )
+                    *dynamic_ranges[node.input[0]],
+                    input_qtype)
 
             if input_qtype == TensorProto.INT8:
                 zero_point = np.array((np.int8(-128)))
@@ -165,11 +152,11 @@ def calculate_activation_quant_params(
             else:
                 raise Exception()
             quantization_params[node.output[0]] = (zero_point, np.array(np.float32(1.0 / 256.0)))
-        elif node.op_type in ["LpNormalization"]:
+        elif node.op_type in ['LpNormalization']:
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
-                    *dynamic_ranges[node.input[0]], input_qtype
-                )
+                    *dynamic_ranges[node.input[0]],
+                    input_qtype)
 
             if input_qtype == TensorProto.INT8:
                 zero_point = np.array((np.int8(0)))
@@ -193,23 +180,23 @@ def calculate_activation_quant_params(
 
 def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> Tuple[int, float]:
     """
-    :parameter data: data to quantize
-    :parameter weight_qtype: quantization data type of weight
-    :return: quantized weights, zero point, scale
+        :parameter data: data to quantize
+        :parameter weight_qtype: quantization data type of weight
+        :return: quantized weights, zero point, scale
 
-    To pack weights, we compute a linear transformation
-        - when data type == uint8 mode, from [rmin, rmax] -> [0, 2^{b-1}] and
-        - when data type == int8, from [-m , m] -> [-(2^{b-1}-1), 2^{b-1}-1] where
-            m = max(abs(rmin), abs(rmax))
+        To pack weights, we compute a linear transformation
+            - when data type == uint8 mode, from [rmin, rmax] -> [0, 2^{b-1}] and
+            - when data type == int8, from [-m , m] -> [-(2^{b-1}-1), 2^{b-1}-1] where
+                m = max(abs(rmin), abs(rmax))
 
-    and add necessary intermediate nodes to trasnform quantized weight to full weight using the equation
-    r = S(q-z), where
-        r: real original value
-        q: quantized value
-        S: scale
-        z: zero point
+        and add necessary intermediate nodes to trasnform quantized weight to full weight using the equation
+        r = S(q-z), where
+            r: real original value
+            q: quantized value
+            S: scale
+            z: zero point
 
-    source: onnxruntime quantization tools
+        source: onnxruntime quantization tools
     """
     rmin = min(min(data), 0)
     rmax = max(max(data), 0)
@@ -221,7 +208,7 @@ def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> 
         if max_range > 0:
             scale = (max_range * 2.0) / quantized_range
         else:
-            warnings.warn("both the min and the max of data are 0")
+            warnings.warn('both the min and the max of data are 0')
             scale = 1.0
         zero_point = 0
     elif weight_qtype == TensorProto.UINT8:
@@ -229,10 +216,7 @@ def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> 
         zero_point = round((0 - rmin) / scale)  # round to nearest integer
     else:
         raise ValueError(
-            "Unexpected data type {} requested. Only INT8 and UINT8 are supported.".format(
-                weight_qtype
-            )
-        )
+            "Unexpected data type {} requested. Only INT8 and UINT8 are supported.".format(weight_qtype))
 
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
@@ -241,18 +225,18 @@ def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> 
 
 
 def make_tensor_annotation(tensor_name, zero_point_name, scale_name):
-    """
+    '''
     Helper function to make_tensor_annotation
-    """
+    '''
     annot = TensorAnnotation()
     annot.tensor_name = tensor_name
 
     quant_param_scale = StringStringEntryProto()
-    quant_param_scale.key = "SCALE_TENSOR"
+    quant_param_scale.key = 'SCALE_TENSOR'
     quant_param_scale.value = scale_name
 
     quant_param_zero_point = StringStringEntryProto()
-    quant_param_zero_point.key = "ZERO_POINT_TENSOR"
+    quant_param_zero_point.key = 'ZERO_POINT_TENSOR'
     quant_param_zero_point.value = zero_point_name
 
     annot.quant_parameter_tensor_names.extend([quant_param_scale, quant_param_zero_point])

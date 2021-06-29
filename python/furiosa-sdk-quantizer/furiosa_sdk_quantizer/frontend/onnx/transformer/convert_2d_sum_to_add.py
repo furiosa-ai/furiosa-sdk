@@ -11,7 +11,7 @@ class Convert2dSumToAdd(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         optimized_nodes = []
         for node in model.graph.node:
-            if node.op_type != "Sum":
+            if node.op_type != 'Sum':
                 optimized_nodes.append(node)
                 continue
 
@@ -19,9 +19,7 @@ class Convert2dSumToAdd(Transformer):
                 optimized_nodes.append(node)
                 continue
 
-            new_node = make_node(
-                "Add", inputs=[node.input[0], node.input[1]], outputs=[node.output[0]]
-            )
+            new_node = make_node('Add', inputs=[node.input[0], node.input[1]], outputs=[node.output[0]])
 
             optimized_nodes.append(new_node)
 

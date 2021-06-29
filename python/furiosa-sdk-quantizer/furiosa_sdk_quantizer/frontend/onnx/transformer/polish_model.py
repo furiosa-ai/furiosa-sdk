@@ -1,11 +1,7 @@
 import onnx
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.extract_constant_to_initializer import (
-    ExtractConstantToInitializer,
-)
-from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import (
-    ConvertClipAttrToInput,
-)
+from furiosa_sdk_quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
+from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
 from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
 from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils

@@ -17,17 +17,17 @@ class EliminateArgmaxOutput(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-    transform
-        prev --> Argmax --> next
-    to
-        prev --> (   ) --> next
-    if next is one of graph outputs
+        transform
+            prev --> Argmax --> next
+        to
+            prev --> (   ) --> next
+        if next is one of graph outputs
     """
 
     def pattern_matching(self, base_node):
         inputs = base_node.input
 
-        pattern_to_match = ["ArgMax"]
+        pattern_to_match = ['ArgMax']
         matched_nodes = self.pattern_matcher(base_node, pattern_to_match)
         if not matched_nodes:
             return inputs

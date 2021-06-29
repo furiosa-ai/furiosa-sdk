@@ -47,7 +47,9 @@ def main():
     ]
 
     # Quantizes the model using the calibration dataset.
-    quantized_model = furiosa_sdk_quantizer.post_training_quantize(model, calibration_dataset)
+    quantized_model = furiosa_sdk_quantizer.post_training_quantize(
+        model, calibration_dataset
+    )
 
     # Saves the quantized model.
     onnx.save(quantized_model, "MobileNetV2_10c_10d-quantized.onnx")

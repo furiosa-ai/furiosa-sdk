@@ -39,7 +39,7 @@ class ReifyConvForBert(Transformer):
 
         # Handle Case1: MatMul + Add
         for node in model.graph.node:
-            if node.op_type != "Add":
+            if node.op_type != 'Add':
                 optimized_nodes.append(node)
                 continue
 
@@ -51,8 +51,7 @@ class ReifyConvForBert(Transformer):
 
             try:
                 idx_matmul = list(
-                    filter(lambda enum: _is_input_op_type(enum[1], "MatMul"), enumerate(node.input))
-                )
+                    filter(lambda enum: _is_input_op_type(enum[1], 'MatMul'), enumerate(node.input)))
             except KeyError:
                 optimized_nodes.append(node)
                 continue
@@ -69,92 +68,80 @@ class ReifyConvForBert(Transformer):
                 if node_input in self.initializers.keys():
                     return True
 
-            idx_matmul_init = list(
-                filter(lambda enum: _get_initializer_idx(enum[1]), enumerate(matmul_node.input))
-            )[0][0]
+            idx_matmul_init = list(filter(lambda enum: _get_initializer_idx(enum[1]), \
+                                          enumerate(matmul_node.input)))[0][0]
 
             matmul_init = self.initializers[matmul_node.input[idx_matmul_init]]
             matmul_weight = numpy_helper.to_array(matmul_init)
             c, n = matmul_weight.shape
             conv_weight = matmul_weight.transpose().reshape(n, c, 1, 1)
 
-            idx_add_init = list(
-                filter(lambda enum: _get_initializer_idx(enum[1]), enumerate(matmul_node.input))
-            )[0][0]
+            idx_add_init = \
+                list(filter(lambda enum: _get_initializer_idx(enum[1]), enumerate(matmul_node.input)))[0][0]
 
             add_init = self.initializers[node.input[idx_add_init]]
             bias = numpy_helper.to_array(add_init)
 
-            conv_weight_init = numpy_helper.from_array(
-                conv_weight, name=matmul_node.input[idx_matmul_init] + "_reified"
-            )
-            bias_init = numpy_helper.from_array(bias, name=node.input[idx_add_init] + "_reified")
+            conv_weight_init = numpy_helper.from_array(conv_weight,
+                                                       name=matmul_node.input[idx_matmul_init] + '_reified')
+            bias_init = numpy_helper.from_array(bias, name=node.input[idx_add_init] + '_reified')
             model.graph.initializer.extend([conv_weight_init, bias_init])
 
             removed_nodes.extend([node, matmul_node])
 
-            unsqueeze_node = make_node(
-                "Unsqueeze",
-                inputs=[matmul_node.input[0]],
-                outputs=[matmul_node.output[0] + "_expanded"],
-                **{
-                    "axes": [
-                        1,
-                    ]
-                }
-            )
+            unsqueeze_node = make_node('Unsqueeze',
+                                       inputs=[matmul_node.input[0]],
+                                       outputs=[matmul_node.output[0] + '_expanded'],
+                                       **{
+                                           'axes': [1, ]
+                                       })
 
-            transpose_node = make_node(
-                "Transpose",
-                inputs=[unsqueeze_node.output[0]],
-                outputs=[matmul_node.output[0] + "_transposed"],
-                **{"perm": [0, 3, 1, 2]}
-            )
+            transpose_node = make_node('Transpose',
+                                       inputs=[unsqueeze_node.output[0]],
+                                       outputs=[matmul_node.output[0] + '_transposed'],
+                                       **{
+                                           'perm': [0, 3, 1, 2]
+                                       })
 
-            conv_node = make_node(
-                "Conv",
-                inputs=[transpose_node.output[0], conv_weight_init.name, bias_init.name],
-                outputs=[matmul_node.output[0] + "_conv_output"],
-                **{
-                    "dilations": [1, 1],
-                    "group": 1,
-                    "kernel_shape": [1, 1],
-                    "pads": [0, 0, 0, 0],
-                    "strides": [1, 1],
-                }
-            )
+            conv_node = make_node('Conv',
+                                  inputs=[transpose_node.output[0],
+                                          conv_weight_init.name,
+                                          bias_init.name],
+                                  outputs=[matmul_node.output[0] + '_conv_output'],
+                                  **{
+                                      'dilations': [1, 1],
+                                      'group': 1,
+                                      'kernel_shape': [1, 1],
+                                      'pads': [0, 0, 0, 0],
+                                      'strides': [1, 1]
+                                  })
 
-            squeeze_node = make_node(
-                "Squeeze",
-                inputs=[conv_node.output[0]],
-                outputs=[matmul_node.output[0] + "_squeezed"],
-                **{"axes": [2]}
-            )
+            squeeze_node = make_node('Squeeze',
+                                     inputs=[conv_node.output[0]],
+                                     outputs=[matmul_node.output[0] + '_squeezed'],
+                                     **{'axes': [2]})
 
-            transpose_node_1 = make_node(
-                "Transpose",
-                inputs=[squeeze_node.output[0]],
-                outputs=[node.output[0]],
-                **{"perm": [0, 2, 1]}
-            )
+            transpose_node_1 = make_node('Transpose',
+                                         inputs=[squeeze_node.output[0]],
+                                         outputs=[node.output[0]],
+                                         **{
+                                             'perm': [0, 2, 1]
+                                         })
 
-            optimized_nodes.extend(
-                [unsqueeze_node, transpose_node, conv_node, squeeze_node, transpose_node_1]
-            )
+            optimized_nodes.extend([
+                unsqueeze_node, transpose_node, conv_node, squeeze_node, transpose_node_1])
 
             graph_input = model.graph.input[0]
             if conv_node.input[0] == graph_input.name:
                 batch_size = graph_input.type.tensor_type.shape.dim[0].dim_value
-                new_vi = make_tensor_value_info(
-                    name=graph_input.name,
-                    elem_type=graph_input.type.tensor_type.elem_type,
-                    shape=(batch_size, c, 1, 1),
-                )
+                new_vi = make_tensor_value_info(name=graph_input.name,
+                                                elem_type=graph_input.type.tensor_type.elem_type,
+                                                shape=(batch_size, c, 1, 1))
                 model.graph.input.remove(graph_input)
                 model.graph.input.insert(0, new_vi)
 
         new_nodes = list(filter(lambda node: node not in removed_nodes, optimized_nodes))
-        model.graph.ClearField("node")
+        model.graph.ClearField('node')
         model.graph.node.extend(new_nodes)
         model = make_model(model.graph)
 

@@ -20,7 +20,7 @@ from furiosa.openapi.model_utils import (  # noqa: F401
     datetime,
     file_type,
     none_type,
-    validate_and_convert_types,
+    validate_and_convert_types
 )
 from furiosa.openapi.model.api_response import ApiResponse
 
@@ -38,7 +38,11 @@ class DssApi(object):
         self.api_client = api_client
 
         def __api_dss_v1alpha1_build_calibration_model_post(
-            self, x_request_id, source, input_tensors, **kwargs
+            self,
+            x_request_id,
+            source,
+            input_tensors,
+            **kwargs
         ):
             """Calibrate a model and return the calibrated one  # noqa: E501
 
@@ -80,71 +84,109 @@ class DssApi(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs["async_req"] = kwargs.get("async_req", False)
-            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
-            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
-            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
-            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
-            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
-            kwargs["_host_index"] = kwargs.get("_host_index")
-            kwargs["x_request_id"] = x_request_id
-            kwargs["source"] = source
-            kwargs["input_tensors"] = input_tensors
+            kwargs['async_req'] = kwargs.get(
+                'async_req', False
+            )
+            kwargs['_return_http_data_only'] = kwargs.get(
+                '_return_http_data_only', True
+            )
+            kwargs['_preload_content'] = kwargs.get(
+                '_preload_content', True
+            )
+            kwargs['_request_timeout'] = kwargs.get(
+                '_request_timeout', None
+            )
+            kwargs['_check_input_type'] = kwargs.get(
+                '_check_input_type', True
+            )
+            kwargs['_check_return_type'] = kwargs.get(
+                '_check_return_type', True
+            )
+            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs['x_request_id'] = \
+                x_request_id
+            kwargs['source'] = \
+                source
+            kwargs['input_tensors'] = \
+                input_tensors
             return self.call_with_http_info(**kwargs)
 
         self.api_dss_v1alpha1_build_calibration_model_post = _Endpoint(
             settings={
-                "response_type": (file_type,),
-                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
-                "endpoint_path": "/api/dss/v1alpha1/build-calibration-model",
-                "operation_id": "api_dss_v1alpha1_build_calibration_model_post",
-                "http_method": "POST",
-                "servers": None,
+                'response_type': (file_type,),
+                'auth': [
+                    'AccessKeyIdAuth',
+                    'SecretAccessKeyAuth'
+                ],
+                'endpoint_path': '/api/dss/v1alpha1/build-calibration-model',
+                'operation_id': 'api_dss_v1alpha1_build_calibration_model_post',
+                'http_method': 'POST',
+                'servers': None,
             },
             params_map={
-                "all": [
-                    "x_request_id",
-                    "source",
-                    "input_tensors",
+                'all': [
+                    'x_request_id',
+                    'source',
+                    'input_tensors',
                 ],
-                "required": [
-                    "x_request_id",
-                    "source",
-                    "input_tensors",
+                'required': [
+                    'x_request_id',
+                    'source',
+                    'input_tensors',
                 ],
-                "nullable": [],
-                "enum": [],
-                "validation": [],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
             },
             root_map={
-                "validations": {},
-                "allowed_values": {},
-                "openapi_types": {
-                    "x_request_id": (str,),
-                    "source": (file_type,),
-                    "input_tensors": (str,),
+                'validations': {
                 },
-                "attribute_map": {
-                    "x_request_id": "X-Request-ID",
-                    "source": "source",
-                    "input_tensors": "input_tensors",
+                'allowed_values': {
                 },
-                "location_map": {
-                    "x_request_id": "header",
-                    "source": "form",
-                    "input_tensors": "form",
+                'openapi_types': {
+                    'x_request_id':
+                        (str,),
+                    'source':
+                        (file_type,),
+                    'input_tensors':
+                        (str,),
                 },
-                "collection_format_map": {},
+                'attribute_map': {
+                    'x_request_id': 'X-Request-ID',
+                    'source': 'source',
+                    'input_tensors': 'input_tensors',
+                },
+                'location_map': {
+                    'x_request_id': 'header',
+                    'source': 'form',
+                    'input_tensors': 'form',
+                },
+                'collection_format_map': {
+                }
             },
             headers_map={
-                "accept": ["application/octet-stream", "application/json"],
-                "content_type": ["multipart/form-data"],
+                'accept': [
+                    'application/octet-stream',
+                    'application/json'
+                ],
+                'content_type': [
+                    'multipart/form-data'
+                ]
             },
             api_client=api_client,
-            callable=__api_dss_v1alpha1_build_calibration_model_post,
+            callable=__api_dss_v1alpha1_build_calibration_model_post
         )
 
-        def __api_dss_v1alpha1_quantize_post(self, x_request_id, source, input_tensors, **kwargs):
+        def __api_dss_v1alpha1_quantize_post(
+            self,
+            x_request_id,
+            source,
+            input_tensors,
+            **kwargs
+        ):
             """Calibrate a model and return the calibrated one  # noqa: E501
 
             Calibrate specific input tensors of a given model and return the calibrated model  # noqa: E501
@@ -185,66 +227,98 @@ class DssApi(object):
                     If the method is called asynchronously, returns the request
                     thread.
             """
-            kwargs["async_req"] = kwargs.get("async_req", False)
-            kwargs["_return_http_data_only"] = kwargs.get("_return_http_data_only", True)
-            kwargs["_preload_content"] = kwargs.get("_preload_content", True)
-            kwargs["_request_timeout"] = kwargs.get("_request_timeout", None)
-            kwargs["_check_input_type"] = kwargs.get("_check_input_type", True)
-            kwargs["_check_return_type"] = kwargs.get("_check_return_type", True)
-            kwargs["_host_index"] = kwargs.get("_host_index")
-            kwargs["x_request_id"] = x_request_id
-            kwargs["source"] = source
-            kwargs["input_tensors"] = input_tensors
+            kwargs['async_req'] = kwargs.get(
+                'async_req', False
+            )
+            kwargs['_return_http_data_only'] = kwargs.get(
+                '_return_http_data_only', True
+            )
+            kwargs['_preload_content'] = kwargs.get(
+                '_preload_content', True
+            )
+            kwargs['_request_timeout'] = kwargs.get(
+                '_request_timeout', None
+            )
+            kwargs['_check_input_type'] = kwargs.get(
+                '_check_input_type', True
+            )
+            kwargs['_check_return_type'] = kwargs.get(
+                '_check_return_type', True
+            )
+            kwargs['_host_index'] = kwargs.get('_host_index')
+            kwargs['x_request_id'] = \
+                x_request_id
+            kwargs['source'] = \
+                source
+            kwargs['input_tensors'] = \
+                input_tensors
             return self.call_with_http_info(**kwargs)
 
         self.api_dss_v1alpha1_quantize_post = _Endpoint(
             settings={
-                "response_type": (file_type,),
-                "auth": ["AccessKeyIdAuth", "SecretAccessKeyAuth"],
-                "endpoint_path": "/api/dss/v1alpha1/quantize",
-                "operation_id": "api_dss_v1alpha1_quantize_post",
-                "http_method": "POST",
-                "servers": None,
+                'response_type': (file_type,),
+                'auth': [
+                    'AccessKeyIdAuth',
+                    'SecretAccessKeyAuth'
+                ],
+                'endpoint_path': '/api/dss/v1alpha1/quantize',
+                'operation_id': 'api_dss_v1alpha1_quantize_post',
+                'http_method': 'POST',
+                'servers': None,
             },
             params_map={
-                "all": [
-                    "x_request_id",
-                    "source",
-                    "input_tensors",
+                'all': [
+                    'x_request_id',
+                    'source',
+                    'input_tensors',
                 ],
-                "required": [
-                    "x_request_id",
-                    "source",
-                    "input_tensors",
+                'required': [
+                    'x_request_id',
+                    'source',
+                    'input_tensors',
                 ],
-                "nullable": [],
-                "enum": [],
-                "validation": [],
+                'nullable': [
+                ],
+                'enum': [
+                ],
+                'validation': [
+                ]
             },
             root_map={
-                "validations": {},
-                "allowed_values": {},
-                "openapi_types": {
-                    "x_request_id": (str,),
-                    "source": (file_type,),
-                    "input_tensors": (str,),
+                'validations': {
                 },
-                "attribute_map": {
-                    "x_request_id": "X-Request-ID",
-                    "source": "source",
-                    "input_tensors": "input_tensors",
+                'allowed_values': {
                 },
-                "location_map": {
-                    "x_request_id": "header",
-                    "source": "form",
-                    "input_tensors": "form",
+                'openapi_types': {
+                    'x_request_id':
+                        (str,),
+                    'source':
+                        (file_type,),
+                    'input_tensors':
+                        (str,),
                 },
-                "collection_format_map": {},
+                'attribute_map': {
+                    'x_request_id': 'X-Request-ID',
+                    'source': 'source',
+                    'input_tensors': 'input_tensors',
+                },
+                'location_map': {
+                    'x_request_id': 'header',
+                    'source': 'form',
+                    'input_tensors': 'form',
+                },
+                'collection_format_map': {
+                }
             },
             headers_map={
-                "accept": ["application/octet-stream", "application/json"],
-                "content_type": ["multipart/form-data"],
+                'accept': [
+                    'application/octet-stream',
+                    'application/json'
+                ],
+                'content_type': [
+                    'multipart/form-data'
+                ]
             },
             api_client=api_client,
-            callable=__api_dss_v1alpha1_quantize_post,
+            callable=__api_dss_v1alpha1_quantize_post
         )

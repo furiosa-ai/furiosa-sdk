@@ -26,7 +26,7 @@ def _find_local_libs():
 
 def _find_user_libs():
     libnux_path = None
-    for lib_path in os.getenv("LD_LIBRARY_PATH").split(":"):
+    for lib_path in os.getenv('LD_LIBRARY_PATH').split(":"):
         if platform == "linux":
             for name in glob.glob("{}/libnux.so*".format(lib_path)):
                 libnux_path = name
@@ -54,7 +54,7 @@ def _find_native_libs():
 
     libnux_path = None
 
-    if os.getenv("LD_LIBRARY_PATH") is not None:
+    if os.getenv('LD_LIBRARY_PATH') is not None:
         libnux_path = _find_user_libs()
 
     if libnux_path is None:
@@ -63,7 +63,7 @@ def _find_native_libs():
             libnux_path = _find_global_libs()
 
     if libnux_path is None:
-        raise SystemExit("fail to find libnux")
+        raise SystemExit('fail to find libnux')
 
     libnux_ = CDLL(libnux_path)
 
@@ -75,14 +75,12 @@ def _find_native_libs():
         libnux_.build_timestamp.argtypes = []
         libnux_.build_timestamp.restype = c_char_p
 
-        LOG.info(
-            "loaded dynamic library %s (%s %s)",
-            libnux_path,
-            libnux_.version().decode("utf-8"),
-            libnux_.git_short_hash().decode("utf-8"),
-        )
+        LOG.info('loaded dynamic library %s (%s %s)',
+                 libnux_path,
+                 libnux_.version().decode('utf-8'),
+                 libnux_.git_short_hash().decode('utf-8'))
     else:
-        raise SystemExit("fail to load native library")
+        raise SystemExit('fail to load native library')
 
     return libnux_
 
@@ -147,13 +145,8 @@ LIBNUX.nux_session_run.restype = c_int
 LIBNUX.nux_session_destroy.argtypes = [c_void_p]
 LIBNUX.nux_session_destroy.restype = None
 
-LIBNUX.nux_async_session_create.argtypes = [
-    c_void_p,
-    c_ulonglong,
-    c_void_p,
-    POINTER(c_void_p),
-    POINTER(c_void_p),
-]
+LIBNUX.nux_async_session_create.argtypes = \
+    [c_void_p, c_ulonglong, c_void_p, POINTER(c_void_p), POINTER(c_void_p)]
 LIBNUX.nux_async_session_create.restype = c_int
 
 LIBNUX.nux_async_session_get_model.argtypes = [c_void_p]
@@ -197,11 +190,8 @@ LIBNUX.nux_tensor_len.restype = c_ulonglong
 LIBNUX.nux_tensor_size.argtypes = [c_void_p]
 LIBNUX.nux_tensor_size.restype = c_ulonglong
 
-LIBNUX.tensor_get_buffer.argtypes = [
-    c_void_p,
-    POINTER(POINTER(ctypes.c_uint8)),
-    POINTER(c_ulonglong),
-]
+LIBNUX.tensor_get_buffer.argtypes = \
+    [c_void_p, POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
 LIBNUX.tensor_get_buffer.restype = c_int
 
 # To control manually the reference count

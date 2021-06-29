@@ -22,7 +22,7 @@ class EliminateIdentity(Transformer):
 
         # handle case where Identity occurs in the middle of graph
         for node in model.graph.node:
-            if node.op_type == "Constant":
+            if node.op_type == 'Constant':
                 continue
 
             # TODO need to ease assumption that node has only one input if necessary
@@ -31,7 +31,7 @@ class EliminateIdentity(Transformer):
             except KeyError:
                 continue
 
-            if prev_node.op_type != "Identity":
+            if prev_node.op_type != 'Identity':
                 continue
 
             node.input[0] = prev_node.input[0]
@@ -39,7 +39,7 @@ class EliminateIdentity(Transformer):
 
         # handle case where Identity occurs at the end of graph
         for node in model.graph.node:
-            if node.op_type != "Identity":
+            if node.op_type != 'Identity':
                 optimized_nodes.append(node)
                 continue
 

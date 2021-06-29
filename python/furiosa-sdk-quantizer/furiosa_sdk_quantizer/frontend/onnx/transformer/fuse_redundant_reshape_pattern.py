@@ -20,16 +20,15 @@ class FuseRedundantReshapePattern(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Reshape --> next
-    to
-        prev --> Reshape --> next
+        transform
+            prev --> Reshape --> Reshape --> next
+        to
+            prev --> Reshape --> next
 
-    if prev.output[0].shape != next.input[0].shape
+        if prev.output[0].shape != next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Reshape"]
-    postfix = "_reshape_fused"
+    pattern_to_match = ['Reshape', 'Reshape']
+    postfix = '_reshape_fused'
 
     def pattern_matching(self, base_node):
         inputs = base_node.input
@@ -43,14 +42,11 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
         top_node = matched_nodes[0]
 
-        self.transform_to_fuse(
-            matched_nodes,
-            nodes_to_add=[self.make_new_node(matched_nodes)],
-            inits_to_add=[self.make_new_init(matched_nodes)],
-            vis_to_add=[self.make_new_vi(matched_nodes)]
-            if self.make_new_vi(matched_nodes)
-            else None,
-        )
+        self.transform_to_fuse(matched_nodes,
+                               nodes_to_add=[self.make_new_node(matched_nodes)],
+                               inits_to_add=[self.make_new_init(matched_nodes)],
+                               vis_to_add=[self.make_new_vi(matched_nodes)] if self.make_new_vi(
+                                   matched_nodes) else None)
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -63,12 +59,9 @@ class Pattern_1(ONNXTransformer, abc.ABC):
     def make_new_node(self, matched_nodes):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
-        return self.make_node(
-            "Reshape",
-            [top_node.input[0], top_node.input[1] + self.postfix],
-            [base_node.output[0]],
-            name=top_node.name,
-        )
+        return self.make_node('Reshape', [top_node.input[0], top_node.input[1] + self.postfix],
+                              [base_node.output[0]],
+                              name=top_node.name)
 
     def make_new_init(self, matched_nodes):
         top_node = matched_nodes[0]
@@ -81,37 +74,31 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
 class Pattern_2(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Reshape --> Reshape --> Reshape --> next
-    to
-        prev --> Reshape --> next
+        transform
+            prev --> Reshape --> Reshape --> Reshape --> next
+        to
+            prev --> Reshape --> next
 
-    if prev.output[0].shape != next.input[0].shape
+        if prev.output[0].shape != next.input[0].shape
     """
-
-    pattern_to_match = ["Reshape", "Reshape", "Reshape"]
+    pattern_to_match = ['Reshape', 'Reshape', 'Reshape']
 
 
 class Pattern_3(Pattern_1, abc.ABC):
     """
-    transform
-        prev --> Flatten/Squeeze --> Unsqueeze --> next
-    to
-        prev --> Reshape --> next
-    if prev.output[0].shape != next.input[0].shape
+        transform
+            prev --> Flatten/Squeeze --> Unsqueeze --> next
+        to
+            prev --> Reshape --> next
+        if prev.output[0].shape != next.input[0].shape
     """
-
-    pattern_to_match = ["Flatten/Squeeze", "Unsqueeze"]
+    pattern_to_match = ['Flatten/Squeeze', 'Unsqueeze']
 
     def make_new_node(self, matched_nodes):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
-        return self.make_node(
-            "Reshape",
-            [top_node.input[0], top_node.input[0] + self.postfix],
-            [base_node.output[0]],
-            top_node.name,
-        )
+        return self.make_node('Reshape', [top_node.input[0], top_node.input[0] + self.postfix],
+                              [base_node.output[0]], top_node.name)
 
     def make_new_init(self, matched_nodes):
         top_node = matched_nodes[0]

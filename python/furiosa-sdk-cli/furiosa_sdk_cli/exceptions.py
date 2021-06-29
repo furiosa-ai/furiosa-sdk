@@ -6,7 +6,7 @@ class CliError(Exception):
 
 class NoCommandException(CliError):
     def __init__(self):
-        super().__init__("Need command", 2)
+        super().__init__('Need command', 2)
 
 
 class ApiError(CliError):
@@ -14,19 +14,14 @@ class ApiError(CliError):
         http_status = response.status_code
         try:
             body = response.json()
-            error_code = body["error_code"]
-            error_message = body["message"]
-            super().__init__(
-                "{} (http_status: {}, error_code: {}, message: {})".format(
-                    message, http_status, error_code, error_message
-                ),
-                4,
-            )
+            error_code = body['error_code']
+            error_message = body['message']
+            super().__init__('{} (http_status: {}, error_code: {}, message: {})'
+                             .format(message, http_status, error_code, error_message), 4)
         except:
             error_message = response.text
-            super().__init__(
-                "{} (http_status: {}, message: {})".format(message, http_status, error_message), 4
-            )
+            super().__init__('{} (http_status: {}, message: {})'
+                             .format(message, http_status, error_message), 4)
 
     def __str__(self):
         return "(exit code: {}, message: {})".format(self.exit_code, self.message)
