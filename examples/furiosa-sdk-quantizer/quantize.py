@@ -10,6 +10,8 @@ from typing import Dict, List
 from PIL import Image
 import numpy as np
 import onnx
+# prevent seg fault in Mac OS X
+import onnxruntime
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms

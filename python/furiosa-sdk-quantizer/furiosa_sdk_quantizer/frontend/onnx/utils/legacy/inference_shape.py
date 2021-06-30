@@ -1,13 +1,13 @@
 from typing import List, Dict
 
 import numpy as np
-import onnxruntime as ort
 import onnx
-
 from onnx import numpy_helper, shape_inference
+from onnx.helper import make_tensor, make_tensor_value_info, TensorProto
+import onnxruntime as ort
+
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
-from onnx.helper import make_tensor, make_tensor_value_info, TensorProto
 
 
 class InferenceShape:

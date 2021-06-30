@@ -2,6 +2,9 @@ from typing import Dict, List, Tuple, Callable, Text, IO, Optional
 
 import numpy as np
 import onnx
+# To prevent seg fault in Mac OS X
+import onnxruntime
+from torch.utils.data.dataloader import DataLoader
 
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 12
@@ -20,7 +23,8 @@ from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_layer_normalization import FuseLayerNormalization
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import FuseRedundantReshapePattern
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_pad import FusePad
-from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import EliminateRedundantReshapePattern
+from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import \
+    EliminateRedundantReshapePattern
 from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
 from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
@@ -165,3 +169,10 @@ def calibrate_with_random(model: onnx.ModelProto, num_data: Optional[int] = None
     model = optimize_model(model)
     calibration_model = ONNXCalibrator(model).build_calibration_model()
     return ONNXCalibrator(calibration_model).calibrate_with_random(num_data)
+
+
+def calibrate_with_data_loader(model: onnx.ModelProto,
+                               loader: DataLoader) -> Dict[str, Tuple[float, float]]:
+    model = optimize_model(model)
+    calibration_model = ONNXCalibrator(model).build_calibration_model()
+    return ONNXCalibrator(calibration_model).calibrate_with_data_loader(loader)

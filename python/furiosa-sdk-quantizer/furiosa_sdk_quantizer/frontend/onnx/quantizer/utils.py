@@ -1,14 +1,15 @@
 from typing import List, Tuple, Dict
 
-import warnings
-
-import onnx
+import logging
 
 import numpy as np
-
+import onnx
 from onnx import TensorProto, TensorAnnotation, StringStringEntryProto
 import onnxruntime as ort
 from onnxruntime_tools.quantization.quantize import _attribute_to_kwarg
+
+logger = logging.getLogger('Furiosa-Quantizer')
+logging.basicConfig(level=logging.INFO)
 
 __PRODUCER__ = "jason_furiosa"
 
@@ -178,10 +179,11 @@ def calculate_activation_quant_params(dynamic_ranges: Dict,
     return quantization_params
 
 
-def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> Tuple[int, float]:
+def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto, name: str) -> Tuple[int, float]:
     """
         :parameter data: data to quantize
         :parameter weight_qtype: quantization data type of weight
+        :parameter name: name of tensor to quantize
         :return: quantized weights, zero point, scale
 
         To pack weights, we compute a linear transformation
@@ -208,7 +210,7 @@ def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto) -> 
         if max_range > 0:
             scale = (max_range * 2.0) / quantized_range
         else:
-            warnings.warn('both the min and the max of data are 0')
+            logger.info(f'Both the min and the max of data are 0: {name}')
             scale = 1.0
         zero_point = 0
     elif weight_qtype == TensorProto.UINT8:
@@ -259,9 +261,8 @@ def append_suffix(name: str, suffix: List[str]) -> List[str]:
     return list(map(lambda x: name + x, suffix))
 
 
-def get_input_tensors(model: onnx.ModelProto) -> List[str]:
+def get_input_tensors(model: onnx.ModelProto) -> List[Tuple[str, List[int], str]]:
     ort.set_default_logger_severity(3)
     sess = ort.InferenceSession(model.SerializeToString())
-    input_tensors = [inp.name for inp in sess.get_inputs()]
-
+    input_tensors = [(inp.name, inp.shape, inp.type) for inp in sess.get_inputs()]
     return input_tensors

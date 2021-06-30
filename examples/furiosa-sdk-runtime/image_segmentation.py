@@ -5,13 +5,13 @@ The model can be downloaded via command `gdown --id 1MjuG6mk13Bca3bXdEWQF6R9tBng
 """
 import sys
 import time
+import os
+from typing import Tuple
+from pathlib import Path
+
 import numpy as np
 import onnxruntime as ort
-import os
-
-from typing import Tuple
 from PIL import Image
-from pathlib import Path
 
 
 def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:

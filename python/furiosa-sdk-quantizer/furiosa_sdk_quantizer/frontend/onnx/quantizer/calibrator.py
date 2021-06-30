@@ -16,17 +16,16 @@
 # --------------------------------------------------------------------------
 from collections import defaultdict
 import math
-from typing import Dict, List, Optional, Tuple
-
-import onnx
+from typing import Dict, Tuple, Optional, Iterable
 import os
-import tqdm
 
+import tqdm
+import onnx
 import numpy as np
 import onnxruntime as ort
-
 from onnx import TensorProto, ModelProto
 from onnx.helper import make_node, make_tensor_value_info
+from torch.utils.data import DataLoader
 
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
@@ -48,14 +47,19 @@ class ONNXCalibrator:
 
         # raise Exception if input_tensor is not defined in model.graph.input
         for input_tensor in self.input_tensors:
-            if input_tensor not in [input.name for input in self.model.graph.input]:
+            if input_tensor[0] not in [input.name for input in self.model.graph.input]:
                 raise Exception('input_tensor: %s is not defined in model.graph.input' % input_tensor)
 
     def build_calibration_model(self) -> onnx.ModelProto:
         return self.augment_model()
 
+    def calibrate_with_data_loader(self, dataloader: DataLoader) -> Dict[str, Tuple[float, float]]:
+        # TODO Generalize img read pattern. We focus on supporting for calibrating ml-common CV models for now.
+        dataset = map(lambda data, _: {self.input_tensors[0][0]: data.detach().cpu().numpy()}, dataloader)
+        return calibrate(self.model, dataset)
+
     def calibrate(
-        self, dataset: List[Dict[str, np.ndarray]]
+        self, dataset: Iterable[Dict[str, np.ndarray]]
     ) -> Dict[str, Tuple[float, float]]:
         """Estimates the range of tensors, based on a dataset.
 
@@ -75,19 +79,10 @@ class ONNXCalibrator:
             parameter inputs: list of loaded test inputs (or image matrices)
             return: dictionary mapping added node names to (ReduceMin, ReduceMax) pairs
         '''
-        # Log severity level 3(Error) in order not to print warnings(level 2)
-        ort.set_default_logger_severity(3)
-        sess = ort.InferenceSession(self.model.SerializeToString(), None)
 
-        input_names = [attr.name for attr in sess.get_inputs()]
-        input_shapes = [attr.shape for attr in sess.get_inputs()]
-        input_types = [attr.type for attr in sess.get_inputs()]
-
-        feed_dict = dict()
-
-        calibration_dataset = []
-        for _ in range(num_data or 10):
-            for (name, shape, type) in zip(input_names, input_shapes, input_types):
+        def populate_random_data(input_tensors):
+            feed_dict = dict()
+            for (name, shape, type) in input_tensors:
                 if type == 'tensor(float)':
                     dtype = np.float32
                 elif type == 'tensor(int64)':
@@ -96,27 +91,14 @@ class ONNXCalibrator:
                     raise Exception('Unknown dtype: %s' % type)
                 batch_size = 1
                 feed_dict[name] = np.random.random((batch_size, *shape[1:])).astype(dtype)
-            calibration_dataset.append(feed_dict)
+            return feed_dict
 
-        observers = [output.name for output in sess.get_outputs() if
-                     'ReduceMin' in output.name or 'ReduceMax' in output.name]
-
-        disabled = True if os.environ.get('TQDM_DISABLE') else False
-        observed_vals = [sess.run(observers, feed_dict)
-                         for feed_dict in tqdm.tqdm(calibration_dataset, desc='Calibration', disable=disabled)]
-
-        val_dicts = dict(zip(observers, zip(*observed_vals)))
-
-        node_names = [key.rpartition('_')[0] for key in val_dicts.keys() if 'ReduceMax' in key]
-        min_dicts = [float(np.min(value)) for key, value in val_dicts.items() if 'ReduceMin' in key]
-        max_dicts = [float(np.max(value)) for key, value in val_dicts.items() if 'ReduceMax' in key]
-
-        return dict(zip(node_names, zip(min_dicts, max_dicts)))
+        return calibrate(self.model, map(lambda _: populate_random_data(self.input_tensors), range(num_data or 10)))
 
     def augment_model(self):
         new_list = []
 
-        for input in self.input_tensors:
+        for (input, _, _) in self.input_tensors:
             dtype = get_vi_dtype(self.value_info[input])
 
             if dtype != onnx.TensorProto.FLOAT:
@@ -157,7 +139,7 @@ class ONNXCalibrator:
 
 
 def calibrate(
-    model: ModelProto, dataset: List[Dict[str, np.ndarray]]
+    model: ModelProto, dataset: Iterable[Dict[str, np.ndarray]]
 ) -> Dict[str, Tuple[float, float]]:
     """Estimates the range of tensors in a model, based on a dataset.
 
