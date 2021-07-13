@@ -99,9 +99,14 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         mean = self.get_initializer_array(node.input[3])
         var = self.get_initializer_array(node.input[4])
 
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(node.attribute)
-        eps = attrs.get('epsilon', 1e-05)
+        eps = next(
+            (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name == "epsilon"
+            ),
+            1e-05,
+        )
 
         return scale, B, mean, var, eps
 

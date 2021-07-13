@@ -46,8 +46,9 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return top_node.input
 
     def get_attrs(self, node):
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(node.attribute)
+        axes = next(
+            onnx.helper.get_attribute_value(attr) for attr in node.attribute if attr.name == "axes"
+        )
 
         if node.op_type == 'ReduceL1':
             p = 1
@@ -56,5 +57,4 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         else:
             raise Exception()
 
-        return {'axis': int(attrs['axes'][0]),
-                'p': int(p)}
+        return {"axis": int(axes[0]), "p": int(p)}

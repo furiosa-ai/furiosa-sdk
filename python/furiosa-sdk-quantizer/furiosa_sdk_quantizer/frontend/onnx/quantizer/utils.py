@@ -6,7 +6,6 @@ import numpy as np
 import onnx
 from onnx import TensorProto, TensorAnnotation, StringStringEntryProto
 import onnxruntime as ort
-from onnxruntime_tools.quantization.quantize import _attribute_to_kwarg
 
 logger = logging.getLogger('Furiosa-Quantizer')
 logging.basicConfig(level=logging.INFO)
@@ -244,14 +243,6 @@ def make_tensor_annotation(tensor_name, zero_point_name, scale_name):
     annot.quant_parameter_tensor_names.extend([quant_param_scale, quant_param_zero_point])
 
     return annot
-
-
-def attribute_to_kwargs(attributes: onnx.AttributeProto) -> Dict:
-    kwargs = {}
-    for attr in attributes:
-        kwargs.update(_attribute_to_kwarg(attr))
-
-    return kwargs
 
 
 def append_suffix(name: str, suffix: List[str]) -> List[str]:

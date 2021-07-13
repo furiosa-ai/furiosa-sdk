@@ -1,7 +1,7 @@
 import onnx
 from onnx.helper import ModelProto
-from onnxruntime_tools.transformers.onnx_model import OnnxModel
-from onnxruntime_tools.transformers.fusion_gelu import FusionGelu
+from onnxruntime.transformers.onnx_model import OnnxModel
+from onnxruntime.transformers.fusion_gelu import FusionGelu
 
 from furiosa_sdk_quantizer.interfaces.transformer import Transformer
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
@@ -39,7 +39,7 @@ class FuseGELU(Transformer):
         value_info = {vi.name: vi for vi in
                       list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)}
 
-        # nodes are not topologically sorted as a result of onnxruntime_tools optimization
+        # nodes are not topologically sorted as a result of onnxruntime optimization
         sorted_nodes = []
         visited = 0
         for node in orig_model.graph.node:

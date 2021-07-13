@@ -93,8 +93,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return False
 
     def get_attrs(self, mid_node):
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(mid_node.attribute)
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in mid_node.attribute}
         auto_pad = attrs.get('auto_pad', 'NOTSET')
         dilations = attrs.get('dilations', [1])
         group = attrs.get('group', 1)
