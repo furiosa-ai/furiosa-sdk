@@ -14,23 +14,27 @@
 # is strictly forbidden unless prior written permission is obtained
 # from FuriosaAI Inc.
 # --------------------------------------------------------------------------
-from typing import List, Dict, Tuple, Optional
 
 import os
-import onnx
-import tqdm
-import numpy as np
+from typing import List, Dict, Tuple, Optional
 
+import numpy as np
+import onnx
 from onnx import numpy_helper
 from onnx.helper import make_node, make_tensor, make_tensor_value_info, ModelProto
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
+import tqdm
 
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
-from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import (QuantizationMode, make_tensor_annotation,
-                                                                 calculate_activation_quant_params,
-                                                                 calculate_weight_quant_params,
-                                                                 attribute_to_kwargs, append_suffix, get_input_tensors,
-                                                                 is_float_tensor)
+from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import (
+    QuantizationMode,
+    make_tensor_annotation,
+    calculate_activation_quant_params,
+    calculate_weight_quant_params,
+    append_suffix,
+    get_input_tensors,
+    is_float_tensor,
+)
 from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
 
 
@@ -255,7 +259,9 @@ class FuriosaONNXQuantizer:
                 continue
 
     def _quantize_pad_constant(self, node):
-        mode = attribute_to_kwargs(node.attribute)['mode']
+        mode = next(
+            onnx.helper.get_attribute_value(attr) for attr in node.attribute if attr.name == "mode"
+        )
 
         if mode != b'constant':
             return
@@ -365,11 +371,11 @@ class FuriosaONNXQuantizer:
 
     def _stack_quant_node(self, inputs: List[str], outputs: List[str], op_type: str,
                           attributes: Optional[List[onnx.AttributeProto]] = None) -> None:
+        if attributes is None:
+            attributes = []
 
         # make quantized node proto
-        attr_kwargs = {}
-        if attributes:
-            attr_kwargs = attribute_to_kwargs(attributes)
+        attr_kwargs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in attributes}
 
         quant_node = make_node(op_type,
                                inputs,
@@ -660,10 +666,7 @@ class DFGImportable:
 
         quant_outputs = [node_o0.output[0]]
 
-        attributes = node.attribute
-        attr_kwargs = {}
-        if attributes:
-            attr_kwargs = attribute_to_kwargs(attributes)
+        attr_kwargs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
 
         quant_node = make_node(quant_op_type,
                                quant_inputs,

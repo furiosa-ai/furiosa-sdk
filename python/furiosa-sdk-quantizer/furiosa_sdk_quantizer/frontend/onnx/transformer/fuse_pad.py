@@ -104,9 +104,10 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return False
 
     def get_pad_mode(self, node_attr):
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-
-        return attribute_to_kwargs(node_attr).get('mode', 'constant').decode("utf-8")
+        return next(
+            (onnx.helper.get_attribute_value(attr) for attr in node_attr if attr.name == "mode"),
+            b"constant",
+        ).decode("utf-8")
 
     def update_attrs(self, attrs, pad_input):
         pads = [sum(x) for x in zip(attrs['pads'], self.make_maxpool_pad(pad_input))]
@@ -118,8 +119,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         rank = len(self.get_value_info_shape(node.input[0]))
         nspatial_dim = (rank - 2)
 
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(node.attribute)
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
         ceil_mode = attrs.get('ceil_mode', 0)
         dilations = attrs.get('dilations', [1, ] * nspatial_dim)
         kernel_shape = attrs['kernel_shape']
@@ -194,8 +194,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         rank = len(self.get_value_info_shape(node.input[0]))
         nspatial_dim = (rank - 2)
 
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(node.attribute)
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
         ceil_mode = attrs.get('ceil_mode', 0)
         count_include_pad = attrs.get('count_include_pad', 0)
         kernel_shape = attrs['kernel_shape']

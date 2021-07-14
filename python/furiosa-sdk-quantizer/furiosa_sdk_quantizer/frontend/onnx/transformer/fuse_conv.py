@@ -232,8 +232,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         return new_arr
 
     def get_attrs(self, node):
-        from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
-        attrs = attribute_to_kwargs(node.attribute)
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
         alpha = attrs['alpha']
         beta = attrs['beta']
         assert alpha == beta == 1.0, "Assume alpha = beta = 1.0"

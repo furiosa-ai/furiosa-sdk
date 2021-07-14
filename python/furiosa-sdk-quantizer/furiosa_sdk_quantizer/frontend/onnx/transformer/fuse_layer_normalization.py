@@ -1,7 +1,7 @@
 import onnx
 from onnx.helper import ModelProto
-from onnxruntime_tools.transformers.onnx_model import OnnxModel
-from onnxruntime_tools.transformers.fusion_layernorm import FusionLayerNormalization
+from onnxruntime.transformers.onnx_model import OnnxModel
+from onnxruntime.transformers.fusion_layernorm import FusionLayerNormalization
 
 from furiosa_sdk_quantizer.interfaces.transformer import Transformer
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
@@ -37,7 +37,7 @@ class FuseLayerNormalization(Transformer):
         layer_norm_by_input_name = {node.input[0]: node for node in model.graph.node
                                     if node.op_type == 'LayerNormalization'}
 
-        # nodes are not topologically sorted as a result of onnxruntime_tools optimization
+        # nodes are not topologically sorted as a result of onnxruntime optimization
         sorted_nodes = []
         visited = 0
         for node in orig_model.graph.node:
