@@ -1,22 +1,16 @@
-from typing import Dict, List, Tuple, Callable, Text, IO, Optional
+from typing import Callable, Dict, IO, List, Text, Tuple
 
 import numpy as np
 import onnx
-# To prevent seg fault in Mac OS X
-import onnxruntime
-from torch.utils.data.dataloader import DataLoader
 
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 12
 
-from furiosa_sdk_quantizer.frontend.onnx import spec
-from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from furiosa_sdk_quantizer.frontend.onnx.utils.version_checker import CheckVersion
+from furiosa_sdk_quantizer.frontend.onnx import calibrate, spec
+from furiosa_sdk_quantizer.frontend.onnx.quantizer import quantizer
 from furiosa_sdk_quantizer.frontend.onnx.transformer.polish_model import PolishModel
-from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
-from furiosa_sdk_quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
@@ -26,9 +20,8 @@ from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_pad import FusePad
 from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import \
     EliminateRedundantReshapePattern
 from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import ConvertConv1dToConv2d
-from furiosa_sdk_quantizer.frontend.onnx.quantizer.calibrator import ONNXCalibrator
 from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from furiosa_sdk_quantizer.frontend.onnx.quantizer import calibrator, quantizer
+from furiosa_sdk_quantizer.frontend.onnx.utils.version_checker import CheckVersion
 
 
 def _transform(transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],
@@ -93,11 +86,6 @@ def optimize_model(model: onnx.ModelProto) -> onnx.ModelProto:
     return model
 
 
-def build_calibration_model(model: onnx.ModelProto) -> onnx.ModelProto:
-    model = optimize_model(model)
-    return ONNXCalibrator(model).build_calibration_model()
-
-
 def quantize(model: onnx.ModelProto,
              per_channel: bool,
              static: bool,
@@ -128,51 +116,22 @@ def post_training_quantize(
         dataset.
     """
     model = optimize_model(model)
-    ranges = calibrate(model, dataset)
+    ranges = calibrate.calibrate(model, dataset)
     return quantize(model, per_channel, True, quantizer.QuantizationMode.dfg, ranges)
 
 
-def post_training_quantization_with_random_calibration(model: onnx.ModelProto,
-                                                       per_channel: bool,
-                                                       static: bool,
-                                                       mode: quantizer.QuantizationMode,
-                                                       num_data: Optional[int] = None) -> onnx.ModelProto:
+def post_training_quantization_with_random_calibration(
+    model: onnx.ModelProto,
+    per_channel: bool,
+    static: bool,
+    mode: quantizer.QuantizationMode,
+    num_data: int = 8,
+) -> onnx.ModelProto:
     if not static:
         raise Exception("Currently only supports static quantization.")
     if mode not in [quantizer.QuantizationMode.dfg, quantizer.QuantizationMode.fake]:
         raise Exception("Currently only supports QuantizationMode dfg or fake.")
 
     model = optimize_model(model)
-    calibration_model = build_calibration_model(model)
-    dynamic_ranges = ONNXCalibrator(calibration_model).calibrate_with_random(num_data)
+    dynamic_ranges = calibrate.calibrate_with_random_data(model, num_data)
     return quantize(model, per_channel, static, mode, dynamic_ranges)
-
-
-def calibrate(
-    model: onnx.ModelProto, dataset: List[Dict[str, np.ndarray]]
-) -> Dict[str, Tuple[float, float]]:
-    """Estimates the range of tensors in a model, based on a dataset.
-
-    Args:
-        model: An ONNX model to calibrate.
-        dataset: A calibration dataset.
-
-    Returns:
-        A dict mapping tensors in the model to their minimum and maximum
-        values.
-    """
-    augmented_model = ONNXCalibrator(model).build_calibration_model()
-    return calibrator.calibrate(augmented_model, dataset)
-
-
-def calibrate_with_random(model: onnx.ModelProto, num_data: Optional[int] = None) -> Dict[str, Tuple[float, float]]:
-    model = optimize_model(model)
-    calibration_model = ONNXCalibrator(model).build_calibration_model()
-    return ONNXCalibrator(calibration_model).calibrate_with_random(num_data)
-
-
-def calibrate_with_data_loader(model: onnx.ModelProto,
-                               loader: DataLoader) -> Dict[str, Tuple[float, float]]:
-    model = optimize_model(model)
-    calibration_model = ONNXCalibrator(model).build_calibration_model()
-    return ONNXCalibrator(calibration_model).calibrate_with_data_loader(loader)
