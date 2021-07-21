@@ -87,7 +87,7 @@ class TestConvertClipAttrToInput(TestTransformer):
         max = None
         orig_model, trans_model = self.make_unit_model(input_shapes, min, max)
         self.check_graph_node(trans_model, op_types)
-        self.check_attribute(init_to_numpy(orig_model, '5'), init_to_numpy(trans_model, '5'))
+        self.check_attribute(init_to_numpy(orig_model, '7'), init_to_numpy(trans_model, '7'))
 
     def test_case5(self):
         input_shapes = [(8, 8, 8)]
