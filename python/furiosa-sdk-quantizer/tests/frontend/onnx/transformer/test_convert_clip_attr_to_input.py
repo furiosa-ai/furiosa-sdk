@@ -50,7 +50,10 @@ class TestConvertClipAttrToInput(TestTransformer):
         orig_model, trans_model = self.make_test_unit_model_from_onnx(onnx_model, ConvertClipAttrToInput())
         self.check_graph_node(trans_model, op_types)
         self.check_value_info(trans_model)
-        self.check_attribute(orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, 'X_0_clip_min'))
+        trans_clip = next(node for node in trans_model.graph.node if node.op_type == "Clip")
+        self.check_attribute(
+            orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, trans_clip.input[1])
+        )
 
     def test_case2(self):
         input_shapes = [(1, 1, 4, 4)]
@@ -63,7 +66,10 @@ class TestConvertClipAttrToInput(TestTransformer):
 
         self.check_graph_node(trans_model, op_types)
         self.check_value_info(trans_model)
-        self.check_attribute(orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, 'X_0_clip_max'))
+        trans_clip = next(node for node in trans_model.graph.node if node.op_type == "Clip")
+        self.check_attribute(
+            orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, trans_clip.input[2])
+        )
 
     def test_case3(self):
         input_shapes = [(1, 1, 4, 4)]
@@ -77,8 +83,13 @@ class TestConvertClipAttrToInput(TestTransformer):
 
         self.check_graph_node(trans_model, op_types)
         self.check_value_info(trans_model)
-        self.check_attribute(orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, 'X_0_clip_min'))
-        self.check_attribute(orig_model.graph.node[0].attribute[1].f, init_to_numpy(trans_model, 'X_0_clip_max'))
+        trans_clip = next(node for node in trans_model.graph.node if node.op_type == "Clip")
+        self.check_attribute(
+            orig_model.graph.node[0].attribute[0].f, init_to_numpy(trans_model, trans_clip.input[1])
+        )
+        self.check_attribute(
+            orig_model.graph.node[0].attribute[1].f, init_to_numpy(trans_model, trans_clip.input[2])
+        )
 
     def test_case4(self):
         input_shapes = [(8, 8, 8)]
@@ -87,7 +98,12 @@ class TestConvertClipAttrToInput(TestTransformer):
         max = None
         orig_model, trans_model = self.make_unit_model(input_shapes, min, max)
         self.check_graph_node(trans_model, op_types)
-        self.check_attribute(init_to_numpy(orig_model, '7'), init_to_numpy(trans_model, '7'))
+        orig_clip = next(node for node in orig_model.graph.node if node.op_type == "Clip")
+        trans_clip = next(node for node in trans_model.graph.node if node.op_type == "Clip")
+        self.check_attribute(
+            init_to_numpy(orig_model, orig_clip.input[1]),
+            init_to_numpy(trans_model, trans_clip.input[1]),
+        )
 
     def test_case5(self):
         input_shapes = [(8, 8, 8)]
@@ -96,5 +112,13 @@ class TestConvertClipAttrToInput(TestTransformer):
         max = 1.01
         orig_model, trans_model = self.make_multi_model(input_shapes, min, max)
         self.check_graph_node(trans_model, op_types)
-        self.check_attribute(init_to_numpy(orig_model, '36'), init_to_numpy(trans_model, '36'))
-        self.check_attribute(init_to_numpy(orig_model, '37'), init_to_numpy(trans_model, '37'))
+        orig_clip = next(node for node in orig_model.graph.node if node.op_type == "Clip")
+        trans_clip = next(node for node in trans_model.graph.node if node.op_type == "Clip")
+        self.check_attribute(
+            init_to_numpy(orig_model, orig_clip.input[1]),
+            init_to_numpy(trans_model, trans_clip.input[1]),
+        )
+        self.check_attribute(
+            init_to_numpy(orig_model, orig_clip.input[2]),
+            init_to_numpy(trans_model, trans_clip.input[2]),
+        )
