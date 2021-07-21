@@ -19,7 +19,7 @@ FuriosaAI SDK는 모델 컴파일 및 최적화, 모델 양자화를 돕는
 
 .. code-block:: sh
 
-  $ pip install furiosa-sdk[cli, validator]
+  $ pip install 'furiosa-sdk[cli, validator]'
 
 
 설치 확인

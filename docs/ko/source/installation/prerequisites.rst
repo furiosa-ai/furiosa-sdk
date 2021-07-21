@@ -111,7 +111,7 @@ FuriosaAI Python SDK는 Python 3.7-3.8 버전과 호환된다. 따라서 최신 
 
 .. code-block::
 
-  $ pip install furiosa-sdk[cli, runtime]
+  $ pip install 'furiosa-sdk[cli, runtime]'
 
 
 생성한 Python 환경의 사용을 비활성화하고 싶은 경우 ``deactivate`` 명령을 사용한다.
