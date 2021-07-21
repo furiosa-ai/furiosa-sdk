@@ -16,7 +16,7 @@ If the above requirements have been fulfilled, you can install the FuriosaAI NPU
 
 .. code-block:: sh
 
-  pip install --upgrade furiosa-sdk[runtime]~=0.1.0
+  pip install --upgrade 'furiosa-sdk[runtime]~=0.1.0'
 
 
 Running Basic Python Code

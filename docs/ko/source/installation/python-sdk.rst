@@ -27,9 +27,9 @@ Python 라이브러리 인터페이스 이외에도 명령 줄 도구 및 다양
   # FuriosaAI NPU Python SDK 설치, Python 인터페이스 사용 가능, e.g. `import furiosa`
   pip install --upgrade furiosa-sdk
   # 부가 도구 설치, 자세한 목록은 아래 참조
-  pip install --upgrade furiosa-sdk[runtime,quantizer]
+  pip install --upgrade 'furiosa-sdk[runtime,quantizer]'
   # 부가 도구 전체 설치
-  pip install --upgrade furiosa-sdk[full]
+  pip install --upgrade 'furiosa-sdk[full]'
 
 PIP 커맨드를 이용하여 다음 부가 패키지를 설치할 수 있다.
 
@@ -37,32 +37,32 @@ PIP 커맨드를 이용하여 다음 부가 패키지를 설치할 수 있다.
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[cli]
+    pip install --upgrade 'furiosa-sdk[cli]'
 
 * ``runtime``: FuriosaAI NPU Runtime 을 사용하여 NPU 위에서 모델을 가속시키기 위한 각종 라이브러리 설치, **NPU 위에서 모델 가속을 위해 필수**
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[runtime]
+    pip install --upgrade 'furiosa-sdk[runtime]'
 
 * ``quantizer``: 모델의 양자화 도구 설치 (:doc:`/advanced/quantization` 참고)
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[quantizer]
+    pip install --upgrade 'furiosa-sdk[quantizer]'
 
 * ``validator``: 모델 분석 도구 설치, 해당 모델이 NPU 위에서 가속되기 위해 양자화, 컴파일이 잘 수행되는지 확인하는 도구를 포함
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[quantizer,runtime,validator,cli]
+    pip install --upgrade 'furiosa-sdk[quantizer,runtime,validator,cli]'
 
 
 예를 들어 모델 추론을 위한 개발환경과 모델 양자화 도구가 필요한 경우 아래와 같이 설치한다.
 
 .. code-block:: sh
 
-  pip install --upgrade furiosa-sdk[runtime,quantizer]
+  pip install --upgrade 'furiosa-sdk[runtime,quantizer]'
 
 
 Jupyter Notebook 사용 안내
