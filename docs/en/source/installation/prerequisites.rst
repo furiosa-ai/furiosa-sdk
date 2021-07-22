@@ -110,7 +110,7 @@ For more detailed instructions for installation, refer to  :doc:`/installation/p
 
 .. code-block::
 
-  $ pip install furiosa-sdk[cli, runtime]
+  $ pip install 'furiosa-sdk[cli, runtime]'
 
 
 To deactivate the use of the user created Python environment, use the ``deactivate`` command.

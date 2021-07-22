@@ -19,7 +19,7 @@ Install Command Line Tools
 
 .. code-block:: sh
 
-  $ pip install furiosa-sdk[cli, validator]
+  $ pip install 'furiosa-sdk[cli, validator]'
 
 
 Verifying the Installation

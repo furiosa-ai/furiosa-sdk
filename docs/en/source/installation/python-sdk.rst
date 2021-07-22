@@ -27,9 +27,9 @@ of command line tools and functions. The FuriosaAI Python SDK can be installed w
   # Install the FuriosaAI NPU Python SDK to use the Python interface, e.g. `import furiosa`
   pip install --upgrade furiosa-sdk
   # Install additional tools, see below for details
-  pip install --upgrade furiosa-sdk[runtime,quantizer]
+  pip install --upgrade 'furiosa-sdk[runtime,quantizer]'
   # Install all additional tools
-  pip install --upgrade furiosa-sdk[full]
+  pip install --upgrade 'furiosa-sdk[full]'
 
 The following additional packages can be installed by using pip.
 
@@ -37,32 +37,32 @@ The following additional packages can be installed by using pip.
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[cli]
+    pip install --upgrade 'furiosa-sdk[cli]'
 
 * ``runtime``:  Installs various libraries to accelerating models using the NPU using the FuriosaAI NPU Runtime. **Required for model acceleration using the NPU**
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[runtime]
+    pip install --upgrade 'furiosa-sdk[runtime]'
 
 * ``quantizer``: Installs the model quantization tool (see :doc:`/advanced/quantization`)
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[quantizer]
+    pip install --upgrade 'furiosa-sdk[quantizer]'
 
 * ``validator``: Installs model analysis tools, quantizes for accelerating corresponding models on the NPU, and includes compilation success verification tools.
 
   .. code-block::
 
-    pip install --upgrade furiosa-sdk[quantizer,runtime,validator,cli]
+    pip install --upgrade 'furiosa-sdk[quantizer,runtime,validator,cli]'
 
 
 If you need a development environment for model inference and model quantization tools, the following installs them for you:
 
 .. code-block:: sh
 
-  pip install --upgrade furiosa-sdk[runtime,quantizer]
+  pip install --upgrade 'furiosa-sdk[runtime,quantizer]'
 
 
 Jupyter Notebook User Guide
