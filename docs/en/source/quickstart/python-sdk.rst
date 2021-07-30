@@ -9,7 +9,7 @@ Using the FuriosaAI NPU Python SDK library, you can easily write Python programs
 
 * :doc:`/installation/driver`
 * :doc:`/installation/runtime`  
-* Python 3.7 or later (refer to :any:`SetupPython` if necessary)    
+* Python 3.7 or later (refer to :any:`SetupPython` if necessary)
   
 
 If the above requirements have been fulfilled, you can install the FuriosaAI NPU Python SDK library through PyPi.

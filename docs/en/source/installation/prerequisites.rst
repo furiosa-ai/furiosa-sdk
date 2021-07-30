@@ -88,8 +88,8 @@ Run ``./Miniconda3-latest-Linux-x86_64.sh`` and select `yes`.
 
 
 After installing Anaconda, you can configure an isolated Python runtime environment 
-and activate it as needed. The FuriosaAI Python SDK is compatible with Python 3.7-3.8 versions. 
-The following uses the latest Python 3.8 version to create an execution environment named ``furiosa``.
+and activate it as needed. The FuriosaAI Python SDK is compatible with Python 3.7-3.9 versions.
+The following uses Python 3.8 version to create an execution environment named ``furiosa``.
 
 .. code-block::
 
