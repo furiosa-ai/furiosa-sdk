@@ -1,0 +1,4 @@
+status = ["continuous-integration/jenkins/branch"]
+use_squash_merge = false
+timeout_sec = 36000
+#required_approvals = 1
