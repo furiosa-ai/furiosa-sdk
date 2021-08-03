@@ -1,20 +1,5 @@
 from abc import ABC
 
-import os
-
-# FIXME Without this environ setting, the following error occurred on Mac OS:
-# OMP: Error #15: Initializing libomp.dylib, but found libiomp5.dylib already initialized.
-# OMP: Hint This means that multiple copies of the OpenMP runtime have been linked into the program. \
-# That is dangerous, since it can degrade performance or cause incorrect results. \
-# The best thing to do is to ensure that only a single OpenMP runtime is linked into the process, \
-# e.g. by avoiding static linking of the OpenMP runtime in any library. As an unsafe, unsupported, \
-# undocumented workaround you can set the environment variable KMP_DUPLICATE_LIB_OK=TRUE \
-# to allow the program to continue to execute, but that may cause crashes or silently produce incorrect results. \
-# For more information, please see http://openmp.llvm.org/
-#
-# Process finished with exit code 134 (interrupted by signal 6: SIGABRT)
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
 import torch
 import torch.nn as nn
 
