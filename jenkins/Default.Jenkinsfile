@@ -232,6 +232,7 @@ pipeline {
             setupPythonEnv("3.7")
             buildPackages("3.7")
             testModule("3.7", "furiosa-sdk-runtime")
+            testModule("3.7", "furiosa-sdk-quantizer")
           }
         }
       }
@@ -245,6 +246,7 @@ pipeline {
             setupPythonEnv("3.8")
             buildPackages("3.8")
             testModule("3.8", "furiosa-sdk-runtime")
+            testModule("3.8", "furiosa-sdk-quantizer")
           }
         }
       }
@@ -258,6 +260,7 @@ pipeline {
             setupPythonEnv("3.9")
             buildPackages("3.9")
             testModule("3.9", "furiosa-sdk-runtime")
+            testModule("3.7", "furiosa-sdk-quantizer")
           }
         }
       }
