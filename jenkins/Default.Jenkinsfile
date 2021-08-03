@@ -260,7 +260,7 @@ pipeline {
             setupPythonEnv("3.9")
             buildPackages("3.9")
             testModule("3.9", "furiosa-sdk-runtime")
-            testModule("3.7", "furiosa-sdk-quantizer")
+            testModule("3.9", "furiosa-sdk-quantizer")
           }
         }
       }
