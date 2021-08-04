@@ -9,7 +9,7 @@ FuriosaAI NPU Python SDK 라이브러리를 사용하면 NPU를 사용하는 프
 
 * :doc:`/installation/driver`
 * :doc:`/installation/runtime`  
-* Python 3.7 또는 상위 버전 (필요시 :any:`SetupPython` 참고)    
+* Python 3.7 또는 상위 버전 (필요시 :any:`SetupPython` 참고)
   
 
 위 요구 사항이 준비된 경우 PyPi를 통해 FuriosaAI NPU Python SDK 라이브러리를 설치할 수 있다.
