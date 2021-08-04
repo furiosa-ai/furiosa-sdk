@@ -43,6 +43,7 @@ class CompilerV1Api(object):
         def __create_task(
             self,
             x_request_id,
+            x_furiosa_ai_sdk_version,
             source,
             **kwargs
         ):
@@ -52,11 +53,12 @@ class CompilerV1Api(object):
             This method makes a synchronous HTTP request by default. To make an
             asynchronous HTTP request, please pass async_req=True
 
-            >>> thread = api.create_task(x_request_id, source, async_req=True)
+            >>> thread = api.create_task(x_request_id, x_furiosa_ai_sdk_version, source, async_req=True)
             >>> result = thread.get()
 
             Args:
                 x_request_id (str): Unique request Id to identify the user request
+                x_furiosa_ai_sdk_version (str): Furiosa SDK version to route the user request
                 source (file_type): a byte array of a source image
 
             Keyword Args:
@@ -111,6 +113,8 @@ class CompilerV1Api(object):
             kwargs['_host_index'] = kwargs.get('_host_index')
             kwargs['x_request_id'] = \
                 x_request_id
+            kwargs['x_furiosa_ai_sdk_version'] = \
+                x_furiosa_ai_sdk_version
             kwargs['source'] = \
                 source
             return self.call_with_http_info(**kwargs)
@@ -130,6 +134,7 @@ class CompilerV1Api(object):
             params_map={
                 'all': [
                     'x_request_id',
+                    'x_furiosa_ai_sdk_version',
                     'source',
                     'target_npu_spec',
                     'compiler_config',
@@ -139,6 +144,7 @@ class CompilerV1Api(object):
                 ],
                 'required': [
                     'x_request_id',
+                    'x_furiosa_ai_sdk_version',
                     'source',
                 ],
                 'nullable': [
@@ -156,6 +162,8 @@ class CompilerV1Api(object):
                 'openapi_types': {
                     'x_request_id':
                         (str,),
+                    'x_furiosa_ai_sdk_version':
+                        (str,),
                     'source':
                         (file_type,),
                     'target_npu_spec':
@@ -171,6 +179,7 @@ class CompilerV1Api(object):
                 },
                 'attribute_map': {
                     'x_request_id': 'X-Request-ID',
+                    'x_furiosa_ai_sdk_version': 'X-FuriosaAI-SDK-Version',
                     'source': 'source',
                     'target_npu_spec': 'target_npu_spec',
                     'compiler_config': 'compiler_config',
@@ -180,6 +189,7 @@ class CompilerV1Api(object):
                 },
                 'location_map': {
                     'x_request_id': 'header',
+                    'x_furiosa_ai_sdk_version': 'header',
                     'source': 'form',
                     'target_npu_spec': 'form',
                     'compiler_config': 'form',
