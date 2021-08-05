@@ -1,0 +1,10 @@
+[tool.black]
+target-version = ['py37', 'py38', 'py39']
+
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "gitpython",
+]
+build-backend = "setuptools.build_meta"

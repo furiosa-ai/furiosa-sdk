@@ -29,7 +29,8 @@ class FileTransport(Transport):
 
     @dispatch(str)  # type: ignore
     async def read(self, location: str) -> bytes:  # noqa: F811
-        async with aiofiles.open(location, "rb") as f:
+        file = removeprefix(location, self.scheme)
+        async with aiofiles.open(file, "rb") as f:
             return await f.read()
 
     async def download(self, uri: str) -> str:
@@ -37,7 +38,7 @@ class FileTransport(Transport):
 
         FileTransport download is just to copy local directory into the cache.
         """
-        # TODO(ileixe): Impmlement cache layer.
+        # TODO(ileixe): Implement cache layer.
         assert self.is_supported(uri)
 
         directory = self.cache

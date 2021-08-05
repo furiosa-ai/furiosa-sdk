@@ -32,6 +32,7 @@ EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "quantizer": ["furiosa-quantizer~=" + version],
     "validator": ["furiosa-model-validator~=" + version],
     "models": ["furiosa-models~=" + version],
+    "serving": ["furiosa-serving~=" + version],
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need
