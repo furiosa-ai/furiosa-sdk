@@ -51,7 +51,7 @@ class TestTransformer(unittest.TestCase):
         expected = run_onnx_model(trans_model, np_arrays)
 
         for act, exp in zip(actual, expected):
-            self.assertListAlmostEqual(act, exp, 4)
+            self.assertListAlmostEqual(act, exp, 4, msg=f"{np_arrays}")
 
     def check_value_info(self, model):
         value_info = {vi.name: vi for vi in
@@ -72,10 +72,10 @@ class TestTransformer(unittest.TestCase):
     def check_assertion(self, func, kwargs):
         self.assertRaises(AssertionError, func, **kwargs)
 
-    def assertListAlmostEqual(self, list1, list2, tol):
+    def assertListAlmostEqual(self, list1, list2, tol, msg=None):
         self.assertEqual(len(list1), len(list2))
         for a, b in zip(list1, list2):
-            self.assertAlmostEqual(a, b, tol)
+            self.assertAlmostEqual(a, b, tol, msg=msg)
 
 
 def run_onnx_model(model: onnx.ModelProto,
