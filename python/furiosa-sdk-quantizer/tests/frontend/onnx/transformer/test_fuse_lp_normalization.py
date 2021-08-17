@@ -1,5 +1,7 @@
 import abc
+import unittest
 
+import onnxruntime
 import torch
 import torch.nn as nn
 
@@ -59,6 +61,10 @@ class TestFuseLpNormalization(TestTransformer):
         self.check_attribute(axis, trans_model.graph.node[0].attribute[0].i)
         self.check_attribute(p, trans_model.graph.node[0].attribute[1].i)
 
+    @unittest.skipIf(
+        onnxruntime.get_device() == "GPU",
+        "https://github.com/furiosa-ai/furiosa-sdk-private/issues/34#issuecomment-900467342",
+    )
     def test_case2(self):
         """
             Test whether the original model is well transformed for multi operator model,
