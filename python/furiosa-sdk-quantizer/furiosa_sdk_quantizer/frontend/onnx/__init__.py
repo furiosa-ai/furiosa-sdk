@@ -13,7 +13,6 @@ from furiosa_sdk_quantizer.frontend.onnx import spec
 from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa_sdk_quantizer.frontend.onnx.utils.version_checker import CheckVersion
 from furiosa_sdk_quantizer.frontend.onnx.transformer.polish_model import PolishModel
-from furiosa_sdk_quantizer.frontend.onnx.transformer.eliminate_argmax_output import EliminateArgmaxOutput
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
 from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
 from furiosa_sdk_quantizer.frontend.onnx.transformer.deprecated.fuse_scalar_mul_into_conv import FuseScalarMulIntoConv
