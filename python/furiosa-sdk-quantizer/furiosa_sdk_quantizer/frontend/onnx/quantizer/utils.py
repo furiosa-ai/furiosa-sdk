@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 import onnx
-from onnx import TensorProto, TensorAnnotation, StringStringEntryProto
+from onnx import TensorProto, StringStringEntryProto
 import onnxruntime as ort
 
 logger = logging.getLogger('Furiosa-Quantizer')
@@ -223,26 +223,6 @@ def calculate_weight_quant_params(data: np.array, weight_qtype: TensorProto, nam
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
     scale = max(scale, 2 ** -149)
     return zero_point, scale
-
-
-def make_tensor_annotation(tensor_name, zero_point_name, scale_name):
-    '''
-    Helper function to make_tensor_annotation
-    '''
-    annot = TensorAnnotation()
-    annot.tensor_name = tensor_name
-
-    quant_param_scale = StringStringEntryProto()
-    quant_param_scale.key = 'SCALE_TENSOR'
-    quant_param_scale.value = scale_name
-
-    quant_param_zero_point = StringStringEntryProto()
-    quant_param_zero_point.key = 'ZERO_POINT_TENSOR'
-    quant_param_zero_point.value = zero_point_name
-
-    annot.quant_parameter_tensor_names.extend([quant_param_scale, quant_param_zero_point])
-
-    return annot
 
 
 def append_suffix(name: str, suffix: List[str]) -> List[str]:
