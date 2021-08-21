@@ -12,53 +12,6 @@ logging.basicConfig(level=logging.INFO)
 
 __PRODUCER__ = "jason_furiosa"
 
-# This OP list is based on ONNX operator spec.
-# Integer_math and Integer_non_math ops can handle int8 inputs whereas Sandwich ops can not.
-# Note: Concat is exceptional. As it requires re-quantizing multiple inputs.
-__DYNAMIC_RANGE_COLLECTORS__ = {
-    'integer_math': [
-        'Conv',
-        'MatMul',
-    ],
-    'integer_non_math': [
-        'MaxPool',
-        'Squeeze',
-        'Unsqueeze',
-        'Gather',
-        'Transpose',
-        'Reshape',
-        'DepthToSpace',
-        'Expand',
-        'Clip',
-        'Split',
-        'Pad',
-        'Resize',
-        'Flatten',
-        'Slice',
-    ],
-    'sandwich': [
-        'Gemm',
-        'Add',
-        'ReduceMean',
-        'Softmax',
-        'Relu',
-        'Concat',
-        'Softmax',
-        'Softplus',
-        'ReduceL2',
-        'LayerNormalization',
-        'Gelu',
-        'GlobalAveragePool',
-        'Sigmoid',
-        'Mul',
-        'AveragePool',
-        'ReduceSum',
-        'Div',
-        'ConvTranspose',
-        'LpNormalization',
-    ],
-}
-
 
 class QuantizationMode:
     # dfg: Quantize graph to DFG(Quantized graph) export
