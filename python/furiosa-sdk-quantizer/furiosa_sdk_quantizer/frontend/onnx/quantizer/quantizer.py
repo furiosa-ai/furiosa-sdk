@@ -28,7 +28,6 @@ import tqdm
 from furiosa_sdk_quantizer.frontend.onnx.transformer import utils
 from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
-    make_tensor_annotation,
     calculate_activation_quant_params,
     calculate_weight_quant_params,
     append_suffix,
@@ -115,11 +114,9 @@ class FuriosaONNXQuantizer:
         self._quant_weight = {}
         self._quant_param = {}
         self._quant_value_info = {}
-        self._quant_annotation = {}
 
         # quant model.graph field key for quantized model checker
         self._quant_initializer_key = list()
-        self._quant_annotation_key = list()
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
@@ -180,8 +177,6 @@ class FuriosaONNXQuantizer:
         self._update_graph_field(field='value_info',
                                  proto=list(self._quant_value_info.values()) +
                                        list(self.model.graph.value_info))
-        self._update_graph_field(field='quantization_annotation',
-                                 proto=self._quant_annotation.values())
 
         if self.mode == QuantizationMode.dfg:
             self.model = DFGImportable(self.model, self.raw_data).transform()
@@ -223,13 +218,11 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = [vi.name for vi in list(self.model.graph.value_info)
                                       + list(self.model.graph.input) + list(self.model.graph.output)]
         self._quant_initializer_key = [init.name for init in self.model.graph.initializer]
-        self._quant_annotation_key = [annot.tensor_name for annot in self.model.graph.quantization_annotation]
 
         self._check_quant_initializer()
         self._check_quant_value_info()
 
         if self.mode == QuantizationMode.dfg:
-            self._check_quant_annotation()
             self._check_quant_param()
 
     def _quantize_activation(self):
@@ -415,10 +408,6 @@ class FuriosaONNXQuantizer:
         if elem_type == onnx.TensorProto.FLOAT:
             return
 
-        self._stack_quant_annotation(
-            *append_suffix(name=name, suffix=['_quantized', '_scale', '_zero_point'])
-        )
-
     def _stack_quant_value_info(self, name, name_quant, elem_type, quant_vi_dict):
         if name_quant in quant_vi_dict.keys():
             return
@@ -433,21 +422,6 @@ class FuriosaONNXQuantizer:
         # stack quantization value info
         quant_vi_dict.update({
             quant_vi.name: quant_vi
-        })
-
-    def _stack_quant_annotation(self, tensor_name, scale_name, zero_point_name):
-        assert '_scale' in scale_name and '_zero_point' in zero_point_name
-
-        if tensor_name in self._quant_annotation.keys():
-            return
-
-        # make quantization annotation
-        quant_annotation = make_tensor_annotation(tensor_name=tensor_name,
-                                                  zero_point_name=zero_point_name, scale_name=scale_name)
-
-        # stack quantization annotation
-        self._quant_annotation.update({
-            quant_annotation.tensor_name: quant_annotation
         })
 
     def _update_graph_field(self, field, proto):
@@ -502,24 +476,7 @@ class FuriosaONNXQuantizer:
                 if vi.name == oup.name:
                     raise Exception('%s in graph.value_info is also defined in graph.output' % vi.name)
 
-    def _check_quant_annotation(self):
-        quant_inputs = [node_input for node in self.model.graph.node
-                        for node_input in node.input
-                        if node_input.split('_')[-1] == 'quantized']
-        quant_outputs = [node_output for node in self.model.graph.node
-                         for node_output in node.output
-                         if node_output.split('_')[-1] == 'quantized']
-
-        for tensor_name in set(quant_inputs + quant_outputs):
-            if tensor_name not in self._quant_annotation_key:
-                raise KeyError('%s is not defined in graph.quantization_annotation' % tensor_name)
-
     def _check_quant_param(self):
-        for annotation in self.model.graph.quantization_annotation:
-            for quant_param in annotation.quant_parameter_tensor_names:
-                if quant_param.value not in self._quant_initializer_key:
-                    raise KeyError('%s is not defined in graph.initializer' % quant_param.value)
-
         for init in self.model.graph.initializer:
             if init.name.split('_')[-1] == 'scale':
                 if all(v == 0. for v in init.float_data):

@@ -18,16 +18,11 @@ def name_nodes(model):
 
 
 def eliminate_unused_initializer(model):
-    model = _eliminate_unused_quantization_annotation(model)
-
     node_input_names = [node_input for node in model.graph.node for node_input in node.input]
-    qtensor_names = [qtensor_name.value for annot in model.graph.quantization_annotation
-                     for qtensor_name in annot.quant_parameter_tensor_names]
 
     unused_initializer = list()
     for init in model.graph.initializer:
-        # Even if an init is not an input of a node, do not remove it if defined in graph.quantization_annotation.
-        if init.name not in node_input_names and init.name not in qtensor_names:
+        if init.name not in node_input_names:
             unused_initializer.append(init)
 
     for unused in unused_initializer:
@@ -76,21 +71,6 @@ def eliminate_unused_value_info(model):
 
     for unused in unused_value_info:
         model.graph.value_info.remove(unused)
-
-    return model
-
-
-def _eliminate_unused_quantization_annotation(model):
-    node_input_names = [node_input for node in model.graph.node for node_input in node.input]
-    node_output_names = [node_output for node in model.graph.node for node_output in node.output]
-
-    unused_quant_annot = list()
-    for quant_annot in model.graph.quantization_annotation:
-        if quant_annot.tensor_name not in set(node_input_names + node_output_names):
-            unused_quant_annot.append(quant_annot)
-
-    for unused in unused_quant_annot:
-        model.graph.quantization_annotation.remove(unused)
 
     return model
 
