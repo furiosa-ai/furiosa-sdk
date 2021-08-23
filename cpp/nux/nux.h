@@ -317,6 +317,11 @@ void enable_logging(void);
 void enable_furiosa_logging(void);
 
 /**
+ * \brief Register Ctrl-C signal handler to exit process.
+ */
+void register_signal_handler(void);
+
+/**
  * \brief Creates a new nux handle.
  *
  * @param[out] nux Mutable pointer to receive a created Nux handle

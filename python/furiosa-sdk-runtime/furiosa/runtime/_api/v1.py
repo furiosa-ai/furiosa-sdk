@@ -4,7 +4,7 @@ import ctypes
 import glob
 import logging
 import os
-from ctypes import CDLL, c_void_p, c_char_p, POINTER, c_ulonglong, c_bool, c_int, util
+from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p, util
 from sys import platform
 
 logging.basicConfig()
@@ -99,6 +99,9 @@ LIBNUX.build_timestamp.restype = c_char_p
 
 LIBNUX.enable_furiosa_logging.argtypes = []
 LIBNUX.enable_furiosa_logging.restype = None
+
+LIBNUX.register_signal_handler.argtypes = []
+LIBNUX.register_signal_handler.restype = None
 
 LIBNUX.nux_session_option_create.argtypes = []
 LIBNUX.nux_session_option_create.restype = c_void_p
@@ -205,3 +208,6 @@ decref.restype = None
 
 # Enable FUriosa logger
 LIBNUX.enable_furiosa_logging()
+
+# Register Ctrl-C signal handler to interrupt native side for long running job
+LIBNUX.register_signal_handler()
