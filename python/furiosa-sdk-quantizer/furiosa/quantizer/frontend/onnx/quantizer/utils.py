@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 import onnx
-from onnx import TensorProto, StringStringEntryProto
+from onnx import TensorProto
 import onnxruntime as ort
 
 logger = logging.getLogger('Furiosa-Quantizer')
@@ -83,7 +83,7 @@ def calculate_activation_quant_params(dynamic_ranges: Dict,
     for node in node_list:
         # Quantize activation input/output, following TFLite's quantization specification
         if node.op_type in ['MaxPool', 'Squeeze', 'Unsqueeze', 'Gather', 'Transpose', 'Reshape',
-                            'DepthToSpace', 'Expand', 'Flatten', 'GlobalAveragePool', 'AveragePool']:
+                            'DepthToSpace', 'Expand', 'Flatten']:
             if not is_float_tensor(value_info[node.input[0]]):
                 continue
             if node.input[0] not in quantization_params.keys():

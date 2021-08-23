@@ -24,6 +24,7 @@ class FuseBnIntoConv(Transformer):
         for transformer in [
             Pattern_1,
             Pattern_2,
+            Pattern_3,
         ]:
             model = transformer(model).transform()
 
@@ -112,8 +113,9 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     @staticmethod
     def get_multiplier_and_shifter(scale, B, mean, var, eps):
-        multiplier = scale * 1 / np.sqrt(var + eps)
-        shifter = - mean * scale + B
+        reciprocal = np.sqrt(var + eps)
+        multiplier = scale / reciprocal
+        shifter = - mean * scale / reciprocal + B
 
         return multiplier, shifter
 
@@ -150,10 +152,10 @@ class Pattern_2(Pattern_1, abc.ABC):
     def make_new_node(self, matched_nodes):
         node = matched_nodes[0]
         return [
-            self.make_node('Mul', [node.input[0], node.input[0] + '_bn_multiplier'],
+            self.make_node('Mul', [node.input[0], node.output[0] + '_bn_multiplier'],
                            [node.output[0] + '_bn_multiplied'], node.name),
             self.make_node('Add',
-                           [node.output[0] + '_bn_multiplied', node.input[0] + '_bn_shifter'],
+                           [node.output[0] + '_bn_multiplied', node.output[0] + '_bn_shifter'],
                            [node.output[0]], node.name)
         ]
 
@@ -164,9 +166,9 @@ class Pattern_2(Pattern_1, abc.ABC):
         num_features = self.get_value_info_shape(node.output[0])[0]
         return [
             self.make_initializer_from_array(multiplier.reshape(num_features, -1, 1, 1),
-                                             name=node.input[0] + '_bn_multiplier'),
+                                             name=node.output[0] + '_bn_multiplier'),
             self.make_initializer_from_array(shifter.reshape(num_features, -1, 1, 1),
-                                             name=node.input[0] + '_bn_shifter')
+                                             name=node.output[0] + '_bn_shifter')
         ]
 
     def make_new_vi(self, matched_nodes):
@@ -174,3 +176,75 @@ class Pattern_2(Pattern_1, abc.ABC):
         return [self.make_tensor_value_info(node.output[0] + '_bn_multiplied',
                                             onnx.TensorProto.FLOAT,
                                             shape=self.get_value_info_shape(node.output[0]))]
+
+
+class Pattern_3(Pattern_1, abc.ABC):
+    """
+    transform
+        prev --> Conv --> Mul --> Add --> next
+    to
+        prev --> Conv --> next
+    """
+    pattern_to_match = ['Conv', 'Mul', 'Add']
+
+    def pattern_matching(self, base_node):
+        inputs = base_node.input
+        matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
+        if not matched_nodes:
+            return inputs
+
+        if not self.pattern_condition_checker(matched_nodes):
+            return inputs
+
+        top_node = matched_nodes[0]
+        self.transform_to_fuse(matched_nodes,
+                               nodes_to_add=[*self.make_new_node(matched_nodes)],
+                               inits_to_add=[*self.make_new_init(matched_nodes)],
+                               vis_to_add=[*self.make_new_vi(matched_nodes)] if self.make_new_vi(
+                                   matched_nodes) else None
+                               )
+
+        return top_node.input
+
+    def pattern_condition_checker(self, nodes_to_check):
+        return True
+
+    def make_new_node(self, matched_nodes):
+        top_node, middle_node, bottom_node = matched_nodes
+
+        input_names = []
+        input_names.append(top_node.input[0])
+        input_names.append(top_node.input[1] + '_bn_fused')
+        if len(top_node.input) == 3:
+            input_names.append(top_node.input[2] + '_bn_fused')
+        else:
+            input_names.append(top_node.output[0] + '_bias_bn_fused')
+
+        return [self.make_node('Conv', [*input_names], [bottom_node.output[0]], top_node.name,
+                               **attribute_to_kwargs(top_node.attribute))]
+
+    def make_new_init(self, matched_nodes):
+        top_node, middle_node, bottom_node = matched_nodes
+        multiplier, shifter = self.get_multiplier_and_shifter(middle_node, bottom_node)
+
+        weight = self.get_initializer_array(top_node.input[1])
+        fused_weight = self.fuse_bn_params(weight, multiplier, shifter)
+        fused_weight_name = top_node.input[1] + '_bn_fused'
+
+        bias = np.zeros(weight.shape[0]).astype(np.float32)
+        fused_bias_name = top_node.output[0] + '_bias_bn_fused'
+
+        if len(top_node.input) == 3:
+            bias = self.get_initializer_array(top_node.input[2])
+            fused_bias_name = top_node.input[2] + '_bn_fused'
+        fused_bias = self.fuse_bn_params(bias, multiplier, shifter)
+
+        return [
+            self.make_initializer_from_array(fused_weight, name=fused_weight_name),
+            self.make_initializer_from_array(fused_bias, name=fused_bias_name)
+        ]
+
+    def get_multiplier_and_shifter(self, mul_node, add_node):
+        multiplier = self.get_initializer_array(self.get_init_node_input(mul_node))
+        shifter = self.get_initializer_array(self.get_init_node_input(add_node))
+        return multiplier.flatten(), shifter.flatten()

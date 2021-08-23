@@ -15,7 +15,8 @@ class InferenceShape:
         self.model = utils.rebuild_model(model, model.graph.node)
 
     def inference_shape(self) -> onnx.ModelProto:
-        self.model, check = onnxsim.simplify(self.model, skipped_optimizers=['eliminate_duplicate_initializer'])
+        self.model, check = onnxsim.simplify(self.model, skipped_optimizers=['eliminate_duplicate_initializer',
+                                                                             'fuse_add_bias_into_conv'])
         assert check
         check_model(self.model)
 

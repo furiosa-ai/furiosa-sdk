@@ -11,6 +11,7 @@ class FuseConv(Transformer):
         for transformer in [
             Pattern_1,
             Pattern_2,
+            Pattern_3,
         ]:
             model = transformer(model).transform()
 
@@ -240,3 +241,66 @@ class Pattern_2(Pattern_1, abc.ABC):
         transB = attrs['transB']
 
         return {'transB': transB}
+
+
+class Pattern_3(ONNXTransformer, abc.ABC):
+    """
+        transform
+            prev --> Conv --> Add --> next
+        to
+            prev --> Conv --> next
+        if len(Conv.input) == 2
+    """
+    pattern_to_match = ['Conv', 'Add']
+
+    def pattern_matching(self, base_node):
+        inputs = base_node.input
+
+        matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
+        if not matched_nodes:
+            return inputs
+
+        if not self.pattern_condition_checker(matched_nodes):
+            return inputs
+
+        top_node, base_node = matched_nodes
+
+        self.transform_to_fuse(matched_nodes,
+                               nodes_to_add=[
+                                   self.make_nodes(*matched_nodes)
+                               ],
+                               inits_to_add=[
+                                   self.make_initializers(base_node)
+                               ])
+        return top_node.input
+
+    def pattern_condition_checker(self, nodes_to_check):
+        top_node, _ = nodes_to_check
+
+        if not self.check_condition_1(top_node):
+            return False
+
+        return True
+
+    def check_condition_1(self, node):
+        """
+            check if Conv has bias input
+        """
+        if len(node.input) == 2:
+            return True
+        return False
+
+    def make_nodes(self, top_node, base_node):
+        conv_node = self.make_node('Conv',
+                                   inputs=[*top_node.input, self.get_init_node_input(base_node) + '_fused'],
+                                   outputs=[base_node.output[0]], name=top_node.name,
+                                   **attribute_to_kwargs(top_node.attribute))
+
+        return conv_node
+
+    def make_initializers(self, base_node):
+        b_input = self.get_init_node_input(base_node)
+        b_arr = self.get_initializer_array(b_input)
+        new_b_init = self.make_initializer_from_array(b_arr.flatten(), b_input + '_fused')
+
+        return new_b_init

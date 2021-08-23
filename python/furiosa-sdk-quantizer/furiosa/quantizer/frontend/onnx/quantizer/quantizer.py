@@ -25,7 +25,7 @@ from onnx.helper import make_node, make_tensor, make_tensor_value_info, ModelPro
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
+from furiosa.quantizer.frontend.onnx.transformer import fuse_clipper, utils
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
     calculate_activation_quant_params,
@@ -74,6 +74,10 @@ class FuriosaONNXQuantizer:
         self.mode = mode
         self.input_qtype = self.weight_qtype = onnx.TensorProto.INT8
 
+        # use uint8 dtype for activation in fake_quant mode
+        if mode == QuantizationMode.fake:
+            self.input_qtype = onnx.TensorProto.UINT8
+
         # set model a proto to use
         self.initializer = {init.name: init for init in self.model.graph.initializer}
         self.value_info = {vi.name: vi for vi in
@@ -120,6 +124,9 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
+        # pre-optimization
+        self.pre_optimize()
+
         # quantize weight and activation
         self.quantize_model()
 
@@ -130,6 +137,10 @@ class FuriosaONNXQuantizer:
         self.check_model()
 
         return self.model
+
+    def pre_optimize(self):
+        # fuse clippers like Relu, Clip into Conv, Add
+        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
     def quantize_model(self):
         self._quantize_activation()
@@ -234,7 +245,7 @@ class FuriosaONNXQuantizer:
         for name, (zp, s) in act_quant_param.items():
             zp_name, s_name = append_suffix(name=name, suffix=suffix)
 
-            self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
+            self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.input_qtype,
                                     dims=[], vals_zp=zp.flatten(), vals_scale=s.flatten())
 
     def _quantize_weight(self):
@@ -318,7 +329,8 @@ class FuriosaONNXQuantizer:
 
     def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
         weight = numpy_helper.to_array(weight_init)
-        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name)
+        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype,
+                                              name=weight_init.name)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -664,7 +676,7 @@ class DFGImportable:
 
 class ONNXRuntimeExecutable(DFGImportable):
     def __init__(self, model, raw_data):
-        super(ONNXRuntimeExecutable, self).__init__(model)
+        super(ONNXRuntimeExecutable, self).__init__(model, raw_data)
 
     def transform(self):
 
