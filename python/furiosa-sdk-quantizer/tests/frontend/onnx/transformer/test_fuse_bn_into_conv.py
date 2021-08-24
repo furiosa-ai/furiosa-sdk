@@ -42,8 +42,8 @@ class UnitTestModel2(UnitTestModel):
 
     def forward(self, x):
         x = self.conv(x)
-        x = torch.mul(x, torch.rand((1, x.shape[1], 1, 1)))
-        x = torch.add(x, torch.rand((1, x.shape[1], 1, 1)))
+        x = torch.mul(x, torch.ones((1, x.shape[1], 1, 1)))
+        x = torch.add(x, torch.ones((1, x.shape[1], 1, 1)))
         return x
 
 

@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_clipper import FuseClipper
+from furiosa.quantizer.frontend.onnx.transformer.fuse_clipper import FuseClipper
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -41,7 +41,7 @@ class UnitTestModel2(nn.Module, ABC):
     """
 
     def forward(self, x):
-        x = torch.add(x, torch.rand(x.shape))
+        x = torch.add(x, torch.ones(x.shape))
         x = nn.functional.relu(x)
 
         return x
@@ -53,7 +53,7 @@ class UnitTestModel3(nn.Module, ABC):
     """
 
     def forward(self, x):
-        x = torch.add(x, torch.rand(x.shape))
+        x = torch.add(x, torch.ones(x.shape))
         x = torch.clip(x, -1., 1.)
 
         return x

@@ -221,7 +221,7 @@ class Pattern_3(Pattern_1, abc.ABC):
             input_names.append(top_node.output[0] + '_bias_bn_fused')
 
         return [self.make_node('Conv', [*input_names], [bottom_node.output[0]], top_node.name,
-                               **attribute_to_kwargs(top_node.attribute))]
+                               **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})]
 
     def make_new_init(self, matched_nodes):
         top_node, middle_node, bottom_node = matched_nodes

@@ -294,7 +294,7 @@ class Pattern_3(ONNXTransformer, abc.ABC):
         conv_node = self.make_node('Conv',
                                    inputs=[*top_node.input, self.get_init_node_input(base_node) + '_fused'],
                                    outputs=[base_node.output[0]], name=top_node.name,
-                                   **attribute_to_kwargs(top_node.attribute))
+                                   **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
 
         return conv_node
 

@@ -2,9 +2,8 @@ import abc
 
 import onnx
 
-from furiosa_sdk_quantizer.interfaces.transformer import Transformer
-from furiosa_sdk_quantizer.frontend.onnx.transformer import ONNXTransformer
-from furiosa_sdk_quantizer.frontend.onnx.quantizer.utils import attribute_to_kwargs
+from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 
 
 class FuseClipper(Transformer):
@@ -48,9 +47,8 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
-
         return self.make_node('Conv', [*top_node.input], [base_node.output[0]], top_node.name,
-                              **attribute_to_kwargs(top_node.attribute))
+                              **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
 
 
 class Pattern_2(Pattern_1):
@@ -75,7 +73,7 @@ class Pattern_3(Pattern_1):
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
         return self.make_node('Add', [*top_node.input], [base_node.output[0]], top_node.name,
-                              **attribute_to_kwargs(top_node.attribute))
+                              **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
 
 
 class Pattern_4(Pattern_3):
