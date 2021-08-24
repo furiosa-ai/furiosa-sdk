@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa_sdk_model_validator
+	pylint furiosa/validator
 
 upload_test:
 	twine upload --repository testpypi dist/*

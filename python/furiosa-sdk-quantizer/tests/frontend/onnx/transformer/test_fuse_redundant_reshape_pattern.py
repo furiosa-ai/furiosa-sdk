@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
+from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
                                                                           FuseRedundantReshapePattern)
 from tests.frontend.onnx.transformer import TestTransformer
 

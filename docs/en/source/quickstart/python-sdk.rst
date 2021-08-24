@@ -28,7 +28,7 @@ and outputting the version information.
 .. code-block::
   
   >> from furiosa import runtime
-  INFO:furiosa_sdk_runtime._api.v1:successfully loaded dynamic library libnux.so.1.0.0
+  INFO:furiosa.runtime._api.v1:successfully loaded dynamic library libnux.so.1.0.0
 
   >> runtime.__full_version__
   'Furiosa SDK Runtime .release:0.1.1+907338a44e91f176495b3c24fce3d9b1e626a662 (libnux 0.3.0-dev 9418048e4 2021-03-29 02:59:26)'

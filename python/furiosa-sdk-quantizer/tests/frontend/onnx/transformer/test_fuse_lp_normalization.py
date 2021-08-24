@@ -5,7 +5,7 @@ import onnxruntime
 import torch
 import torch.nn as nn
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
+from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
 
 from tests.frontend.onnx.transformer import TestTransformer
 

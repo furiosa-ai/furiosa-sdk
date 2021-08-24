@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa_sdk_cli
+	pylint furiosa/cli
 
 upload_test:
 	twine upload --repository testpypi dist/*

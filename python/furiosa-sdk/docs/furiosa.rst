@@ -7,34 +7,34 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   furiosa.client
-   furiosa.openapi
-   furiosa.quantizer
-   furiosa.runtime
+   furiosa.common.client
+   furiosa.common.openapi
+   furiosa.common.quantizer
+   furiosa.common.runtime
 
 Submodules
 ----------
 
-furiosa.config module
-^^^^^^^^^^^^^^^^^^^^^
+furiosa.common.config module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: furiosa.config
+.. automodule:: furiosa.common.config
    :members:
    :undoc-members:
    :show-inheritance:
 
-furiosa.consts module
-^^^^^^^^^^^^^^^^^^^^^
+furiosa.common.consts module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: furiosa.consts
+.. automodule:: furiosa.common.consts
    :members:
    :undoc-members:
    :show-inheritance:
 
-furiosa.utils module
-^^^^^^^^^^^^^^^^^^^^
+furiosa.common.utils module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: furiosa.utils
+.. automodule:: furiosa.common.utils
    :members:
    :undoc-members:
    :show-inheritance:

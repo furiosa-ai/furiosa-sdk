@@ -26,7 +26,7 @@ The compilation can take some time up to tens of secs. In most production enviro
 ```
 $ ./image_classify.py ../assets/images/car.jpg
 
-INFO:furiosa_sdk_runtime._api.v1:successfully loaded dynamic library libnux.so.1.0.0
+INFO:furiosa.runtime._api.v1:successfully loaded dynamic library libnux.so.1.0.0
 [1/6] 🔍   Compiling from tflite to dfg
 Done in 0.011475525s
 [2/6] 🔍   Compiling from dfg to ldfg

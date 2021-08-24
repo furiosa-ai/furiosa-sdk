@@ -4,7 +4,7 @@ import logging
 import os
 from os.path import dirname
 
-from setuptools import setup
+from setuptools import find_namespace_packages, setup
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def git_version(version_: str) -> str:
     return 'no_git_version'
 
 
-def write_version(filename: str = os.path.join(*[my_dir, "furiosa_sdk_quantizer", "git_version"])):
+def write_version(filename: str = os.path.join(*[my_dir, "furiosa/quantizer", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
     :param str filename: Destination file to write
@@ -67,5 +67,6 @@ if __name__ == "__main__":
 
     setup(
         version=version,
+        packages=find_namespace_packages(include=["furiosa.*"]),
         **setup_kwargs,
     )

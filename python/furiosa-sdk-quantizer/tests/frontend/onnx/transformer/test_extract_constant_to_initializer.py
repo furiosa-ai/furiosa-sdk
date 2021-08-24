@@ -5,8 +5,8 @@
 # import torch
 # import torch.nn as nn
 #
-# from furiosa_sdk_quantizer.frontend.onnx.utils.check_model import check_model
-# from furiosa_sdk_quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
+# from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+# from furiosa.quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
 # from tests import torch_to_onnx
 #
 #

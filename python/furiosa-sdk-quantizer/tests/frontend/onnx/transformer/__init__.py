@@ -8,8 +8,8 @@ import onnxruntime as ort
 import numpy as np
 
 from tests import torch_to_onnx
-from furiosa_sdk_quantizer.interfaces.transformer import Transformer
-from furiosa_sdk_quantizer.frontend.onnx.transformer.polish_model import PolishModel
+from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 
 
 class TestTransformer(unittest.TestCase):

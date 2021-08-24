@@ -3,13 +3,14 @@ import time
 import unittest
 import uuid
 
-from furiosa.config import load_furiosa_config, set_apikey
-from furiosa.openapi import ApiClient
-from furiosa.openapi.api.account_v1_api import ApiKey, AccountV1Api
-from furiosa.openapi.api.compiler_v1_api import CompilerV1Api
-from furiosa.openapi.api.version_api import VersionApi
-from furiosa.openapi.models import VersionInfo, LoginRequest, ApiKeyRequest, ApiKeyPatch
-from furiosa.utils import login_account
+from furiosa.common.config import load_furiosa_config, set_apikey
+from furiosa.common.utils import login_account
+from furiosa.common.openapi import ApiClient
+from furiosa.common.openapi.api.account_v1_api import AccountV1Api, ApiKey
+from furiosa.common.openapi.api.compiler_v1_api import CompilerV1Api
+from furiosa.common.openapi.api.version_api import VersionApi
+from furiosa.common.openapi.models import ApiKeyPatch, ApiKeyRequest, LoginRequest, VersionInfo
+
 from tests import test_data
 
 
