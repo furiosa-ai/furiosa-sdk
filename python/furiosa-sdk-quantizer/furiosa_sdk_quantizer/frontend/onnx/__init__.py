@@ -31,12 +31,6 @@ def _transform(transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],
     return model
 
 
-def _polish_model(model: onnx.ModelProto) -> onnx.ModelProto:
-    return _transform([
-        PolishModel().transform,
-    ], model)
-
-
 def _inference_shape(model: onnx.ModelProto) -> onnx.ModelProto:
     return InferenceShape(model).inference_shape()
 
@@ -64,7 +58,7 @@ def export_spec(model: onnx.ModelProto, output: IO[Text]):
 
 def optimize_model(model: onnx.ModelProto) -> onnx.ModelProto:
     model = _transform([CheckVersion().transform], model)
-    model = _transform([_polish_model], model)
+    model = _transform([PolishModel().transform], model)
     # TODO check if graph_transform should apply.
     model = _transform([_reify], model)
     return model
