@@ -1,5 +1,6 @@
 import os
-from typing import Dict, Iterable, Iterator, Tuple
+import tempfile
+from typing import Dict, Iterable, Iterator, Optional, Tuple
 
 import numpy as np
 import onnx
@@ -22,18 +23,27 @@ class CalibrationDataReaderForIterator(onnxruntime.quantization.calibrate.Calibr
 
 
 def calibrate(
-    model: onnx.ModelProto, dataset: Iterable[Dict[str, np.ndarray]]
+    model: onnx.ModelProto,
+    dataset: Iterable[Dict[str, np.ndarray]],
+    augmented_model_path: Optional[str] = None,
 ) -> Dict[str, Tuple[float, float]]:
     """Estimates the range of tensors in a model, based on a dataset.
 
     Args:
         model: An ONNX model to calibrate.
         dataset: An Iterable that returns dicts mapping input tensor names to their values.
+        augmented_model_path: A path to save an augmented model to.
 
     Returns:
         A dict mapping tensors in the model to their minimum and maximum values.
     """
-    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(model)
+    if augmented_model_path is None:
+        with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
+            augmented_model_path = f.name
+
+    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(
+        model, augmented_model_path=augmented_model_path
+    )
     if os.environ.get("TQDM_DISABLE"):
         dataset = iter(dataset)
     else:
@@ -43,18 +53,25 @@ def calibrate(
 
 
 def calibrate_with_random_data(
-    model: onnx.ModelProto, dataset_size: int = 8
+    model: onnx.ModelProto, dataset_size: int = 8, augmented_model_path: Optional[str] = None
 ) -> Dict[str, Tuple[float, float]]:
     """Estimates the range of tensors in a model, based on a random dataset.
 
     Args:
         model: An ONNX model to calibrate.
         dataset_size: the size of a random dataset to use.
+        augmented_model_path: A path to save an augmented model to.
 
     Returns:
         A dict mapping tensors in the model to their minimum and maximum values.
     """
-    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(model)
+    if augmented_model_path is None:
+        with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
+            augmented_model_path = f.name
+
+    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(
+        model, augmented_model_path=augmented_model_path
+    )
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
     for _ in range(dataset_size):
