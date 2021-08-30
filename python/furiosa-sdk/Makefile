@@ -12,7 +12,7 @@ generate-openapi:
   -o ./;
 
 install:
-	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
+	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 uninstall:
 	pip uninstall -y --quiet furiosa-sdk-runtime; \

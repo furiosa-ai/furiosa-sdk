@@ -1,7 +1,7 @@
 default: install
 
 install:
-	MACOSX_DEPLOYMENT_TARGET=10.15 python ./setup.py develop
+	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 build:
 	python -m build
