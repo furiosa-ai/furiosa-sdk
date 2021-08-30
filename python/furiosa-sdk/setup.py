@@ -8,10 +8,9 @@ from os.path import dirname, relpath
 from textwrap import wrap
 from typing import Dict, List
 
-from setuptools import setup, Command, Distribution, Extension, find_namespace_packages
+from setuptools import Command, Distribution, Extension, find_namespace_packages, setup
 from setuptools.command.develop import develop as develop_orig
 from setuptools.command.install import install as install_orig
-#from setuptools_rust import Binding, RustExtension
 
 # Controls whether providers are installed from packages or directly from sources
 # It is turned on by default in case of development environments such as Breeze
@@ -78,7 +77,7 @@ def git_version(version_: str) -> str:
     return 'no_git_version'
 
 
-def write_version(filename: str = os.path.join(*[my_dir, "furiosa", "git_version"])):
+def write_version(filename: str = os.path.join(*[my_dir, "furiosa/common", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
     :param str filename: Destination file to write
@@ -119,6 +118,7 @@ def do_setup() -> None:
     setup(
         version=version,
         extras_require=EXTRAS_REQUIREMENTS,
+        packages=find_namespace_packages(include=["furiosa.*"]),
         cmdclass={
             'develop': Develop,
         },

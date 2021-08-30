@@ -3,21 +3,21 @@
 """A post-training quantization example.
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Dict, List
 
-from PIL import Image
+import furiosa.quantizer
 import numpy as np
 import onnx
+
 # prevent seg fault in Mac OS X
 import onnxruntime
 import torch
+from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets.imagenet import ImageNet
-
-import furiosa_sdk_quantizer
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
     ]
 
     # Quantizes the model using the calibration dataset.
-    quantized_model = furiosa_sdk_quantizer.post_training_quantize(
+    quantized_model = furiosa.quantizer.post_training_quantize(
         model, calibration_dataset
     )
 

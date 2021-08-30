@@ -3,7 +3,7 @@ import abc
 import torch
 import torch.nn as nn
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
+from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
 
 from tests.frontend.onnx.transformer import TestTransformer
 

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import onnx
-from furiosa_sdk_quantizer.frontend.onnx import export_spec
+from furiosa.quantizer.frontend.onnx import export_spec
 
 
 def do_export_spec(fp32_model_path, output_path):

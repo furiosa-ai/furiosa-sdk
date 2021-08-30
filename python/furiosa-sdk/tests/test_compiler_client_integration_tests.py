@@ -1,6 +1,6 @@
 import unittest
 
-from furiosa.client import CompilerClient
+from furiosa.common.client import CompilerClient
 from tests import test_data
 
 

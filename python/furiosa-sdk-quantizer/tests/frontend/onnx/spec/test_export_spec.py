@@ -7,8 +7,8 @@ import torch
 import torch.nn as nn
 
 from tests import torch_to_onnx, make_test_model, make_test_model_with_init_val
-from furiosa_sdk_quantizer.frontend.onnx.spec.export_spec import OnnxExportSpec
-from furiosa_sdk_quantizer.ir.spec import Spec
+from furiosa.quantizer.frontend.onnx.spec.export_spec import OnnxExportSpec
+from furiosa.quantizer.ir.spec import Spec
 
 
 class Test_get_inputs_for_gen_spec(unittest.TestCase):
@@ -1214,7 +1214,7 @@ class Test_multi_node_lp_norm(unittest.TestCase):
 
         model = torch_to_onnx(LpNorm(kwargs), input_shapes)
         node = model.graph.node[-1]
-        from furiosa_sdk_quantizer.frontend.onnx.utils.inference_shape import InferenceShape
+        from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
         model = InferenceShape(model).inference_shape()
 
         assert node.op_type == 'Div'

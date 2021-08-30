@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa_sdk_quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
+from furiosa.quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
 
 from tests.frontend.onnx.transformer import TestTransformer, init_to_numpy
 from tests import make_test_model

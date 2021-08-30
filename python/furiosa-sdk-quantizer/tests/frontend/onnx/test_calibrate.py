@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import unittest
+from pathlib import Path
 
+import furiosa.quantizer.frontend.onnx.calibrate
 import numpy as np
-import onnx
-import onnx.numpy_helper
 from torchvision import datasets
 
-import furiosa_sdk_quantizer.frontend.onnx.calibrate
+import onnx
+import onnx.numpy_helper
 
 
 class CalibrateTest(unittest.TestCase):
@@ -29,7 +29,7 @@ class CalibrateTest(unittest.TestCase):
                 # > [0.0, 1.0].
                 dataset.append({"Input3": onnx.numpy_helper.to_array(tensor) / 255})
         self.assertAlmostEqual(
-            furiosa_sdk_quantizer.frontend.onnx.calibrate.calibrate(model, dataset),
+            furiosa.quantizer.frontend.onnx.calibrate.calibrate(model, dataset),
             {
                 'Input3': (0.0, 1.0),
                 'Convolution28_Output_0': (-5.180102348327637, 3.379333019256592),
@@ -67,14 +67,14 @@ class CalibrateTest(unittest.TestCase):
             for image, _label in fake_mnist
         ]
         self.assertEqual(
-            len(furiosa_sdk_quantizer.frontend.onnx.calibrate.calibrate(model, dataset)), 13
+            len(furiosa.quantizer.frontend.onnx.calibrate.calibrate(model, dataset)), 13
         )
 
     def test_calibrate_with_random_data(self):
         current_dir = Path(__file__).resolve().parent
         model = onnx.load(current_dir / "mnist/model.onnx")
         self.assertEqual(
-            len(furiosa_sdk_quantizer.frontend.onnx.calibrate.calibrate_with_random_data(model)), 13
+            len(furiosa.quantizer.frontend.onnx.calibrate.calibrate_with_random_data(model)), 13
         )
 
 

@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa_sdk_quantizer
+	pylint furiosa.quantizer
 
 upload_test:
 	twine upload --repository testpypi dist/*

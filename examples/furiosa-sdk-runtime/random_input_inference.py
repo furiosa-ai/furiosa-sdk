@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from furiosa_sdk_runtime.tensor import DataType
+from furiosa.runtime.tensor import DataType
 
 
 def random_input_inference(model_path, num_inf):
