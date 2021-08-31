@@ -1,6 +1,6 @@
 import onnx
+import onnxoptimizer
 
-from furiosa.quantizer.frontend.onnx.transformer.extract_constant_to_initializer import ExtractConstantToInitializer
 from furiosa.quantizer.frontend.onnx.transformer.convert_clip_attr_to_input import ConvertClipAttrToInput
 from furiosa.quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
 from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
@@ -18,7 +18,7 @@ class PolishModel(Transformer[onnx.ModelProto]):
         model = utils.make_conv_bias_name_unique(model)
         model = utils.fix_batch_size_as_one(model)
 
-        model = ExtractConstantToInitializer().transform(model)
+        model = onnxoptimizer.optimize(model, passes=["extract_constant_to_initializer"])
         model = ConvertClipAttrToInput().transform(model)
         model = Convert2dSumToAdd().transform(model)
         model = InferenceShape(model).inference_shape()
