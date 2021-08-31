@@ -188,7 +188,7 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.1-2+nightly-210713"
+    FIRMWARE_VERSION = "0.1-2+nightly-210801"
   }
 
   stages {
