@@ -3,15 +3,19 @@
 FP32 model `deeplabv3 resnet50` is required
 The model can be downloaded via command `gdown --id 1MjuG6mk13Bca3bXdEWQF6R9tBngBcJER`
 """
+import logging
+import os
 import sys
 import time
-import os
-from typing import Tuple
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 def preprocess(img: Image.Image, size: Tuple[int, int]) -> np.array:
