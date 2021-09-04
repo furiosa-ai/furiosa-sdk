@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester
+from furiosa.runtime import session
 
 
 class TestAsyncSession(unittest.TestCase):
@@ -37,6 +38,17 @@ class TestAsyncSession(unittest.TestCase):
                 break
 
         self.assertEqual(set(range(0, items)), keys)
+
+
+class TestAsyncSessionOptions(unittest.TestCase):
+    def test_create(self):
+        (sess, queue) = session.create_async(MNIST_MOBINENET_V2,
+                                    worker_num=1,
+                                    input_queue_size=1,
+                                    output_queue_size=1,
+                                    compile_config = {"split_after_lower": True})
+        queue.close()
+        sess.close()
 
 
 if __name__ == '__main__':

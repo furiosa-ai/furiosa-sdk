@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from tests.test_base import MNIST_MOBINENET_V2, SessionTester
+from furiosa.runtime import session
 
 
 class TestSession(unittest.TestCase):
@@ -34,6 +35,14 @@ Outputs:
         result1 = sess.run(ndarray_value)
         result2 = sess.run([ndarray_value])
         np.array_equal(result1.numpy(), result2.numpy())
+
+
+class TestSessionOptions(unittest.TestCase):
+    def test_create(self):
+        sess = session.create(MNIST_MOBINENET_V2,
+                              worker_num=1,
+                              compile_config = {"split_after_lower": True})
+        sess.close()
 
 
 if __name__ == '__main__':

@@ -3,9 +3,14 @@ import random
 
 import numpy as np
 import tensorflow as tf
+from pathlib import Path
 
 from furiosa.runtime import session
 from tests import test_data
+import logging
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 def model_path(name: str) -> str:
@@ -16,7 +21,8 @@ MNIST_MOBINENET_V2 = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
 
 
 def assert_tensors_equal(expected, result):
-    assert np.allclose(expected, result, atol=1.0), "{} was expected, but the result was {}".format(expected, result)
+    assert np.allclose(expected, result, atol=1.0), \
+        "{} was expected, but the result was {}".format(expected, result)
 
 
 class SessionTester:
@@ -29,7 +35,7 @@ class SessionTester:
 
 class AsyncSessionTester:
     def __init__(self, model_path):
-        (self.session, self.queue) = session.create_async(model=model_path)
+        (self.session, self.queue) = session.create_async(model=Path(model_path))
 
     def close(self):
         self.queue.close()

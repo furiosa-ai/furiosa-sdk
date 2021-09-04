@@ -2,6 +2,8 @@
 
 """Image classification example"""
 import collections
+import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -9,6 +11,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 

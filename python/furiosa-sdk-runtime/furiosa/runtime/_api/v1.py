@@ -5,11 +5,12 @@ import glob
 import logging
 import os
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p, util
+from enum import IntEnum
 from sys import platform
 
-logging.basicConfig()
+from furiosa.runtime import consts
+
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
 
 
 def _find_local_libs():
@@ -85,6 +86,30 @@ def _find_native_libs():
     return libnux_
 
 
+class NuxLogLevel(IntEnum):
+    """Python object correspondnig to nux_log_level_t in Nux C API"""
+    OFF = 0
+    ERROR = 1
+    WARN = 2
+    INFO = 3
+
+
+def _log_level_from_str(level: str) -> NuxLogLevel:
+    if level.upper() == "OFF":
+        return NuxLogLevel.OFF
+    if level.upper() == "ERROR":
+        return NuxLogLevel.ERROR
+    if level.upper() == "WARN":
+        return NuxLogLevel.WARN
+    if level.upper() == "INFO":
+        return NuxLogLevel.INFO
+
+
+def _nux_log_level_from_env() -> NuxLogLevel:
+    level = os.environ.get(consts.FURIOSA_LOG_LEVEL_ENV, 'INFO')
+    return _log_level_from_str(level)
+
+
 LIBNUX = _find_native_libs()
 
 ## Definition of Native C Foreign Functions
@@ -97,8 +122,8 @@ LIBNUX.git_short_hash.restype = c_char_p
 LIBNUX.build_timestamp.argtypes = []
 LIBNUX.build_timestamp.restype = c_char_p
 
-LIBNUX.enable_furiosa_logging.argtypes = []
-LIBNUX.enable_furiosa_logging.restype = None
+LIBNUX.enable_logging.argtypes = [c_int]
+LIBNUX.enable_logging.restype = None
 
 LIBNUX.register_signal_handler.argtypes = []
 LIBNUX.register_signal_handler.restype = None
@@ -111,6 +136,18 @@ LIBNUX.nux_session_option_set_device.restype = None
 
 LIBNUX.nux_session_option_set_compiler_config.argtypes = [c_void_p, c_char_p]
 LIBNUX.nux_session_option_set_compiler_config.restype = c_int
+
+LIBNUX.nux_session_option_set_input_queue_size.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_input_queue_size.restype = None
+
+LIBNUX.nux_session_option_set_output_queue_size.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_output_queue_size.restype = None
+
+LIBNUX.nux_session_option_set_worker_num.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_worker_num.restype = None
+
+LIBNUX.nux_session_option_destroy.argtypes = [c_void_p]
+LIBNUX.nux_session_option_destroy.restype = None
 
 LIBNUX.nux_input_num.argtypes = [c_void_p]
 LIBNUX.nux_input_num.restype = c_int
@@ -197,6 +234,14 @@ LIBNUX.tensor_get_buffer.argtypes = \
     [c_void_p, POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
 LIBNUX.tensor_get_buffer.restype = c_int
 
+LIBNUX.nux_model_compile.argtypes = \
+    [c_char_p, c_void_p, c_ulonglong, c_char_p, c_char_p, c_char_p, \
+     POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
+LIBNUX.nux_model_compile.restype = c_int
+
+LIBNUX.nux_buffer_destroy.argtypes = [POINTER(ctypes.c_uint8), c_ulonglong]
+LIBNUX.nux_buffer_destroy.restype = None
+
 # To control manually the reference count
 increase_ref_count = ctypes.pythonapi.Py_IncRef
 increase_ref_count.argtypes = [ctypes.py_object]
@@ -207,7 +252,7 @@ decref.argtypes = [ctypes.py_object]
 decref.restype = None
 
 # Enable FUriosa logger
-LIBNUX.enable_furiosa_logging()
+LIBNUX.enable_logging(_nux_log_level_from_env())
 
 # Register Ctrl-C signal handler to interrupt native side for long running job
 LIBNUX.register_signal_handler()
