@@ -1,4 +1,5 @@
 """Nux Exception and Error"""
+import ctypes
 from enum import IntEnum
 from typing import Optional
 
@@ -25,6 +26,9 @@ class NativeError(IntEnum):
     INCOMPATIBLE_API_CLIENT_ERROR = 17
     API_CLIENT_INIT_FAILED = 18
     NO_API_KEY = 19
+    NULL_POINTER_EXCEPTION = 20
+    INVALID_SESSION_OPTIONS = 21
+    SESSION_TERMINATED = 22
 
 
 def is_ok(err: NativeError) -> bool:
@@ -135,6 +139,30 @@ class NoApiKeyException(NuxException):
                          NativeError.NO_API_KEY)
 
 
+class InvalidSessionOption(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("invalid options are passed to session.create() or session.create_async()",
+                         NativeError.SESSION_TERMINATED)
+
+
+class QueueWaitTimeout(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Queue waiting is timed out",
+                         NativeError.QUEUE_WAIT_TIMEOUT)
+
+
+class SessionTerminated(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Session or AsyncSession has terminated",
+                         NativeError.SESSION_TERMINATED)
+
+
 _errors_to_exceptions = {
     NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
     NativeError.COMPILATION_FAILED: CompilationFailed(),
@@ -143,6 +171,9 @@ _errors_to_exceptions = {
     NativeError.INVALID_YAML: InvalidYamlException(),
     NativeError.API_CLIENT_INIT_FAILED: ApiClientInitFailed(),
     NativeError.NO_API_KEY: NoApiKeyException(),
+    NativeError.INVALID_SESSION_OPTIONS: InvalidSessionOption(),
+    NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout(),
+    NativeError.SESSION_TERMINATED: SessionTerminated(),
 }
 
 
@@ -153,6 +184,9 @@ def into_exception(err: NativeError) -> NuxException:
     :param err: integer value of nux_error_t enum
     :return: NuxException
     """
+    if isinstance(err, ctypes.c_int):
+        err = NativeError(err.value)
+
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 

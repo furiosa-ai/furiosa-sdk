@@ -107,11 +107,18 @@ class CompletionQueue:
         self.output_descs = output_descs
         self.queue_ok = True
 
-    def recv(self) -> (object, TensorArray):
+    def recv(self, timeout: int = None) -> (object, TensorArray):
         """Receives the prediction results asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
         Or it will be blocked until the next result are ready.
+
+        If ``timeout`` is set, ``recv()`` will be only blocked until timeout occurs.
+        Then, ``recv()`` throws ``SessionTerminated`` exception.
+
+        Args:
+            timeout (int): How long to wait before giving up.
+            It should be a positive interger in milliseconds.
 
         Returns:
             A tuple, whose first value is the context value passed \
@@ -122,10 +129,19 @@ class CompletionQueue:
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
-        self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
-                                                         byref(context_ref),
-                                                         byref(outputs_ref),
-                                                         byref(err))
+        if timeout:
+            if timeout < 0:
+                raise RuntimeError("the timeout duration must be a positive integer")
+            self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(self.ref,
+                                                                     timeout,
+                                                                     byref(context_ref),
+                                                                     byref(outputs_ref),
+                                                                     byref(err))
+        else:
+            self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
+                                                             byref(context_ref),
+                                                             byref(outputs_ref),
+                                                             byref(err))
         context_val = context_ref.value
         decref(context_ref)
 
