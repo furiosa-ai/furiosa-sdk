@@ -94,21 +94,9 @@ class NuxLogLevel(IntEnum):
     INFO = 3
 
 
-def _log_level_from_str(level: str) -> NuxLogLevel:
-    level = level.upper()
-    if level == "OFF":
-        return NuxLogLevel.OFF
-    if level == "ERROR":
-        return NuxLogLevel.ERROR
-    if level == "WARN":
-        return NuxLogLevel.WARN
-    if level == "INFO":
-        return NuxLogLevel.INFO
-
-
 def _nux_log_level_from_env() -> NuxLogLevel:
     level = os.environ.get(consts.FURIOSA_LOG_LEVEL_ENV, 'INFO')
-    return _log_level_from_str(level)
+    return NuxLogLevel[level.upper()].value
 
 
 LIBNUX = _find_native_libs()
