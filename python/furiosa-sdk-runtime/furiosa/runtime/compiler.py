@@ -1,6 +1,7 @@
 """Compiler module which compiles model images or intermediate IRs into executable NPU programs"""
 import ctypes
 import logging
+import os
 import random
 import string
 from ctypes import byref, c_uint64
@@ -78,7 +79,9 @@ def compile_model(model: Union[bytes, str, Path],
     if compile_config is not None:
         compile_config = yaml.dump(compile_config).encode()
     if log_path is not None:
-        log_path = str(log_path).encode()
+        log_path_encoded = str(log_path).encode()
+    else:
+        log_path_encoded = None
 
     model_image = _model_image(model)
     buf_ptr = ctypes.POINTER(ctypes.c_uint8)()
@@ -86,7 +89,7 @@ def compile_model(model: Union[bytes, str, Path],
     err = LIBNUX.nux_model_compile(device.encode(), model_image, len(model_image),
                                    compile_config,
                                    target_ir,
-                                   log_path,
+                                   log_path_encoded,
                                    byref(buf_ptr), byref(buf_len))
     if is_ok(err):
         try:
@@ -99,4 +102,10 @@ def compile_model(model: Union[bytes, str, Path],
 
         return bytes(buffer)
     else:
+        if log_path:
+            width, _ = os.get_terminal_size()
+            LOG.error("=" * width)
+            LOG.error(f"Please check the compile log file at {log_path}\n"
+                      f"If it is a bug, please report the log file to https://github.com/furiosa-ai/furiosa-sdk/issues")
+            LOG.error("=" * width)
         raise into_exception(err)

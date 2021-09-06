@@ -79,7 +79,7 @@ class BlockingPredictionTester(PredictionTester):
 
 class AsyncPredictionTester(PredictionTester):
     def __init__(self, model_path):
-        (nux_sess, nux_queue) = session.create_async(model=model_path)
+        nux_sess, nux_queue = session.create_async(model=model_path)
         self.nux_sess = nux_sess
         self.nux_queue = nux_queue
         super().__init__(model_path)

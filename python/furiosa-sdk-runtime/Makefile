@@ -16,7 +16,7 @@ upload:
 	twine upload dist/*
 
 test:
-	catchsegv python -q -X faulthandler -m unittest discover -v -s ./tests
+	python -m unittest discover -v -s ./tests
 
 doc:
 	pdoc3 --html --force --output-dir html_output furiosa	

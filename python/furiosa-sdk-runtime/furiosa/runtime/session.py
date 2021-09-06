@@ -46,8 +46,7 @@ def _create_session_options(device: str = None, worker_num: int = None,
     if worker_num is not None:
         LIBNUX.nux_session_option_set_worker_num(options, worker_num)
     if compile_config is not None:
-        if compile_config is not None:
-            compile_config = yaml.dump(compile_config).encode()
+        compile_config = yaml.dump(compile_config).encode()
         LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
     if input_queue_size is not None:
         LIBNUX.nux_session_option_set_input_queue_size(options, input_queue_size)

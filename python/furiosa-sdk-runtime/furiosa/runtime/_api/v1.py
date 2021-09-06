@@ -95,13 +95,14 @@ class NuxLogLevel(IntEnum):
 
 
 def _log_level_from_str(level: str) -> NuxLogLevel:
-    if level.upper() == "OFF":
+    level = level.upper()
+    if level == "OFF":
         return NuxLogLevel.OFF
-    if level.upper() == "ERROR":
+    if level == "ERROR":
         return NuxLogLevel.ERROR
-    if level.upper() == "WARN":
+    if level == "WARN":
         return NuxLogLevel.WARN
-    if level.upper() == "INFO":
+    if level == "INFO":
         return NuxLogLevel.INFO
 
 
