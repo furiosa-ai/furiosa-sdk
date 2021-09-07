@@ -184,6 +184,9 @@ class Pattern_3(Pattern_1, abc.ABC):
         prev --> Conv --> Mul --> Add --> next
     to
         prev --> Conv --> next
+
+    if 1. Mul has only one initializer
+       2. Add has only one initializer
     """
     pattern_to_match = ['Conv', 'Mul', 'Add']
 
@@ -207,7 +210,20 @@ class Pattern_3(Pattern_1, abc.ABC):
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        return True
+        _, mul_node, add_node = nodes_to_check
+
+        if self.check_condition_1(mul_node):
+            return True
+
+        if self.check_condition_1(add_node):
+            return True
+
+        return False
+
+    def check_condition_1(self, node):
+        if self.get_init_node_input(node):
+            return True
+        return False
 
     def make_new_node(self, matched_nodes):
         top_node, middle_node, bottom_node = matched_nodes
