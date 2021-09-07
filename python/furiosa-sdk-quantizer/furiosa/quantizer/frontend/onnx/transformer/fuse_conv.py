@@ -276,19 +276,7 @@ class Pattern_3(ONNXTransformer, abc.ABC):
 
     def pattern_condition_checker(self, nodes_to_check):
         top_node, _ = nodes_to_check
-
-        if not self.check_condition_1(top_node):
-            return False
-
-        return True
-
-    def check_condition_1(self, node):
-        """
-            check if Conv has bias input
-        """
-        if len(node.input) == 2:
-            return True
-        return False
+        return len(top_node.input) == 2
 
     def make_nodes(self, top_node, base_node):
         conv_node = self.make_node('Conv',
