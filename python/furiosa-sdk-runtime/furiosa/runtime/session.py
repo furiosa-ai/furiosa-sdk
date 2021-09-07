@@ -108,13 +108,17 @@ class CompletionQueue:
         self.queue_ok = True
 
     def recv(self, timeout: int = None) -> (object, TensorArray):
-        """Receives the prediction results asynchronously coming from AsyncSession
+        """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
-        Or it will be blocked until the next result are ready.
+        Otherwise, it will be blocked until the next result are ready.
 
-        If ``timeout`` is set, ``recv()`` will be only blocked until timeout occurs.
-        Then, ``recv()`` throws ``SessionTerminated`` exception.
+        If ``timeout`` is set, ``recv()`` will be blocked only until
+        the timeout occurs. If timed out, ``recv()`` throws ``QueueWaitTimeout``
+        exception.
+
+        If AsyncSession is closed earlier ``recv()`` will throw
+        ``SessionTerminated`` exception.
 
         Args:
             timeout (int): How long to wait before giving up.
