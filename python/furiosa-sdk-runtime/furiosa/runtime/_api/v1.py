@@ -4,7 +4,7 @@ import ctypes
 import glob
 import logging
 import os
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p, util
+from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p, util, c_int32
 from enum import IntEnum
 from sys import platform
 

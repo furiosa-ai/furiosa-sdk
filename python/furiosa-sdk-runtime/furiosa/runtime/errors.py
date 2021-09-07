@@ -143,8 +143,8 @@ class InvalidSessionOption(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("invalid options are passed to session.create() or session.create_async()",
-                         NativeError.SESSION_TERMINATED)
+        super().__init__("invalid options passed to session.create() or create_async()",
+                         NativeError.INVALID_SESSION_OPTIONS)
 
 
 class QueueWaitTimeout(NuxException):
