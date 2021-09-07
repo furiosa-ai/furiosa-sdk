@@ -5,6 +5,7 @@ import glob
 import logging
 import os
 from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p, util
+from enum import IntEnum
 from sys import platform
 
 logging.basicConfig()
@@ -85,6 +86,14 @@ def _find_native_libs():
     return libnux_
 
 
+class NuxLogLevel(IntEnum):
+    """Python object correspondnig to nux_log_level_t in Nux C API"""
+    OFF = 0
+    ERROR = 1
+    WARN = 2
+    INFO = 3
+
+
 LIBNUX = _find_native_libs()
 
 ## Definition of Native C Foreign Functions
@@ -97,8 +106,8 @@ LIBNUX.git_short_hash.restype = c_char_p
 LIBNUX.build_timestamp.argtypes = []
 LIBNUX.build_timestamp.restype = c_char_p
 
-LIBNUX.enable_furiosa_logging.argtypes = []
-LIBNUX.enable_furiosa_logging.restype = None
+LIBNUX.enable_logging.argtypes = [c_int]
+LIBNUX.enable_logging.restype = None
 
 LIBNUX.register_signal_handler.argtypes = []
 LIBNUX.register_signal_handler.restype = None
@@ -206,8 +215,8 @@ decref = ctypes.pythonapi.Py_DecRef
 decref.argtypes = [ctypes.py_object]
 decref.restype = None
 
-# Enable FUriosa logger
-LIBNUX.enable_furiosa_logging()
+# Enable Furiosa logger
+LIBNUX.enable_logging(NuxLogLevel.INFO)
 
 # Register Ctrl-C signal handler to interrupt native side for long running job
 LIBNUX.register_signal_handler()
