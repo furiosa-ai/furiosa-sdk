@@ -231,12 +231,12 @@ class Pattern_3(Pattern_1, abc.ABC):
         fused_weight = self.fuse_bn_params(weight, multiplier, shifter)
         fused_weight_name = top_node.input[1] + '_bn_fused'
 
-        bias = np.zeros(weight.shape[0]).astype(np.float32)
-        fused_bias_name = top_node.output[0] + '_bias_bn_fused'
-
         if len(top_node.input) == 3:
             bias = self.get_initializer_array(top_node.input[2])
             fused_bias_name = top_node.input[2] + '_bn_fused'
+        else:
+            bias = np.zeros(weight.shape[0]).astype(np.float32)
+            fused_bias_name = top_node.output[0] + '_bias_bn_fused'
         fused_bias = self.fuse_bn_params(bias, multiplier, shifter)
 
         return [
