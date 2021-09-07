@@ -47,7 +47,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
-        return self.make_node('Conv', [*top_node.input], [base_node.output[0]], top_node.name,
+        return self.make_node('Conv', top_node.input, [base_node.output[0]], top_node.name,
                               **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
 
 
@@ -72,7 +72,7 @@ class Pattern_3(Pattern_1):
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
-        return self.make_node('Add', [*top_node.input], [base_node.output[0]], top_node.name,
+        return self.make_node('Add', top_node.input, [base_node.output[0]], top_node.name,
                               **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
 
 

@@ -70,7 +70,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         input_names = [node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
                        for node_input in top_node.input]
 
-        return self.make_node('Conv', [*input_names], [base_node.output[0]], top_node.name,
+        return self.make_node('Conv', input_names, [base_node.output[0]], top_node.name,
                               **default_conv_attrs)
 
     def make_new_init(self, matched_nodes):
@@ -220,7 +220,7 @@ class Pattern_3(Pattern_1, abc.ABC):
         else:
             input_names.append(top_node.output[0] + '_bias_bn_fused')
 
-        return [self.make_node('Conv', [*input_names], [bottom_node.output[0]], top_node.name,
+        return [self.make_node('Conv', input_names, [bottom_node.output[0]], top_node.name,
                                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})]
 
     def make_new_init(self, matched_nodes):
