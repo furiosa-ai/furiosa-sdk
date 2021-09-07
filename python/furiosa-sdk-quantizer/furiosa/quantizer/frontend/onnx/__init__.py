@@ -10,6 +10,7 @@ from furiosa.quantizer.frontend.onnx import calibrate, spec
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
+from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose import FuseBnIntoConvTranspose
 from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
@@ -40,6 +41,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         ConvertConv1dToConv2d().transform,
         FuseConv().transform,
         FusePad().transform,
+        FuseBnIntoConvTranspose().transform,
         FuseBnIntoConv().transform,
         FuseDepthToSpace().transform,
         FuseGELU().transform,
