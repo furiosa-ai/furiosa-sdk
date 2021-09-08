@@ -15,14 +15,14 @@ def is_compile_log_enabled() -> bool:
     return 'unittest' not in sys.modules.keys()
 
 
-def furiosa_home() -> str:
+def xdg_state_home() -> str:
     """
     Return FURIOSA_HOME which is the base directory of furiosa tools
 
     Returns:
         Furiosa home directory
     """
-    return os.environ.get(consts.FURIOSA_HOME_ENV, f"{Path.home()}/furiosa")
+    return os.environ.get(consts.ENV_XDG_STATE_HOME, f"{Path.home()}/.local/state/furiosa")
 
 
 def log_dir() -> str:
@@ -32,7 +32,7 @@ def log_dir() -> str:
     Returns:
         The log directory of furiosa home
     """
-    return os.environ.get(consts.FURIOSA_LOG_DIR_ENV, f"{furiosa_home()}/logs")
+    return os.environ.get(consts.ENV_FURIOSA_LOG_DIR, f"{xdg_state_home()}/logs")
 
 
 def current_npu_device() -> str:
@@ -42,4 +42,4 @@ def current_npu_device() -> str:
     Returns:
         NPU device name
     """
-    return os.environ.get(consts.NPU_DEVNAME_ENV, consts.DEFAULT_DEVNAME)
+    return os.environ.get(consts.ENV_NPU_DEVNAME, consts.DEFAULT_DEVNAME)
