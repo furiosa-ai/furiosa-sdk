@@ -17,7 +17,7 @@ def is_compile_log_enabled() -> bool:
 
 def xdg_state_home() -> str:
     """
-    Return FURIOSA_HOME which is the base directory of furiosa tools
+    Return XDG_STATE_HOME which is the base directory of furiosa logs, history, and other states
 
     Returns:
         Furiosa home directory
@@ -27,10 +27,10 @@ def xdg_state_home() -> str:
 
 def log_dir() -> str:
     """
-    Return FURIOSA_HOME which is the base directory of furiosa tools
+    Return FURIOSA_LOG_DIR where the logs are stored.
 
     Returns:
-        The log directory of furiosa home
+        The log directory of furiosa sdk
     """
     return os.environ.get(consts.ENV_FURIOSA_LOG_DIR, f"{xdg_state_home()}/logs")
 
