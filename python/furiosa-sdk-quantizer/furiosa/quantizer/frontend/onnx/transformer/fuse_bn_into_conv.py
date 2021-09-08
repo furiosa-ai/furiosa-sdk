@@ -47,9 +47,6 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         if not matched_nodes:
             return inputs
 
-        if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
         top_node = matched_nodes[0]
 
         self.transform_to_fuse(matched_nodes,
@@ -60,9 +57,6 @@ class Pattern_1(ONNXTransformer, abc.ABC):
                                )
 
         return top_node.input
-
-    def pattern_condition_checker(self, nodes_to_check):
-        return True
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
