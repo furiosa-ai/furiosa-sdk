@@ -1,10 +1,12 @@
 import random
 import unittest
+import os
 
 import numpy as np
 import tensorflow as tf
+from furiosa.runtime import session
 
-from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester
+from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester, exist_device
 
 
 class TestAsyncSession(unittest.TestCase):
@@ -37,6 +39,17 @@ class TestAsyncSession(unittest.TestCase):
                 break
 
         self.assertEqual(set(range(0, items)), keys)
+
+
+class TestSessionExceptions(unittest.TestCase):
+    def test_device_busy(self):
+        # This test should run only on the real NPU environment.
+        device = os.getenv('NPU_DEVNAME')
+        if device is not None and exist_device(device):
+            sess, queue = session.create_async(MNIST_MOBINENET_V2)
+            self.assertRaises(session.create_async(MNIST_MOBINENET_V2), errors.DeviceBusy)
+            sess.close()
+            queue.close()
 
 
 if __name__ == '__main__':

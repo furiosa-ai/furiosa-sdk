@@ -1,9 +1,9 @@
 import os
 import random
+from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
-
 from furiosa.runtime import session
 from tests import test_data
 
@@ -87,3 +87,7 @@ class AsyncPredictionTester(PredictionTester):
     def close(self):
         self.nux_queue.close()
         self.nux_sess.close()
+
+
+def exist_device(device: str) -> bool:
+    return os.path.exists(f"/dev/{device}")

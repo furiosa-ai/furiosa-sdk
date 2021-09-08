@@ -1,10 +1,11 @@
+import os
 import random
 import unittest
 
 import numpy as np
 import tensorflow as tf
-
-from tests.test_base import MNIST_MOBINENET_V2, SessionTester
+from furiosa.runtime import session, errors
+from tests.test_base import MNIST_MOBINENET_V2, SessionTester, exist_device
 
 
 class TestSession(unittest.TestCase):
@@ -34,6 +35,15 @@ Outputs:
         result1 = sess.run(ndarray_value)
         result2 = sess.run([ndarray_value])
         np.array_equal(result1.numpy(), result2.numpy())
+
+
+class TestSessionExceptions(unittest.TestCase):
+    def test_device_busy(self):
+        # This test should run only on the real NPU environment.
+        device = os.getenv('NPU_DEVNAME')
+        if device is not None and exist_device(device):
+            with session.create(MNIST_MOBINENET_V2) as sess:
+                self.assertRaises(session.create(MNIST_MOBINENET_V2), errors.DeviceBusy)
 
 
 if __name__ == '__main__':
