@@ -89,5 +89,9 @@ class AsyncPredictionTester(PredictionTester):
         self.nux_sess.close()
 
 
-def exist_device(device: str) -> bool:
-    return os.path.exists(f"/dev/{device}")
+def ensure_test_device() -> bool:
+    """
+    Return True if a NPU device for unit test is ready, or False.
+    """
+    device = os.getenv('NPU_DEVNAME')
+    return device is not None and os.path.exists(f"/dev/{device}")
