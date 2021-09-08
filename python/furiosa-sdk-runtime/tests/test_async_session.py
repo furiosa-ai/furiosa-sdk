@@ -41,16 +41,12 @@ class TestAsyncSession(unittest.TestCase):
 
 
 class TestAsyncSessionWithTimeout(unittest.TestCase):
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    x_train = np.reshape(x_train, (60000, 28, 28, 1))
-    x_test = np.reshape(x_test, (10000, 28, 28, 1))
-
     def test_next_with_timeout(self):
         nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
-        self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=1000))
+        self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
         nux_sess.close()
         self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
-        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=1000))
+        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
 
         nux_queue.close();
 

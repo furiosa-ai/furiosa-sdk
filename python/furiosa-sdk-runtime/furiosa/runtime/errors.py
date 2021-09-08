@@ -143,7 +143,7 @@ class InvalidSessionOption(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("invalid options passed to session.create() or create_async()",
+        super().__init__("Invalid options passed to session.create() or create_async()",
                          NativeError.INVALID_SESSION_OPTIONS)
 
 
@@ -151,7 +151,7 @@ class QueueWaitTimeout(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Queue waiting is timed out",
+        super().__init__("Queue waiting timed out",
                          NativeError.QUEUE_WAIT_TIMEOUT)
 
 
@@ -159,7 +159,7 @@ class SessionTerminated(NuxException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Session or AsyncSession has terminated",
+        super().__init__("Session or AsyncSession terminated",
                          NativeError.SESSION_TERMINATED)
 
 
@@ -181,16 +181,16 @@ def into_exception(err: NativeError) -> NuxException:
     """
     Convert nux_error_t type in Nux C API to NuxException
 
-    :param err: integer value of nux_error_t enum
-    :return: NuxException
-    """
-    if isinstance(err, ctypes.c_int):
-        err = NativeError(err.value)
+    Arguments:
+        err (NativeError) NativeError converted from ``nux_error_t`` enum in C
 
+    Returns:
+        NuxException
+    """
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
-    if err in _errors_to_exceptions.keys():
-        return _errors_to_exceptions[err]
+    if err.value in _errors_to_exceptions.keys():
+        return _errors_to_exceptions[err.value]
 
     return InternalError()

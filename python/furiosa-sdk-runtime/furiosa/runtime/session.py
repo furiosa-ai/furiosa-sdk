@@ -1,8 +1,8 @@
 """Session and its asynchronous API for model inference"""
 
 import ctypes
-from ctypes import byref, c_int32, c_void_p
-from typing import Union
+from ctypes import byref, c_int, c_void_p
+from typing import Union, Optional
 
 import numpy as np
 
@@ -107,7 +107,7 @@ class CompletionQueue:
         self.output_descs = output_descs
         self.queue_ok = True
 
-    def recv(self, timeout: int = None) -> (object, TensorArray):
+    def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
         """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
@@ -129,7 +129,7 @@ class CompletionQueue:
             when you submit an inference task and the second value \
             is inference output.
         """
-        err = c_int32(0)
+        err = c_int(0)
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
