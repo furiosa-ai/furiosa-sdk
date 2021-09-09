@@ -337,19 +337,23 @@ class FuriosaONNXQuantizer:
         s_list = []
 
         num_output_channels = weight.shape[axis]
+        dims = [1] * weight.ndim
+        dims[axis] = num_output_channels
+        s_arr = np.zeros(dims)
+        zp_arr = np.zeros(dims)
         for i in range(num_output_channels):
             indices = [slice(None)] * weight.ndim
             indices[axis] = i
             per_channel_weight = weight[tuple(indices)].flatten()
             zp, s = calculate_weight_quant_params(per_channel_weight, self.weight_qtype, weight_init.name)
-            zp_list.append(zp)
-            s_list.append(s)
+            s_arr[tuple(indices)] = s
+            zp_arr[tuple(indices)] = zp
 
         suffix = ['_quantized', '_zero_point', '_scale']
         qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
 
         self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
-                                dims=[num_output_channels], vals_zp=zp_list, vals_scale=s_list)
+                                dims=dims, vals_zp=zp_arr, vals_scale=s_arr)
 
     def _quantize_bias(self, b_init: onnx.TensorProto,
                        input_scale: onnx.TensorProto,
@@ -643,14 +647,6 @@ class DFGImportable:
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
 
-        if data_arr.ndim != scale_arr.ndim:
-            # assume output channel quantization
-            scale_arr = scale_arr.reshape((-1,) + (1,) * (data_arr.ndim - 1))
-
-        if data_arr.ndim != zero_point_arr.ndim:
-            # assume output channel quantization
-            zero_point_arr = zero_point_arr.reshape((-1,) + (1,) * (data_arr.ndim - 1))
-
         quantized_data = np.round(data_arr / scale_arr) + zero_point_arr
 
         np_dtype_info = np.iinfo(TENSOR_TYPE_TO_NP_TYPE[zero_point.data_type])
@@ -737,14 +733,6 @@ class ONNXRuntimeExecutable(DFGImportable):
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
-
-        if data_arr.ndim != scale_arr.ndim:
-            # assume output channel quantization
-            scale_arr = scale_arr.reshape((-1,) + (1,) * (data_arr.ndim - 1))
-
-        if data_arr.ndim != zero_point_arr.ndim:
-            # assume output channel quantization
-            zero_point_arr = zero_point_arr.reshape((-1,) + (1,) * (data_arr.ndim - 1))
 
         return (data_arr - zero_point_arr) * scale_arr
 
