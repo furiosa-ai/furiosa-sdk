@@ -241,7 +241,7 @@ class FuriosaONNXQuantizer:
         disabled = True if os.environ.get('TQDM_DISABLE') else False
         for node in tqdm.tqdm(self.model.graph.node, desc='Quantization', disable=disabled):
             if any(node.op_type == op for op in ['Conv', 'ConvTranspose']):
-                self._quantize_conv_weight_layer(node)
+                self._quantize_conv_weight_layer(node, output_channel_axis=0)
             elif any(node.op_type == op for op in ['MatMul', 'Add', 'Mul', 'Div']):
                 self._quantize_matmul_weight_layer(node)
             elif node.op_type == 'Clip':
@@ -299,14 +299,14 @@ class FuriosaONNXQuantizer:
             w_init = self.initializer[input]
             self._quantize_weight_per_layer(w_init)
 
-    def _quantize_conv_weight_layer(self, node):
+    def _quantize_conv_weight_layer(self, node, output_channel_axis):
         try:
             w_init = self.initializer[node.input[1]]
         except KeyError:
             return
 
         if self.per_channel:
-            self._quantize_weight_per_channel(w_init)
+            self._quantize_weight_per_axis(w_init, axis=output_channel_axis)
         else:
             self._quantize_weight_per_layer(w_init)
 
@@ -318,7 +318,8 @@ class FuriosaONNXQuantizer:
 
     def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
         weight = numpy_helper.to_array(weight_init)
-        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name)
+        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype,
+                                              name=weight_init.name)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -326,17 +327,18 @@ class FuriosaONNXQuantizer:
         self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
                                 dims=[], vals_zp=[zp], vals_scale=[s])
 
-    def _quantize_weight_per_channel(self, weight_init: onnx.TensorProto) -> None:
+    def _quantize_weight_per_axis(self, weight_init: onnx.TensorProto, axis: int) -> None:
         weight = numpy_helper.to_array(weight_init)
         assert weight.ndim == 4
 
         zp_list = []
         s_list = []
 
-        num_output_channels = weight.shape[0]
+        num_output_channels = weight.shape[axis]
         for i in range(num_output_channels):
-            # for each channel, compute quantization data. Assuming (M x C/group x kH x kW)
-            per_channel_weight = weight[i, :, :, :].flatten()
+            indices = [slice(None)] * weight.ndim
+            indices[axis] = i
+            per_channel_weight = weight[tuple(indices)].flatten()
             zp, s = calculate_weight_quant_params(per_channel_weight, self.weight_qtype, weight_init.name)
             zp_list.append(zp)
             s_list.append(s)
