@@ -240,8 +240,10 @@ class FuriosaONNXQuantizer:
     def _quantize_weight(self):
         disabled = True if os.environ.get('TQDM_DISABLE') else False
         for node in tqdm.tqdm(self.model.graph.node, desc='Quantization', disable=disabled):
-            if any(node.op_type == op for op in ['Conv', 'ConvTranspose']):
+            if node.op_type == 'Conv':
                 self._quantize_conv_weight_layer(node, output_channel_axis=0)
+            elif node.op_type == 'ConvTranspose':
+                self._quantize_conv_weight_layer(node, output_channel_axis=1)
             elif any(node.op_type == op for op in ['MatMul', 'Add', 'Mul', 'Div']):
                 self._quantize_matmul_weight_layer(node)
             elif node.op_type == 'Clip':
