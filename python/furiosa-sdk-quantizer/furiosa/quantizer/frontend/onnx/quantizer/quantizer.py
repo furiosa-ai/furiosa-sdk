@@ -359,8 +359,7 @@ class FuriosaONNXQuantizer:
                        input_scale: onnx.TensorProto,
                        weight_scale: onnx.TensorProto) -> None:
         bias = numpy_helper.to_array(b_init)
-        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
-
+        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale).reshape(-1)
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
 
@@ -503,7 +502,8 @@ class FuriosaONNXQuantizer:
             b_scale_name = node.input[-1].split('_quantized')[0] + '_scale'
             b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
 
-            assert np.allclose(b_scale_arr, i_scale_arr * w_scale_arr), f'Conv bias scale is incorrect: {b_scale_name}'
+            assert np.allclose(b_scale_arr, (i_scale_arr * w_scale_arr).reshape(-1)), \
+                f'Conv bias scale is incorrect: {b_scale_name}'
 
     def _get_quant_param(self, origin, postfix=None):
         result = self._quant_param.get(f'{origin}{postfix or ""}', None)
