@@ -241,11 +241,11 @@ class FuriosaONNXQuantizer:
         disabled = True if os.environ.get('TQDM_DISABLE') else False
         for node in tqdm.tqdm(self.model.graph.node, desc='Quantization', disable=disabled):
             if node.op_type == 'Conv':
-                self._quantize_conv_weight_layer(node, output_channel_axis=0)
+                self._quantize_conv_weight(node, output_channel_axis=0)
             elif node.op_type == 'ConvTranspose':
-                self._quantize_conv_weight_layer(node, output_channel_axis=1)
+                self._quantize_conv_weight(node, output_channel_axis=1)
             elif any(node.op_type == op for op in ['MatMul', 'Add', 'Mul', 'Div']):
-                self._quantize_matmul_weight_layer(node)
+                self._quantize_matmul_weight(node)
             elif node.op_type == 'Clip':
                 self._quantize_clip_minmax(node)
             elif node.op_type == 'Pad':
@@ -294,14 +294,14 @@ class FuriosaONNXQuantizer:
                                     data_type_zp=self.input_qtype,
                                     dims=[], vals_zp=[zp], vals_scale=[s])
 
-    def _quantize_matmul_weight_layer(self, node):
+    def _quantize_matmul_weight(self, node):
         for input in node.input:
             if input not in self.initializer.keys():
                 continue
             w_init = self.initializer[input]
             self._quantize_weight_per_layer(w_init)
 
-    def _quantize_conv_weight_layer(self, node, output_channel_axis):
+    def _quantize_conv_weight(self, node, output_channel_axis):
         try:
             w_init = self.initializer[node.input[1]]
         except KeyError:
