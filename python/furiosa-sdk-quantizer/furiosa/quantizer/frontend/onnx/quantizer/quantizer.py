@@ -333,9 +333,6 @@ class FuriosaONNXQuantizer:
         weight = numpy_helper.to_array(weight_init)
         assert weight.ndim == 4
 
-        zp_list = []
-        s_list = []
-
         num_output_channels = weight.shape[axis]
         dims = [1] * weight.ndim
         dims[axis] = num_output_channels
