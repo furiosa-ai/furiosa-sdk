@@ -25,7 +25,8 @@ from onnx.helper import make_node, make_tensor, make_tensor_value_info, ModelPro
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
-from furiosa.quantizer.frontend.onnx.transformer import fuse_clipper, utils
+from furiosa.quantizer.frontend.onnx.transformer import utils
+from furiosa.quantizer.frontend.onnx.quantizer import fuse_clipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
     calculate_activation_quant_params,

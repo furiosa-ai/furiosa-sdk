@@ -3,7 +3,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_clipper import FuseClipper
+from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import FuseClipper
 from tests.frontend.onnx.transformer import TestTransformer
 
 
