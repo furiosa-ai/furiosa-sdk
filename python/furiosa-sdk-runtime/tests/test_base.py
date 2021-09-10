@@ -1,6 +1,5 @@
 import os
 import random
-from pathlib import Path
 
 import numpy as np
 import tensorflow as tf
@@ -89,22 +88,22 @@ class AsyncPredictionTester(PredictionTester):
         self.nux_sess.close()
 
 
-def exist_device(dev_path: str) -> bool:
+def exist_char_dev(dev_path: str) -> bool:
     """
     Return True if a specified device exists, or False
     """
-    if dev_path is not None:
-        try:
-            os.stat(dev_path)
-        except OSError:
-            return False
-        return True
+    import stat
+    try:
+        # NPU device is a character device
+        stat.S_ISCHR(dev_path)
+    except OSError:
+        return False
+    return True
 
 
 def ensure_test_device() -> bool:
     """
     Return True if a NPU device for unit test is ready, or False.
     """
-    import sys
     device = os.getenv('NPU_DEVNAME')
-    return device is not None and exist_device(f"/dev/{device}")
+    return device is not None and exist_char_dev(f"/dev/{device}")
