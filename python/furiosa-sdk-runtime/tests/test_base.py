@@ -95,7 +95,7 @@ def exist_char_dev(dev_path: str) -> bool:
     import stat
     try:
         # NPU device is a character device
-        stat.S_ISCHR(os.stat(dev_path).st_mode)
+        return stat.S_ISCHR(os.stat(dev_path).st_mode)
     except OSError:
         return False
     return True
