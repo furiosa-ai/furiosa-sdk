@@ -4,7 +4,7 @@ import logging
 
 import numpy as np
 import onnx
-from onnx import TensorProto, StringStringEntryProto
+from onnx import TensorProto
 import onnxruntime as ort
 
 logger = logging.getLogger('Furiosa-Quantizer')
@@ -48,14 +48,14 @@ def is_float_tensor(vi):
     return False
 
 
-def activation_scale_zeropoint(rmin, rmax, input_qtype):
+def activation_scale_zeropoint(rmin, rmax, activation_qtype):
     rmin = min(rmin, 0)
     rmax = max(rmax, 0)
 
-    return asymmetric_scale_zeropoint(rmin, rmax, input_qtype)
+    return asymmetric_scale_zeropoint(rmin, rmax, activation_qtype)
 
 
-def asymmetric_scale_zeropoint(rmin, rmax, input_qtype):
+def asymmetric_scale_zeropoint(rmin, rmax, activation_qtype):
     """
     source: onnxruntime quantization tools
     """
@@ -63,11 +63,11 @@ def asymmetric_scale_zeropoint(rmin, rmax, input_qtype):
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
     scale = max(scale, 2 ** -149)
-    if input_qtype == TensorProto.UINT8:
+    if activation_qtype == TensorProto.UINT8:
         initial_zero_point = (0 - rmin) / scale
         zero_point = np.uint8(round(max(0, min(255, initial_zero_point))))
         return np.array(zero_point), np.array(scale)
-    elif input_qtype == TensorProto.INT8:
+    elif activation_qtype == TensorProto.INT8:
         initial_zero_point = -128 - rmin / scale
         zero_point = np.int8(round(max(-128, min(127, initial_zero_point))))
         return np.array(zero_point), np.array(scale)
@@ -77,30 +77,30 @@ def asymmetric_scale_zeropoint(rmin, rmax, input_qtype):
 
 def calculate_activation_quant_params(dynamic_ranges: Dict,
                                       node_list: List[onnx.NodeProto],
-                                      input_qtype: TensorProto,
+                                      activation_qtype: TensorProto,
                                       value_info: Dict) -> Dict:
     quantization_params = {}
     for node in node_list:
         # Quantize activation input/output, following TFLite's quantization specification
         if node.op_type in ['MaxPool', 'Squeeze', 'Unsqueeze', 'Gather', 'Transpose', 'Reshape',
-                            'DepthToSpace', 'Expand', 'Flatten', 'GlobalAveragePool', 'AveragePool']:
+                            'DepthToSpace', 'Expand', 'Flatten']:
             if not is_float_tensor(value_info[node.input[0]]):
                 continue
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]],
-                    input_qtype)
+                    activation_qtype)
 
             quantization_params[node.output[0]] = quantization_params[node.input[0]]
         elif node.op_type in ['Softmax', 'Sigmoid']:
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]],
-                    input_qtype)
+                    activation_qtype)
 
-            if input_qtype == TensorProto.INT8:
+            if activation_qtype == TensorProto.INT8:
                 zero_point = np.array((np.int8(-128)))
-            elif input_qtype == TensorProto.UINT8:
+            elif activation_qtype == TensorProto.UINT8:
                 zero_point = np.array(np.uint8(0))
             else:
                 raise Exception()
@@ -109,11 +109,11 @@ def calculate_activation_quant_params(dynamic_ranges: Dict,
             if node.input[0] not in quantization_params.keys():
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]],
-                    input_qtype)
+                    activation_qtype)
 
-            if input_qtype == TensorProto.INT8:
+            if activation_qtype == TensorProto.INT8:
                 zero_point = np.array((np.int8(0)))
-            elif input_qtype == TensorProto.UINT8:
+            elif activation_qtype == TensorProto.UINT8:
                 zero_point = np.array(np.uint8(128))
             else:
                 raise Exception()
@@ -125,7 +125,7 @@ def calculate_activation_quant_params(dynamic_ranges: Dict,
                 if name in quantization_params.keys():
                     continue
                 rmin, rmax = dynamic_ranges[name]
-                zero_point, scale = activation_scale_zeropoint(rmin, rmax, input_qtype)
+                zero_point, scale = activation_scale_zeropoint(rmin, rmax, activation_qtype)
                 quantization_params[name] = (zero_point, scale)
 
     return quantization_params
