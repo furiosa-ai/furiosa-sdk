@@ -39,7 +39,7 @@ Outputs:
         np.array_equal(result1.numpy(), result2.numpy())
 
 
-@unittest.skipIf(NPU_DEVICE_READY, "No NPU device")
+@unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
 class TestSessionExceptions(unittest.TestCase):
     def test_device_busy(self):
         with session.create(MNIST_MOBINENET_V2) as sess:

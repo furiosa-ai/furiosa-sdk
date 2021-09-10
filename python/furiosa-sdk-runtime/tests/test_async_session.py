@@ -41,8 +41,8 @@ class TestAsyncSession(unittest.TestCase):
         self.assertEqual(set(range(0, items)), keys)
 
 
-@unittest.skipIf(NPU_DEVICE_READY, "No NPU device")
-class TestSessionExceptions(unittest.TestCase):
+@unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
+class TestAsyncSessionExceptions(unittest.TestCase):
     def test_device_busy(self):
         sess, queue = session.create_async(MNIST_MOBINENET_V2)
         self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
