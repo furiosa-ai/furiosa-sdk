@@ -549,6 +549,29 @@ class FuriosaONNXQuantizer:
                     init_dtype == onnx.TensorProto.INT64 or init_dtype == onnx.TensorProto.FLOAT
                 ), ('Wrong data type for %s.' % init.name)
 
+        # Checks if scale/zero-point of DequantizedLienar/QuantizeLinear (OpSet < 13) are scalars.
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        if opset is not None and opset.version < 13:
+            for node in self.model.graph.node:
+                if node.op_type == "DequantizeLinear":
+                    scale = self._quant_param[node.input[1]]
+                    zero_point = self._quant_param[node.input[2]]
+                    assert (
+                        not scale.dims
+                    ), f"the 'x_scale' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                    assert (
+                        not zero_point.dims
+                    ), f"the 'x_zero_point' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                elif node.op_type == "QuantizeLinear":
+                    scale = self._quant_param[node.input[1]]
+                    zero_point = self._quant_param[node.input[2]]
+                    assert (
+                        not scale.dims
+                    ), f"the 'y_scale' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
+                    assert (
+                        not zero_point.dims
+                    ), f"the 'y_zero_point' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
+
     def _check_quant_value_info(self):
         quant_inputs = [
             node_input
