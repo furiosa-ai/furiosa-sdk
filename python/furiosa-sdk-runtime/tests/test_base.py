@@ -3,7 +3,6 @@ import random
 
 import numpy as np
 import tensorflow as tf
-
 from furiosa.runtime import session
 from tests import test_data
 
@@ -87,3 +86,20 @@ class AsyncPredictionTester(PredictionTester):
     def close(self):
         self.nux_queue.close()
         self.nux_sess.close()
+
+
+def exist_char_dev(dev_path: str) -> bool:
+    """
+    Return True if a specified device exists, or False
+    """
+    import stat
+    # NPU device is a character device
+    return stat.S_ISCHR(os.stat(dev_path).st_mode)
+
+
+def ensure_test_device() -> bool:
+    """
+    Return True if a NPU device for unit test is ready, or False.
+    """
+    device = os.getenv('NPU_DEVNAME')
+    return device is not None and exist_char_dev(f"/dev/{device}")

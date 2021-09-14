@@ -25,6 +25,7 @@ class NativeError(IntEnum):
     INCOMPATIBLE_API_CLIENT_ERROR = 17
     API_CLIENT_INIT_FAILED = 18
     NO_API_KEY = 19
+    DEVICE_BUSY = 23
 
 
 def is_ok(err: NativeError) -> bool:
@@ -135,6 +136,14 @@ class NoApiKeyException(NuxException):
                          NativeError.NO_API_KEY)
 
 
+class DeviceBusy(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("NPU device busy",
+                         NativeError.DEVICE_BUSY)
+
+
 _errors_to_exceptions = {
     NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
     NativeError.COMPILATION_FAILED: CompilationFailed(),
@@ -143,6 +152,7 @@ _errors_to_exceptions = {
     NativeError.INVALID_YAML: InvalidYamlException(),
     NativeError.API_CLIENT_INIT_FAILED: ApiClientInitFailed(),
     NativeError.NO_API_KEY: NoApiKeyException(),
+    NativeError.DEVICE_BUSY: DeviceBusy(),
 }
 
 
