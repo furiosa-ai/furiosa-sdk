@@ -274,9 +274,9 @@ class FuriosaONNXQuantizer:
                 name_zp=zp_name,
                 name_scale=s_name,
                 data_type_zp=self.activation_qtype,
-                dims=[],
-                vals_zp=zp.flatten(),
-                vals_scale=s.flatten(),
+                dims=zp.shape,
+                vals_zp=zp,
+                vals_scale=s,
             )
 
     def _quantize_weight(self):
@@ -336,9 +336,9 @@ class FuriosaONNXQuantizer:
                 name_zp=input + '_zero_point',
                 name_scale=input + '_scale',
                 data_type_zp=self.activation_qtype,
-                dims=[],
-                vals_zp=[zp],
-                vals_scale=[s],
+                dims=zp.shape,
+                vals_zp=zp,
+                vals_scale=s,
             )
 
     def _quantize_matmul_weight_layer(self, node):
@@ -372,15 +372,15 @@ class FuriosaONNXQuantizer:
         )
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
 
         self._stack_quant_param(
             name_zp=zp_name,
             name_scale=s_name,
             data_type_zp=self.weight_qtype,
             dims=[],
-            vals_zp=[zp],
-            vals_scale=[s],
+            vals_zp=np.asarray(zp, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
+            vals_scale=np.asarray(s, dtype=np.float32),
         )
 
     def _quantize_weight_per_channel(self, weight_init: onnx.TensorProto) -> None:
@@ -401,15 +401,15 @@ class FuriosaONNXQuantizer:
             s_list.append(s)
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
 
         self._stack_quant_param(
             name_zp=zp_name,
             name_scale=s_name,
             data_type_zp=self.weight_qtype,
             dims=[num_output_channels],
-            vals_zp=zp_list,
-            vals_scale=s_list,
+            vals_zp=np.asarray(zp_list, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
+            vals_scale=np.asarray(s_list, dtype=np.float32),
         )
 
     def _quantize_bias(
@@ -418,20 +418,19 @@ class FuriosaONNXQuantizer:
         input_scale: onnx.TensorProto,
         weight_scale: onnx.TensorProto,
     ) -> None:
-        bias = numpy_helper.to_array(b_init)
         b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
 
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qbias_name, zp_name, s_name = append_suffix(name=b_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=b_init.name, suffix=suffix)
 
         self._stack_quant_param(
             name_zp=zp_name,
             name_scale=s_name,
             data_type_zp=qtype,
-            dims=bias.shape,
+            dims=b_zero_point.shape,
             vals_zp=b_zero_point,
             vals_scale=b_scale,
         )
@@ -459,11 +458,15 @@ class FuriosaONNXQuantizer:
             return
         # make quantization parameters initializer proto
         if self.raw_data:
-            init_zp = numpy_helper.from_array(
-                np.array(vals_zp).astype(TENSOR_TYPE_TO_NP_TYPE[data_type_zp]), name=name_zp
+            init_zp = make_tensor(
+                name=name_zp, data_type=data_type_zp, dims=dims, vals=vals_zp.tobytes(), raw=True
             )
-            init_scale = numpy_helper.from_array(
-                np.array(vals_scale).astype(np.float32), name=name_scale
+            init_scale = make_tensor(
+                name=name_scale,
+                data_type=onnx.TensorProto.FLOAT,
+                dims=dims,
+                vals=vals_scale.tobytes(),
+                raw=True,
             )
         else:
             init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims, vals=vals_zp)
