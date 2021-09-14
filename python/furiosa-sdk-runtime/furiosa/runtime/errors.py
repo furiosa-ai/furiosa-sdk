@@ -29,6 +29,7 @@ class NativeError(IntEnum):
     NULL_POINTER_EXCEPTION = 20
     INVALID_SESSION_OPTIONS = 21
     SESSION_TERMINATED = 22
+    DEVICE_BUSY = 23
 
 
 def is_ok(err: NativeError) -> bool:
@@ -163,6 +164,14 @@ class SessionTerminated(NuxException):
                          NativeError.SESSION_TERMINATED)
 
 
+class DeviceBusy(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("NPU device busy",
+                         NativeError.DEVICE_BUSY)
+
+
 _errors_to_exceptions = {
     NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
     NativeError.COMPILATION_FAILED: CompilationFailed(),
@@ -174,6 +183,7 @@ _errors_to_exceptions = {
     NativeError.INVALID_SESSION_OPTIONS: InvalidSessionOption(),
     NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout(),
     NativeError.SESSION_TERMINATED: SessionTerminated(),
+    NativeError.DEVICE_BUSY: DeviceBusy(),
 }
 
 
