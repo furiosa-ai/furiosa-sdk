@@ -1,5 +1,5 @@
 """Nux Exception and Error"""
-import ctypes
+import sys
 from enum import IntEnum
 from typing import Optional
 
@@ -200,7 +200,12 @@ def into_exception(err: NativeError) -> NuxException:
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
-    if err.value in _errors_to_exceptions.keys():
-        return _errors_to_exceptions[err.value]
+    if sys.version_info < (3, 8):
+        err_code = err
+    else:
+        err_code = err.value
+
+    if err_code in _errors_to_exceptions.keys():
+        return _errors_to_exceptions[err_code]
 
     return InternalError()
