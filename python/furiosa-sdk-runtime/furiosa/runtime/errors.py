@@ -1,5 +1,7 @@
 """Nux Exception and Error"""
+import ctypes
 import sys
+import typing
 from enum import IntEnum
 from typing import Optional
 
@@ -186,8 +188,7 @@ _errors_to_exceptions = {
     NativeError.DEVICE_BUSY: DeviceBusy(),
 }
 
-
-def into_exception(err: NativeError) -> NuxException:
+def into_exception(err: typing.Union[ctypes.c_int, int]) -> NuxException:
     """
     Convert nux_error_t type in Nux C API to NuxException
 
@@ -197,15 +198,17 @@ def into_exception(err: NativeError) -> NuxException:
     Returns:
         NuxException
     """
+    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
+    #   There's no way to make the behavior deterministic.
+    if isinstance(err, ctypes.c_int):
+        err = err.value
+    elif isinstance(err, int):
+        pass
+
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
-    if sys.version_info < (3, 8):
-        err_code = err
-    else:
-        err_code = err.value
-
-    if err_code in _errors_to_exceptions.keys():
-        return _errors_to_exceptions[err_code]
+    if err in _errors_to_exceptions.keys():
+        return _errors_to_exceptions[err]
 
     return InternalError()
