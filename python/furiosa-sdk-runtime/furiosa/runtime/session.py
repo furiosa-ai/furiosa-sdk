@@ -176,7 +176,7 @@ class CompletionQueue:
         context_val = context_ref.value
         decref(context_ref)
 
-        if is_ok(err.value):
+        if is_ok(err):
             return context_val, TensorArray(outputs_ref, self.output_descs, allocated=False)
 
         raise into_exception(err)

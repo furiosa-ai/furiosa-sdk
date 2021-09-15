@@ -58,13 +58,19 @@ class TestAsyncSessionExceptions(unittest.TestCase):
                 sess.close()
 
     def test_next_with_timeout(self):
-        nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
-        self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
-        nux_sess.close()
-        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
-        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
-
-        nux_queue.close();
+        nux_sess = None
+        nux_queue = None
+        try:
+            nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
+            self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
+            nux_sess.close()
+            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
+            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
+        except:
+            if nux_sess:
+                nux_sess.close()
+            if nux_queue:
+                nux_queue.close();
 
 
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")

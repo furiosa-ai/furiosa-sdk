@@ -34,14 +34,28 @@ class NativeError(IntEnum):
     DEVICE_BUSY = 23
 
 
-def is_ok(err: NativeError) -> bool:
+def is_ok(err: typing.Union[ctypes.c_int, int]) -> bool:
     """True if NuxErr is SUCCESS, or False"""
+    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
+    #   There's no way to make the behavior deterministic.
+    if isinstance(err, ctypes.c_int):
+        err = err.value
+    elif isinstance(err, int):
+        pass
+
     return err == NativeError.SUCCESS
 
 
-def is_err(self) -> bool:
+def is_err(err: typing.Union[ctypes.c_int, int]) -> bool:
     """True if NuxErr is not SUCCESS, or False"""
-    return self != NativeError.SUCCESS
+    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
+    #   There's no way to make the behavior deterministic.
+    if isinstance(err, ctypes.c_int):
+        err = err.value
+    elif isinstance(err, int):
+        pass
+
+    return err != NativeError.SUCCESS
 
 
 class NuxException(Exception):
