@@ -26,6 +26,7 @@ from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
 from furiosa.quantizer.frontend.onnx.transformer import utils
+from furiosa.quantizer.frontend.onnx.quantizer import fuse_clipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
     calculate_activation_quant_params,
@@ -72,7 +73,11 @@ class FuriosaONNXQuantizer:
         # set quantization option guided by mode
         self.quant_mode = QuantizationMode()
         self.mode = mode
-        self.input_qtype = self.weight_qtype = onnx.TensorProto.INT8
+        self.activation_qtype = self.weight_qtype = onnx.TensorProto.INT8
+
+        # use uint8 dtype for activation in fake_quant mode
+        if mode == QuantizationMode.fake:
+            self.activation_qtype = onnx.TensorProto.UINT8
 
         # set model a proto to use
         self.initializer = {init.name: init for init in self.model.graph.initializer}
@@ -120,6 +125,9 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
+        # pre-optimization
+        self.pre_optimize()
+
         # quantize weight and activation
         self.quantize_model()
 
@@ -130,6 +138,10 @@ class FuriosaONNXQuantizer:
         self.check_model()
 
         return self.model
+
+    def pre_optimize(self):
+        # fuse clippers like Relu, Clip into Conv, Add
+        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
     def quantize_model(self):
         self._quantize_activation()
@@ -228,13 +240,13 @@ class FuriosaONNXQuantizer:
     def _quantize_activation(self):
         act_quant_param = calculate_activation_quant_params(self.dynamic_ranges,
                                                             self.model.graph.node,
-                                                            self.input_qtype,
+                                                            self.activation_qtype,
                                                             self.value_info)
         suffix = ['_zero_point', '_scale']
         for name, (zp, s) in act_quant_param.items():
             zp_name, s_name = append_suffix(name=name, suffix=suffix)
 
-            self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
+            self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.activation_qtype,
                                     dims=[], vals_zp=zp.flatten(), vals_scale=s.flatten())
 
     def _quantize_weight(self):
@@ -289,7 +301,7 @@ class FuriosaONNXQuantizer:
                 continue
 
             self._stack_quant_param(name_zp=input + '_zero_point', name_scale=input + '_scale',
-                                    data_type_zp=self.input_qtype,
+                                    data_type_zp=self.activation_qtype,
                                     dims=[], vals_zp=[zp], vals_scale=[s])
 
     def _quantize_matmul_weight_layer(self, node):
@@ -318,7 +330,8 @@ class FuriosaONNXQuantizer:
 
     def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
         weight = numpy_helper.to_array(weight_init)
-        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name)
+        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype,
+                                              name=weight_init.name)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -438,13 +451,13 @@ class FuriosaONNXQuantizer:
                     assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
             elif init.name.split('_')[-1] == 'quantized' and '_'.join(
                     init.name.split('_')[-2:]) != 'fake_quantized':
-                assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
+                assert init_dtype in [self.weight_qtype, self.activation_qtype, onnx.TensorProto.INT32], \
                     'Wrong data type for %s.' % init.name
                 if not self.raw_data:
                     assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
             elif any(['_'.join(init.name.split('_')[-2:]) == word for word in
                       ['zero_point', 'quantized_min', 'quantized_max']]):
-                assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
+                assert init_dtype in [self.weight_qtype, self.activation_qtype, onnx.TensorProto.INT32], \
                     'Wrong data type for %s.' % init.name
                 if not self.raw_data:
                     assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
@@ -664,7 +677,7 @@ class DFGImportable:
 
 class ONNXRuntimeExecutable(DFGImportable):
     def __init__(self, model, raw_data):
-        super(ONNXRuntimeExecutable, self).__init__(model)
+        super(ONNXRuntimeExecutable, self).__init__(model, raw_data)
 
     def transform(self):
 

@@ -1,9 +1,9 @@
 """Session and its asynchronous API for model inference"""
 
 import ctypes
-from ctypes import byref, c_int32, c_void_p
+from ctypes import byref, c_int, c_void_p
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import numpy as np
 import yaml
@@ -134,25 +134,45 @@ class CompletionQueue:
         self.output_descs = output_descs
         self.queue_ok = True
 
-    def recv(self) -> (object, TensorArray):
-        """Receives the prediction results asynchronously coming from AsyncSession
+    def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
+        """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
-        Or it will be blocked until the next result are ready.
+        Otherwise, it will be blocked until the next result are ready.
+
+        If ``timeout`` is set, ``recv()`` will be blocked only until
+        the timeout occurs. If timed out, ``recv()`` throws ``QueueWaitTimeout``
+        exception.
+
+        If AsyncSession is closed earlier ``recv()`` will throw
+        ``SessionTerminated`` exception.
+
+        Args:
+            timeout (int): How long to wait before giving up.
+            It should be a positive interger in milliseconds.
 
         Returns:
             A tuple, whose first value is the context value passed \
             when you submit an inference task and the second value \
             is inference output.
         """
-        err = c_int32(0)
+        err = c_int(0)
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
-        self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
-                                                         byref(context_ref),
-                                                         byref(outputs_ref),
-                                                         byref(err))
+        if timeout:
+            if timeout < 0:
+                raise RuntimeError("the timeout duration must be a positive integer")
+            self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(self.ref,
+                                                                     timeout,
+                                                                     byref(context_ref),
+                                                                     byref(outputs_ref),
+                                                                     byref(err))
+        else:
+            self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
+                                                             byref(context_ref),
+                                                             byref(outputs_ref),
+                                                             byref(err))
         context_val = context_ref.value
         decref(context_ref)
 

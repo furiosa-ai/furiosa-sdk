@@ -3,8 +3,10 @@ import unittest
 
 import numpy as np
 import tensorflow as tf
-from furiosa.runtime import session
-from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester
+from furiosa.runtime import session, errors
+from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester, ensure_test_device
+
+NPU_DEVICE_READY = ensure_test_device()
 
 
 class TestAsyncSession(unittest.TestCase):
@@ -39,7 +41,7 @@ class TestAsyncSession(unittest.TestCase):
         self.assertEqual(set(range(0, items)), keys)
 
 
-class TestAsyncSessionOptions(unittest.TestCase):
+class TestAsyncSessionWithTimeout(unittest.TestCase):
     def test_create(self):
         sess, queue = session.create_async(MNIST_MOBINENET_V2,
                                            worker_num=1,
@@ -48,6 +50,24 @@ class TestAsyncSessionOptions(unittest.TestCase):
                                            compile_config={"split_after_lower": True})
         queue.close()
         sess.close()
+
+    def test_next_with_timeout(self):
+        nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
+        self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
+        nux_sess.close()
+        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
+        self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
+
+        nux_queue.close();
+
+
+@unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
+class TestAsyncSessionExceptions(unittest.TestCase):
+    def test_device_busy(self):
+        sess, queue = session.create_async(MNIST_MOBINENET_V2)
+        self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
+        sess.close()
+        queue.close()
 
 
 if __name__ == '__main__':

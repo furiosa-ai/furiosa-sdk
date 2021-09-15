@@ -1,4 +1,7 @@
 """Nux Exception and Error"""
+import ctypes
+import sys
+import typing
 from enum import IntEnum
 from typing import Optional
 
@@ -25,6 +28,10 @@ class NativeError(IntEnum):
     INCOMPATIBLE_API_CLIENT_ERROR = 17
     API_CLIENT_INIT_FAILED = 18
     NO_API_KEY = 19
+    NULL_POINTER_EXCEPTION = 20
+    INVALID_SESSION_OPTIONS = 21
+    SESSION_TERMINATED = 22
+    DEVICE_BUSY = 23
 
 
 def is_ok(err: NativeError) -> bool:
@@ -135,6 +142,38 @@ class NoApiKeyException(NuxException):
                          NativeError.NO_API_KEY)
 
 
+class InvalidSessionOption(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Invalid options passed to session.create() or create_async()",
+                         NativeError.INVALID_SESSION_OPTIONS)
+
+
+class QueueWaitTimeout(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Queue waiting timed out",
+                         NativeError.QUEUE_WAIT_TIMEOUT)
+
+
+class SessionTerminated(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Session or AsyncSession terminated",
+                         NativeError.SESSION_TERMINATED)
+
+
+class DeviceBusy(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("NPU device busy",
+                         NativeError.DEVICE_BUSY)
+
+
 _errors_to_exceptions = {
     NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
     NativeError.COMPILATION_FAILED: CompilationFailed(),
@@ -143,16 +182,29 @@ _errors_to_exceptions = {
     NativeError.INVALID_YAML: InvalidYamlException(),
     NativeError.API_CLIENT_INIT_FAILED: ApiClientInitFailed(),
     NativeError.NO_API_KEY: NoApiKeyException(),
+    NativeError.INVALID_SESSION_OPTIONS: InvalidSessionOption(),
+    NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout(),
+    NativeError.SESSION_TERMINATED: SessionTerminated(),
+    NativeError.DEVICE_BUSY: DeviceBusy(),
 }
 
-
-def into_exception(err: NativeError) -> NuxException:
+def into_exception(err: typing.Union[ctypes.c_int, int]) -> NuxException:
     """
     Convert nux_error_t type in Nux C API to NuxException
 
-    :param err: integer value of nux_error_t enum
-    :return: NuxException
+    Arguments:
+        err (NativeError) NativeError converted from ``nux_error_t`` enum in C
+
+    Returns:
+        NuxException
     """
+    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
+    #   There's no way to make the behavior deterministic.
+    if isinstance(err, ctypes.c_int):
+        err = err.value
+    elif isinstance(err, int):
+        pass
+
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
