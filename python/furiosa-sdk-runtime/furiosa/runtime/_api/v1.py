@@ -170,8 +170,12 @@ LIBNUX.nux_async_session_run.restype = c_int
 LIBNUX.nux_async_session_destroy.argtypes = [c_void_p]
 LIBNUX.nux_async_session_destroy.restype = None
 
-LIBNUX.nux_completion_queue_next.argtypes = [c_void_p, POINTER(ctypes.py_object), POINTER(c_void_p)]
+LIBNUX.nux_completion_queue_next.argtypes = [c_void_p, POINTER(ctypes.py_object), POINTER(c_void_p), POINTER(c_int)]
 LIBNUX.nux_completion_queue_next.restype = c_bool
+
+LIBNUX.nux_completion_queue_next_timeout.argtypes = [c_void_p, c_ulonglong, POINTER(ctypes.py_object),
+                                                     POINTER(c_void_p), POINTER(c_int)]
+LIBNUX.nux_completion_queue_next_timeout.restype = c_bool
 
 LIBNUX.nux_tensor_array_create_inputs.argtypes = [c_void_p]
 LIBNUX.nux_tensor_array_create_inputs.restype = c_void_p
