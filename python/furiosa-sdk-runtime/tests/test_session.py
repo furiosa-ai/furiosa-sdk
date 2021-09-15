@@ -1,4 +1,3 @@
-import os
 import random
 import unittest
 
@@ -47,10 +46,10 @@ class TestSessionExceptions(unittest.TestCase):
             pass
 
     def test_create(self):
-        sess = session.create(MNIST_MOBINENET_V2,
+        with session.create(MNIST_MOBINENET_V2,
                               worker_num=1,
-                              compile_config = {"split_after_lower": True})
-        sess.close()
+                              compile_config = {"split_after_lower": True}) as sess:
+            pass
 
 
 if __name__ == '__main__':

@@ -43,13 +43,19 @@ class TestAsyncSession(unittest.TestCase):
 
 class TestAsyncSessionWithTimeout(unittest.TestCase):
     def test_create(self):
-        sess, queue = session.create_async(MNIST_MOBINENET_V2,
-                                           worker_num=1,
-                                           input_queue_size=1,
-                                           output_queue_size=1,
-                                           compile_config={"split_after_lower": True})
-        queue.close()
-        sess.close()
+        sess = None
+        queue = None
+        try:
+            sess, queue = session.create_async(MNIST_MOBINENET_V2,
+                                               worker_num=1,
+                                               input_queue_size=1,
+                                               output_queue_size=1,
+                                               compile_config={"split_after_lower": True})
+        finally:
+            if queue:
+                queue.close()
+            if sess:
+                sess.close()
 
     def test_next_with_timeout(self):
         nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
@@ -64,10 +70,16 @@ class TestAsyncSessionWithTimeout(unittest.TestCase):
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
 class TestAsyncSessionExceptions(unittest.TestCase):
     def test_device_busy(self):
-        sess, queue = session.create_async(MNIST_MOBINENET_V2)
-        self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
-        sess.close()
-        queue.close()
+        sess = None
+        queue = None
+        try:
+            sess, queue = session.create_async(MNIST_MOBINENET_V2)
+            self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
+        finally:
+            if sess:
+                sess.close()
+            if queue:
+                queue.close()
 
 
 if __name__ == '__main__':
