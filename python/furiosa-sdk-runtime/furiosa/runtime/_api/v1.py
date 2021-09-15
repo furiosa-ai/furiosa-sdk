@@ -94,7 +94,7 @@ class NuxLogLevel(IntEnum):
     INFO = 3
 
 
-def _nux_log_level_from_env() -> NuxLogLevel:
+def _nux_log_level_from_env() -> int:
     level = os.environ.get(consts.ENV_FURIOSA_LOG_LEVEL, 'INFO')
     return NuxLogLevel[level.upper()].value
 
