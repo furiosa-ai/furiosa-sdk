@@ -1,4 +1,3 @@
-import os
 import random
 import unittest
 
@@ -40,10 +39,18 @@ Outputs:
 
 
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
-class TestSessionExceptions(unittest.TestCase):
+class TestDeviceBusy(unittest.TestCase):
     def test_device_busy(self):
         with session.create(MNIST_MOBINENET_V2) as sess:
             self.assertRaises(errors.DeviceBusy, lambda: session.create(MNIST_MOBINENET_V2))
+            pass
+
+
+class TestSessionOptions:
+    def test_create(self):
+        with session.create(MNIST_MOBINENET_V2,
+                              worker_num=1,
+                              compile_config = {"split_after_lower": True}) as sess:
             pass
 
 

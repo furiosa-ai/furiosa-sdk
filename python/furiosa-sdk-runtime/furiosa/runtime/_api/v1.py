@@ -8,9 +8,9 @@ from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 from enum import IntEnum
 from sys import platform
 
-logging.basicConfig()
+from furiosa.runtime import consts
+
 LOG = logging.getLogger(__name__)
-LOG.setLevel(logging.INFO)
 
 
 def _find_local_libs():
@@ -94,6 +94,11 @@ class NuxLogLevel(IntEnum):
     INFO = 3
 
 
+def _nux_log_level_from_env() -> int:
+    level = os.environ.get(consts.ENV_FURIOSA_LOG_LEVEL, 'INFO')
+    return NuxLogLevel[level.upper()].value
+
+
 LIBNUX = _find_native_libs()
 
 ## Definition of Native C Foreign Functions
@@ -120,6 +125,18 @@ LIBNUX.nux_session_option_set_device.restype = None
 
 LIBNUX.nux_session_option_set_compiler_config.argtypes = [c_void_p, c_char_p]
 LIBNUX.nux_session_option_set_compiler_config.restype = c_int
+
+LIBNUX.nux_session_option_set_input_queue_size.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_input_queue_size.restype = None
+
+LIBNUX.nux_session_option_set_output_queue_size.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_output_queue_size.restype = None
+
+LIBNUX.nux_session_option_set_worker_num.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_worker_num.restype = None
+
+LIBNUX.nux_session_option_destroy.argtypes = [c_void_p]
+LIBNUX.nux_session_option_destroy.restype = None
 
 LIBNUX.nux_input_num.argtypes = [c_void_p]
 LIBNUX.nux_input_num.restype = c_int
@@ -210,6 +227,14 @@ LIBNUX.tensor_get_buffer.argtypes = \
     [c_void_p, POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
 LIBNUX.tensor_get_buffer.restype = c_int
 
+LIBNUX.nux_model_compile.argtypes = \
+    [c_char_p, c_void_p, c_ulonglong, c_char_p, c_char_p, c_char_p, \
+     POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
+LIBNUX.nux_model_compile.restype = c_int
+
+LIBNUX.nux_buffer_destroy.argtypes = [POINTER(ctypes.c_uint8), c_ulonglong]
+LIBNUX.nux_buffer_destroy.restype = None
+
 # To control manually the reference count
 increase_ref_count = ctypes.pythonapi.Py_IncRef
 increase_ref_count.argtypes = [ctypes.py_object]
@@ -220,7 +245,7 @@ decref.argtypes = [ctypes.py_object]
 decref.restype = None
 
 # Enable Furiosa logger
-LIBNUX.enable_logging(NuxLogLevel.INFO)
+LIBNUX.enable_logging(_nux_log_level_from_env())
 
 # Register Ctrl-C signal handler to interrupt native side for long running job
 LIBNUX.register_signal_handler()
