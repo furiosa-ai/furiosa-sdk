@@ -5,7 +5,7 @@ from typing import List
 import aiofiles
 
 from ...artifact import Artifact
-from .base import Serialize, Transport
+from .base import Loader, Transport
 
 
 class FileTransport(Transport):
@@ -20,7 +20,7 @@ class FileTransport(Transport):
         return os.path.exists(uri)
 
     async def fetch(self, uri: str) -> List[Artifact]:
-        return Serialize.load(
+        return Loader.load(
             pathlib.Path(uri).suffix[1:], (await self.download(uri)).decode()
         )
 

@@ -34,9 +34,9 @@ class Transport(ABC):
         ...
 
 
-class Serialize:
+class Loader:
     """
-    Serialize configuration file string into Artifacts.
+    Loader to load a configuration file string into Artifacts.
     """
 
     loaders: Dict[str, Callable] = {

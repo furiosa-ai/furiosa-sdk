@@ -18,12 +18,9 @@
     "format": {
       "$ref": "#/definitions/Format"
     },
-    "description": {
-      "title": "Description",
+    "doc": {
+      "title": "Doc",
       "type": "string"
-    },
-    "config": {
-      "$ref": "#/definitions/RuntimeConfig"
     },
     "metadata": {
       "$ref": "#/definitions/ModelMetadata"
@@ -46,73 +43,11 @@
       ],
       "type": "string"
     },
-    "RuntimeConfig": {
-      "title": "RuntimeConfig",
-      "description": "Runtime configurations for Furiosa Nux runtime.",
+    "Publication": {
+      "title": "Publication",
+      "description": "Model publication information.",
       "type": "object",
       "properties": {
-        "npu_device": {
-          "title": "Npu Device",
-          "type": "string"
-        },
-        "compiler_config": {
-          "title": "Compiler Config",
-          "type": "object"
-        }
-      }
-    },
-    "ModelMetadata": {
-      "title": "ModelMetadata",
-      "description": "Model metadata to understand a model.",
-      "type": "object",
-      "properties": {
-        "task": {
-          "title": "Task",
-          "type": "string"
-        },
-        "input_shapes": {
-          "title": "Input Shapes",
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          }
-        },
-        "output_shapes": {
-          "title": "Output Shapes",
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            }
-          }
-        },
-        "num_ops": {
-          "title": "Num Ops",
-          "type": "integer"
-        },
-        "num_op_types": {
-          "title": "Num Op Types",
-          "type": "integer"
-        },
-        "ops": {
-          "title": "Ops",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "num_params": {
-          "title": "Num Params",
-          "type": "integer"
-        },
-        "num_macs": {
-          "title": "Num Macs",
-          "type": "integer"
-        },
         "arxiv": {
           "title": "Arxiv",
           "type": "string"
@@ -124,6 +59,20 @@
         "month": {
           "title": "Month",
           "type": "integer"
+        }
+      }
+    },
+    "ModelMetadata": {
+      "title": "ModelMetadata",
+      "description": "Model metadata to understand a model.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "publication": {
+          "$ref": "#/definitions/Publication"
         }
       }
     }

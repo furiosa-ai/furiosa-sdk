@@ -4,7 +4,7 @@ from typing import List, Tuple
 from urllib.parse import urlparse
 
 from ...artifact import Artifact
-from .base import Serialize, Transport
+from .base import Loader, Transport
 
 
 class S3Transport(Transport):
@@ -28,7 +28,7 @@ class S3Transport(Transport):
 
     async def fetch(self, uri: str) -> List[Artifact]:
         data = await self.download(uri)
-        return Serialize.load(pathlib.Path(uri).suffix[1:], data.decode())
+        return Loader.load(pathlib.Path(uri).suffix[1:], data.decode())
 
     async def download(self, uri: str) -> bytes:
         import aioboto3

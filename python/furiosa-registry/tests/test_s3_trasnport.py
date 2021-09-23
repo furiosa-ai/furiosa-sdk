@@ -40,5 +40,5 @@
 
 
 # @pytest.mark.asyncio
-# async def test_donwload(transport, model_file, bucket, MNISTnet):
+# async def test_download(transport, model_file, bucket, MNISTnet):
 #     assert await transport.download(f"s3://{bucket}/{model_file}") == MNISTnet

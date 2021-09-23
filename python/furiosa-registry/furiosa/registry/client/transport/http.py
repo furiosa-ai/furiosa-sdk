@@ -4,7 +4,7 @@ from typing import Dict, List
 import aiohttp
 
 from ... import Artifact
-from .base import Serialize, Transport
+from .base import Loader, Transport
 
 
 class HTTPTransport(Transport):
@@ -24,7 +24,7 @@ class HTTPTransport(Transport):
 
     async def fetch(self, uri: str) -> List[Artifact]:
         data = await self.download(uri)
-        return Serialize.load(pathlib.Path(uri).suffix[1:], data.decode())
+        return Loader.load(pathlib.Path(uri).suffix[1:], data.decode())
 
     async def download(self, uri: str) -> bytes:
         async with aiohttp.ClientSession(headers=self._headers) as session:

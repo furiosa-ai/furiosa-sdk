@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -14,13 +14,14 @@ class Format(str, Enum):
     TFLite = "tflite"
 
 
-class RuntimeConfig(BaseModel):
+class Publication(BaseModel):
     """
-    Runtime configuration for FuriosaAI system.
+    Model publication information.
     """
 
-    npu_device: Optional[str] = None
-    compiler_config: Optional[Dict] = None
+    arxiv: Optional[str] = None
+    year: Optional[int] = None
+    month: Optional[int] = None
 
 
 class ModelMetadata(BaseModel):
@@ -28,9 +29,8 @@ class ModelMetadata(BaseModel):
     Model metadata to understand a model.
     """
 
-    arxiv: Optional[str] = None
-    year: Optional[int] = None
-    month: Optional[int] = None
+    description: Optional[str] = None
+    publication: Optional[Publication] = None
 
 
 class Artifact(BaseModel):
@@ -42,7 +42,6 @@ class Artifact(BaseModel):
     family: str
     location: str
     format: Format
-    description: Optional[str] = None
+    doc: Optional[str] = None
 
-    config: Optional[RuntimeConfig] = None
     metadata: Optional[ModelMetadata] = None
