@@ -1,0 +1,6 @@
+pytest
+pytest-aiohttp
+pytest-asyncio
+types-aiofiles
+types-toml
+types-PyYAML
