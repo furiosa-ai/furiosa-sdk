@@ -11,13 +11,16 @@ class SerialResolver(Resolver):
 
     async def resolve(self, artifact: Artifact, version: str = "") -> Model:
         # FIXME(yan): Nothing interesting here now. What else we provide for richer API?
-        model = await download(artifact.location)
-
-        return Model(
+        model = Model(
             name=artifact.name,
             description=artifact.description,
             config=artifact.config,
 
-            model=model,
+            model=await download(artifact.location),
             version=version,
         )
+
+        if artifact.doc:
+            model.__doc__ = await download(artifact.doc).decode()
+
+        return model
