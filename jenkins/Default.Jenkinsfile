@@ -1,10 +1,12 @@
 sdk_modules = [
+    // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
   'furiosa-sdk-cli',
   'furiosa-sdk-runtime',
   'furiosa-sdk-quantizer',
   'furiosa-sdk-model-validator',
   'furiosa-registry',
-  'furiosa-sdk'
+  'furiosa-sdk',
+  'furiosa-server',
 ]
 
 LINUX_DISTRIB = "ubuntu:focal"
@@ -234,9 +236,10 @@ pipeline {
           script {
             setupPythonEnv("3.7")
             buildPackages("3.7")
-            testModule("3.7", "furiosa-sdk-runtime")
-            testModule("3.7", "furiosa-sdk-quantizer")
             testModule("3.7", "furiosa-registry")
+            testModule("3.7", "furiosa-sdk-quantizer")
+            testModule("3.7", "furiosa-sdk-runtime")
+            testModule("3.7", "furiosa-server")
           }
         }
       }
@@ -249,9 +252,10 @@ pipeline {
           script {
             setupPythonEnv("3.8")
             buildPackages("3.8")
-            testModule("3.8", "furiosa-sdk-runtime")
-            testModule("3.8", "furiosa-sdk-quantizer")
             testModule("3.8", "furiosa-registry")
+            testModule("3.8", "furiosa-sdk-quantizer")
+            testModule("3.8", "furiosa-sdk-runtime")
+            testModule("3.8", "furiosa-server")
           }
         }
       }
@@ -264,9 +268,10 @@ pipeline {
           script {
             setupPythonEnv("3.9")
             buildPackages("3.9")
-            testModule("3.9", "furiosa-sdk-runtime")
-            testModule("3.9", "furiosa-sdk-quantizer")
             testModule("3.9", "furiosa-registry")
+            testModule("3.9", "furiosa-sdk-quantizer")
+            testModule("3.9", "furiosa-sdk-runtime")
+            testModule("3.9", "furiosa-server")
           }
         }
       }
