@@ -3,6 +3,7 @@ sdk_modules = [
   'furiosa-sdk-runtime',
   'furiosa-sdk-quantizer',
   'furiosa-sdk-model-validator',
+  'furiosa-registry',
   'furiosa-sdk'
 ]
 
@@ -235,6 +236,7 @@ pipeline {
             buildPackages("3.7")
             testModule("3.7", "furiosa-sdk-runtime")
             testModule("3.7", "furiosa-sdk-quantizer")
+            testModule("3.7", "furiosa-registry")
           }
         }
       }
@@ -249,6 +251,7 @@ pipeline {
             buildPackages("3.8")
             testModule("3.8", "furiosa-sdk-runtime")
             testModule("3.8", "furiosa-sdk-quantizer")
+            testModule("3.8", "furiosa-registry")
           }
         }
       }
@@ -263,6 +266,7 @@ pipeline {
             buildPackages("3.9")
             testModule("3.9", "furiosa-sdk-runtime")
             testModule("3.9", "furiosa-sdk-quantizer")
+            testModule("3.9", "furiosa-registry")
           }
         }
       }
