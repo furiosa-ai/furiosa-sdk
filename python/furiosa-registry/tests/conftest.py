@@ -16,27 +16,23 @@ def artifacts() -> List[Artifact]:
         Artifact(
             name="mlcommons_resnet50_v1.5_int8",
             family="ResNet",
-            location="https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx",
+            location="https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx",
             format="onnx",
             metadata=ModelMetadata(
-                description="ResNet v1.5 model for MLCommons",
+                description="ResNet50 v1.5 model for MLCommons",
                 publication=Publication(
-                    arxiv="https://arxiv.org/abs/1512.03385.pdf",
-                    year=None,
-                    month=None,
+                    url="https://arxiv.org/abs/1512.03385.pdf",
                 ),
             ),
         ),
         Artifact(
             name="mlcommons_ssd_mobilenet_v1_int8",
             family="MobileNetV1",
-            location="https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx",
+            location="https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx",
             format="onnx",
             metadata=ModelMetadata(
                 description="MobileNet v1 model for MLCommons",
-                publication=Publication(
-                    arxiv="https://arxiv.org/abs/1704.04861.pdf", year=None, month=None
-                ),
+                publication=Publication(url="https://arxiv.org/abs/1704.04861.pdf"),
             ),
         ),
     ]

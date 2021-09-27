@@ -13,8 +13,7 @@ class SerialResolver(Resolver):
         # FIXME(yan): Nothing interesting here now. What else we provide for richer API?
         model = Model(
             name=artifact.name,
-            description=artifact.description,
-            config=artifact.config,
+            description=artifact.metadata.description,
 
             model=await download(artifact.location),
             version=version,

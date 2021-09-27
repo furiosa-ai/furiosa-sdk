@@ -6,25 +6,24 @@
 [[artifacts]]
 name = "mlcommons_resnet50_v1.5_int8"
 family = "ResNet"
-location = "https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx"
+location = "https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx"
 format = "onnx"
 
 [artifacts.metadata]
-description = "ResNet v1.5 model for MLCommons"
+description = "ResNet50 v1.5 model for MLCommons"
 
 [artifacts.metadata.publication]
-arxiv = "https://arxiv.org/abs/1512.03385.pdf"
+url = "https://arxiv.org/abs/1512.03385.pdf"
 
 
-# MobileNet model
 [[artifacts]]
 name = "mlcommons_ssd_mobilenet_v1_int8"
 family = "MobileNetV1"
-location = "https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx"
+location = "https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx"
 format = "onnx"
 
 [artifacts.metadata]
 description = "MobileNet v1 model for MLCommons"
 
 [artifacts.metadata.publication]
-arxiv = "https://arxiv.org/abs/1704.04861.pdf"
+url = "https://arxiv.org/abs/1704.04861.pdf"

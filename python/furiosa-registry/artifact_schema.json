@@ -32,6 +32,7 @@
     "location",
     "format"
   ],
+  "additionalProperties": false,
   "definitions": {
     "Format": {
       "title": "Format",
@@ -48,17 +49,29 @@
       "description": "Model publication information.",
       "type": "object",
       "properties": {
-        "arxiv": {
-          "title": "Arxiv",
+        "authors": {
+          "title": "Authors",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "title": {
+          "title": "Title",
           "type": "string"
         },
-        "year": {
-          "title": "Year",
-          "type": "integer"
+        "publisher": {
+          "title": "Publisher",
+          "type": "string"
         },
-        "month": {
-          "title": "Month",
-          "type": "integer"
+        "date": {
+          "title": "Date",
+          "type": "string",
+          "format": "date"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
         }
       }
     },
