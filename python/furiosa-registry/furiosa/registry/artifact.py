@@ -1,7 +1,12 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseConfig, BaseModel
+
+
+class Config(BaseConfig):
+    # Extra fields not permitted
+    extra = "forbid"
 
 
 class Format(str, Enum):
@@ -37,6 +42,8 @@ class Artifact(BaseModel):
     """
     Data including model binary, metadata, and configurations to run a single model.
     """
+
+    __config__ = Config
 
     name: str
     family: str

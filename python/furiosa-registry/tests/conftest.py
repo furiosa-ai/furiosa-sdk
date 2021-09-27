@@ -7,7 +7,7 @@ See https://docs.pytest.org/en/6.2.x/fixture.html#conftest-py-sharing-fixtures-a
 from typing import List
 
 import pytest
-from furiosa.registry import Artifact, ModelMetadata
+from furiosa.registry import Artifact, ModelMetadata, Publication
 
 
 @pytest.fixture(scope="module")
@@ -18,9 +18,13 @@ def artifacts() -> List[Artifact]:
             family="ResNet",
             location="https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx",
             format="onnx",
-            description="ResNet v1.5 model for MLCommons",
             metadata=ModelMetadata(
-                arxiv="https://arxiv.org/abs/1512.03385.pdf", year=None, month=None
+                description="ResNet v1.5 model for MLCommons",
+                publication=Publication(
+                    arxiv="https://arxiv.org/abs/1512.03385.pdf",
+                    year=None,
+                    month=None,
+                ),
             ),
         ),
         Artifact(
@@ -28,9 +32,11 @@ def artifacts() -> List[Artifact]:
             family="MobileNetV1",
             location="https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx",
             format="onnx",
-            description="MobileNet v1 model for MLCommons",
             metadata=ModelMetadata(
-                arxiv="https://arxiv.org/abs/1704.04861.pdf", year=None, month=None
+                description="MobileNet v1 model for MLCommons",
+                publication=Publication(
+                    arxiv="https://arxiv.org/abs/1704.04861.pdf", year=None, month=None
+                ),
             ),
         ),
     ]
