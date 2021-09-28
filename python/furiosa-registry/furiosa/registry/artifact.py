@@ -1,7 +1,13 @@
+import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseConfig, BaseModel
+
+
+class Config(BaseConfig):
+    # Extra fields not permitted
+    extra = "forbid"
 
 
 class Format(str, Enum):
@@ -19,9 +25,11 @@ class Publication(BaseModel):
     Model publication information.
     """
 
-    arxiv: Optional[str] = None
-    year: Optional[int] = None
-    month: Optional[int] = None
+    authors: Optional[List[str]] = None
+    title: Optional[str] = None
+    publisher: Optional[str] = None
+    date: Optional[datetime.date] = None
+    url: Optional[str] = None
 
 
 class ModelMetadata(BaseModel):
@@ -37,6 +45,8 @@ class Artifact(BaseModel):
     """
     Data including model binary, metadata, and configurations to run a single model.
     """
+
+    __config__ = Config
 
     name: str
     family: str

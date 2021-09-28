@@ -1,6 +1,5 @@
 """FuriosaAI registry client"""
 
-from pathlib import Path
 from typing import List
 
 from ..errors import URINotFound

@@ -28,31 +28,20 @@ For example,
 artifacts:
   - name: mlcommons_resnet50_v1.5_int8
     family: ResNet
-    location: >-
-      https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx
+    location: https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_resnet50_v1.5_int8.onnx
     format: onnx
-    description: ResNet v1.5 model for MLCommons
-    config:
-      npu_device: npu0pe0
-      compiler_config:
-        keep_unsignedness: true
-        split_unit: 0
     metadata:
-      arxiv: 'https://arxiv.org/abs/1512.03385.pdf'
+      description: ResNet50 v1.5 model for MLCommons
+      publication:
+        url: https://arxiv.org/abs/1512.03385.pdf
   - name: mlcommons_ssd_mobilenet_v1_int8
     family: MobileNetV1
-    location: >-
-      https://github.com/furiosa-ai/npu-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx
+    location: https://github.com/furiosa-ai/furiosa-models/blob/master/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx
     format: onnx
-    description: MobileNet v1 model for MLCommons
-    config:
-      npu_device: npu0pe0
     metadata:
-      arxiv: 'https://arxiv.org/abs/1704.04861.pdf'
-      input_shapes:
-        - 3
-        - 224
-        - 224
+      description: MobileNet v1 model for MLCommons
+      publication:
+        url: https://arxiv.org/abs/1704.04861.pdf
 ```
 
 **S3, Disk, HTTP**

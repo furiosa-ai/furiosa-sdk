@@ -23,6 +23,10 @@ class Model(BaseModel):
     """
 
     name: str
+    # FIXME(yan): This 'model' field should be trucated as it has very long contents.
+    # For next pydantic release, we will bypass via "model: bytes = Field(repr=False)"
+    #
+    # See https://github.com/samuelcolvin/pydantic/discussions/2756
     model: bytes
     version: Optional[str] = None
     description: Optional[str] = None
