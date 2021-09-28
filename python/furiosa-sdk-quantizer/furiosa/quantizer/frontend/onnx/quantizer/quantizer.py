@@ -560,6 +560,11 @@ class FuriosaONNXQuantizer:
         if opset is not None and opset.version < 13:
             for node in self.model.graph.node:
                 if node.op_type == "DequantizeLinear":
+                    # Bypasses the checker if node.input[0] in DequantizeLinear is defined in model.graph.initializer.
+                    # Since it might have 1-d scale and zero-point if per-channel quantized,
+                    # which conflicts with DequantizeLinear(opset-12) spec but alos is unavoidable according to our graph representations.
+                    if node.input[0] in self._quant_initializer_key:
+                        continue
                     scale = self._quant_param[node.input[1]]
                     zero_point = self._quant_param[node.input[2]]
                     assert (
