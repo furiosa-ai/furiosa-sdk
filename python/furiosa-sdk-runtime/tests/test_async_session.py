@@ -3,8 +3,10 @@ import unittest
 
 import numpy as np
 import tensorflow as tf
+from furiosa.runtime import session, errors
+from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester, ensure_test_device
 
-from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester
+NPU_DEVICE_READY = ensure_test_device()
 
 
 class TestAsyncSession(unittest.TestCase):
@@ -37,6 +39,53 @@ class TestAsyncSession(unittest.TestCase):
                 break
 
         self.assertEqual(set(range(0, items)), keys)
+
+
+class TestAsyncSessionExceptions(unittest.TestCase):
+    def test_create(self):
+        sess = None
+        queue = None
+        try:
+            sess, queue = session.create_async(MNIST_MOBINENET_V2,
+                                               worker_num=1,
+                                               input_queue_size=1,
+                                               output_queue_size=1,
+                                               compile_config={"split_after_lower": True})
+        finally:
+            if queue:
+                queue.close()
+            if sess:
+                sess.close()
+
+    def test_next_with_timeout(self):
+        nux_sess = None
+        nux_queue = None
+        try:
+            nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
+            self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
+            nux_sess.close()
+            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
+            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
+        except:
+            if nux_sess:
+                nux_sess.close()
+            if nux_queue:
+                nux_queue.close();
+
+
+@unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
+class TestDeviceBusy(unittest.TestCase):
+    def test_device_busy(self):
+        sess = None
+        queue = None
+        try:
+            sess, queue = session.create_async(MNIST_MOBINENET_V2)
+            self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
+        finally:
+            if sess:
+                sess.close()
+            if queue:
+                queue.close()
 
 
 if __name__ == '__main__':

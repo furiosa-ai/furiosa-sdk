@@ -26,6 +26,7 @@ from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
 from furiosa.quantizer.frontend.onnx.transformer import utils
+from furiosa.quantizer.frontend.onnx.quantizer import fuse_clipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
     calculate_activation_quant_params,
@@ -38,13 +39,15 @@ from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
 
 class FuriosaONNXQuantizer:
-    def __init__(self,
-                 model: onnx.ModelProto,
-                 per_channel: bool,
-                 static: bool,
-                 mode: QuantizationMode,
-                 dynamic_ranges: Dict[str, Tuple[float, float]],
-                 raw_data=True):
+    def __init__(
+        self,
+        model: onnx.ModelProto,
+        per_channel: bool,
+        static: bool,
+        mode: QuantizationMode,
+        dynamic_ranges: Dict[str, Tuple[float, float]],
+        raw_data=True,
+    ):
         """
         - raw_data:
                 if True, quantized weight/bias/scale/zero_point/etc.. will be stored in bytes.
@@ -62,7 +65,9 @@ class FuriosaONNXQuantizer:
         # raise Exception if input_tensor is not defined in model.graph.input
         for input_tensor in self.input_tensors:
             if input_tensor not in [input.name for input in self.model.graph.input]:
-                raise Exception('input_tensor: %s is not defined in model.graph.input' % input_tensor)
+                raise Exception(
+                    'input_tensor: %s is not defined in model.graph.input' % input_tensor
+                )
 
         # set quantization scheme
         self.per_channel = per_channel
@@ -72,16 +77,24 @@ class FuriosaONNXQuantizer:
         # set quantization option guided by mode
         self.quant_mode = QuantizationMode()
         self.mode = mode
-        self.input_qtype = self.weight_qtype = onnx.TensorProto.INT8
+        self.activation_qtype = self.weight_qtype = onnx.TensorProto.INT8
+
+        # use uint8 dtype for activation in fake_quant mode
+        if mode == QuantizationMode.fake:
+            self.activation_qtype = onnx.TensorProto.UINT8
 
         # set model a proto to use
         self.initializer = {init.name: init for init in self.model.graph.initializer}
-        self.value_info = {vi.name: vi for vi in
-                           list(self.model.graph.value_info)
-                           + list(self.model.graph.input) + list(self.model.graph.output)}
+        self.value_info = {
+            vi.name: vi
+            for vi in list(self.model.graph.value_info)
+            + list(self.model.graph.input)
+            + list(self.model.graph.output)
+        }
 
         assert len(self.value_info) == len(list(self.model.graph.value_info)) + len(
-            list(self.model.graph.input)) + len(list(self.model.graph.output))
+            list(self.model.graph.input)
+        ) + len(list(self.model.graph.output))
 
         # (Case1) check if model is optimized: all value_infos are given.
         for node in self.model.graph.node:
@@ -91,7 +104,8 @@ class FuriosaONNXQuantizer:
 
                 if name not in self.value_info.keys():
                     raise Exception(
-                        'value_info for %s is missing. Optimize model before quantization.' % name)
+                        'value_info for %s is missing. Optimize model before quantization.' % name
+                    )
 
         # (Case2) raise Exception if dynamic_range is missing
         for key, vi in self.value_info.items():
@@ -120,6 +134,9 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
+        # pre-optimization
+        self.pre_optimize()
+
         # quantize weight and activation
         self.quantize_model()
 
@@ -130,6 +147,10 @@ class FuriosaONNXQuantizer:
         self.check_model()
 
         return self.model
+
+    def pre_optimize(self):
+        # fuse clippers like Relu, Clip into Conv, Add
+        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
     def quantize_model(self):
         self._quantize_activation()
@@ -168,15 +189,18 @@ class FuriosaONNXQuantizer:
                 output.name += str(self.count - 1)
             self._quant_value_info.pop(output.name)
 
-        self.model = utils.rebuild_model(model=self.model, new_nodes=self._quant_node.values(),
-                                         eliminate=False)
+        self.model = utils.rebuild_model(
+            model=self.model, new_nodes=self._quant_node.values(), eliminate=False
+        )
 
-        self._update_graph_field(field='initializer',
-                                 proto=list(self._quant_param.values()) +
-                                       list(self.initializer.values()))
-        self._update_graph_field(field='value_info',
-                                 proto=list(self._quant_value_info.values()) +
-                                       list(self.model.graph.value_info))
+        self._update_graph_field(
+            field='initializer',
+            proto=list(self._quant_param.values()) + list(self.initializer.values()),
+        )
+        self._update_graph_field(
+            field='value_info',
+            proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
+        )
 
         if self.mode == QuantizationMode.dfg:
             self.model = DFGImportable(self.model, self.raw_data).transform()
@@ -189,24 +213,33 @@ class FuriosaONNXQuantizer:
 
     def make_quant_dequant_node(self, node_input):
         # make quantizelinear node
-        self._stack_quant_node(op_type='QuantizeLinear',
-                               inputs=[node_input, node_input + '_scale', node_input + '_zero_point'],
-                               outputs=[node_input + '_quantized']),
-        self._stack_quant_vi_and_qa_helper(name=node_input, name_quant=node_input + '_quantized',
-                                           elem_type=self._quant_param[node_input + '_zero_point'].data_type,
-                                           quant_vi_dict=self._quant_value_info)
+        self._stack_quant_node(
+            op_type='QuantizeLinear',
+            inputs=[node_input, node_input + '_scale', node_input + '_zero_point'],
+            outputs=[node_input + '_quantized'],
+        ),
+        self._stack_quant_vi_and_qa_helper(
+            name=node_input,
+            name_quant=node_input + '_quantized',
+            elem_type=self._quant_param[node_input + '_zero_point'].data_type,
+            quant_vi_dict=self._quant_value_info,
+        )
         # make dequantizelinear node
         output = node_input + '_dequantized'
         if output in self._quant_node.keys():
             output = node_input + '_dequantized_%d' % self.count
             self.count += 1
-        self._stack_quant_node(op_type='DequantizeLinear',
-                               inputs=[node_input + '_quantized', node_input + '_scale',
-                                       node_input + '_zero_point'],
-                               outputs=[output])
-        self._stack_quant_vi_and_qa_helper(name=node_input, name_quant=output,
-                                           elem_type=onnx.TensorProto.FLOAT,
-                                           quant_vi_dict=self._quant_value_info)
+        self._stack_quant_node(
+            op_type='DequantizeLinear',
+            inputs=[node_input + '_quantized', node_input + '_scale', node_input + '_zero_point'],
+            outputs=[output],
+        )
+        self._stack_quant_vi_and_qa_helper(
+            name=node_input,
+            name_quant=output,
+            elem_type=onnx.TensorProto.FLOAT,
+            quant_vi_dict=self._quant_value_info,
+        )
 
     def check_model(self):
         check_runnable = True
@@ -215,8 +248,12 @@ class FuriosaONNXQuantizer:
             check_runnable = False
         check_model(self.model, check_runnable)
 
-        self._quant_value_info_key = [vi.name for vi in list(self.model.graph.value_info)
-                                      + list(self.model.graph.input) + list(self.model.graph.output)]
+        self._quant_value_info_key = [
+            vi.name
+            for vi in list(self.model.graph.value_info)
+            + list(self.model.graph.input)
+            + list(self.model.graph.output)
+        ]
         self._quant_initializer_key = [init.name for init in self.model.graph.initializer]
 
         self._check_quant_initializer()
@@ -226,16 +263,21 @@ class FuriosaONNXQuantizer:
             self._check_quant_param()
 
     def _quantize_activation(self):
-        act_quant_param = calculate_activation_quant_params(self.dynamic_ranges,
-                                                            self.model.graph.node,
-                                                            self.input_qtype,
-                                                            self.value_info)
+        act_quant_param = calculate_activation_quant_params(
+            self.dynamic_ranges, self.model.graph.node, self.activation_qtype, self.value_info
+        )
         suffix = ['_zero_point', '_scale']
         for name, (zp, s) in act_quant_param.items():
             zp_name, s_name = append_suffix(name=name, suffix=suffix)
 
-            self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
-                                    dims=[], vals_zp=zp.flatten(), vals_scale=s.flatten())
+            self._stack_quant_param(
+                name_zp=zp_name,
+                name_scale=s_name,
+                data_type_zp=self.activation_qtype,
+                dims=zp.shape,
+                vals_zp=zp,
+                vals_scale=s,
+            )
 
     def _quantize_weight(self):
         disabled = True if os.environ.get('TQDM_DISABLE') else False
@@ -272,7 +314,9 @@ class FuriosaONNXQuantizer:
             self.value_info.update({name: vi})
 
             if not self.raw_data:
-                w_init = make_tensor(name=name, data_type=onnx.TensorProto.FLOAT, dims=[], vals=[float(0)])
+                w_init = make_tensor(
+                    name=name, data_type=onnx.TensorProto.FLOAT, dims=[], vals=[float(0)]
+                )
             else:
                 w_init = numpy_helper.from_array(np.array(0.0), name=name)
 
@@ -290,9 +334,14 @@ class FuriosaONNXQuantizer:
             if input not in self.initializer.keys():
                 continue
 
-            self._stack_quant_param(name_zp=input + '_zero_point', name_scale=input + '_scale',
-                                    data_type_zp=self.input_qtype,
-                                    dims=[], vals_zp=[zp], vals_scale=[s])
+            self._stack_quant_param(
+                name_zp=input + '_zero_point',
+                name_scale=input + '_scale',
+                data_type_zp=self.activation_qtype,
+                dims=zp.shape,
+                vals_zp=zp,
+                vals_scale=s,
+            )
 
     def _quantize_matmul_weight(self, node):
         for input in node.input:
@@ -320,14 +369,21 @@ class FuriosaONNXQuantizer:
 
     def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
         weight = numpy_helper.to_array(weight_init)
-        zp, s = calculate_weight_quant_params(data=weight.flatten(), weight_qtype=self.weight_qtype,
-                                              name=weight_init.name)
+        zp, s = calculate_weight_quant_params(
+            data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name
+        )
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
 
-        self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
-                                dims=[], vals_zp=[zp], vals_scale=[s])
+        self._stack_quant_param(
+            name_zp=zp_name,
+            name_scale=s_name,
+            data_type_zp=self.weight_qtype,
+            dims=[],
+            vals_zp=np.asarray(zp, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
+            vals_scale=np.asarray(s, dtype=np.float32),
+        )
 
     def _quantize_weight_per_axis(self, weight_init: onnx.TensorProto, axis: int) -> None:
         weight = numpy_helper.to_array(weight_init)
@@ -336,78 +392,101 @@ class FuriosaONNXQuantizer:
         num_output_channels = weight.shape[axis]
         dims = [1] * weight.ndim
         dims[axis] = num_output_channels
-        s_arr = np.zeros(dims)
-        zp_arr = np.zeros(dims)
+        s_arr = np.zeros(dims, dtype=np.float32)
+        zp_arr = np.zeros(dims, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype])
         for i in range(num_output_channels):
             indices = [slice(None)] * weight.ndim
             indices[axis] = i
             per_channel_weight = weight[tuple(indices)].flatten()
-            zp, s = calculate_weight_quant_params(per_channel_weight, self.weight_qtype, weight_init.name)
+            zp, s = calculate_weight_quant_params(
+                per_channel_weight, self.weight_qtype, weight_init.name
+            )
             s_arr[tuple(indices)] = s
             zp_arr[tuple(indices)] = zp
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qweight_name, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
 
-        self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=self.weight_qtype,
-                                dims=dims, vals_zp=zp_arr, vals_scale=s_arr)
+        self._stack_quant_param(
+            name_zp=zp_name,
+            name_scale=s_name,
+            data_type_zp=self.weight_qtype,
+            dims=dims,
+            vals_zp=zp_arr,
+            vals_scale=s_arr,
+        )
 
-    def _quantize_bias(self, b_init: onnx.TensorProto,
-                       input_scale: onnx.TensorProto,
-                       weight_scale: onnx.TensorProto) -> None:
-        bias = numpy_helper.to_array(b_init)
-        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale).reshape(-1)
+    def _quantize_bias(
+        self,
+        b_init: onnx.TensorProto,
+        input_scale: onnx.TensorProto,
+        weight_scale: onnx.TensorProto,
+    ) -> None:
+        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale).reshape(
+            -1
+        )
+
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
 
         suffix = ['_quantized', '_zero_point', '_scale']
-        qbias_name, zp_name, s_name = append_suffix(name=b_init.name, suffix=suffix)
+        _, zp_name, s_name = append_suffix(name=b_init.name, suffix=suffix)
 
-        self._stack_quant_param(name_zp=zp_name, name_scale=s_name, data_type_zp=qtype,
-                                dims=bias.shape, vals_zp=b_zero_point, vals_scale=b_scale)
+        self._stack_quant_param(
+            name_zp=zp_name,
+            name_scale=s_name,
+            data_type_zp=qtype,
+            dims=b_zero_point.shape,
+            vals_zp=b_zero_point,
+            vals_scale=b_scale,
+        )
 
-    def _stack_quant_node(self, inputs: List[str], outputs: List[str], op_type: str,
-                          attributes: Optional[List[onnx.AttributeProto]] = None) -> None:
+    def _stack_quant_node(
+        self,
+        inputs: List[str],
+        outputs: List[str],
+        op_type: str,
+        attributes: Optional[List[onnx.AttributeProto]] = None,
+    ) -> None:
         if attributes is None:
             attributes = []
 
         # make quantized node proto
         attr_kwargs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in attributes}
 
-        quant_node = make_node(op_type,
-                               inputs,
-                               outputs,
-                               **attr_kwargs)
+        quant_node = make_node(op_type, inputs, outputs, **attr_kwargs)
 
         # stack quantized node
-        self._quant_node.update({
-            outputs[0]: quant_node
-        })
+        self._quant_node.update({outputs[0]: quant_node})
 
     def _stack_quant_param(self, name_zp, name_scale, data_type_zp, dims, vals_zp, vals_scale):
         if name_zp in self._quant_param.keys() or name_scale in self._quant_param.keys():
             return
-
         # make quantization parameters initializer proto
         if self.raw_data:
-            init_zp = numpy_helper.from_array(np.array(vals_zp).astype(TENSOR_TYPE_TO_NP_TYPE[data_type_zp]),
-                                              name=name_zp)
-            init_scale = numpy_helper.from_array(np.array(vals_scale).astype(np.float32), name=name_scale)
+            init_zp = make_tensor(
+                name=name_zp, data_type=data_type_zp, dims=dims, vals=vals_zp.tobytes(), raw=True
+            )
+            init_scale = make_tensor(
+                name=name_scale,
+                data_type=onnx.TensorProto.FLOAT,
+                dims=dims,
+                vals=vals_scale.tobytes(),
+                raw=True,
+            )
         else:
-            init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims,
-                                  vals=vals_zp)
-            init_scale = make_tensor(name=name_scale, data_type=onnx.TensorProto.FLOAT, dims=dims,
-                                     vals=vals_scale)
+            init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims, vals=vals_zp)
+            init_scale = make_tensor(
+                name=name_scale, data_type=onnx.TensorProto.FLOAT, dims=dims, vals=vals_scale
+            )
 
         # stack quantization parameters
-        self._quant_param.update({
-            init_zp.name: init_zp,
-            init_scale.name: init_scale
-        })
+        self._quant_param.update({init_zp.name: init_zp, init_scale.name: init_scale})
 
     def _stack_quant_vi_and_qa_helper(self, name, name_quant, elem_type, quant_vi_dict):
-        self._stack_quant_value_info(name=name, name_quant=name_quant,
-                                     elem_type=elem_type, quant_vi_dict=quant_vi_dict)
+        self._stack_quant_value_info(
+            name=name, name_quant=name_quant, elem_type=elem_type, quant_vi_dict=quant_vi_dict
+        )
 
         if elem_type == onnx.TensorProto.FLOAT:
             return
@@ -419,14 +498,14 @@ class FuriosaONNXQuantizer:
         vi = self.value_info[name]
 
         # make quantized value info proto
-        quant_vi = make_tensor_value_info(name=name_quant,
-                                          elem_type=elem_type,
-                                          shape=[v.dim_value for v in vi.type.tensor_type.shape.dim])
+        quant_vi = make_tensor_value_info(
+            name=name_quant,
+            elem_type=elem_type,
+            shape=[v.dim_value for v in vi.type.tensor_type.shape.dim],
+        )
 
         # stack quantization value info
-        quant_vi_dict.update({
-            quant_vi.name: quant_vi
-        })
+        quant_vi_dict.update({quant_vi.name: quant_vi})
 
     def _update_graph_field(self, field, proto):
         self.model.graph.ClearField(field)
@@ -436,34 +515,79 @@ class FuriosaONNXQuantizer:
         for init in self.model.graph.initializer:
             init_dtype = init.data_type
             if init.name.split('_')[-1] == 'scale':
-                assert init_dtype == onnx.TensorProto.FLOAT, \
-                    'Wrong data type for %s.' % init.name
+                assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s.' % init.name
                 if not self.raw_data:
                     assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
-            elif init.name.split('_')[-1] == 'quantized' and '_'.join(
-                    init.name.split('_')[-2:]) != 'fake_quantized':
-                assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
+            elif (
+                init.name.split('_')[-1] == 'quantized'
+                and '_'.join(init.name.split('_')[-2:]) != 'fake_quantized'
+            ):
+                assert init_dtype in [
+                    self.weight_qtype,
+                    self.activation_qtype,
+                    onnx.TensorProto.INT32,
+                ], (
                     'Wrong data type for %s.' % init.name
+                )
+
                 if not self.raw_data:
                     assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
-            elif any(['_'.join(init.name.split('_')[-2:]) == word for word in
-                      ['zero_point', 'quantized_min', 'quantized_max']]):
-                assert init_dtype in [self.weight_qtype, self.input_qtype, onnx.TensorProto.INT32], \
+            elif any(
+                [
+                    '_'.join(init.name.split('_')[-2:]) == word
+                    for word in ['zero_point', 'quantized_min', 'quantized_max']
+                ]
+            ):
+                assert init_dtype in [
+                    self.weight_qtype,
+                    self.activation_qtype,
+                    onnx.TensorProto.INT32,
+                ], (
                     'Wrong data type for %s.' % init.name
+                )
+
                 if not self.raw_data:
                     assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
             elif '_'.join(init.name.split('_')[-2:]) == 'fake_quantized':
                 assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s' % init.name
             else:
-                assert init_dtype == onnx.TensorProto.INT64 or init_dtype == onnx.TensorProto.FLOAT, \
-                    'Wrong data type for %s.' % init.name
+                assert (
+                    init_dtype == onnx.TensorProto.INT64 or init_dtype == onnx.TensorProto.FLOAT
+                ), ('Wrong data type for %s.' % init.name)
+
+        # Checks if scale/zero-point of DequantizedLienar/QuantizeLinear (OpSet < 13) are scalars.
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        if opset is not None and opset.version < 13:
+            for node in self.model.graph.node:
+                if node.op_type == "DequantizeLinear":
+                    scale = self._quant_param[node.input[1]]
+                    zero_point = self._quant_param[node.input[2]]
+                    assert (
+                        not scale.dims
+                    ), f"the 'x_scale' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                    assert (
+                        not zero_point.dims
+                    ), f"the 'x_zero_point' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                elif node.op_type == "QuantizeLinear":
+                    scale = self._quant_param[node.input[1]]
+                    zero_point = self._quant_param[node.input[2]]
+                    assert (
+                        not scale.dims
+                    ), f"the 'y_scale' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
+                    assert (
+                        not zero_point.dims
+                    ), f"the 'y_zero_point' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
 
     def _check_quant_value_info(self):
-        quant_inputs = [node_input for node in self.model.graph.node
-                        for node_input in node.input
-                        if node_input not in self._quant_initializer_key]
-        quant_outputs = [node_output for node in self.model.graph.node
-                         for node_output in node.output]
+        quant_inputs = [
+            node_input
+            for node in self.model.graph.node
+            for node_input in node.input
+            if node_input not in self._quant_initializer_key
+        ]
+        quant_outputs = [
+            node_output for node in self.model.graph.node for node_output in node.output
+        ]
 
         # check if every node.input/output has graph.value_info
         for name in set(quant_inputs + quant_outputs):
@@ -474,16 +598,20 @@ class FuriosaONNXQuantizer:
         for vi in self.model.graph.value_info:
             for inp in self.model.graph.input:
                 if vi.name == inp.name:
-                    raise Exception('%s in graph.value_info is also defined in graph.input' % vi.name)
+                    raise Exception(
+                        '%s in graph.value_info is also defined in graph.input' % vi.name
+                    )
 
             for oup in self.model.graph.output:
                 if vi.name == oup.name:
-                    raise Exception('%s in graph.value_info is also defined in graph.output' % vi.name)
+                    raise Exception(
+                        '%s in graph.value_info is also defined in graph.output' % vi.name
+                    )
 
     def _check_quant_param(self):
         for init in self.model.graph.initializer:
             if init.name.split('_')[-1] == 'scale':
-                if all(v == 0. for v in init.float_data):
+                if all(v == 0.0 for v in init.float_data):
                     assert 'quantization scale parameter should not be zero: %s' % init.name
 
         # check if conv bias scale is correct
@@ -499,8 +627,9 @@ class FuriosaONNXQuantizer:
             b_scale_name = node.input[-1].split('_quantized')[0] + '_scale'
             b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
 
-            assert np.allclose(b_scale_arr, (i_scale_arr * w_scale_arr).reshape(-1)), \
-                f'Conv bias scale is incorrect: {b_scale_name}'
+            assert np.allclose(
+                b_scale_arr, (i_scale_arr * w_scale_arr).reshape(-1)
+            ), f'Conv bias scale is incorrect: {b_scale_name}'
 
     def _get_quant_param(self, origin, postfix=None):
         result = self._quant_param.get(f'{origin}{postfix or ""}', None)
@@ -517,9 +646,12 @@ class DFGImportable:
         self.raw_data = raw_data
 
         self.node = {node.name: node for node in self.model.graph.node}
-        self.node_by_output = {node_output: node for node in self.model.graph.node for node_output in
-                               node.output}
-        self.node_by_input = {node_input: node for node in self.model.graph.node for node_input in node.input}
+        self.node_by_output = {
+            node_output: node for node in self.model.graph.node for node_output in node.output
+        }
+        self.node_by_input = {
+            node_input: node for node in self.model.graph.node for node_input in node.input
+        }
         self.initializer = {init.name: init for init in self.model.graph.initializer}
         self.graph_input = {vi.name: vi for vi in self.model.graph.input}
         self.value_info = {vi.name: vi for vi in self.model.graph.value_info}
@@ -557,10 +689,14 @@ class DFGImportable:
             flattened = quantized_data.flatten()
             if self.raw_data:
                 flattened = flattened.tobytes()
-            self.initializer.update({node.output[0]: make_tensor(node.output[0], zp.data_type,
-                                                                 init.dims,
-                                                                 flattened,
-                                                                 raw=self.raw_data)})
+
+            self.initializer.update(
+                {
+                    node.output[0]: make_tensor(
+                        node.output[0], zp.data_type, init.dims, flattened, raw=self.raw_data
+                    )
+                }
+            )
 
             # node.output[0] to be removed from model.graph.value_info
             vi = self.value_info.pop(node.output[0])
@@ -570,10 +706,12 @@ class DFGImportable:
 
             rm_nodes.append(node)
 
-        self.model = utils.rebuild_model(model=self.model,
-                                         new_nodes=[node for node in new_nodes if node not in rm_nodes],
-                                         eliminate=False,
-                                         renaming=False)
+        self.model = utils.rebuild_model(
+            model=self.model,
+            new_nodes=[node for node in new_nodes if node not in rm_nodes],
+            eliminate=False,
+            renaming=False,
+        )
 
         self._update_graph_field(field='initializer', proto=self.initializer.values())
         self._update_graph_field(field='value_info', proto=self.value_info.values())
@@ -607,11 +745,15 @@ class DFGImportable:
                 self.value_info.pop(node_i2.output[0])
 
             rm_nodes.extend([node])
-            new_nodes.append(self._make_integer_arithmetic_operator(node, node_i0, node_i1, node_o0, node_i2))
+            new_nodes.append(
+                self._make_integer_arithmetic_operator(node, node_i0, node_i1, node_o0, node_i2)
+            )
 
-        self.model = utils.rebuild_model(model=self.model,
-                                         new_nodes=[node for node in new_nodes if node not in rm_nodes],
-                                         eliminate=False)
+        self.model = utils.rebuild_model(
+            model=self.model,
+            new_nodes=[node for node in new_nodes if node not in rm_nodes],
+            eliminate=False,
+        )
 
         self._update_graph_field(field='value_info', proto=self.value_info.values())
 
@@ -630,16 +772,14 @@ class DFGImportable:
 
         attr_kwargs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
 
-        quant_node = make_node(quant_op_type,
-                               quant_inputs,
-                               quant_outputs,
-                               **attr_kwargs)
+        quant_node = make_node(quant_op_type, quant_inputs, quant_outputs, **attr_kwargs)
 
         return quant_node
 
     @staticmethod
-    def _quantize_data(data: onnx.TensorProto, scale: onnx.TensorProto,
-                       zero_point: onnx.TensorProto) -> np.array:
+    def _quantize_data(
+        data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+    ) -> np.array:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
@@ -650,9 +790,9 @@ class DFGImportable:
         np_dtype_info_min = np_dtype_info.min
         np_dtype_info_max = np_dtype_info.max
 
-        return np.clip(quantized_data,
-                       np_dtype_info_min,
-                       np_dtype_info_max).astype(TENSOR_TYPE_TO_NP_TYPE[zero_point.data_type])
+        return np.clip(quantized_data, np_dtype_info_min, np_dtype_info_max).astype(
+            TENSOR_TYPE_TO_NP_TYPE[zero_point.data_type]
+        )
 
     def _update_graph_field(self, field, proto):
         self.model.graph.ClearField(field)
@@ -682,9 +822,14 @@ class ONNXRuntimeExecutable(DFGImportable):
                 continue
 
             rm_nodes.append(node)
-            rm_nodes.extend([dequant_node for dequant_node in self.model.graph.node
-                             if dequant_node.op_type == 'DequantizeLinear'
-                             if dequant_node.input[0] == node.output[0]])
+            rm_nodes.extend(
+                [
+                    dequant_node
+                    for dequant_node in self.model.graph.node
+                    if dequant_node.op_type == 'DequantizeLinear'
+                    if dequant_node.input[0] == node.output[0]
+                ]
+            )
 
         for node in self.model.graph.node:
             if node.op_type == 'QuantizeLinear' or node.op_type == 'DequantizeLinear':
@@ -709,40 +854,56 @@ class ONNXRuntimeExecutable(DFGImportable):
                 flattened = fake_quantized_data.flatten()
                 if self.raw_data:
                     flattened = flattened.tobytes()
-                self.initializer.update({
-                    init_name + '_fake_quantized': make_tensor(name=init_name + '_fake_quantized',
-                                                               data_type=onnx.TensorProto.FLOAT,
-                                                               dims=init.dims,
-                                                               vals=flattened,
-                                                               raw=self.raw_data)
-                })
+                self.initializer.update(
+                    {
+                        init_name
+                        + '_fake_quantized': make_tensor(
+                            name=init_name + '_fake_quantized',
+                            data_type=onnx.TensorProto.FLOAT,
+                            dims=init.dims,
+                            vals=flattened,
+                            raw=self.raw_data,
+                        )
+                    }
+                )
 
-        self.model = utils.rebuild_model(model=self.model,
-                                         new_nodes=[node for node in new_nodes if node not in rm_nodes],
-                                         eliminate=True)
+        self.model = utils.rebuild_model(
+            model=self.model,
+            new_nodes=[node for node in new_nodes if node not in rm_nodes],
+            eliminate=True,
+        )
         self._update_graph_field(field='initializer', proto=self.initializer.values())
 
         check_model(self.model, check_runnable=True)
 
     @staticmethod
-    def _dequantize_data(data: onnx.TensorProto, scale: onnx.TensorProto,
-                         zero_point: onnx.TensorProto) -> np.array:
+    def _dequantize_data(
+        data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+    ) -> np.array:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
 
         return (data_arr - zero_point_arr) * scale_arr
 
-    def _fake_quantize_data(self, data: onnx.TensorProto, scale: onnx.TensorProto,
-                            zero_point: onnx.TensorProto) -> np.array:
+    def _fake_quantize_data(
+        self, data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+    ) -> np.array:
 
         quantized_data = self._quantize_data(data, scale, zero_point)
         flattened = quantized_data.flatten()
         if self.raw_data:
             flattened = flattened.tobytes()
         dequantized_data = self._dequantize_data(
-            make_tensor(name=data.name, data_type=zero_point.data_type, dims=data.dims,
-                        vals=flattened, raw=self.raw_data),
-            scale, zero_point)
+            make_tensor(
+                name=data.name,
+                data_type=zero_point.data_type,
+                dims=data.dims,
+                vals=flattened,
+                raw=self.raw_data,
+            ),
+            scale,
+            zero_point,
+        )
 
         return dequantized_data

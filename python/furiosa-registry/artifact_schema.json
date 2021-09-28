@@ -1,0 +1,80 @@
+{
+  "title": "Artifact",
+  "description": "Data including model binary, metadata, and configurations to run a single model.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "family": {
+      "title": "Family",
+      "type": "string"
+    },
+    "location": {
+      "title": "Location",
+      "type": "string"
+    },
+    "format": {
+      "$ref": "#/definitions/Format"
+    },
+    "doc": {
+      "title": "Doc",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/definitions/ModelMetadata"
+    }
+  },
+  "required": [
+    "name",
+    "family",
+    "location",
+    "format"
+  ],
+  "definitions": {
+    "Format": {
+      "title": "Format",
+      "description": "Model binary format to represent the binary specified.",
+      "enum": [
+        "code",
+        "onnx",
+        "tflite"
+      ],
+      "type": "string"
+    },
+    "Publication": {
+      "title": "Publication",
+      "description": "Model publication information.",
+      "type": "object",
+      "properties": {
+        "arxiv": {
+          "title": "Arxiv",
+          "type": "string"
+        },
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "month": {
+          "title": "Month",
+          "type": "integer"
+        }
+      }
+    },
+    "ModelMetadata": {
+      "title": "ModelMetadata",
+      "description": "Model metadata to understand a model.",
+      "type": "object",
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "publication": {
+          "$ref": "#/definitions/Publication"
+        }
+      }
+    }
+  }
+}
