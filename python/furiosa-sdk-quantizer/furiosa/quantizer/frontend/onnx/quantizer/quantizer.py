@@ -583,6 +583,15 @@ class FuriosaONNXQuantizer:
                         not zero_point.dims
                     ), f"the 'y_zero_point' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
 
+        # Checks if quantization parameters are at best 1-d array.
+        for init in self.model.graph.initializer:
+            postfix = init.name.split('_')[-1]
+            if postfix not in ['scale', 'zero_point']:
+                continue
+            quant_param = self._quant_param[init.name]
+            rank = len(quant_param.dims)
+            assert rank <= 1, f"{init.name} has {rank} rank. {postfix} cannot have rank > 1."
+
     def _check_quant_value_info(self):
         quant_inputs = [
             node_input
