@@ -21,7 +21,6 @@ MODEL_CONFIG_EXAMPLE = {
             "name": MODEL_NAME,
             "model": "samples/data/MNISTnet_uint8_quant.tflite",
             "version": MODEL_VERSION,
-            "npu_device": "npu0pe0",
             "compiler_config": {"keep_unsignedness": True, "split_unit": 0},
         }
     ]
