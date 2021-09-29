@@ -390,10 +390,8 @@ class FuriosaONNXQuantizer:
         assert weight.ndim == 4
 
         num_output_channels = weight.shape[axis]
-        dims = [1] * weight.ndim
-        dims[axis] = num_output_channels
-        s_arr = np.zeros(dims, dtype=np.float32)
-        zp_arr = np.zeros(dims, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype])
+        s_arr = []
+        zp_arr = []
         for i in range(num_output_channels):
             indices = [slice(None)] * weight.ndim
             indices[axis] = i
@@ -401,8 +399,8 @@ class FuriosaONNXQuantizer:
             zp, s = calculate_weight_quant_params(
                 per_channel_weight, self.weight_qtype, weight_init.name
             )
-            s_arr[tuple(indices)] = s
-            zp_arr[tuple(indices)] = zp
+            s_arr.append(s)
+            zp_arr.append(zp)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -411,9 +409,9 @@ class FuriosaONNXQuantizer:
             name_zp=zp_name,
             name_scale=s_name,
             data_type_zp=self.weight_qtype,
-            dims=dims,
-            vals_zp=zp_arr,
-            vals_scale=s_arr,
+            dims=[num_output_channels],
+            vals_zp=np.asarray(zp_arr, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
+            vals_scale=np.asarray(s_arr, dtype=np.float32),
         )
 
     def _quantize_bias(
@@ -422,9 +420,7 @@ class FuriosaONNXQuantizer:
         input_scale: onnx.TensorProto,
         weight_scale: onnx.TensorProto,
     ) -> None:
-        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale).reshape(
-            -1
-        )
+        b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
 
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
@@ -697,7 +693,22 @@ class DFGImportable:
             s = self.initializer[node.input[1]]
             zp = self.initializer[node.input[2]]
 
-            quantized_data = self._quantize_data(init, s, zp)
+            dequant_linear_output = node.output[0].split("_quantized")[0] + "_dequantized"
+            middle_node = self.node_by_input[dequant_linear_output]
+
+            # gives output_channel_axis for per-channel quantized Conv/ConvTranspose weight/bias
+            rank = len(init.dims)
+            if rank > 1:
+                if middle_node.op_type == "Conv":
+                    output_channel_axis = 0
+                elif middle_node.op_type == 'ConvTranspose':
+                    output_channel_axis = 1
+                else:
+                    output_channel_axis = None
+            else:
+                output_channel_axis = None
+
+            quantized_data = self._quantize_data(init, s, zp, output_channel_axis)
 
             # node.output[0] to be updated to model.graph.initializer instead
             flattened = quantized_data.flatten()
@@ -792,11 +803,20 @@ class DFGImportable:
 
     @staticmethod
     def _quantize_data(
-        data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+        data: onnx.TensorProto,
+        scale: onnx.TensorProto,
+        zero_point: onnx.TensorProto,
+        axis: Optional[int] = None,
     ) -> np.array:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
+
+        if axis is not None:
+            new_axes = list(range(data_arr.ndim))
+            new_axes.pop(axis)
+            scale_arr = np.expand_dims(scale_arr, axis=new_axes)
+            zero_point_arr = np.expand_dims(zero_point_arr, axis=new_axes)
 
         quantized_data = np.round(data_arr / scale_arr) + zero_point_arr
 
@@ -863,7 +883,19 @@ class ONNXRuntimeExecutable(DFGImportable):
                 s = self.initializer[init_name + '_scale']
                 zp = self.initializer[init_name + '_zero_point']
 
-                fake_quantized_data = self._fake_quantize_data(init, s, zp)
+                # gives output_channel_axis for per-channel quantized Conv/ConvTranspose weight/bias
+                rank = len(init.dims)
+                if rank > 1:
+                    if node.op_type == "Conv":
+                        output_channel_axis = 0
+                    elif node.op_type == 'ConvTranspose':
+                        output_channel_axis = 1
+                    else:
+                        output_channel_axis = None
+                else:
+                    output_channel_axis = None
+
+                fake_quantized_data = self._fake_quantize_data(init, s, zp, output_channel_axis)
 
                 flattened = fake_quantized_data.flatten()
                 if self.raw_data:
@@ -892,19 +924,31 @@ class ONNXRuntimeExecutable(DFGImportable):
 
     @staticmethod
     def _dequantize_data(
-        data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+        data: onnx.TensorProto,
+        scale: onnx.TensorProto,
+        zero_point: onnx.TensorProto,
+        axis: Optional[int] = None,
     ) -> np.array:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
 
+        if axis is not None:
+            new_axes = list(range(data_arr.ndim))
+            new_axes.pop(axis)
+            scale_arr = np.expand_dims(scale_arr, axis=new_axes)
+            zero_point_arr = np.expand_dims(zero_point_arr, axis=new_axes)
+
         return (data_arr - zero_point_arr) * scale_arr
 
     def _fake_quantize_data(
-        self, data: onnx.TensorProto, scale: onnx.TensorProto, zero_point: onnx.TensorProto
+        self,
+        data: onnx.TensorProto,
+        scale: onnx.TensorProto,
+        zero_point: onnx.TensorProto,
+        axis: Optional[int] = None,
     ) -> np.array:
-
-        quantized_data = self._quantize_data(data, scale, zero_point)
+        quantized_data = self._quantize_data(data, scale, zero_point, axis)
         flattened = quantized_data.flatten()
         if self.raw_data:
             flattened = flattened.tobytes()
@@ -918,6 +962,7 @@ class ONNXRuntimeExecutable(DFGImportable):
             ),
             scale,
             zero_point,
+            axis,
         )
 
         return dequantized_data
