@@ -37,7 +37,7 @@ def asynchronous(f: Callable) -> Callable:
     return wrapper
 
 
-async def _to_thread(func, /, *args, **kwargs):
+async def _to_thread(func, *args, **kwargs):
     """
     Copied from asyncio.to_thread() in Python 3.9
     """
