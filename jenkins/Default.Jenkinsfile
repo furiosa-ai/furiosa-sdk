@@ -223,7 +223,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libnpu-xrt=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
-          libonnxruntime=1.7.0*
+          libonnxruntime=1.8.1*
           """
         }
       }
