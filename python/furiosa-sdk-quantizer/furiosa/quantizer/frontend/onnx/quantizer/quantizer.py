@@ -586,7 +586,7 @@ class FuriosaONNXQuantizer:
                 continue
             quant_param = self._quant_param[init.name]
             rank = len(quant_param.dims)
-            assert rank <= 1, f"{init.name} has {rank} rank. {postfix} cannot have rank > 1."
+            assert rank <= 1, f"{init.name} has rank {rank}. {postfix} cannot have rank > 1."
 
     def _check_quant_value_info(self):
         quant_inputs = [
