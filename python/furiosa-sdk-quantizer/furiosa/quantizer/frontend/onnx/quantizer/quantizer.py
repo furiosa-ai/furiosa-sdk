@@ -581,7 +581,7 @@ class FuriosaONNXQuantizer:
 
         # Checks if quantization parameters are at best 1-d array.
         for init in self.model.graph.initializer:
-            postfix = init.name.split('_')[-1]
+            postfix = init.name.rsplit('_', maxsplit=1)[-1]
             if postfix not in ['scale', 'zero_point']:
                 continue
             quant_param = self._quant_param[init.name]
