@@ -390,8 +390,8 @@ class FuriosaONNXQuantizer:
         assert weight.ndim == 4
 
         num_output_channels = weight.shape[axis]
-        s_arr = []
-        zp_arr = []
+        s_list = []
+        zp_list = []
         for i in range(num_output_channels):
             indices = [slice(None)] * weight.ndim
             indices[axis] = i
@@ -399,8 +399,8 @@ class FuriosaONNXQuantizer:
             zp, s = calculate_weight_quant_params(
                 per_channel_weight, self.weight_qtype, weight_init.name
             )
-            s_arr.append(s)
-            zp_arr.append(zp)
+            s_list.append(s)
+            zp_list.append(zp)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -410,8 +410,8 @@ class FuriosaONNXQuantizer:
             name_scale=s_name,
             data_type_zp=self.weight_qtype,
             dims=[num_output_channels],
-            vals_zp=np.asarray(zp_arr, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
-            vals_scale=np.asarray(s_arr, dtype=np.float32),
+            vals_zp=np.asarray(zp_list, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
+            vals_scale=np.asarray(s_list, dtype=np.float32),
         )
 
     def _quantize_bias(
