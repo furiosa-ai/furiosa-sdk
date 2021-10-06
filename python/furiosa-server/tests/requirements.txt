@@ -1,0 +1,7 @@
+datamodel-code-generator
+grpcio-tools
+mypy
+mypy-protobuf
+pytest
+pytest-asyncio
+types-PyYAML

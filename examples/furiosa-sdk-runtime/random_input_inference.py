@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
 """Image classification example"""
+import logging
+import os
 import sys
 from pathlib import Path
 
 import numpy as np
-
 from furiosa.runtime.tensor import DataType
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOGLEVEL)
 
 
 def random_input_inference(model_path, num_inf):

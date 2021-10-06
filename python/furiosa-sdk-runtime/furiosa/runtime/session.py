@@ -1,13 +1,17 @@
 """Session and its asynchronous API for model inference"""
 
 import ctypes
-from ctypes import byref, c_int32, c_void_p
-from typing import Union
+from ctypes import byref, c_int, c_void_p
+from pathlib import Path
+from typing import Dict, Union, Optional
 
 import numpy as np
+import yaml
 
+from . import envs
 from ._api import LIBNUX
 from ._api.v1 import decref, increase_ref_count
+from .compiler import compile_model
 from .errors import UnsupportedTensorType, into_exception, is_err, is_ok
 from .model import Model, TensorArray
 from .tensor import TensorDesc
@@ -33,17 +37,40 @@ def _fill_tensors(values: Union[np.ndarray, np.generic, TensorArray],
     raise UnsupportedTensorType()
 
 
+def _create_session_options(device: str = None, worker_num: int = None,
+                            compile_config: Dict[str, object] = None,
+                            input_queue_size: int = None, output_queue_size: int = None):
+    options: c_void_p = LIBNUX.nux_session_option_create()
+    if device is not None:
+        LIBNUX.nux_session_option_set_device(options, device.encode())
+    if worker_num is not None:
+        LIBNUX.nux_session_option_set_worker_num(options, worker_num)
+    if compile_config is not None:
+        compile_config = yaml.dump(compile_config).encode()
+        LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
+    if input_queue_size is not None:
+        LIBNUX.nux_session_option_set_input_queue_size(options, input_queue_size)
+    if output_queue_size is not None:
+        LIBNUX.nux_session_option_set_output_queue_size(options, output_queue_size)
+
+    return options
+
+
 class Session(Model):
     """Provides a blocking API to run an inference task with a given model"""
     ref = c_void_p(None)
 
-    def __init__(self, model):
+    def __init__(self, model: Union[bytes, str, Path], device:str = None, worker_num: int = None,
+                 compile_config: Dict[str, object] = None):
+
+        if device is None:
+            device = envs.current_npu_device()
+
+        options = _create_session_options(device, worker_num, compile_config, None, None)
+        compiled_model = compile_model(model, device, compile_config)
+
         sess = c_void_p(None)
-        options: c_void_p = LIBNUX.nux_session_option_create()
-
-        model_image = _model_image(model)
-
-        err = LIBNUX.nux_session_create(model_image, len(model_image), options, byref(sess))
+        err = LIBNUX.nux_session_create(compiled_model, len(compiled_model), options, byref(sess))
         if is_err(err):
             raise into_exception(err)
 
@@ -107,29 +134,49 @@ class CompletionQueue:
         self.output_descs = output_descs
         self.queue_ok = True
 
-    def recv(self) -> (object, TensorArray):
-        """Receives the prediction results asynchronously coming from AsyncSession
+    def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
+        """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
-        Or it will be blocked until the next result are ready.
+        Otherwise, it will be blocked until the next result are ready.
+
+        If ``timeout`` is set, ``recv()`` will be blocked only until
+        the timeout occurs. If timed out, ``recv()`` throws ``QueueWaitTimeout``
+        exception.
+
+        If AsyncSession is closed earlier ``recv()`` will throw
+        ``SessionTerminated`` exception.
+
+        Args:
+            timeout (int): How long to wait before giving up.
+            It should be a positive interger in milliseconds.
 
         Returns:
             A tuple, whose first value is the context value passed \
             when you submit an inference task and the second value \
             is inference output.
         """
-        err = c_int32(0)
+        err = c_int(0)
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
-        self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
-                                                         byref(context_ref),
-                                                         byref(outputs_ref),
-                                                         byref(err))
+        if timeout:
+            if timeout < 0:
+                raise RuntimeError("the timeout duration must be a positive integer")
+            self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(self.ref,
+                                                                     timeout,
+                                                                     byref(context_ref),
+                                                                     byref(outputs_ref),
+                                                                     byref(err))
+        else:
+            self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
+                                                             byref(context_ref),
+                                                             byref(outputs_ref),
+                                                             byref(err))
         context_val = context_ref.value
         decref(context_ref)
 
-        if is_ok(err.value):
+        if is_ok(err):
             return context_val, TensorArray(outputs_ref, self.output_descs, allocated=False)
 
         raise into_exception(err)
@@ -217,43 +264,38 @@ class AsyncSession(Model):
         self.close()
 
 
-def _read_file(path):
-    with open(path, 'rb') as file:
-        contents = file.read()
-        return contents
-
-
-def _model_image(model) -> bytes:
-    if isinstance(model, bytes):
-        model_image = model
-    elif isinstance(model, str):
-        model_image = _read_file(model)
-    else:
-        raise TypeError("'model' must be str or bytes, but it was " + repr(type(model)))
-
-    return model_image
-
-
-def create(model) -> Session:
+def create(model: Union[bytes, str, Path], device:str = None, worker_num: int = None,
+                 compile_config: Dict[str, object] = None) -> Session:
     """Creates a session for a model
 
     Args:
-        model (bytes or str): a byte string containing a model image or \
+        model (bytes, str, Path): a byte string containing a model image or \
         a path string of a model image file
+        device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
+        worker_num: Number of workers
+        compile_config (Dict[str, object]): Compile config
 
     Returns:
         the session for a given model, allowing to run predictions. \
         Session is a thread safe.
     """
-    return Session(model)
+    return Session(model, device, worker_num, compile_config)
 
 
-def create_async(model, context_ty: type = None) -> (AsyncSession, CompletionQueue):
+def create_async(model: Union[bytes, str, Path], context_ty: type = None, device: str = None, worker_num: int = None,
+                 input_queue_size: int = None, output_queue_size: int = None,
+                 compile_config: Dict[str, object] = None) -> (AsyncSession, CompletionQueue):
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:
-        model (bytes or str): a byte string containing a model image or \
+        model (bytes, str, Path): a byte string containing a model image or \
         a path string of a model image file
+        context_ty (type): Type for passing context from AsyncSession to CompletionQueue
+        device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
+        worker_num: Number of workers
+        input_queue_size: The input queue size, and it must be > 0 and < 2^31.
+        output_queue_size: The output queue size, and it must be be > 0 and < 2^31.
+        compile_config (Dict[str, object]): Compile config
 
     Returns:
         A pair of the asynchronous session and the completion queue. \
@@ -263,9 +305,12 @@ def create_async(model, context_ty: type = None) -> (AsyncSession, CompletionQue
     """
 
     try:
-        model_image = _model_image(model)
+        if device is None:
+            device = envs.current_npu_device()
 
-        options: c_void_p = LIBNUX.nux_session_option_create()
+        model_image = compile_model(model, device, compile_config)
+        options = _create_session_options(device, worker_num, compile_config,
+                                          input_queue_size, output_queue_size)
         sess_ref = c_void_p(None)
         queue_ref = c_void_p(None)
         err = LIBNUX.nux_async_session_create(model_image, len(model_image), options,

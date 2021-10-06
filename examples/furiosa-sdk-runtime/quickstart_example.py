@@ -1,7 +1,13 @@
+import logging
+import os
 from pathlib import Path
 from furiosa import runtime
 from furiosa.runtime import session
 import numpy as np
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOGLEVEL)
+
 
 def run_example():
   runtime.__full_version__
