@@ -4,13 +4,6 @@ endif
 
 default: install
 
-generate-openapi:
-	@OPENAPI_GENERATOR_VERSION=3.0.2 \
-	java -jar share/openapi-generator-cli-5.0.1.jar generate \
-	--global-property apiTests=false,apiDocs=false,modelTests=false,modelDocs=false \
-	-i ${OPENAPI_SPEC_URI} -g python -c share/default.json \
-  -o ./;
-
 install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 

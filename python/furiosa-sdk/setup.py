@@ -122,6 +122,7 @@ def do_setup() -> None:
         cmdclass={
             'develop': Develop,
         },
+        entry_points={"console_scripts": ["furiosa=furiosa.cli:main"]},
         **setup_kwargs,
     )
 

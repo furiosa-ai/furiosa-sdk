@@ -8,90 +8,10 @@ from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 from enum import IntEnum
 from sys import platform
 
+from furiosa.common.native import find_native_libs, NuxLogLevel, LIBNUX
 from furiosa.runtime import consts
 
 LOG = logging.getLogger(__name__)
-
-
-def _find_local_libs():
-    module_path = os.path.dirname(__file__)
-    if platform == "linux":
-        for name in glob.glob("{}/runtime.cpython-*.so".format(module_path)):
-            return name
-    elif platform == "darwin":
-        for name in glob.glob("{}/runtime.cpython-*-darwin.so".format(module_path)):
-            return name
-    else:
-        return None
-
-
-def _find_user_libs():
-    libnux_path = None
-    for lib_path in os.getenv('LD_LIBRARY_PATH').split(":"):
-        if platform == "linux":
-            for name in glob.glob("{}/libnux.so*".format(lib_path)):
-                libnux_path = name
-                break
-        elif platform == "darwin":
-            for name in glob.glob("{}/libnux.dylib*".format(lib_path)):
-                libnux_path = name
-                break
-
-    return libnux_path
-
-
-def _find_global_libs():
-    return util.find_library("nux")
-
-
-def _find_native_libs():
-    """Finding a native lib according to the priority
-    1. If the environment variable 'LD_LIBRARY_PATH' is set,
-    this function tries to find native library found from LD_LIBRARY_PATH.
-    2. Otherwise, it tries to find the native library embedded in the python package.
-    3. If the embedded native library cannot be found,
-    it tries find the native library from global library paths, such as /usr/lib, /usr/local/lib.
-    """
-
-    libnux_path = None
-
-    if os.getenv('LD_LIBRARY_PATH') is not None:
-        libnux_path = _find_user_libs()
-
-    if libnux_path is None:
-        libnux_path = _find_local_libs()
-        if libnux_path is None:
-            libnux_path = _find_global_libs()
-
-    if libnux_path is None:
-        raise SystemExit('fail to find libnux')
-
-    libnux_ = CDLL(libnux_path)
-
-    if libnux_ is not None:
-        libnux_.version.argtypes = []
-        libnux_.version.restype = c_char_p
-        libnux_.git_short_hash.argtypes = []
-        libnux_.git_short_hash.restype = c_char_p
-        libnux_.build_timestamp.argtypes = []
-        libnux_.build_timestamp.restype = c_char_p
-
-        LOG.info('loaded dynamic library %s (%s %s)',
-                 libnux_path,
-                 libnux_.version().decode('utf-8'),
-                 libnux_.git_short_hash().decode('utf-8'))
-    else:
-        raise SystemExit('fail to load native library')
-
-    return libnux_
-
-
-class NuxLogLevel(IntEnum):
-    """Python object correspondnig to nux_log_level_t in Nux C API"""
-    OFF = 0
-    ERROR = 1
-    WARN = 2
-    INFO = 3
 
 
 def _nux_log_level_from_env() -> int:
@@ -99,24 +19,7 @@ def _nux_log_level_from_env() -> int:
     return NuxLogLevel[level.upper()].value
 
 
-LIBNUX = _find_native_libs()
-
-## Definition of Native C Foreign Functions
-LIBNUX.version.argtypes = []
-LIBNUX.version.restype = c_char_p
-
-LIBNUX.git_short_hash.argtypes = []
-LIBNUX.git_short_hash.restype = c_char_p
-
-LIBNUX.build_timestamp.argtypes = []
-LIBNUX.build_timestamp.restype = c_char_p
-
-LIBNUX.enable_logging.argtypes = [c_int]
-LIBNUX.enable_logging.restype = None
-
-LIBNUX.register_signal_handler.argtypes = []
-LIBNUX.register_signal_handler.restype = None
-
+## Definition of Session Native C API
 LIBNUX.nux_session_option_create.argtypes = []
 LIBNUX.nux_session_option_create.restype = c_void_p
 

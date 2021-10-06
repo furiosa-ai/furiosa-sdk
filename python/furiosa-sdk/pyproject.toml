@@ -8,6 +8,5 @@ requires = [
     "setuptools>=42",
     "wheel",
     "gitpython",
-    "setuptools_rust"
 ]
 build-backend = "setuptools.build_meta"
