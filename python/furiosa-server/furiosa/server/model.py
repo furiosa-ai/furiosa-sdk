@@ -143,5 +143,5 @@ class NuxModel(Model):
         )
 
     def decode(self, tensor: TensorDesc, request_input: RequestInput) -> np.ndarray:
-        datatype: str = repr(tensor.dtype())
+        datatype: str = repr(tensor.dtype)
         return np.array(request_input.data, datatype)

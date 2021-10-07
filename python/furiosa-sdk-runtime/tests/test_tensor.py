@@ -23,23 +23,23 @@ class TestTensor(unittest.TestCase):
 
     def test_dtype(self):
         tensor = self.sess.input(0)
-        self.assertEqual(np.uint8, numpy_dtype(tensor.dtype()))
+        self.assertEqual(np.uint8, numpy_dtype(tensor.dtype))
 
     def test_tensor_desc(self):
         tensor = self.sess.input(0)
-        self.assertEqual(4, tensor.ndim())
-        self.assertEqual("NHWC", tensor.format())
-        self.assertEqual((1, 28, 28, 1), tensor.shape())
-        self.assertEqual(DataType.UINT8, tensor.dtype())
+        self.assertEqual(4, tensor.ndim)
+        self.assertEqual("NHWC", tensor.format)
+        self.assertEqual((1, 28, 28, 1), tensor.shape)
+        self.assertEqual(DataType.UINT8, tensor.dtype)
         self.assertEqual(np.uint8, numpy_dtype(tensor))
-        self.assertEqual(784, tensor.length())
+        self.assertEqual(784, tensor.length)
         self.assertEqual(tensor.__repr__(),
                          "TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784")
 
     def test_tensor(self):
         sess = self.sess
-        self.assertEqual(sess.input_num(), 1)
-        self.assertEqual(sess.output_num(), 1)
+        self.assertEqual(sess.input_num, 1)
+        self.assertEqual(sess.output_num, 1)
 
         inputs: TensorArray = sess.allocate_inputs()
         inputs2: TensorArray = sess.allocate_inputs()
@@ -48,7 +48,7 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(np.uint8, numpy_dtype(inputs[0]))
 
         # Testing TensorArray.__repr__()
-        inputs[0] = np.zeros(inputs[0].shape(), np.uint8)
+        inputs[0] = np.zeros(inputs[0].shape, np.uint8)
         self.assertTrue(inputs[0].__repr__()
                         .startswith("<Tensor: shape=(1, 28, 28, 1), dtype=DataType.UINT8, numpy=[[[[0]"))
 

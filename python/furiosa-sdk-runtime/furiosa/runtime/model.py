@@ -18,10 +18,12 @@ class Model(ABC):
         :return: a raw pointer of a Model
         """
 
+    @property
     def input_num(self) -> int:
         """Number of input tensors of Model"""
         return LIBNUX.nux_input_num(self._get_model_ref())
 
+    @property
     def output_num(self) -> int:
         """Number of output tensors of Model"""
         return LIBNUX.nux_output_num(self._get_model_ref())
@@ -33,7 +35,7 @@ class Model(ABC):
     def inputs(self) -> [TensorDesc]:
         """Tensor descriptions of all input tensors of Model"""
         inputs = []
-        for idx in range(self.input_num()):
+        for idx in range(self.input_num):
             inputs.append(self.input(idx))
 
         return inputs
@@ -45,7 +47,7 @@ class Model(ABC):
     def outputs(self) -> [TensorDesc]:
         """Tensor descriptions of all output tensors of Model"""
         outputs = []
-        for idx in range(self.output_num()):
+        for idx in range(self.output_num):
             outputs.append(self.output(idx))
 
         return outputs
