@@ -4,10 +4,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
-                                                                               Pattern_4, Pattern_5, Pattern_6,
-                                                                               Pattern_7,
-                                                                               EliminateRedundantReshapePattern)
+from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (
+    Pattern_1,
+    Pattern_2,
+    Pattern_3,
+    Pattern_4,
+    Pattern_5,
+    Pattern_6,
+    Pattern_7,
+    Pattern_8,
+    EliminateRedundantReshapePattern,
+)
 
 from tests.frontend.onnx.transformer import TestTransformer
 
@@ -139,11 +146,22 @@ class CompoundTestModel8(nn.Module, ABC):
         return x, a, b, c
 
 
+class UnitTestModel8(nn.Module, ABC):
+    def __init__(self):
+        super(UnitTestModel8, self).__init__()
+        self.conv = nn.Conv2d(4, 4, 2)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = x.expand([*x.shape])
+        x = self.conv(x)
+
+        return x
+
+
 class TestFuseRedundantReshapePattern(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes, transformer):
-        orig_model, trans_model = self.make_test_model(torch_model,
-                                                       transformer,
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model
 
     def test_case1(self):
@@ -259,7 +277,19 @@ class TestFuseRedundantReshapePattern(TestTransformer, ABC):
     def test_case8(self):
         input_shapes = [(1, 16, 24, 8)]
 
-        orig_model, trans_model = self._make_test_model(CompoundTestModel8(), input_shapes,
-                                                        EliminateRedundantReshapePattern())
+        orig_model, trans_model = self._make_test_model(
+            CompoundTestModel8(), input_shapes, EliminateRedundantReshapePattern()
+        )
+        self.check_output_value(orig_model, trans_model, input_shapes)
+        self.check_value_info(trans_model)
+
+    def test_case9(self):
+        print('yes')
+        input_shapes = [(1, 4, 8, 8)]
+
+        op_types = ['Conv', 'Conv']
+
+        orig_model, trans_model = self._make_test_model(UnitTestModel8(), input_shapes, Pattern_8)
+        self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
