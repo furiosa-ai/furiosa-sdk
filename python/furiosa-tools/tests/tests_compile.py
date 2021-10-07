@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -16,17 +17,25 @@ class CommandTests(unittest.TestCase):
         if not keep:
             os.remove(path)
 
+    def test_version(self):
+        result = subprocess.run(['furiosa-compile', '--version'], capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_compile(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = tempfile.mkdtemp()
+        try:
             output_file = f"{tmpdir}/output.enf"
             os.chdir(tmpdir)
             result = subprocess.run(['furiosa-compile',
                                      self.mnist_model], capture_output=True)
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
+        finally:
+            shutil.rmtree(tmpdir)
 
     def test_compile_with_output(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir = tempfile.mkdtemp()
+        try:
             output_file = f"{tmpdir}/output.enf"
             result = subprocess.run(['furiosa-compile',
                                      self.mnist_model,
@@ -34,63 +43,99 @@ class CommandTests(unittest.TestCase):
                                      output_file], capture_output=True)
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
+        finally:
+            shutil.rmtree(tmpdir)
 
     def test_compile_with_other_outputs(self):
-        tmpfile = tempfile.TemporaryDirectory()
-        output_file = tmpfile.name + "/output.enf"
-        analyze_memory_output = tmpfile.name + "/memory_analysis.html"
-        dot_graph_output = tmpfile.name + "/graph.dot"
-        result = subprocess.run(['furiosa-compile',
-                                 self.mnist_model,
-                                 '-o', output_file,
-                                 '--dot-graph', dot_graph_output,
-                                 '--analyze-memory', analyze_memory_output,
-                                 ], capture_output=True)
-        self.assertEqual(0, result.returncode, result.stderr)
-        self.assert_file_created(output_file)
-        self.assert_file_created(dot_graph_output)
-        self.assert_file_created(analyze_memory_output)
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.enf"
+            analyze_memory_output = f"{tmpdir}/memory_analysis.html"
+            dot_graph_output = f"{tmpdir}/graph.dot"
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '--dot-graph', dot_graph_output,
+                                     '--analyze-memory', analyze_memory_output,
+                                     ], capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assert_file_created(output_file)
+            self.assert_file_created(dot_graph_output)
+            self.assert_file_created(analyze_memory_output)
+        finally:
+            shutil.rmtree(tmpdir)
 
     def test_compile_with_target_npus(self):
-        tmpfile = tempfile.TemporaryDirectory()
-        output_file = tmpfile.name + "/output.enf"
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.enf"
 
-        result = subprocess.run(['furiosa-compile',
-                                 self.mnist_model,
-                                 '-o', output_file,
-                                 '--target-npu', 'warb'
-                                 ], capture_output=True)
-        self.assertTrue(result.returncode != 0, result.stderr)
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '--target-npu', 'warb'
+                                     ], capture_output=True)
+            self.assertTrue(result.returncode != 0, result.stderr)
 
-        result = subprocess.run(['furiosa-compile',
-                                 self.mnist_model,
-                                 '-o', output_file,
-                                 '--target-npu', 'warboy'
-                                 ], capture_output=True)
-        self.assertTrue(result.returncode == 0, result.stderr)
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '--target-npu', 'warboy'
+                                     ], capture_output=True)
+            self.assertTrue(result.returncode == 0, result.stderr)
+        finally:
+            shutil.rmtree(tmpdir)
 
     def test_compile_with_optimization(self):
-        tmpfile = tempfile.TemporaryDirectory()
-        output_file = tmpfile.name + "/output.enf"
-        result = subprocess.run(['furiosa-compile',
-                                 self.mnist_model,
-                                 '-o', output_file,
-                                 '--batch-size', '2',
-                                 '--split-after-lower',
-                                 '--auto-batch-size',
-                                 ], capture_output=True)
-        self.assertEqual(0, result.returncode, result.stderr)
-        print(result.stdout)
-        self.assert_file_created(output_file)
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.enf"
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '--batch-size', '2',
+                                     '--split-after-lower',
+                                     '--auto-batch-size',
+                                     ], capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assert_file_created(output_file)
+        finally:
+            shutil.rmtree(tmpdir)
 
     def test_compile_with_genetic_optimization(self):
-        tmpfile = tempfile.TemporaryDirectory()
-        output_file = tmpfile.name + "/output.enf"
-        result = subprocess.run(['furiosa-compile',
-                                 self.mnist_model,
-                                 '-o', output_file,
-                                 '-ga', '2',
-                                 ], capture_output=True)
-        self.assertEqual(0, result.returncode, result.stderr)
-        print(result.stdout)
-        self.assert_file_created(output_file)
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.enf"
+
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '-ga', 'init_tactic=random,generation_limit=500'
+                                     ], capture_output=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assert_file_created(output_file)
+        finally:
+            shutil.rmtree(tmpdir)
+
+    def test_compile_with_genetic_optimization_errors(self):
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.enf"
+
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '-ga', 'init_tactic=abc'
+                                     ], capture_output=True)
+            self.assertTrue(result.returncode != 0, result.stderr)
+            self.assertEqual(result.stderr.decode().strip(), "ERROR: init_tactic must be either 'random' or 'heuristic'")
+
+            result = subprocess.run(['furiosa-compile',
+                                     self.mnist_model,
+                                     '-o', output_file,
+                                     '-ga', 'abc=def'
+                                     ], capture_output=True)
+            self.assertTrue(result.returncode != 0, result.stderr)
+            self.assertEqual(result.stderr.decode().strip(), "ERROR: unknown genetic algorithm parameter: 'abc'")
+        finally:
+            shutil.rmtree(tmpdir)

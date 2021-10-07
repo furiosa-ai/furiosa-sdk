@@ -8,18 +8,21 @@ from ctypes import CDLL, POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 from enum import IntEnum
 from sys import platform
 
-from furiosa.common.native import find_native_libs, NuxLogLevel, LIBNUX
+from furiosa.common.native import find_native_libs, LogLevel
 from furiosa.runtime import consts
+
 
 LOG = logging.getLogger(__name__)
 
 
 def _nux_log_level_from_env() -> int:
     level = os.environ.get(consts.ENV_FURIOSA_LOG_LEVEL, 'INFO')
-    return NuxLogLevel[level.upper()].value
+    return LogLevel[level.upper()].value
 
 
 ## Definition of Session Native C API
+LIBNUX = find_native_libs("nux")
+
 LIBNUX.nux_session_option_create.argtypes = []
 LIBNUX.nux_session_option_create.restype = c_void_p
 

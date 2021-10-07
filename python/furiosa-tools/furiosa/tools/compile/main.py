@@ -1,8 +1,9 @@
 import argparse
 import sys
+from typing import Dict
 
 from furiosa.tools import __version__
-from furiosa.tools.compile._api import LIBCOMPILER, NuxLogLevel, compiler_version
+from furiosa.tools.compile.api import LIBCOMPILER, version_string, compile, CompilerApiError
 
 DESCRIPTION: str = "FuriosaAI SDK Compiler for DNN models"
 
@@ -18,6 +19,9 @@ EXAMPLE: str = """example:
 
     # In addition to compilation, write the dot graph of the model graph into to bar.dot
     furiosa compile foo.onnx -o foo.enf --dot-graph bar.dot
+    
+    # Set the genetic algorithm parameters for optimization
+    furiosa compile foo.onnx -o foo.enf -ga population_size=100,generation_limit=500
 """
 
 NPU_IDS = ["warboy", "warboy-2pe"]
@@ -29,63 +33,59 @@ class CommandArgError(Exception):
         super().__init__()
 
 
-def set_ga_param(options, key: str, value: str):
+def convert_ga_param(key: str, value: str) -> object:
     if key.lower() == "population_size":
         try:
-            LIBCOMPILER.compiler_options_ga_population_size(options, int(value))
+            return int(value)
         except:
             raise CommandArgError("population_size must be a positive integer")
 
     elif key.lower() == "generation_limit":
         try:
-            LIBCOMPILER.compiler_options_ga_generation_limit(options, int(value))
+            return int(value)
         except:
             CommandArgError("generation_limit must be a positive integer")
 
     elif key.lower() == "max_prefetch_size":
         try:
-            LIBCOMPILER.compiler_options_ga_max_prefetch_size(options, int(value))
+            return int(value)
         except:
             raise CommandArgError("max_prefetch_size must be a positive integer")
 
     elif key.lower() == "nondeterministic":
-        try:
-            if not value.lower() in ['true', 'false']:
-                raise RuntimeError()
-
-            LIBCOMPILER.compiler_options_ga_nondeterministic(options, bool(value))
-        except:
+        if value.lower() in ['true', 'false']:
+            return bool(value)
+        else:
             raise CommandArgError("nondeterministic must be either 'true' or 'false'")
 
     elif key.lower() == "pin_tensors":
-        try:
-            if not value.lower() in ['true', 'false']:
-                raise RuntimeError()
-
-            LIBCOMPILER.compiler_options_ga_pin_tensors(options, bool(value))
-        except:
+        if value.lower() in ['true', 'false']:
+            return bool(value)
+        else:
             raise CommandArgError("pin_tensors must be either 'true' or 'false'")
 
     elif key.lower() == "init_tactic":
-        try:
-            if not value.lower() in ['random', 'heuristic']:
-                raise RuntimeError()
-
-            LIBCOMPILER.compiler_options_ga_pin_tensors(options, bool(value))
-        except:
+        if value.lower() in ['random', 'heuristic']:
+            return str(value)
+        else:
             raise CommandArgError("init_tactic must be either 'random' or 'heuristic'")
 
     else:
         raise CommandArgError(f"unknown genetic algorithm parameter: '{key}'")
 
 
-def ga_options(options, list):
-    for kv in list:
-        parts = kv.split("=")
-        if len(parts) != 2:
-            raise CommandArgError("-ga parameters must be a form of KEY=VALUE; e.g., init_tactic=random")
+def ga_options(ga_params_str: str) -> Dict[str, object]:
 
-        set_ga_param(options, parts[0], parts[1])
+    ga_params: Dict[str, object] = {}
+
+    for kv in [part.strip() for part in ga_params_str.split(",")]:
+        parts = kv.split("=")
+        if len(parts) == 2:
+            ga_params[parts[0]] = convert_ga_param(parts[0], parts[1])
+        else:
+            raise CommandArgError("-ga parameters must be a form of KEY1=VALUE1,KEY2=VALUE2; e.g., init_tactic=random")
+
+    return ga_params
 
 
 class CommandCompile():
@@ -101,7 +101,7 @@ class CommandCompile():
         self.parser.add_argument('source', type=str,
                                  help='Path to source file (tflite, onnx, and other IR formats, such as dfg, cdfg, gir, lir)')
         self.parser.add_argument("--version", action="version",
-                                 version=f"{compiler_version()} (wrapper: {__version__})")
+                                 version=f"{version_string()} (wrapper: {__version__})")
         self.parser.add_argument('-o', dest='output', type=str,
                                  help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)')
         self.parser.add_argument('--target-ir', type=str, default='enf',
@@ -122,57 +122,29 @@ class CommandCompile():
         self.parser.add_argument('--auto-batch-size', action="store_true",
                                  help='Find the optimal batch size automatically')
         self.parser.add_argument('--split-after-lower', action="store_true", help='Enable the split after lower')
-        self.parser.add_argument('-ga', '--genetic-optimization',
-                                 nargs='+', help='Use generic optimization with parameters')
+        self.parser.add_argument('-ga', '--genetic-optimization', type=str, help='Use generic optimization with parameters')
 
     def run(self) -> int:
-        envs = {}
-        if self.args.verbose:
-            LIBCOMPILER.enable_logging(NuxLogLevel.INFO)
-
-        options = LIBCOMPILER.compiler_options_create()
-
-        LIBCOMPILER.compiler_options_input(options, self.args.source.encode())
-
-        if self.args.output is not None:
-            output_file = self.args.output
-        else:
-            output_file = f"output.{self.args.target_ir}"
-
-        LIBCOMPILER.compiler_options_output(options, output_file.encode())
-
-        if self.args.target_ir:
-            target_ir = self.args.target_ir
-        else:
-            target_ir = "enf"
-
-        LIBCOMPILER.compiler_options_target_ir(options, target_ir.encode())
-
-        if self.args.analyze_memory:
-            LIBCOMPILER.compiler_options_memory_analysis(options, self.args.analyze_memory.encode())
-        if self.args.dot_graph:
-            LIBCOMPILER.compiler_options_dot_graph(options, self.args.dot_graph.encode())
-        if self.args.batch_size:
-            LIBCOMPILER.compiler_options_batch_size(options, self.args.batch_size)
-        if self.args.auto_batch_size:
-            LIBCOMPILER.compiler_options_auto_batch_size(options, True)
-        if self.args.split_after_lower:
-            LIBCOMPILER.compiler_options_split_after_lower(options, True)
-        if self.args.target_npu:
-            LIBCOMPILER.compiler_options_target_npu(options, self.args.target_npu.encode())
-
+        ga_params = None
         if self.args.genetic_optimization:
-            LIBCOMPILER.compiler_options_ga_optimization(options, True)
-            ga_options(options, self.args.genetic_optimization)
+            ga_params = ga_options(self.args.genetic_optimization)
 
-        err = LIBCOMPILER.compiler_run(options)
-        return err
+        return compile(self.args.source,
+                output=self.args.output,
+                target_ir=self.args.target_ir,
+                dot_graph=self.args.dot_graph,
+                analyze_memory=self.args.analyze_memory,
+                batch_size=self.args.batch_size,
+                auto_batch_size=self.args.auto_batch_size,
+                ga_params=ga_params,
+                target_npu=self.args.target_npu,
+                verbose=self.args.verbose)
 
 
 def main():
     try:
         exit(CommandCompile().run())
-    except CommandArgError as e:
+    except (CommandArgError, CompilerApiError) as e:
         print(f"ERROR: {e.message}", file=sys.stderr)
         exit(255)
 
