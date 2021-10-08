@@ -68,6 +68,6 @@ if __name__ == "__main__":
     setup(
         version=version,
         packages=find_namespace_packages(include=["furiosa.*"]),
-        entry_points={"console_scripts": ["furiosa-compile=furiosa.tools.compile:main"]},
+        entry_points={"console_scripts": ["furiosa-compile=furiosa.tools.compiler:main"]},
         **setup_kwargs,
     )

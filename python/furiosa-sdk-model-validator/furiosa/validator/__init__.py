@@ -38,14 +38,14 @@ def validate(model_path: Path):
                                                                              mode=QuantizationMode.dfg,
                                                                              num_data=10)
     except Exception as e:
-        _eprint("[Step 1] Failed\n")
+        eprint("[Step 1] Failed\n")
         raise e
     print(f'[Step 1] Passed')
 
     try:
         onnx.save_model(quantized_model, tmpfile.name)
     except Exception as e:
-        _eprint("[ERROR] Fail to save the model\n")
+        eprint("[ERROR] Fail to save the model\n")
         raise e
 
     print(f'[Step 2] Checking the model can be compiled to a NPU program ...')
@@ -54,7 +54,7 @@ def validate(model_path: Path):
             model = model_file.read()
             session.create(model=model)
     except Exception as e:
-        _eprint("[Step 2] Failed\n")
+        eprint("[Step 2] Failed\n")
         raise e
     print(f'[Step 2] Passed')
 

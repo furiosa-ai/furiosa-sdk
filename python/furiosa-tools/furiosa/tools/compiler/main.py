@@ -3,7 +3,7 @@ import sys
 from typing import Dict
 
 from furiosa.tools import __version__
-from furiosa.tools.compile.api import LIBCOMPILER, version_string, compile, CompilerApiError
+from furiosa.tools.compiler.api import LIBCOMPILER, version_string, compile, CompilerApiError
 
 DESCRIPTION: str = "FuriosaAI SDK Compiler for DNN models"
 
