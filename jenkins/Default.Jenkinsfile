@@ -192,7 +192,7 @@ pipeline {
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
     FIRMWARE_VERSION = "0.1-2+nightly-210930"
-    NUX_VERSION = "0.4.0-2+nightly-210916"
+    NUX_VERSION = "0.4.0-2+nightly-211007"
   }
 
   stages {
@@ -223,7 +223,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libnpu-xrt=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
-          libonnxruntime=1.7.0*
+          libonnxruntime=1.8.1*
           """
         }
       }
