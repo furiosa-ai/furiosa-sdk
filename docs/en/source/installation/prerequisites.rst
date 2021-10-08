@@ -27,14 +27,14 @@ To install ``build-essential`` and ``cmake``:
   $ apt-get install cmake build-essential
 
 
-To install ``onnxruntime`` 1.6.0:
+To install ``onnxruntime`` 1.8.1:
 
 ``onnxruntime`` is used for `ONNX <https://onnx.ai/>`_ model format support and model quantization.
 
 .. code-block::
 
-  $ wget https://github.com/hyunsik/onnxruntime/releases/download/v1.6.0/libonnxruntime-1.6.0_amd64.deb
-  $ apt-get install -y ./libonnxruntime-1.6.0_amd64.deb
+  $ wget https://github.com/hyunsik/onnxruntime/releases/download/v1.8.1/libonnxruntime-1.8.1_amd64.deb
+  $ apt-get install -y ./libonnxruntime-1.8.1_amd64.deb
 
 
 .. _SetupPython:
