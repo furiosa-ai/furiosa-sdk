@@ -3,14 +3,18 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose import FuseBnIntoConvTranspose
+from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose import (
+    FuseBnIntoConvTranspose,
+)
 from tests.frontend.onnx.transformer import TestTransformer
 
 
 class UnitTestModel(nn.Module, ABC):
     def __init__(self, in_channel, out_channel):
         super(UnitTestModel, self).__init__()
-        self.convtranspose = nn.ConvTranspose2d(in_channels=in_channel, out_channels=out_channel, kernel_size=(2, 2))
+        self.convtranspose = nn.ConvTranspose2d(
+            in_channels=in_channel, out_channels=out_channel, kernel_size=(2, 2)
+        )
         self.bn = nn.BatchNorm2d(num_features=out_channel)
         self.bn.weight = nn.Parameter(torch.ones(out_channel) * 0.333)
         self.bn.bias = nn.Parameter(torch.ones(out_channel) * 0.254)
@@ -59,9 +63,9 @@ class MultiTestModel1(UnitTestModel):
 
 class TestFuseBNIntoConv(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes):
-        orig_model, trans_model = self.make_test_model(torch_model,
-                                                       FuseBnIntoConvTranspose(),
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(
+            torch_model, FuseBnIntoConvTranspose(), input_shapes
+        )
         return orig_model, trans_model
 
     def test_case1(self):
@@ -71,7 +75,9 @@ class TestFuseBNIntoConv(TestTransformer, ABC):
 
         op_types = ['ConvTranspose']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -83,7 +89,9 @@ class TestFuseBNIntoConv(TestTransformer, ABC):
 
         op_types = ['ConvTranspose', 'Relu', 'BatchNormalization']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel1(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel1(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -95,7 +103,9 @@ class TestFuseBNIntoConv(TestTransformer, ABC):
 
         op_types = ['Mul', 'ConvTranspose', 'Add']
 
-        orig_model, trans_model = self._make_test_model(MultiTestModel(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            MultiTestModel(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -107,8 +117,9 @@ class TestFuseBNIntoConv(TestTransformer, ABC):
 
         op_types = ['Mul', 'ConvTranspose', 'Relu', 'BatchNormalization', 'Add']
 
-        orig_model, trans_model = self._make_test_model(MultiTestModel1(in_channel, out_channel),
-                                                        input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            MultiTestModel1(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)

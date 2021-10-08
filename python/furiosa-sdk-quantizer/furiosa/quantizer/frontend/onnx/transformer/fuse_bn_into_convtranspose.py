@@ -23,21 +23,31 @@ class FuseBnIntoConvTranspose(Transformer):
 
 class Pattern_1(fuse_bn_into_conv.Pattern_1, abc.ABC):
     """
-        transform
-            prev --> ConvTranspose --> BatchNormalization --> next
-        to
-            prev --> ConvTranspose --> next
+    transform
+        prev --> ConvTranspose --> BatchNormalization --> next
+    to
+        prev --> ConvTranspose --> next
     """
+
     pattern_to_match = ['ConvTranspose', 'BatchNormalization']
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
 
-        input_names = [node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
-                       for node_input in top_node.input]
+        input_names = [
+            node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
+            for node_input in top_node.input
+        ]
 
-        return [self.make_node('ConvTranspose', input_names, [base_node.output[0]], top_node.name,
-                               **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})]
+        return [
+            self.make_node(
+                'ConvTranspose',
+                input_names,
+                [base_node.output[0]],
+                top_node.name,
+                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute},
+            )
+        ]
 
     @staticmethod
     def fuse_bn_params(weight, multiplier, shifter):
