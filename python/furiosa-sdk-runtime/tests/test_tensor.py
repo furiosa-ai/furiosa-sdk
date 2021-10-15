@@ -50,7 +50,7 @@ class TestTensor(unittest.TestCase):
         # Testing TensorArray.__repr__()
         inputs[0] = np.zeros(inputs[0].shape, np.uint8)
         self.assertTrue(inputs[0].__repr__()
-                        .startswith("<Tensor: shape=(1, 28, 28, 1), dtype=UINT8, numpy=[[[[0]"))
+                        .startswith("<Tensor: shape=(1, 28, 28, 1), dtype=UINT8>"))
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)
