@@ -42,15 +42,11 @@ class DataType(IntEnum):
     BFLOAT16 = 5 # Not supported yet in Numpy
 
     @classmethod
-    def _names(cls):
-        return ["float32", "uint8", "int8", "int32", "int64"]
-
-    @classmethod
     def _numpy_dtypes(cls):
         return [np.float32, np.uint8, np.int8, np.int32, np.int64]
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return self._name_
 
     @property
     def numpy_dtype(self):
@@ -179,10 +175,7 @@ class Tensor:
         return arr.copy()
 
     def __repr__(self):
-        return '<' + self.__class__.__name__ + \
-               ': shape=' + str(self.desc.shape) + \
-               ', dtype=' + str(self.desc.dtype) + \
-               ', numpy=' + str(self.numpy()) + '>'
+        return f"<{self.__class__.__name__}: shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()}>"
 
     def __del__(self):
         if self.allocated and self.ref:

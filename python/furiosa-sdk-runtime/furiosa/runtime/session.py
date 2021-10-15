@@ -12,20 +12,20 @@ from . import envs
 from ._api import LIBNUX
 from ._api.v1 import decref, increase_ref_count
 from .compiler import compile_model
-from .errors import UnsupportedTensorType, into_exception, is_err, is_ok
+from .errors import UnsupportedTensorType, into_exception, is_err, is_ok, InvalidInput
 from .model import Model, TensorArray
 from .tensor import TensorDesc, Tensor
 
 
 def _fill_tensor(value: Union[np.ndarray, np.generic], target: Tensor):
-    if value.shape != target.shape and value.dtype != target.numpy_dtype:
-        raise InvalidInputException(f"{value.shape} ({value.dtype} is expected, "
+    if value.shape != target.shape or value.dtype != target.numpy_dtype:
+        raise InvalidInput(f"{value.shape} ({value.dtype} is expected, "
                                     f"but {target.shape} (${target.numpy_dtype}")
 
     target.copy_from(value)
 
 
-def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray],
+def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Union[np.ndarray, np.generic]]],
                       targets: TensorArray) -> TensorArray:
     """
     Fills `targets` with buffers copied from `values`
@@ -36,8 +36,8 @@ def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray],
 
     if isinstance(values, list):
         if len(values) != targets.len:
-            raise InvalidInputException(f"{targets.len} tensors are expected, "
-                                        f"but {len(values)} tensors are given")
+            raise InvalidInput(f"{targets.len} tensors are expected, "
+                               f"but {len(values)} tensors are given")
 
         for value, target in zip(values, targets):
             _fill_tensor(value, target)
@@ -94,7 +94,8 @@ class Session(Model):
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_session_get_model(self)
 
-    def run(self, inputs) -> TensorArray:
+    def run(self, inputs: Union[np.ndarray, np.generic, TensorArray,
+                                List[Union[np.ndarray, np.generic]]]) -> TensorArray:
         """
         Runs an inference task with `inputs`
 

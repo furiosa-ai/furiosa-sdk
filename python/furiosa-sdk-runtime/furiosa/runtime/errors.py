@@ -201,9 +201,8 @@ class DeviceBusy(NativeException):
 
 
 class InvalidInput(FuriosaError):
-    """when api client fails to initialize due to api keys or others"""
-
-    def __init__(self, message: str = "input tensors are invalid"):
+    """when input tensors are invalid with any reason"""
+    def __init__(self, message: str = "Invalid input tensors"):
         super().__init__(message)
 
 
