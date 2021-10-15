@@ -50,7 +50,7 @@ class DataType(IntEnum):
         return [np.float32, np.uint8, np.int8, np.int32, np.int64]
 
     def __repr__(self) -> str:
-        return self._names()[self]
+        return self.__str__()
 
     @property
     def numpy_dtype(self):
@@ -117,12 +117,8 @@ class TensorDesc:
         return self.dtype.numpy_dtype
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + \
-               ': shape=' + str(self.shape) + \
-               ', dtype=' + self.dtype.__repr__() + \
-               ', format=' + self.format + \
-               ', size=' + str(self.size) + \
-               ', len=' + str(self.length)
+        return f"{self.__class__.__name__}: shape={self.shape}, dtype={self.dtype.__repr__()}, " \
+               f"format={self.format}, size={self.size}, len={self.length}"
 
 
 class Tensor:

@@ -34,7 +34,7 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(np.uint8, numpy_dtype(tensor))
         self.assertEqual(784, tensor.length)
         self.assertEqual(tensor.__repr__(),
-                         "TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784")
+                         "TensorDesc: shape=(1, 28, 28, 1), dtype=DataType.UINT8, format=NHWC, size=784, len=784")
 
     def test_tensor(self):
         sess = self.sess

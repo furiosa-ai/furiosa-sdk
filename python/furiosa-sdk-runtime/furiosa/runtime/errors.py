@@ -90,9 +90,9 @@ class NativeException(FuriosaError):
 
     def __repr__(self):
         if self.native_err is None:
-            return '{}'.format(self.message)
+            return self.message
 
-        return '{} (native error code: {})'.format(self.message, self.native_err)
+        return f'{self.message} (native error code: {self.native_err})'
 
     def __str__(self):
         return self.__repr__()

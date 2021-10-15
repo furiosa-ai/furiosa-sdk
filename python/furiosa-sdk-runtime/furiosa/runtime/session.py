@@ -31,7 +31,7 @@ def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray],
     Fills `targets` with buffers copied from `values`
     """
     if isinstance(values, (np.ndarray, np.generic)):
-        _fill_tensor(values[0], targets[0])
+        _fill_tensor(values, targets[0])
         return targets
 
     if isinstance(values, list):

@@ -26,9 +26,9 @@ class TestSession(unittest.TestCase):
         sess = self.tester.session
 
         self.assertEqual("""Inputs:
-{0: TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784}
+{0: TensorDesc: shape=(1, 28, 28, 1), dtype=DataType.UINT8, format=NHWC, size=784, len=784}
 Outputs:
-{0: TensorDesc: shape=(1, 1, 1, 10), dtype=uint8, format=NHWC, size=10, len=10}""", sess.summary())
+{0: TensorDesc: shape=(1, 1, 1, 10), dtype=DataType.UINT8, format=NHWC, size=10, len=10}""", sess.summary())
 
         idx = random.randrange(0, 9999, 1)
         ndarray_value = self.x_test[idx:idx + 1]
