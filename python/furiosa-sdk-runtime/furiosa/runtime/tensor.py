@@ -3,13 +3,13 @@
 import ctypes
 from ctypes import c_void_p, POINTER, c_uint64, c_uint8, byref
 from enum import IntEnum
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 
+from ._api import LIBNUX
 from ._util import list_to_dict
 from .errors import UnsupportedTensorType
-from ._api import LIBNUX
 
 
 class Axis(IntEnum):
@@ -63,6 +63,15 @@ class TensorDesc:
         self.ref = ref
         self._as_parameter_ = ref
 
+    def name(self) -> Optional[str]:
+        name_ptr = LIBNUX.nux_tensor_name(self)
+        if name_ptr:
+            name = ctypes.c_char_p(name_ptr).value.decode("utf-8")
+            LIBNUX.nux_string_destroy(name_ptr)
+            return name
+        else:
+            return None
+
     def ndim(self) -> int:
         """Number of dimensions"""
         return LIBNUX.nux_tensor_dim_num(self)
@@ -108,12 +117,17 @@ class TensorDesc:
         return self.dtype().numpy_dtype()
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + \
-               ': shape=' + str(self.shape()) + \
-               ', dtype=' + self.dtype().__repr__() + \
-               ', format=' + self.format() + \
-               ', size=' + str(self.size()) + \
-               ', len=' + str(self.length())
+        repr = self.__class__.__name__ + ": "
+        if self.name():
+            repr += "name=\"" + self.name() + "\", "
+
+        repr += 'shape=' + str(self.shape()) + \
+                ', dtype=' + self.dtype().__repr__() + \
+                ', format=' + self.format() + \
+                ', size=' + str(self.size()) + \
+                ', len=' + str(self.length())
+
+        return repr
 
 
 class Tensor:
@@ -174,10 +188,16 @@ class Tensor:
         return arr.copy()
 
     def __repr__(self):
-        return '<' + self.__class__.__name__ + \
-               ': shape=' + str(self.desc.shape()) + \
-               ', dtype=' + str(self.desc.dtype()) + \
-               ', numpy=' + str(self.numpy()) + '>'
+        repr = '<' + self.__class__.__name__ + ": "
+
+        if self.desc.name():
+            repr += "name=\"" + self.name() + "\", "
+
+        repr += 'shape=' + str(self.desc.shape()) + \
+                ', dtype=' + str(self.desc.dtype()) + \
+                ', numpy=' + str(self.numpy()) + '>'
+
+        return repr
 
     def __del__(self):
         if self.allocated and self.ref:

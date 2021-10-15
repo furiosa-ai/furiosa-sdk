@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 from furiosa.runtime import session, errors
-from tests.test_base import MNIST_MOBINENET_V2, SessionTester, ensure_test_device
+from tests.test_base import MNIST_MOBINENET_V2, SessionTester, ensure_test_device, NAMED_TENSORS_ONNX
 
 NPU_DEVICE_READY = ensure_test_device()
 
@@ -46,12 +46,23 @@ class TestDeviceBusy(unittest.TestCase):
             pass
 
 
-class TestSessionOptions:
+class TestSessionOptions(unittest.TestCase):
     def test_create(self):
         with session.create(MNIST_MOBINENET_V2,
                               worker_num=1,
                               compile_config = {"split_after_lower": True}) as sess:
             pass
+
+
+class TestSessionWithNames(unittest.TestCase):
+    def test_run_with(self):
+        with session.create(NAMED_TENSORS_ONNX) as sess:
+            inputs = sess.inputs()
+            sess.run_with(["18_dequantized", "19_dequantized", "15_dequantized"], {
+                "input.1": np.zeros(inputs[0].shape(), dtype=np.single),
+                "input.3": np.zeros(inputs[1].shape(), dtype=np.single),
+                "input": np.zeros(inputs[2].shape(), dtype=np.single)
+            })
 
 
 if __name__ == '__main__':

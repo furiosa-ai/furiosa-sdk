@@ -32,6 +32,8 @@ class NativeError(IntEnum):
     INVALID_SESSION_OPTIONS = 21
     SESSION_TERMINATED = 22
     DEVICE_BUSY = 23
+    TENSOR_NAME_NOT_FOUND = 24
+    UNSUPPORTED_FEATURE = 25
 
 
 def is_ok(err: typing.Union[ctypes.c_int, int]) -> bool:
@@ -188,6 +190,22 @@ class DeviceBusy(NuxException):
                          NativeError.DEVICE_BUSY)
 
 
+class TensorNameNotFound(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Tensor name not found",
+                         NativeError.TENSOR_NAME_NOT_FOUND)
+
+
+class UnsupportedFeature(NuxException):
+    """when api client fails to initialize due to api keys or others"""
+
+    def __init__(self):
+        super().__init__("Unsupported feature",
+                         NativeError.UNSUPPORTED_FEATURE)
+
+
 _errors_to_exceptions = {
     NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
     NativeError.COMPILATION_FAILED: CompilationFailed(),
@@ -200,6 +218,8 @@ _errors_to_exceptions = {
     NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout(),
     NativeError.SESSION_TERMINATED: SessionTerminated(),
     NativeError.DEVICE_BUSY: DeviceBusy(),
+    NativeError.TENSOR_NAME_NOT_FOUND: TensorNameNotFound(),
+    NativeError.UNSUPPORTED_FEATURE: UnsupportedFeature(),
 }
 
 def into_exception(err: typing.Union[ctypes.c_int, int]) -> NuxException:
