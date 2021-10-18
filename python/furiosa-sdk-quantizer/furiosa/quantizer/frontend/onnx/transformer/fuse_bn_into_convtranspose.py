@@ -11,9 +11,7 @@ from furiosa.quantizer.frontend.onnx.transformer import fuse_bn_into_conv
 
 class FuseBnIntoConvTranspose(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
-        for transformer in [
-            Pattern_1,
-        ]:
+        for transformer in [Pattern_1]:
             model = transformer(model).transform()
 
         return model
