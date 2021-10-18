@@ -7,7 +7,6 @@ import numpy as np
 from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import fuse_bn_into_conv
 
-logging.basicConfig(level=logging.INFO)
 
 
 class FuseBnIntoConvTranspose(Transformer):
