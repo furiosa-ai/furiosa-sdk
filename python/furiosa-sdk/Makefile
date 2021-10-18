@@ -11,7 +11,9 @@ uninstall:
 	pip uninstall -y --quiet furiosa-sdk-runtime; \
 	pip uninstall -y --quiet furiosa-sdk-quantizer; \
 	pip uninstall -y --quiet furiosa-sdk-model-validator; \
-	pip uninstall -y --quiet furiosa-sdk-cli; \
+	pip uninstall -y --quiet furiosa-tools; \
+	pip uninstall -y --quiet furiosa-server; \
+	pip uninstall -y --quiet furiosa-registry; \
 	pip uninstall -y --quiet furiosa-sdk
 
 install_full:
