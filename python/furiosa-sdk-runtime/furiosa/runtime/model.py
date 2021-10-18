@@ -18,37 +18,43 @@ class Model(ABC):
         :return: a raw pointer of a Model
         """
 
+    @property
     def input_num(self) -> int:
         """Number of input tensors of Model"""
         return LIBNUX.nux_input_num(self._get_model_ref())
 
+    @property
     def output_num(self) -> int:
         """Number of output tensors of Model"""
         return LIBNUX.nux_output_num(self._get_model_ref())
 
+    def _input(self, idx) -> TensorDesc:
+        return TensorDesc(LIBNUX.nux_input_desc(self._get_model_ref(), idx))
+
     def input(self, idx) -> TensorDesc:
         """Return tensor description of i-th input tensor of Model"""
-        return TensorDesc(LIBNUX.nux_input_desc(self._get_model_ref(), idx))
+        if idx < 0 or self.input_num <= idx:
+            raise IndexError('list index out of input tensors')
+
+        return self._input(idx)
 
     def inputs(self) -> [TensorDesc]:
         """Tensor descriptions of all input tensors of Model"""
-        inputs = []
-        for idx in range(self.input_num()):
-            inputs.append(self.input(idx))
+        return [self._input(idx) for idx in range(self.input_num)]
 
-        return inputs
+    def _output(self, idx) -> TensorDesc:
+        return TensorDesc(LIBNUX.nux_output_desc(self._get_model_ref(), idx))
 
     def output(self, idx) -> TensorDesc:
         """Returns tensor description of i-th output tensor of Model"""
-        return TensorDesc(LIBNUX.nux_output_desc(self._get_model_ref(), idx))
+        if idx < 0 or self.output_num <= idx:
+            raise IndexError('list index out of output tensors')
+
+        return self._output()
 
     def outputs(self) -> [TensorDesc]:
         """Tensor descriptions of all output tensors of Model"""
-        outputs = []
-        for idx in range(self.output_num()):
-            outputs.append(self.output(idx))
-
-        return outputs
+        return [self._output(idx) for idx in range(self.output_num)]
 
     def allocate_inputs(self) -> TensorArray:
         """Creates an array of input tensors with allocated buffers"""

@@ -2,7 +2,7 @@
 import ctypes
 import sys
 import typing
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import Optional
 
 
@@ -58,19 +58,31 @@ def is_err(err: typing.Union[ctypes.c_int, int]) -> bool:
     return err != NativeError.SUCCESS
 
 
-class NuxException(Exception):
-    """general exception caused by Nuxpy"""
-    native_err: Optional[NativeError]
-    msg: str
+class FuriosaError(Exception):
+    """general exception caused by Furiosa Runtime"""
 
-    def __init__(self, msg: str, native_err: NativeError = None):
-        self.native_err = native_err
-        self.msg = msg
-        super().__init__(self)
+    def __init__(self, message: str):
+        self._message = message
 
+    @property
     def message(self) -> str:
         """Error message"""
-        return self.msg
+        return self.message
+
+    def __repr__(self):
+        return '{}'.format(self.message)
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class NativeException(FuriosaError):
+    """general exception caused by Nuxpy"""
+    native_err: Optional[NativeError]
+
+    def __init__(self, message: str, native_err: NativeError = None):
+        self.native_err = native_err
+        super().__init__(message)
 
     def native_error(self) -> Optional[NativeError]:
         """Return a native error if this exception comes from C native extension"""
@@ -78,23 +90,23 @@ class NuxException(Exception):
 
     def __repr__(self):
         if self.native_err is None:
-            return '{}'.format(self.msg)
+            return self.message
 
-        return '{} (native error code: {})'.format(self.msg, self.native_err)
+        return f'{self.message} (native error code: {self.native_err})'
 
     def __str__(self):
         return self.__repr__()
 
 
-class IncompatibleModel(NuxException):
+class IncompatibleModel(NativeException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("Model binary is not compatible",
+        super().__init__("model binary is not compatible",
                          NativeError.INCOMPATIBLE_MODEL)
 
 
-class CompilationFailed(NuxException):
+class CompilationFailed(NativeException):
     """when Nux fails to compile a given model image to NPU model binary"""
 
     def __init__(self):
@@ -102,14 +114,14 @@ class CompilationFailed(NuxException):
                          NativeError.COMPILATION_FAILED)
 
 
-class InternalError(NuxException):
+class InternalError(NativeException):
     """internal error or no corresponding error in Python binding"""
 
     def __init__(self, cause='unknown'):
         super().__init__("{}".format(cause), NativeError.INTERNAL_ERROR)
 
 
-class UnsupportedTensorType(NuxException):
+class UnsupportedTensorType(NativeException):
     """Unsupported tensor type"""
 
     def __init__(self):
@@ -117,14 +129,14 @@ class UnsupportedTensorType(NuxException):
                          NativeError.INVALID_INPUTS)
 
 
-class UnsupportedDataType(NuxException):
+class UnsupportedDataType(NativeException):
     """Unsupported tensor data type"""
 
     def __init__(self, dtype):
-        super().__init__(msg="unknown data type: {}".format(dtype))
+        super().__init__("unknown data type: {}".format(dtype))
 
 
-class IncompatibleApiClientError(NuxException):
+class IncompatibleApiClientError(NativeException):
     """When both API client and server are incompatible"""
 
     def __init__(self):
@@ -132,15 +144,15 @@ class IncompatibleApiClientError(NuxException):
                          NativeError.INCOMPATIBLE_API_CLIENT_ERROR)
 
 
-class InvalidYamlException(NuxException):
+class InvalidYamlException(NativeException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("Compiler config is not valid YAML",
+        super().__init__("compiler config is not valid YAML",
                          NativeError.INVALID_YAML)
 
 
-class ApiClientInitFailed(NuxException):
+class ApiClientInitFailed(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
@@ -148,31 +160,31 @@ class ApiClientInitFailed(NuxException):
                          NativeError.API_CLIENT_INIT_FAILED)
 
 
-class NoApiKeyException(NuxException):
+class NoApiKeyException(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("No API keys. Please check your API keys.",
+        super().__init__("no API keys. Please check your API keys.",
                          NativeError.NO_API_KEY)
 
 
-class InvalidSessionOption(NuxException):
+class InvalidSessionOption(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Invalid options passed to session.create() or create_async()",
+        super().__init__("invalid options passed to session.create() or create_async()",
                          NativeError.INVALID_SESSION_OPTIONS)
 
 
-class QueueWaitTimeout(NuxException):
+class QueueWaitTimeout(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Queue waiting timed out",
+        super().__init__("queue waiting timed out",
                          NativeError.QUEUE_WAIT_TIMEOUT)
 
 
-class SessionTerminated(NuxException):
+class SessionTerminated(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
@@ -180,12 +192,18 @@ class SessionTerminated(NuxException):
                          NativeError.SESSION_TERMINATED)
 
 
-class DeviceBusy(NuxException):
+class DeviceBusy(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
         super().__init__("NPU device busy",
                          NativeError.DEVICE_BUSY)
+
+
+class InvalidInput(FuriosaError):
+    """when input tensors are invalid with any reason"""
+    def __init__(self, message: str = "Invalid input tensors"):
+        super().__init__(message)
 
 
 _errors_to_exceptions = {
@@ -202,7 +220,7 @@ _errors_to_exceptions = {
     NativeError.DEVICE_BUSY: DeviceBusy(),
 }
 
-def into_exception(err: typing.Union[ctypes.c_int, int]) -> NuxException:
+def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
     """
     Convert nux_error_t type in Nux C API to NuxException
 
@@ -226,3 +244,4 @@ def into_exception(err: typing.Union[ctypes.c_int, int]) -> NuxException:
         return _errors_to_exceptions[err]
 
     return InternalError()
+
