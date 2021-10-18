@@ -38,18 +38,17 @@ class DataType(IntEnum):
     UINT8 = 1
     INT8 = 2
     INT32 = 3
-
-    @classmethod
-    def _names(cls):
-        return ["float32", "uint8", "int8", "int32"]
+    INT64 = 4
+    BFLOAT16 = 5 # Not supported yet in Numpy
 
     @classmethod
     def _numpy_dtypes(cls):
-        return [np.float32, np.uint8, np.int8, np.int32]
+        return [np.float32, np.uint8, np.int8, np.int32, np.int64]
 
     def __repr__(self) -> str:
-        return self._names()[self]
+        return self._name_
 
+    @property
     def numpy_dtype(self):
         """Return the numpy dtype corresponding to this DataType"""
         return self._numpy_dtypes()[self]
@@ -57,12 +56,12 @@ class DataType(IntEnum):
 
 class TensorDesc:
     """Tensor description including dimension, shape, and data type"""
-    ref = c_void_p(None)
 
-    def __init__(self, ref):
+    def __init__(self, ref: c_void_p):
         self.ref = ref
         self._as_parameter_ = ref
 
+    @property
     def name(self) -> Optional[str]:
         name_ptr = LIBNUX.nux_tensor_name(self)
         if name_ptr:
@@ -72,76 +71,78 @@ class TensorDesc:
         else:
             return None
 
+    @property
     def ndim(self) -> int:
         """Number of dimensions"""
         return LIBNUX.nux_tensor_dim_num(self)
 
-    def dim(self, idx) -> int:
+    def dim(self, idx: int) -> int:
         """Size of i-th dimension"""
         return LIBNUX.nux_tensor_dim(self, idx)
 
+    @property
     def shape(self) -> tuple:
         """tensor shape"""
         dims = []
-        for i in range(self.ndim()):
+        for i in range(self.ndim):
             dims.append(self.dim(i))
 
         return tuple(dims)
 
-    def axis(self, idx) -> Axis:
+    def axis(self, idx: int) -> Axis:
         """Axis type of i-th dimension (e.g., width, height, channel)"""
         return Axis(LIBNUX.nux_tensor_axis(self, idx))
 
+    @property
     def size(self) -> int:
         """Size in bytes"""
         return LIBNUX.nux_tensor_size(self)
 
+    @property
     def length(self) -> int:
         """Number of all elements across all dimensions"""
         return LIBNUX.nux_tensor_len(self)
 
+    @property
     def format(self) -> str:
         """Tensor memory layout (e.g., NHWC, NCHW)"""
         tensor_format = str()
-        for idx in range(self.ndim()):
+        for idx in range(self.ndim):
             tensor_format += self.axis(idx).__repr__()
 
         return tensor_format
 
+    @property
     def dtype(self) -> DataType:
         """Data type of tensor"""
         return DataType(LIBNUX.nux_tensor_dtype(self))
 
+    @property
     def numpy_dtype(self):
         """Return numpy dtype"""
-        return self.dtype().numpy_dtype()
+        return self.dtype.numpy_dtype
 
     def __repr__(self) -> str:
         repr = self.__class__.__name__ + ": "
-        if self.name():
-            repr += "name=\"" + self.name() + "\", "
+        if self.name:
+            repr += f"name=\"{self.name}\", "
 
-        repr += 'shape=' + str(self.shape()) + \
-                ', dtype=' + self.dtype().__repr__() + \
-                ', format=' + self.format() + \
-                ', size=' + str(self.size()) + \
-                ', len=' + str(self.length())
+        repr += f"shape={self.shape}, dtype={self.dtype.__repr__()}, " \
+               f"format={self.format}, size={self.size}, len={self.length}"
 
         return repr
 
 
 class Tensor:
     """A tensor which contains data and tensor description including shape"""
-    ref = c_void_p(None)
-    allocated: bool = False
-    desc = TensorDesc
 
-    def __init__(self, ref, desc: TensorDesc, allocated=False):
+    def __init__(self, ref: c_void_p, desc: TensorDesc, allocated: bool = False):
         self.ref = ref
         self.desc = desc
         self.allocated = allocated
         self._as_parameter_ = ref
 
+    @property
     def shape(self) -> tuple:
         """Return the tensor shape
 
@@ -149,15 +150,17 @@ class Tensor:
             Tensor shape. An example shape is
             ```(1, 28, 28, 1)```.
         """
-        return self.desc.shape()
+        return self.desc.shape
 
+    @property
     def dtype(self) -> DataType:
         """Data type of tensor"""
-        return self.desc.dtype()
+        return self.desc.dtype
 
+    @property
     def numpy_dtype(self):
         """Return numpy dtype"""
-        return self.desc.numpy_dtype()
+        return self.desc.numpy_dtype
 
     def copy_from(self, data: Union[np.ndarray, np.generic]):
         """Copy the contents of Numpy ndarray to this tensor"""
@@ -172,8 +175,8 @@ class Tensor:
 
     def numpy(self) -> np.ndarray:
         """Return numpy.ndarray converted from this tensor"""
-        itemsize = np.dtype(self.numpy_dtype()).itemsize
-        arr_size = np.prod(self.shape()[:]) * itemsize
+        itemsize = np.dtype(self.numpy_dtype).itemsize
+        arr_size = np.prod(self.shape[:]) * itemsize
 
         buf_ptr = POINTER(c_uint8)()
         buf_len = c_uint64(0)
@@ -184,18 +187,16 @@ class Tensor:
         buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
         buffer = buf_from_mem(buf_ptr, arr_size, 0x100)
 
-        arr = np.ndarray(tuple(self.shape()[:]), self.numpy_dtype(), buffer, order="C")
+        arr = np.ndarray(tuple(self.shape[:]), self.numpy_dtype, buffer, order="C")
         return arr.copy()
 
     def __repr__(self):
         repr = '<' + self.__class__.__name__ + ": "
 
-        if self.desc.name():
-            repr += "name=\"" + self.name() + "\", "
+        if self.desc.name:
+            repr += "name=\"" + self.name + "\", "
 
-        repr += 'shape=' + str(self.desc.shape()) + \
-                ', dtype=' + str(self.desc.dtype()) + \
-                ', numpy=' + str(self.numpy()) + '>'
+        repr += f"shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()}>"
 
         return repr
 
@@ -216,12 +217,8 @@ class TensorArray:
 
     It is used for input and output values of model inferences.
     """
-    ref = c_void_p(None)
-    should_drop: bool = False
-    descs: [TensorDesc]
-    len: int
 
-    def __init__(self, ref, descs: [TensorDesc], allocated=False):
+    def __init__(self, ref: c_void_p, descs: [TensorDesc], allocated: bool = False):
         self.ref = ref
         self.descs = descs
         self.should_drop = allocated
@@ -287,12 +284,12 @@ class TensorArray:
 def numpy_dtype(value):
     """Return numpy dtype from any eligible object of Nux"""
     if isinstance(value, (np.ndarray, np.generic)):
-        return value.dtype()
+        return value.dtype
     if isinstance(value, Tensor):
-        return value.numpy_dtype()
+        return value.numpy_dtype
     if isinstance(value, TensorDesc):
-        return value.numpy_dtype()
+        return value.numpy_dtype
     if isinstance(value, DataType):
-        return value.numpy_dtype()
+        return value.numpy_dtype
 
     raise TypeError

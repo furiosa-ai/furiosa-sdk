@@ -4,7 +4,7 @@ import ctypes
 import typing
 from ctypes import byref, c_int, c_void_p
 from pathlib import Path
-from typing import Dict, Union, Optional
+from typing import Dict, Union, Optional, List
 
 import numpy as np
 import yaml
@@ -14,23 +14,36 @@ from ._api import LIBNUX
 from ._api.v1 import decref, increase_ref_count, runtime_version, _convert_to_cchar_array
 from ._util import dump_info
 from .compiler import _model_image, generate_compiler_log_path
-from .errors import UnsupportedTensorType, into_exception, is_err, is_ok
+from .errors import InvalidInput, UnsupportedTensorType, into_exception, is_err, is_ok
 from .model import Model, TensorArray
-from .tensor import TensorDesc
+from .tensor import TensorDesc, Tensor
 
 
-def _fill_tensors(values: Union[np.ndarray, np.generic, TensorArray],
-                  targets: TensorArray) -> TensorArray:
+def _fill_tensor(value: Union[np.ndarray, np.generic], target: Tensor):
+    if value.shape != target.shape or value.dtype != target.numpy_dtype:
+        raise InvalidInput(f"{value.shape} ({value.dtype} is expected, "
+                                    f"but {target.shape} (${target.numpy_dtype}")
+
+    target.copy_from(value)
+
+
+def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Union[np.ndarray, np.generic]]],
+                      targets: TensorArray) -> TensorArray:
     """
     Fills `targets` with buffers copied from `values`
     """
     if isinstance(values, (np.ndarray, np.generic)):
-        targets[0].copy_from(values)
+        _fill_tensor(values, targets[0])
         return targets
 
     if isinstance(values, list):
-        for idx, value in enumerate(values):
-            targets[idx].copy_from(value)
+        if len(values) != targets.len:
+            raise InvalidInput(f"{targets.len} tensors are expected, "
+                               f"but {len(values)} tensors are given")
+
+        for value, target in zip(values, targets):
+            _fill_tensor(value, target)
+
         return targets
 
     if isinstance(values, TensorArray):
@@ -64,7 +77,6 @@ def _create_session_options(device: str = None, worker_num: int = None,
 
 class Session(Model):
     """Provides a blocking API to run an inference task with a given model"""
-    ref = c_void_p(None)
 
     def __init__(self, model: Union[bytes, str, Path], device:str = None, worker_num: int = None,
                  compile_config: Dict[str, object] = None):
@@ -90,7 +102,8 @@ class Session(Model):
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_session_get_model(self)
 
-    def run(self, inputs) -> TensorArray:
+    def run(self, inputs: Union[np.ndarray, np.generic, TensorArray,
+                                List[Union[np.ndarray, np.generic]]]) -> TensorArray:
         """
         Runs an inference task with `inputs`
 
@@ -104,7 +117,7 @@ class Session(Model):
         """
         _inputs = self.allocate_inputs()
         outputs = self.create_outputs()
-        _inputs = _fill_tensors(inputs, _inputs)
+        _inputs = _fill_all_tensors(inputs, _inputs)
 
         err = LIBNUX.nux_session_run(self.ref, _inputs, outputs)
 
@@ -128,7 +141,7 @@ class Session(Model):
         input_names = [name for name in inputs.keys()]
         input_tensors = self.allocate_tensors(input_names)
         output_tensors = self.create_tensors(outputs)
-        input_tensors = _fill_tensors([value for value in inputs.values()], input_tensors)
+        input_tensors = _fill_all_tensors([value for value in inputs.values()], input_tensors)
 
         input_names_ptr = _convert_to_cchar_array(input_names)
         output_names_ptr = _convert_to_cchar_array(outputs)
@@ -160,9 +173,6 @@ class Session(Model):
 
 class CompletionQueue:
     """Receives the completion results asynchronously from AsyncSession"""
-    ref = c_void_p(None)
-    context_ty: type
-    output_descs: [TensorDesc]
 
     def __init__(self, ref: c_void_p, context_ty: type, output_descs: [TensorDesc]):
         self._as_parameter_ = ref
@@ -248,8 +258,6 @@ class CompletionQueue:
 
 class AsyncSession(Model):
     """An asynchronous session for a given model allows to submit predictions"""
-    ref = c_void_p(None)
-    inputs: TensorArray
 
     def __init__(self, ref: c_void_p):
         self.ref = ref
@@ -273,7 +281,7 @@ class AsyncSession(Model):
             values: Input values
             context: an additional context to identify the prediction request
         """
-        _fill_tensors(values, self.inputs)
+        _fill_all_tensors(values, self.inputs)
         # manually increase reference count to keep the context object while running
         increase_ref_count(context)
         err = LIBNUX.nux_async_session_run(self.ref, context, self.inputs)

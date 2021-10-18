@@ -26,9 +26,9 @@ class TestSession(unittest.TestCase):
         sess = self.tester.session
 
         self.assertEqual("""Inputs:
-{0: TensorDesc: shape=(1, 28, 28, 1), dtype=uint8, format=NHWC, size=784, len=784}
+{0: TensorDesc: shape=(1, 28, 28, 1), dtype=UINT8, format=NHWC, size=784, len=784}
 Outputs:
-{0: TensorDesc: shape=(1, 1, 1, 10), dtype=uint8, format=NHWC, size=10, len=10}""", sess.summary())
+{0: TensorDesc: shape=(1, 1, 1, 10), dtype=UINT8, format=NHWC, size=10, len=10}""", sess.summary())
 
         idx = random.randrange(0, 9999, 1)
         ndarray_value = self.x_test[idx:idx + 1]
@@ -36,6 +36,17 @@ Outputs:
         result1 = sess.run(ndarray_value)
         result2 = sess.run([ndarray_value])
         np.array_equal(result1.numpy(), result2.numpy())
+
+    def test_run_invalid_input(self):
+        sess = self.tester.session
+        self.assertRaises(errors.InvalidInput, lambda: sess.run(np.zeros((1, 28, 28,1), dtype=np.float16)));
+        self.assertRaises(errors.InvalidInput, lambda: sess.run(np.zeros((2, 28, 28, 2),
+                                                                         dtype=sess.input(0).dtype.numpy_dtype)));
+        self.assertTrue(sess.run([np.zeros((1, 28, 28, 1), np.uint8)]));
+        self.assertRaises(errors.InvalidInput, lambda: sess.run([
+            np.zeros((1, 28, 28, 1), np.uint8),
+            np.zeros((1, 28, 28, 1), np.uint8)
+        ]));
 
 
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
@@ -59,9 +70,9 @@ class TestSessionWithNames(unittest.TestCase):
         with session.create(NAMED_TENSORS_ONNX) as sess:
             inputs = sess.inputs()
             sess.run_with(["18_dequantized", "19_dequantized", "15_dequantized"], {
-                "input.1": np.zeros(inputs[0].shape(), dtype=np.single),
-                "input.3": np.zeros(inputs[1].shape(), dtype=np.single),
-                "input": np.zeros(inputs[2].shape(), dtype=np.single)
+                "input.1": np.zeros(inputs[0].shape, dtype=np.single),
+                "input.3": np.zeros(inputs[1].shape, dtype=np.single),
+                "input": np.zeros(inputs[2].shape, dtype=np.single)
             })
 
 
