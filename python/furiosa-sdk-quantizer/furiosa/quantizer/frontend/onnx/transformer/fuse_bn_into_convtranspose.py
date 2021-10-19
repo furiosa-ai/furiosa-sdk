@@ -1,4 +1,3 @@
-import abc
 import logging
 
 import onnx
@@ -6,7 +5,6 @@ import numpy as np
 
 from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import fuse_bn_into_conv
-
 
 
 class FuseBnIntoConvTranspose(Transformer):
@@ -17,7 +15,7 @@ class FuseBnIntoConvTranspose(Transformer):
         return model
 
 
-class Pattern_1(fuse_bn_into_conv.Pattern_1, abc.ABC):
+class Pattern_1(fuse_bn_into_conv.Pattern_1):
     """
     transform
         prev --> ConvTranspose --> BatchNormalization --> next
