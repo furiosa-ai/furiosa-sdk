@@ -1,7 +1,4 @@
-import logging
-
 import onnx
-import numpy as np
 
 from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import fuse_bn_into_conv
