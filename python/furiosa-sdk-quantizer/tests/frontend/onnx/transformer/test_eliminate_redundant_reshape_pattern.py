@@ -284,7 +284,6 @@ class TestFuseRedundantReshapePattern(TestTransformer, ABC):
         self.check_value_info(trans_model)
 
     def test_case9(self):
-        print('yes')
         input_shapes = [(1, 4, 8, 8)]
 
         op_types = ['Conv', 'Conv']
