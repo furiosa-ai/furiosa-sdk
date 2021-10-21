@@ -11,7 +11,7 @@ import yaml
 
 from . import envs
 from ._api import LIBNUX
-from ._api.v1 import decref, increase_ref_count, runtime_version, _convert_to_cchar_array
+from ._api.v1 import decref, increase_ref_count, runtime_version, convert_to_cchar_array
 from ._util import dump_info
 from .compiler import _model_image, generate_compiler_log_path
 from .errors import InvalidInput, UnsupportedTensorType, into_exception, is_err, is_ok
@@ -52,24 +52,26 @@ def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Un
     raise UnsupportedTensorType()
 
 
-def _create_session_options(device: str = None, worker_num: int = None,
-                            compile_config: Dict[str, object] = None,
-                            compiler_log: Path = None,
-                            input_queue_size: int = None, output_queue_size: int = None):
+def _create_session_options(device: Optional[str] = None,
+                            worker_num: Optional[int] = None,
+                            compile_config: Optional[Dict[str, object]] = None,
+                            compiler_log: Optional[Path] = None,
+                            input_queue_size: Optional[int] = None,
+                            output_queue_size: Optional[int] = None):
     options: c_void_p = LIBNUX.nux_session_option_create()
-    if device is not None:
+    if device:
         LIBNUX.nux_session_option_set_device(options, device.encode())
-    if worker_num is not None:
+    if worker_num:
         LIBNUX.nux_session_option_set_worker_num(options, worker_num)
-    if compile_config is not None:
+    if compile_config:
         compile_config = yaml.dump(compile_config).encode()
         LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
-    if compiler_log is not None:
+    if compiler_log:
         compiler_log = str(compiler_log).encode()
         LIBNUX.nux_session_option_set_compiler_log_path(options, compiler_log)
-    if input_queue_size is not None:
+    if input_queue_size:
         LIBNUX.nux_session_option_set_input_queue_size(options, input_queue_size)
-    if output_queue_size is not None:
+    if output_queue_size:
         LIBNUX.nux_session_option_set_output_queue_size(options, output_queue_size)
 
     return options
@@ -143,8 +145,8 @@ class Session(Model):
         output_tensors = self.create_tensors(outputs)
         input_tensors = _fill_all_tensors([value for value in inputs.values()], input_tensors)
 
-        input_names_ptr = _convert_to_cchar_array(input_names)
-        output_names_ptr = _convert_to_cchar_array(outputs)
+        input_names_ptr = convert_to_cchar_array(input_names)
+        output_names_ptr = convert_to_cchar_array(outputs)
 
         err = LIBNUX.nux_session_run_with(self.ref, input_names_ptr, len(input_names),
                                           output_names_ptr, len(outputs),

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from ctypes import c_void_p
 from typing import List
 
-from ._api import LIBNUX, _convert_to_cchar_array
+from ._api import LIBNUX, convert_to_cchar_array
 from .tensor import TensorDesc, TensorArray
 from ._util import list_to_dict
 
@@ -58,14 +58,14 @@ class Model(ABC):
         return [self._output(idx) for idx in range(self.output_num)]
 
     def allocate_tensors(self, names: List[str]) -> TensorArray:
-        """Creates an array of tensors with allocated buffers"""
-        ptrs = _convert_to_cchar_array(names)
+        """Creates an array of tensors corresponding to tensor names with allocated buffers"""
+        ptrs = convert_to_cchar_array(names)
         return TensorArray(LIBNUX.nux_tensor_array_allocate_by_names(self._get_model_ref(), ptrs, len(names)),
                            self.inputs(), allocated=True)
 
     def create_tensors(self, names: List[str]) -> TensorArray:
-        """Creates an array of tensors without allocated buffers"""
-        ptrs = _convert_to_cchar_array(names)
+        """Creates an array of tensors corresponding to tensor names without allocated buffers"""
+        ptrs = convert_to_cchar_array(names)
         return TensorArray(LIBNUX.nux_tensor_array_create_by_names(self._get_model_ref(), ptrs, len(names)),
                            self.inputs(), allocated=True)
 

@@ -114,9 +114,18 @@ def _nux_log_level_from_env() -> int:
     return NuxLogLevel[level.upper()].value
 
 
-def _convert_to_cchar_array(list: List[str]):
-    """Convert List[str] to *const *const char of ctypes."""
+def convert_to_cchar_array(list: List[str]):
+    """
+    Convert List[str] to *const *const char of ctypes.
+
+    This function creates an array of POINTER(c_char_p) whose length is
+    len(list) + 1, and fill the array of pointers with bytes. The reason
+    why we append one more element is to add a null pointer to the end
+    of the list. Then, C, C++ side will be able to recognize where is
+    the end of the list without length.
+    """
     bytes_list = [bytes(str, 'utf-8') for str in list]
+    # create an array of ctypes. Please refer to https://docs.python.org/3/library/ctypes.html#arrays.
     ptrs_list = (ctypes.c_char_p * (len(bytes_list) + 1))()
     ptrs_list[:-1] = bytes_list
     return ptrs_list
@@ -124,7 +133,7 @@ def _convert_to_cchar_array(list: List[str]):
 
 LIBNUX = _find_native_libs()
 
-## Definition of Native C Foreign Functions
+# Definition of Native C Foreign Functions
 LIBNUX.version.argtypes = []
 LIBNUX.version.restype = c_char_p
 

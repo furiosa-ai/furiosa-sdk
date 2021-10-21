@@ -123,12 +123,12 @@ class TensorDesc:
         return self.dtype.numpy_dtype
 
     def __repr__(self) -> str:
-        repr = self.__class__.__name__ + ": "
+        repr = self.__class__.__name__ + "("
         if self.name:
             repr += f"name=\"{self.name}\", "
 
         repr += f"shape={self.shape}, dtype={self.dtype.__repr__()}, " \
-               f"format={self.format}, size={self.size}, len={self.length}"
+               f"format={self.format}, size={self.size}, len={self.length})"
 
         return repr
 
@@ -191,12 +191,12 @@ class Tensor:
         return arr.copy()
 
     def __repr__(self):
-        repr = '<' + self.__class__.__name__ + ": "
+        repr = self.__class__.__name__ + "("
 
         if self.desc.name:
             repr += "name=\"" + self.name + "\", "
 
-        repr += f"shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()}>"
+        repr += f"shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()})"
 
         return repr
 
