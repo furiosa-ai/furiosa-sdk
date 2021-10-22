@@ -1,6 +1,6 @@
 sdk_modules = [
     // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
-  'furiosa-sdk-cli',
+  'furiosa-tools',
   'furiosa-sdk-runtime',
   'furiosa-sdk-quantizer',
   'furiosa-sdk-model-validator',
@@ -192,7 +192,7 @@ pipeline {
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
     FIRMWARE_VERSION = "0.1-2+nightly-210930"
-    NUX_VERSION = "0.4.0-2+nightly-211007"
+    NUX_VERSION = "0.4.0-2+nightly-211015"
   }
 
   stages {
