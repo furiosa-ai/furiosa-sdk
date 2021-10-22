@@ -31,7 +31,7 @@ def dump_info(log_path: Optional[str] = None):
     eprint("Information Dump")
     eprint("=" * width)
     eprint("- Python version: " + sys.version.replace('\n', ' '))
-    eprint(f"- furiosa-libnux path: {find_native_lib_path()}")
+    eprint(f"- furiosa-libnux path: {find_native_lib_path('nux')}")
     eprint(f"- furiosa-libnux version: {runtime_version()}")
     eprint(f"- furiosa-compiler version: {runtime_version()}")
     eprint(f"- furiosa-sdk-runtime version: {__version__}")
