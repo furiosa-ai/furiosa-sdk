@@ -1,8 +1,9 @@
 """Model and its methods to access model metadata"""
 from abc import ABC, abstractmethod
 from ctypes import c_void_p
+from typing import List
 
-from ._api import LIBNUX
+from ._api import LIBNUX, convert_to_cchar_array
 from .tensor import TensorDesc, TensorArray
 from ._util import list_to_dict
 
@@ -50,14 +51,31 @@ class Model(ABC):
         if idx < 0 or self.output_num <= idx:
             raise IndexError('list index out of output tensors')
 
-        return self._output()
+        return self._output(idx)
 
     def outputs(self) -> [TensorDesc]:
         """Tensor descriptions of all output tensors of Model"""
         return [self._output(idx) for idx in range(self.output_num)]
 
+    def allocate_tensors(self, names: List[str]) -> TensorArray:
+        """Creates an array of tensors corresponding to tensor names with allocated buffers"""
+        ptrs = convert_to_cchar_array(names)
+        return TensorArray(LIBNUX.nux_tensor_array_allocate_by_names(self._get_model_ref(), ptrs, len(names)),
+                           self.inputs(), allocated=True)
+
+    def create_tensors(self, names: List[str]) -> TensorArray:
+        """Creates an array of tensors corresponding to tensor names without allocated buffers"""
+        ptrs = convert_to_cchar_array(names)
+        return TensorArray(LIBNUX.nux_tensor_array_create_by_names(self._get_model_ref(), ptrs, len(names)),
+                           self.inputs(), allocated=True)
+
     def allocate_inputs(self) -> TensorArray:
         """Creates an array of input tensors with allocated buffers"""
+        return TensorArray(LIBNUX.nux_tensor_array_allocate_inputs(self._get_model_ref()),
+                           self.inputs(), allocated=True)
+
+    def create_inputs(self) -> TensorArray:
+        """Creates an array of input tensors without allocated buffers"""
         return TensorArray(LIBNUX.nux_tensor_array_create_inputs(self._get_model_ref()),
                            self.inputs(), allocated=True)
 

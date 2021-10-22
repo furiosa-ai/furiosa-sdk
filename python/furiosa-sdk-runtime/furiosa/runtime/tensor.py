@@ -3,13 +3,13 @@
 import ctypes
 from ctypes import c_void_p, POINTER, c_uint64, c_uint8, byref
 from enum import IntEnum
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 
+from ._api import LIBNUX
 from ._util import list_to_dict
 from .errors import UnsupportedTensorType
-from ._api import LIBNUX
 
 
 class Axis(IntEnum):
@@ -60,6 +60,16 @@ class TensorDesc:
     def __init__(self, ref: c_void_p):
         self.ref = ref
         self._as_parameter_ = ref
+
+    @property
+    def name(self) -> Optional[str]:
+        name_ptr = LIBNUX.nux_tensor_name(self)
+        if name_ptr:
+            name = ctypes.c_char_p(name_ptr).value.decode("utf-8")
+            LIBNUX.nux_string_destroy(name_ptr)
+            return name
+        else:
+            return None
 
     @property
     def ndim(self) -> int:
@@ -113,8 +123,14 @@ class TensorDesc:
         return self.dtype.numpy_dtype
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}: shape={self.shape}, dtype={self.dtype.__repr__()}, " \
-               f"format={self.format}, size={self.size}, len={self.length}"
+        repr = self.__class__.__name__ + "("
+        if self.name:
+            repr += f"name=\"{self.name}\", "
+
+        repr += f"shape={self.shape}, dtype={self.dtype.__repr__()}, " \
+               f"format={self.format}, size={self.size}, len={self.length})"
+
+        return repr
 
 
 class Tensor:
@@ -175,7 +191,14 @@ class Tensor:
         return arr.copy()
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}: shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()}>"
+        repr = self.__class__.__name__ + "("
+
+        if self.desc.name:
+            repr += "name=\"" + self.name + "\", "
+
+        repr += f"shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()})"
+
+        return repr
 
     def __del__(self):
         if self.allocated and self.ref:

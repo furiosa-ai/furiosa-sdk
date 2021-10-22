@@ -13,11 +13,8 @@ LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(level=LOGLEVEL)
 
 
-def model_path(name: str) -> str:
-    return os.path.dirname(__file__) + "/../npu-models/" + name
-
-
 MNIST_MOBINENET_V2 = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
+NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
 
 
 def assert_tensors_equal(expected, result):
