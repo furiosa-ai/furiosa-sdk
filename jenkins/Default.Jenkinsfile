@@ -98,7 +98,7 @@ def ubuntuDistribName(full_name) {
 }
 
 def installConda() {
-  sh "wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
+  sh "wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
   sh "sh /tmp/Miniconda3.sh -b -p ${WORKSPACE}/miniconda"
 }
 

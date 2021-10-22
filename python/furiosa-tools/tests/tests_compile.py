@@ -128,7 +128,7 @@ class CommandTests(unittest.TestCase):
                                      '-ga', 'init_tactic=abc'
                                      ], capture_output=True)
             self.assertTrue(result.returncode != 0, result.stderr)
-            self.assertEqual(result.stderr.decode().strip(), "ERROR: init_tactic must be either 'random' or 'heuristic'")
+            self.assertTrue("ERROR: init_tactic must be either 'random' or 'heuristic'" in result.stderr.decode().strip())
 
             result = subprocess.run(['furiosa-compile',
                                      self.mnist_model,
@@ -136,6 +136,6 @@ class CommandTests(unittest.TestCase):
                                      '-ga', 'abc=def'
                                      ], capture_output=True)
             self.assertTrue(result.returncode != 0, result.stderr)
-            self.assertEqual(result.stderr.decode().strip(), "ERROR: unknown genetic algorithm parameter: 'abc'")
+            self.assertTrue("ERROR: unknown genetic algorithm parameter: 'abc'" in result.stderr.decode().strip())
         finally:
             shutil.rmtree(tmpdir)
