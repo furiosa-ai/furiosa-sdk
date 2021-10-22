@@ -236,6 +236,7 @@ pipeline {
           script {
             setupPythonEnv("3.7")
             buildPackages("3.7")
+            testModule("3.7", "furiosa-tools")
             testModule("3.7", "furiosa-registry")
             testModule("3.7", "furiosa-sdk-quantizer")
             testModule("3.7", "furiosa-sdk-runtime")
@@ -252,6 +253,7 @@ pipeline {
           script {
             setupPythonEnv("3.8")
             buildPackages("3.8")
+            testModule("3.8", "furiosa-tools")
             testModule("3.8", "furiosa-registry")
             testModule("3.8", "furiosa-sdk-quantizer")
             testModule("3.8", "furiosa-sdk-runtime")
@@ -268,6 +270,7 @@ pipeline {
           script {
             setupPythonEnv("3.9")
             buildPackages("3.9")
+            testModule("3.9", "furiosa-tools")
             testModule("3.9", "furiosa-registry")
             testModule("3.9", "furiosa-sdk-quantizer")
             testModule("3.9", "furiosa-sdk-runtime")
