@@ -29,9 +29,7 @@ class ModelEndpoints:
         return BooleanResponse(await self._handler.ready())
 
     async def model_ready(self, model_name: str, model_version: str = None) -> Response:
-        return BooleanResponse(
-            await self._handler.model_ready(model_name, model_version)
-        )
+        return BooleanResponse(await self._handler.model_ready(model_name, model_version))
 
     async def metadata(self) -> MetadataServerResponse:
         return await self._handler.metadata()

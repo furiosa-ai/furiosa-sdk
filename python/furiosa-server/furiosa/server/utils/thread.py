@@ -10,6 +10,7 @@ def synchronous(f: Callable) -> Callable:
     """
     Run async function in place and return the result
     """
+
     @wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
@@ -30,6 +31,7 @@ def asynchronous(f: Callable) -> Callable:
     """
     Replace sync function to async using aysncio thread pool
     """
+
     @wraps(f)
     async def wrapper(*args: Any, **kwargs: Any):
         return await _to_thread(f, *args, **kwargs)

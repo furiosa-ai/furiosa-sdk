@@ -30,7 +30,4 @@ async def test_fetch(transport, artifact_file, artifacts, server):
 
 @pytest.mark.asyncio
 async def test_download(transport, model_file, MNISTnet, server):
-    assert (
-        await transport.download(f"http://{server.host}:{server.port}/{model_file}")
-        == MNISTnet
-    )
+    assert await transport.download(f"http://{server.host}:{server.port}/{model_file}") == MNISTnet

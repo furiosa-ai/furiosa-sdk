@@ -31,9 +31,7 @@ class PredictHandler:
             extensions=self._config.extensions,
         )
 
-    async def model_metadata(
-        self, name: str, version: str = None
-    ) -> MetadataModelResponse:
+    async def model_metadata(self, name: str, version: str = None) -> MetadataModelResponse:
         model = await self._repository.get_model(name, version)
         return await model.metadata()
 

@@ -1,14 +1,12 @@
-from grpc import aio
 from concurrent.futures import ThreadPoolExecutor
+
+from grpc import aio
 
 from ...handlers import PredictHandler, RepositoryHandler
 from ...settings import GRPCServerConfig
-
-from .servicers import InferenceServicer, ModelRepositoryServicer
+from .generated.model_repository_pb2_grpc import add_ModelRepositoryServiceServicer_to_server
 from .generated.predict_pb2_grpc import add_GRPCInferenceServiceServicer_to_server
-from .generated.model_repository_pb2_grpc import (
-    add_ModelRepositoryServiceServicer_to_server,
-)
+from .servicers import InferenceServicer, ModelRepositoryServicer
 
 
 class GRPCServer:
@@ -24,17 +22,11 @@ class GRPCServer:
 
     def _create_server(self):
         self._inference_servicer = InferenceServicer(self._predict_handler)
-        self._model_repository_servicer = ModelRepositoryServicer(
-            self._repository_handlers
-        )
+        self._model_repository_servicer = ModelRepositoryServicer(self._repository_handlers)
         self._server = aio.server(ThreadPoolExecutor(max_workers=self._config.workers))
 
-        add_GRPCInferenceServiceServicer_to_server(
-            self._inference_servicer, self._server
-        )
-        add_ModelRepositoryServiceServicer_to_server(
-            self._model_repository_servicer, self._server
-        )
+        add_GRPCInferenceServiceServicer_to_server(self._inference_servicer, self._server)
+        add_ModelRepositoryServiceServicer_to_server(self._model_repository_servicer, self._server)
 
         self._server.add_insecure_port(f"{self._config.host}:{self._config.port}")
 

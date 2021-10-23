@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa/server
+	black . 
 
 upload_test:
 	twine upload --repository testpypi dist/*

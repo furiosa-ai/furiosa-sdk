@@ -36,6 +36,4 @@ async def request(uri: str, version: str = "") -> List[Model]:
             # Try other descriptor file (e.g. artifact.yaml)
             pass
 
-    raise URINotFound(
-        " and ".join(f"{uri}/{descriptor}" for descriptor in descriptors)
-    )
+    raise URINotFound(" and ".join(f"{uri}/{descriptor}" for descriptor in descriptors))
