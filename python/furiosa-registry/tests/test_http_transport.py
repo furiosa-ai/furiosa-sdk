@@ -1,5 +1,6 @@
 import pytest
 from aiohttp import web
+
 from furiosa.registry.client.transport import HTTPTransport
 
 

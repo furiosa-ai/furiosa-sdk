@@ -17,7 +17,6 @@ format_applied = [
 test_modules = [
   "furiosa-registry",
   "furiosa-sdk-quantizer",
-  "furiosa-sdk-quantizer",
   "furiosa-sdk-runtime",
   "furiosa-server"
 ]
@@ -161,6 +160,19 @@ def checkFormat(pythonVersion) {
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass black"
+
+      black --diff python/${it};
+      echo "=========================================="
+      exit 1
+    fi
+
+    echo "Checking the isort ...";
+    isort --check python/${it};
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass isort";
+
+      isort --diff python/${it};
       echo "=========================================="
       exit 1
     fi
