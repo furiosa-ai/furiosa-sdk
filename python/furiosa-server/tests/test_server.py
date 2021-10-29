@@ -6,9 +6,10 @@ import asyncio
 from asyncio.events import AbstractEventLoop
 from typing import AsyncGenerator, Generator, List
 
+from fastapi.testclient import TestClient
 import pytest
 import yaml
-from fastapi.testclient import TestClient
+
 from furiosa.server.server import ModelServer
 from furiosa.server.settings import ModelConfig, ServerConfig
 from furiosa.server.utils.loader import load_model_config, load_server_config
@@ -98,9 +99,7 @@ def test_model_version_ready(client):
     response = client.get(f"/v2/models/{MODEL_NAME}/versions/{MODEL_VERSION}/ready")
     assert response.status_code == 200
 
-    response = client.get(
-        f"/v2/models/{MODEL_NAME}/versions/{INVALID_MODEL_VERSION}/ready"
-    )
+    response = client.get(f"/v2/models/{MODEL_NAME}/versions/{INVALID_MODEL_VERSION}/ready")
     assert response.status_code == 400
 
 
@@ -113,9 +112,7 @@ def test_model_infer(client, payload):
 
 
 def test_model_version_infer(client, payload):
-    response = client.post(
-        f"/v2/models/{MODEL_NAME}/versions/{MODEL_VERSION}/infer", json=payload
-    )
+    response = client.post(f"/v2/models/{MODEL_NAME}/versions/{MODEL_VERSION}/infer", json=payload)
     assert response.status_code == 200
     assert response.json() == {
         "model_name": MODEL_NAME,
@@ -134,9 +131,7 @@ def test_model_version_infer(client, payload):
     }
 
     # Model version which was loaded first would be 'default' as well
-    response = client.post(
-        f"/v2/models/{MODEL_NAME}/versions/default/infer", json=payload
-    )
+    response = client.post(f"/v2/models/{MODEL_NAME}/versions/default/infer", json=payload)
     assert response.status_code == 200
     assert response.json() == {
         "model_name": MODEL_NAME,

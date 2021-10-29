@@ -9,6 +9,20 @@ sdk_modules = [
   'furiosa-server',
 ]
 
+format_applied = [
+  "furiosa-registry",
+  "furiosa-server",
+  'furiosa-tools',
+]
+
+test_modules = [
+  "furiosa-tools",
+  "furiosa-registry",
+  "furiosa-sdk-quantizer",
+  "furiosa-sdk-runtime",
+  "furiosa-server"
+]
+
 LINUX_DISTRIB = "ubuntu:focal"
 NPU_TOOLS_STAGE = "nightly"
 
@@ -111,7 +125,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade --quiet pip;
-  pip install --upgrade --quiet build twine gitpython papermill;
+  pip install --upgrade --quiet build twine gitpython papermill black isort;
   """
 }
 
@@ -136,23 +150,64 @@ def buildPackages(pythonVersion) {
   """
 }
 
-def testModule(pythonVersion, module) {
-  sh """#!/bin/bash
-  source ${WORKSPACE}/miniconda/bin/activate;
-  conda activate env-${pythonVersion};
-  python --version;
+def checkFormat(pythonVersion) {
+  format_applied.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
 
-  cd python/${module};
+    echo "Checking the isort ...";
+    isort --check python/${it};
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass isort";
 
-  if [ -f tests/requirements.txt ]; then
-    echo 'Installing ${module}/tests/requirements.txt ..';
-    pip install --quiet -r tests/requirements.txt;
-  else
-    echo 'No requirements.txt file ${module}'
-  fi
+      isort --diff python/${it};
+      echo "=========================================="
+      exit 1
+    fi
 
-  make test
-  """
+    echo "Checking the black ...";
+    black --check python/${it};
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass black"
+
+      black --diff python/${it};
+      echo "=========================================="
+      exit 1
+    fi
+    """
+  }
+}
+
+def testModules(pythonVersion) {
+  test_modules.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
+
+    cd python/${it};
+
+    if [ -f tests/requirements.txt ]; then
+      echo 'Installing ${it}/tests/requirements.txt ..';
+      pip install --quiet -r tests/requirements.txt;
+    else
+      echo 'No requirements.txt file ${it}'
+    fi
+
+    make test
+    """
+  }
+}
+
+def runAllTests(pythonVersion) {
+  setupPythonEnv(pythonVersion)
+  buildPackages(pythonVersion)
+  checkFormat(pythonVersion)
+  testModules(pythonVersion)
 }
 
 def getDistribVersion() {
@@ -234,13 +289,7 @@ pipeline {
       steps {
         container('default') {
           script {
-            setupPythonEnv("3.7")
-            buildPackages("3.7")
-            testModule("3.7", "furiosa-tools")
-            testModule("3.7", "furiosa-registry")
-            testModule("3.7", "furiosa-sdk-quantizer")
-            testModule("3.7", "furiosa-sdk-runtime")
-            testModule("3.7", "furiosa-server")
+            runAllTests("3.7")
           }
         }
       }
@@ -251,13 +300,7 @@ pipeline {
       steps {
         container('default') {
           script {
-            setupPythonEnv("3.8")
-            buildPackages("3.8")
-            testModule("3.8", "furiosa-tools")
-            testModule("3.8", "furiosa-registry")
-            testModule("3.8", "furiosa-sdk-quantizer")
-            testModule("3.8", "furiosa-sdk-runtime")
-            testModule("3.8", "furiosa-server")
+            runAllTests("3.8")
           }
         }
       }
@@ -268,13 +311,7 @@ pipeline {
       steps {
         container('default') {
           script {
-            setupPythonEnv("3.9")
-            buildPackages("3.9")
-            testModule("3.9", "furiosa-tools")
-            testModule("3.9", "furiosa-registry")
-            testModule("3.9", "furiosa-sdk-quantizer")
-            testModule("3.9", "furiosa-sdk-runtime")
-            testModule("3.9", "furiosa-server")
+            runAllTests("3.9")
           }
         }
       }

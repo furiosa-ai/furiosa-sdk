@@ -1,11 +1,9 @@
-import grpc
-
 from typing import Callable
 
-from .generated import model_repository_pb2 as mr_pb
-from .generated import predict_pb2 as pb
-from .generated.model_repository_pb2_grpc import ModelRepositoryServiceServicer
-from .generated.predict_pb2_grpc import GRPCInferenceServiceServicer
+import grpc
+
+from ...errors import ModelServerError
+from ...handlers import PredictHandler, RepositoryHandler
 from .converters import (
     ModelInferRequestConverter,
     ModelInferResponseConverter,
@@ -14,9 +12,10 @@ from .converters import (
     RepositoryIndexResponseConverter,
     ServerMetadataResponseConverter,
 )
-
-from ...handlers import PredictHandler, RepositoryHandler
-from ...errors import ModelServerError
+from .generated import model_repository_pb2 as mr_pb
+from .generated import predict_pb2 as pb
+from .generated.model_repository_pb2_grpc import ModelRepositoryServiceServicer
+from .generated.predict_pb2_grpc import GRPCInferenceServiceServicer
 
 
 def _handle_error(f: Callable):
@@ -34,21 +33,15 @@ class InferenceServicer(GRPCInferenceServiceServicer):
         super().__init__()
         self._predict_handler = predict_handler
 
-    async def ServerLive(
-        self, request: pb.ServerLiveRequest, context
-    ) -> pb.ServerLiveResponse:
+    async def ServerLive(self, request: pb.ServerLiveRequest, context) -> pb.ServerLiveResponse:
         is_live = await self._predict_handler.live()
         return pb.ServerLiveResponse(live=is_live)
 
-    async def ServerReady(
-        self, request: pb.ServerReadyRequest, context
-    ) -> pb.ServerReadyResponse:
+    async def ServerReady(self, request: pb.ServerReadyRequest, context) -> pb.ServerReadyResponse:
         is_ready = await self._predict_handler.ready()
         return pb.ServerReadyResponse(ready=is_ready)
 
-    async def ModelReady(
-        self, request: pb.ModelReadyRequest, context
-    ) -> pb.ModelReadyResponse:
+    async def ModelReady(self, request: pb.ModelReadyRequest, context) -> pb.ModelReadyResponse:
         is_model_ready = await self._predict_handler.model_ready(
             name=request.name, version=request.version
         )
@@ -70,9 +63,7 @@ class InferenceServicer(GRPCInferenceServiceServicer):
         return ModelMetadataResponseConverter.from_types(metadata)
 
     @_handle_error
-    async def ModelInfer(
-        self, request: pb.ModelInferRequest, context
-    ) -> pb.ModelInferResponse:
+    async def ModelInfer(self, request: pb.ModelInferRequest, context) -> pb.ModelInferResponse:
         payload = ModelInferRequestConverter.to_types(request)
         result = await self._predict_handler.infer(
             payload=payload, name=request.model_name, version=request.model_version

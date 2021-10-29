@@ -7,6 +7,7 @@ See https://docs.pytest.org/en/6.2.x/fixture.html#conftest-py-sharing-fixtures-a
 from typing import List
 
 import pytest
+
 from furiosa.registry import Artifact, ModelMetadata, Publication
 
 

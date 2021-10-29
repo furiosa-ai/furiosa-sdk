@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa/registry
+	black --diff . && isort --diff .
 
 upload_test:
 	twine upload --repository testpypi dist/*
@@ -19,7 +19,7 @@ test:
 	pytest --capture=no
 
 doc:
-	pdoc3 --html --force --output-dir html_output furiosa	
+	pdoc3 --html --force --output-dir html_output furiosa
 
 clean:
 	rm -rf build dist/* *.egg-info

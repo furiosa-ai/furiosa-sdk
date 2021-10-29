@@ -18,9 +18,7 @@ class RepositoryHandler:
 
     async def index(self, payload: RepositoryIndexRequest) -> RepositoryIndexResponse:
         model_configs = await self._repository.list()
-        items = await asyncio.gather(
-            *(self._to_item(config) for config in model_configs)
-        )
+        items = await asyncio.gather(*(self._to_item(config) for config in model_configs))
 
         def returnable(item):
             if payload.ready is None:
