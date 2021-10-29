@@ -6,9 +6,9 @@ import asyncio
 from asyncio.events import AbstractEventLoop
 from typing import AsyncGenerator, Generator, List
 
+from fastapi.testclient import TestClient
 import pytest
 import yaml
-from fastapi.testclient import TestClient
 
 from furiosa.server.server import ModelServer
 from furiosa.server.settings import ModelConfig, ServerConfig

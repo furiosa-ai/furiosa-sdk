@@ -1,5 +1,5 @@
-import pytest
 from aiohttp import web
+import pytest
 
 from furiosa.registry.client.transport import HTTPTransport
 

@@ -155,17 +155,6 @@ def checkFormat(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    echo "Checking the black ...";
-    black --check python/${it};
-    if [ \$? != 0 ];then
-      echo "=========================================="
-      echo "${it} fails to pass black"
-
-      black --diff python/${it};
-      echo "=========================================="
-      exit 1
-    fi
-
     echo "Checking the isort ...";
     isort --check python/${it};
     if [ \$? != 0 ];then
@@ -173,6 +162,17 @@ def checkFormat(pythonVersion) {
       echo "${it} fails to pass isort";
 
       isort --diff python/${it};
+      echo "=========================================="
+      exit 1
+    fi
+
+    echo "Checking the black ...";
+    black --check python/${it};
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass black"
+
+      black --diff python/${it};
       echo "=========================================="
       exit 1
     fi

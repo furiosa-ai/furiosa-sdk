@@ -5,9 +5,9 @@ Model class for prediction/explanation
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, overload
 
-import numpy as np
 from furiosa.runtime import session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
+import numpy as np
 
 from .settings import ModelConfig
 from .types import (

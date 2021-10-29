@@ -1,7 +1,7 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import contextvars
 import functools
-from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from typing import Any, Callable
 

@@ -4,9 +4,7 @@ from grpc import aio
 
 from ...handlers import PredictHandler, RepositoryHandler
 from ...settings import GRPCServerConfig
-from .generated.model_repository_pb2_grpc import (
-    add_ModelRepositoryServiceServicer_to_server,
-)
+from .generated.model_repository_pb2_grpc import add_ModelRepositoryServiceServicer_to_server
 from .generated.predict_pb2_grpc import add_GRPCInferenceServiceServicer_to_server
 from .servicers import InferenceServicer, ModelRepositoryServicer
 
