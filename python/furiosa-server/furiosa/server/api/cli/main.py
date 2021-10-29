@@ -28,9 +28,7 @@ class LogLevel(str, enum.Enum):
 @synchronous
 async def start(
     log_level: LogLevel = LogLevel.INFO,
-    model_path: str = typer.Option(
-        None, help="Path to Model file (tflite, onnx are supported)"
-    ),
+    model_path: str = typer.Option(None, help="Path to Model file (tflite, onnx are supported)"),
     model_name: str = typer.Option(None, help="Model name used in URL path"),
     model_version: str = typer.Option("default", help="Model version used in URL path"),
     host: str = typer.Option("0.0.0.0", help="IP address to bind"),
@@ -54,17 +52,13 @@ async def start(
     if server_config:
         config = load_server_config(server_config)
     else:
-        rest_config = RESTServerConfig(
-            port=http_port, debug=(log_level == LogLevel.DEBUG)
-        )
+        rest_config = RESTServerConfig(port=http_port, debug=(log_level == LogLevel.DEBUG))
         config = ServerConfig(rest_server_config=rest_config)
 
     if model_config:
         model_configs = load_model_config(model_config)
     else:
-        model_configs = [
-            ModelConfig(model=model_path, name=model_name, version=model_version)
-        ]
+        model_configs = [ModelConfig(model=model_path, name=model_name, version=model_version)]
 
     await ModelServer(config, model_configs).start()
 

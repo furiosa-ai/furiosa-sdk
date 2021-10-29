@@ -3,6 +3,7 @@ from io import TextIOWrapper
 from typing import Dict, List, Union
 
 import yaml
+
 from furiosa.server.settings import ModelConfig, ServerConfig
 
 

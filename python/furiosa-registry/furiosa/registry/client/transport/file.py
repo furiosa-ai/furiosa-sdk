@@ -20,9 +20,7 @@ class FileTransport(Transport):
         return os.path.exists(uri)
 
     async def fetch(self, uri: str) -> List[Artifact]:
-        return Loader.load(
-            pathlib.Path(uri).suffix[1:], (await self.download(uri)).decode()
-        )
+        return Loader.load(pathlib.Path(uri).suffix[1:], (await self.download(uri)).decode())
 
     async def download(self, uri: str) -> bytes:
         async with aiofiles.open(uri, "rb") as file:

@@ -30,9 +30,7 @@ class RepositoryIndexResponseItem(BaseModel):
 
 
 class RepositoryIndexResponse(BaseModel):
-    __root__: List[RepositoryIndexResponseItem] = Field(
-        ..., title='repository_index_response'
-    )
+    __root__: List[RepositoryIndexResponseItem] = Field(..., title='repository_index_response')
 
     # FIXME(yan): This was manually added. Replace codegen template later
     def __iter__(self):

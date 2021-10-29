@@ -12,7 +12,7 @@ class Repository:
         self,
         registries: List[Registry],
         on_load: Optional[Callable[[Model], None]] = None,
-        on_unload: Optional[Callable[[Model], None]] = None
+        on_unload: Optional[Callable[[Model], None]] = None,
     ):
         self._registries = registries
         # Ready models which are loaded. Schema: {model_name: {model_version: Model}}
@@ -81,20 +81,14 @@ class Repository:
         """
         Get the specified loaded models
         """
-        return [
-            model for versions in self._models.values() for model in versions.values()
-        ]
+        return [model for versions in self._models.values() for model in versions.values()]
 
     async def list(self) -> List[ModelConfig]:
         """
         Get the (loaded + unloaded) model configs from several registries
         """
         return sum(
-            list(
-                await asyncio.gather(
-                    *(registry.list() for registry in self._registries)
-                )
-            ),
+            list(await asyncio.gather(*(registry.list() for registry in self._registries))),
             [],
         )
 

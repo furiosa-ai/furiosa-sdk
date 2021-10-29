@@ -14,7 +14,6 @@ class SerialResolver(Resolver):
         model = Model(
             name=artifact.name,
             description=artifact.metadata.description,
-
             model=await download(artifact.location),
             version=version,
         )
