@@ -2,10 +2,9 @@
 
 from ctypes import c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 from pathlib import Path
-from typing import Optional, Union, Dict
+from typing import Dict, Optional, Union
 
-from furiosa.common.native import find_native_libs, LogLevel
-
+from furiosa.common.native import LogLevel, find_native_libs
 
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_NPU = "warboy"
@@ -128,22 +127,22 @@ class VersionInfo:
 
 def version_string() -> str:
     info = VersionInfo()
-    return f"{info.version} " \
-           f"(rev: {info.git_hash} " \
-           f"built at {info.build_timestamp})"
+    return f"{info.version} " f"(rev: {info.git_hash} " f"built at {info.build_timestamp})"
 
 
-def compile(input: Union[str, Path],
-            output: Union[str, Path] = None,
-            target_ir: str = "enf",
-            dot_graph: Optional[Union[str, Path]] = None,
-            analyze_memory: Optional[Union[str, Path]] = None,
-            batch_size: Optional[int] = None,
-            split_after_lower: Optional[bool] = None,
-            auto_batch_size: Optional[bool] = None,
-            ga_params: Optional[Dict[str, str]] = None,
-            target_npu: str = DEFAULT_NPU,
-            verbose: bool = False) -> int:
+def compile(
+    input: Union[str, Path],
+    output: Union[str, Path] = None,
+    target_ir: str = "enf",
+    dot_graph: Optional[Union[str, Path]] = None,
+    analyze_memory: Optional[Union[str, Path]] = None,
+    batch_size: Optional[int] = None,
+    split_after_lower: Optional[bool] = None,
+    auto_batch_size: Optional[bool] = None,
+    ga_params: Optional[Dict[str, str]] = None,
+    target_npu: str = DEFAULT_NPU,
+    verbose: bool = False,
+) -> int:
 
     if verbose:
         LIBCOMPILER.enable_logging(LogLevel.INFO)
@@ -162,7 +161,9 @@ def compile(input: Union[str, Path],
     LIBCOMPILER.compiler_options_target_npu(options, target_npu.encode(DEFAULT_ENCODING))
 
     if analyze_memory:
-        LIBCOMPILER.compiler_options_memory_analysis(options, str(analyze_memory).encode(DEFAULT_ENCODING))
+        LIBCOMPILER.compiler_options_memory_analysis(
+            options, str(analyze_memory).encode(DEFAULT_ENCODING)
+        )
     if dot_graph:
         LIBCOMPILER.compiler_options_dot_graph(options, str(dot_graph).encode(DEFAULT_ENCODING))
     if batch_size:

@@ -26,8 +26,7 @@ class CommandTests(unittest.TestCase):
         try:
             output_file = f"{tmpdir}/output.enf"
             os.chdir(tmpdir)
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model], capture_output=True)
+            result = subprocess.run(['furiosa-compile', self.mnist_model], capture_output=True)
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
         finally:
@@ -37,10 +36,9 @@ class CommandTests(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         try:
             output_file = f"{tmpdir}/output.enf"
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o',
-                                     output_file], capture_output=True)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '-o', output_file], capture_output=True
+            )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
         finally:
@@ -52,12 +50,19 @@ class CommandTests(unittest.TestCase):
             output_file = f"{tmpdir}/output.enf"
             analyze_memory_output = f"{tmpdir}/memory_analysis.html"
             dot_graph_output = f"{tmpdir}/graph.dot"
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '--dot-graph', dot_graph_output,
-                                     '--analyze-memory', analyze_memory_output,
-                                     ], capture_output=True)
+            result = subprocess.run(
+                [
+                    'furiosa-compile',
+                    self.mnist_model,
+                    '-o',
+                    output_file,
+                    '--dot-graph',
+                    dot_graph_output,
+                    '--analyze-memory',
+                    analyze_memory_output,
+                ],
+                capture_output=True,
+            )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
             self.assert_file_created(dot_graph_output)
@@ -70,18 +75,16 @@ class CommandTests(unittest.TestCase):
         try:
             output_file = f"{tmpdir}/output.enf"
 
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '--target-npu', 'warb'
-                                     ], capture_output=True)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '-o', output_file, '--target-npu', 'warb'],
+                capture_output=True,
+            )
             self.assertTrue(result.returncode != 0, result.stderr)
 
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '--target-npu', 'warboy'
-                                     ], capture_output=True)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '-o', output_file, '--target-npu', 'warboy'],
+                capture_output=True,
+            )
             self.assertTrue(result.returncode == 0, result.stderr)
         finally:
             shutil.rmtree(tmpdir)
@@ -90,13 +93,19 @@ class CommandTests(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         try:
             output_file = f"{tmpdir}/output.enf"
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '--batch-size', '2',
-                                     '--split-after-lower',
-                                     '--auto-batch-size',
-                                     ], capture_output=True)
+            result = subprocess.run(
+                [
+                    'furiosa-compile',
+                    self.mnist_model,
+                    '-o',
+                    output_file,
+                    '--batch-size',
+                    '2',
+                    '--split-after-lower',
+                    '--auto-batch-size',
+                ],
+                capture_output=True,
+            )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
         finally:
@@ -107,11 +116,17 @@ class CommandTests(unittest.TestCase):
         try:
             output_file = f"{tmpdir}/output.enf"
 
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '-ga', 'init_tactic=random,generation_limit=500'
-                                     ], capture_output=True)
+            result = subprocess.run(
+                [
+                    'furiosa-compile',
+                    self.mnist_model,
+                    '-o',
+                    output_file,
+                    '-ga',
+                    'init_tactic=random,generation_limit=500',
+                ],
+                capture_output=True,
+            )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assert_file_created(output_file)
         finally:
@@ -122,20 +137,24 @@ class CommandTests(unittest.TestCase):
         try:
             output_file = f"{tmpdir}/output.enf"
 
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '-ga', 'init_tactic=abc'
-                                     ], capture_output=True)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '-o', output_file, '-ga', 'init_tactic=abc'],
+                capture_output=True,
+            )
             self.assertTrue(result.returncode != 0, result.stderr)
-            self.assertTrue("ERROR: init_tactic must be either 'random' or 'heuristic'" in result.stderr.decode().strip())
+            self.assertTrue(
+                "ERROR: init_tactic must be either 'random' or 'heuristic'"
+                in result.stderr.decode().strip()
+            )
 
-            result = subprocess.run(['furiosa-compile',
-                                     self.mnist_model,
-                                     '-o', output_file,
-                                     '-ga', 'abc=def'
-                                     ], capture_output=True)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '-o', output_file, '-ga', 'abc=def'],
+                capture_output=True,
+            )
             self.assertTrue(result.returncode != 0, result.stderr)
-            self.assertTrue("ERROR: unknown genetic algorithm parameter: 'abc'" in result.stderr.decode().strip())
+            self.assertTrue(
+                "ERROR: unknown genetic algorithm parameter: 'abc'"
+                in result.stderr.decode().strip()
+            )
         finally:
             shutil.rmtree(tmpdir)

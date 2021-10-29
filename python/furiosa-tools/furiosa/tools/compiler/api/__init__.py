@@ -1,1 +1,1 @@
-from .v1 import LIBCOMPILER, CompilerApiError, VersionInfo, version_string, compile
+from .v1 import LIBCOMPILER, CompilerApiError, VersionInfo, compile, version_string
