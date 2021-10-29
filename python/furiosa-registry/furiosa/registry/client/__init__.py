@@ -1,39 +1,63 @@
-"""FuriosaAI registry client"""
+"""FuriosaAI registry client."""
 
-from typing import List
+from typing import Any, Callable, Dict, List
 
-from ..errors import URINotFound
+import toml
+import yaml
+
+from ..artifact import Artifact
 from ..model import Model
 from .resolver import resolve
-from .transport import fetch
+from .transport import read
 
 __all__ = [
-    "request",
+    "fetch",
+    "load",
 ]
 
-descriptors = ["artifact.toml", "artifact.yaml"]
 
+async def load(uri: str, name: str, version: str = "", *args: Any, **kwargs: Any) -> Model:
+    """Load models from the specified registry URI.
 
-async def request(uri: str, version: str = "") -> List[Model]:
+    Args:
+        uri (str): Registry URI which have a descriptor file (artifact.toml).
+        name (str): Model name in a descriptor file.
+        version (Optional[str]): Model version to be created.
+        args, kwargs (Any): Arguments for Model instantiation.
+
+    Returns:
+        Model: A model loaded from the registry.
     """
-    Request models from the specified registry
+
+    artifacts = [artifact for artifact in await fetch(uri) if artifact.name == name]
+
+    assert len(artifacts) == 1, "Model name should be unique in a artifact descriptor"
+
+    return await resolve(uri, artifacts[0], version, *args, **kwargs)
+
+
+async def fetch(uri: str) -> List[Artifact]:
+    """Fetch Artifacts from the specified registry URI.
 
     Args:
         uri (str): Registry URI which have a descriptor file (artifact.toml).
 
     Returns:
-        List[Model]: Models loaded from the registry.
+        List[Artifact]: Fetched Artifacts.
     """
 
-    for descriptor in descriptors:
-        try:
-            artifacts = await fetch(f"{uri}/{descriptor}")
+    def serialize(format: str, data: str) -> List[Artifact]:
+        """Serialize artifact from data specified."""
+        loaders: Dict[str, Callable] = {
+            "yaml": yaml.safe_load,
+            "toml": toml.loads,
+        }
 
-            assert type(artifacts) == list
+        serialized: Dict = loaders[format](data)
+        return [Artifact.parse_obj(artifact) for artifact in serialized["artifacts"]]
 
-            return [await resolve(artifact, version) for artifact in artifacts]
-        except URINotFound:
-            # Try other descriptor file (e.g. artifact.yaml)
-            pass
+    # TODO(ileixe): Implement fallback for different descriptors like artifact.toml.
+    descriptor = "artifact.yaml"
 
-    raise URINotFound(" and ".join(f"{uri}/{descriptor}" for descriptor in descriptors))
+    data = (await read(uri, descriptor)).decode()
+    return serialize(descriptor.split(".")[1], data)

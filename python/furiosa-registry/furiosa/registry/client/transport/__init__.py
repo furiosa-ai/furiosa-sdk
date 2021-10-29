@@ -1,36 +1,89 @@
 """FuriosaAI registry transport"""
 
-from functools import partial
-from typing import List, Union
+from contextlib import contextmanager
+from typing import Iterator
 
-from ...artifact import Artifact
+from multipledispatch import dispatch
+
 from ...errors import TransportNotFound
 from .base import Transport
 from .file import FileTransport
+from .github import GithubTransport
 from .http import HTTPTransport
 from .s3 import S3Transport
 
 __all__ = [
+    "transports",
     "FileTransport",
-    "HTTpTransport",
+    "GithubTransport",
+    "HTTPTransport",
     "S3Transport",
     "Transport",
+    "supported",
+    "read",
+    "download",
+    "is_relative",
 ]
 
 transports = [
     FileTransport(),
+    GithubTransport(),
     HTTPTransport(),
     S3Transport(),
 ]
 
 
-async def request(uri: str, method: str) -> Union[bytes, List[Artifact]]:
+@contextmanager
+def supported(uri: str) -> Iterator[Transport]:
+    """Supported trasnport for the URI."""
     for transport in transports:
         if transport.is_supported(uri):
-            return await getattr(transport, method)(uri)
+            # Note that each transport should be exclusive as we are returning first one.
+            # TODO(ileixe): Add more logging to clarify what's going on here to user.
+            yield transport
+            return
 
     raise TransportNotFound(uri, transports)
 
 
-fetch = partial(request, method="fetch")
-download = partial(request, method="download")
+@dispatch(str, str)
+async def read(uri: str, path: str) -> bytes:
+    """Read a file binary data from the registry URI and path with a transport which supports the URI.
+
+    Args:
+        uri (str): Registry URI to locate the artifacts.
+        path (str): Relative file path in the repositry to read.
+
+    Returns:
+        bytes: Downloaded binary data.
+
+    Raises:
+        TransportNotFound: If all of the available transports are not supporing the URI.
+    """
+    with supported(uri) as transport:
+        return await transport.read(uri, path)
+
+
+async def download(uri: str) -> str:
+    """Download a registry directory into local destination with a transport which supports the URI.
+
+    Args:
+        uri (str): Registry URI to download the data.
+
+    Returns:
+        str: Destination directory name. This directory will be located in `cache` directory.
+
+    Raises:
+        TransportNotFound: If all of the available transports are not supporing the URI.
+    """
+    with supported(uri) as transport:
+        return await transport.download(uri)
+
+
+def is_relative(path: str) -> bool:
+    """Is this path relative path?
+
+    If all of the available transports are not supporting the path, we assume that it's relative
+    path. You should find the path from the registry URI if it's relative path.
+    """
+    return all(not transport.is_supported(path) for transport in transports)

@@ -1,27 +1,51 @@
 import os
 import pathlib
-from typing import List
+import shutil
 
 import aiofiles
+from multipledispatch import dispatch
 
-from ...artifact import Artifact
-from .base import Loader, Transport
+from ...utils import removeprefix
+from .base import Transport
 
 
 class FileTransport(Transport):
-    """
-    Transport for local file path.
+    """Transport for local file path.
 
-    This resolver check specified URI is valid local file path which is existent.
+    This transport check specified URI has valid local file scheme (e.g. file://).
     """
+
+    scheme = "file://"
 
     @staticmethod
     def is_supported(uri: str) -> bool:
-        return os.path.exists(uri)
+        return uri.startswith(FileTransport.scheme)
 
-    async def fetch(self, uri: str) -> List[Artifact]:
-        return Loader.load(pathlib.Path(uri).suffix[1:], (await self.download(uri)).decode())
+    @dispatch(str, str)
+    async def read(self, uri: str, path: str) -> bytes:
+        assert self.is_supported(uri)
 
-    async def download(self, uri: str) -> bytes:
-        async with aiofiles.open(uri, "rb") as file:
-            return await file.read()
+        return await self.read(os.path.join(removeprefix(uri, self.scheme), path))
+
+    @dispatch(str)  # type: ignore
+    async def read(self, location: str) -> bytes:  # noqa: F811
+        async with aiofiles.open(location, "rb") as f:
+            return await f.read()
+
+    async def download(self, uri: str) -> str:
+        """Download a registry directory into local destination.
+
+        FileTransport download is just to copy local directory into the cache.
+        """
+        # TODO(ileixe): Impmlement cache layer.
+        assert self.is_supported(uri)
+
+        directory = self.cache
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+        src = removeprefix(uri, self.scheme)
+        dst = os.path.join(directory, pathlib.Path(uri).name)
+
+        shutil.rmtree(dst, ignore_errors=True)
+        return shutil.copytree(src, dst)

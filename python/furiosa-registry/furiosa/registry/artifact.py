@@ -2,18 +2,16 @@ import datetime
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseConfig, BaseModel
+from pydantic import BaseConfig, BaseModel, Extra
 
 
 class Config(BaseConfig):
     # Extra fields not permitted
-    extra = "forbid"
+    extra: Extra = Extra.forbid
 
 
 class Format(str, Enum):
-    """
-    Model binary format to represent the binary specified.
-    """
+    """Model binary format to represent the binary specified."""
 
     Code = "code"
     ONNX = "onnx"
@@ -21,9 +19,9 @@ class Format(str, Enum):
 
 
 class Publication(BaseModel):
-    """
-    Model publication information.
-    """
+    """Model publication information."""
+
+    __config__ = Config
 
     authors: Optional[List[str]] = None
     title: Optional[str] = None
@@ -33,18 +31,16 @@ class Publication(BaseModel):
 
 
 class ModelMetadata(BaseModel):
-    """
-    Model metadata to understand a model.
-    """
+    """Model metadata to understand a model."""
+
+    __config__ = Config
 
     description: Optional[str] = None
     publication: Optional[Publication] = None
 
 
 class Artifact(BaseModel):
-    """
-    Data including model binary, metadata, and configurations to run a single model.
-    """
+    """Data including model binary, metadata, and configurations to run a single model."""
 
     __config__ = Config
 

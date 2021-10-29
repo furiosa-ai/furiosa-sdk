@@ -1,18 +1,15 @@
 import pytest
 
-from furiosa.registry.client.transport import FileTransport
-
-
-@pytest.fixture(scope="function")
-def transport() -> FileTransport:
-    return FileTransport()
+from furiosa.registry.client import fetch
+from furiosa.registry.client.transport import supported
 
 
 @pytest.mark.asyncio
-async def test_fetch(transport, artifact_file, artifacts):
-    assert await transport.fetch(artifact_file) == artifacts
+async def test_fetch(artifacts):
+    assert await fetch("file://tests/fixtures") == artifacts
 
 
 @pytest.mark.asyncio
-async def test_download(transport, model_file, MNISTnet):
-    assert await transport.download(model_file) == MNISTnet
+async def test_read(model_file, model_binary):
+    with supported("file://") as transport:
+        assert await transport.read(model_file) == model_binary
