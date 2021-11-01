@@ -1,7 +1,7 @@
 from aiohttp import web
 import pytest
 
-from furiosa.registry.client import listing
+import furiosa.registry as registry
 from furiosa.registry.client.transport import supported
 
 
@@ -18,9 +18,9 @@ async def server(aiohttp_server):
 
 
 @pytest.mark.asyncio
-async def test_listing(server, tflite_artifact, artifacts):
+async def test_list(server, tflite_artifact, artifacts):
     # Load from yaml format artifact config.
-    assert (await listing(f"http://{server.host}:{server.port}/tests/fixtures")) == artifacts
+    assert (await registry.list(f"http://{server.host}:{server.port}/tests/fixtures")) == artifacts
 
 
 @pytest.mark.asyncio

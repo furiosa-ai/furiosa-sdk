@@ -1,12 +1,12 @@
 import pytest
 
-from furiosa.registry.client import listing
+import furiosa.registry as registry
 from furiosa.registry.client.transport import supported
 
 
 @pytest.mark.asyncio
-async def test_listing(artifacts):
-    assert await listing("file://tests/fixtures") == artifacts
+async def test_list(artifacts):
+    assert await registry.list("file://tests/fixtures") == artifacts
 
 
 @pytest.mark.asyncio

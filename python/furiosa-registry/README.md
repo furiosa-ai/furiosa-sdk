@@ -71,14 +71,14 @@ pip install furiosa-registry
 ```python
 import asyncio
 
-from furiosa.registry import listing, Artifact
+import furiosa.registry as registry
 
 
 # Repository where to load artifacts from.
 repository = "https://github.com/furiosa-ai/furiosa-models"
 
 # List up the available artifacts.
-artifacts: List[Artifact] = listing(repository)
+artifacts: List[registry.Artifact] = registry.list(repository)
 
 # Access models from the artifacts
 for artifact in arifacts:
@@ -90,7 +90,7 @@ for artifact in arifacts:
 ```python
 import asyncio
 
-from furiosa.registry import load, Model
+import furiosa.registry as registry
 
 
 # Repository where to load model from.
@@ -105,7 +105,7 @@ version = "v1.1
 
 # Load available model from the repository.
 # Note that request() is an async function so we have to run the function in eventloop.
-models: Model = asyncio.run(load(uri=repository, name=model, version=version))
+models: registry.Model = asyncio.run(registry.load(uri=repository, name=model, version=version))
 
 # Access the model
 print(model.name)
@@ -118,7 +118,7 @@ print(model.description)
 ```python
 import asyncio
 
-from furiosa.registry import help, Artifact
+import furiosa.registry as registry
 
 
 # Repository where to load artifacts from.
@@ -128,7 +128,7 @@ repository = "https://github.com/furiosa-ai/furiosa-models"
 model = "mlcommons_resnet50"
 
 # Render documentation provided by the repository for the  model.
-print(help(repository, model))
+print(registry.help(repository, model))
 ```
 
 ## Development
