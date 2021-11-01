@@ -35,8 +35,8 @@
 
 
 # @pytest.mark.asyncio
-# async def test_fetch(transport, artifact_file, artifacts, bucket):
-#     assert (await transport.fetch(f"s3://{bucket}/{artifact_file}")) == artifacts
+# async def test_listing(transport, artifact_file, artifacts, bucket):
+#     assert (await transport.listing(f"s3://{bucket}/{artifact_file}")) == artifacts
 
 
 # @pytest.mark.asyncio

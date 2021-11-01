@@ -16,7 +16,7 @@ This library
 
 **Registry A, B, C..**
 
-Registry sources. As long as there is a descriptor file called `artifact` that defines where to fetch the model binary and model descriptions, it does not matter what form the registry should be. Github repository is a typical source.
+Registry sources. As long as there is a descriptor file called `artifact` that defines where to list the model binary and model descriptions, it does not matter what form the registry should be. Github repository is a typical source.
 
 **aritfact.yaml**
 
@@ -39,8 +39,6 @@ artifacts:
     location: https://github.com/furiosa-ai/furiosa-models/raw/main/models/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx
     format: onnx
     description: MobileNet v1 model for MLCommons
-    config:
-      npu_device: npu0pe0
     metadata:
       description: MobileNet v1 model for MLCommons v1.1
       publication:
@@ -68,7 +66,26 @@ Data binary transport types. Each repository can store their model binary in sev
 pip install furiosa-registry
 ```
 
-**Fetch models**
+**List up available models via artifact**
+
+```python
+import asyncio
+
+from furiosa.registry import listing, Artifact
+
+
+# Repository where to load artifacts from.
+repository = "https://github.com/furiosa-ai/furiosa-models"
+
+# List up the available artifacts.
+artifacts: List[Artifact] = listing(repository)
+
+# Access models from the artifacts
+for artifact in arifacts:
+    print(artifact.name)
+```
+
+**Load models**
 
 ```python
 import asyncio
@@ -84,7 +101,7 @@ model = "mlcommons_resnet50"
 
 # Model version to be created. Note that this version is different from how the registry defined.
 # If you want to choose specific version, follow the URI scheme to indicate the required version.
-version = "v1.1e
+version = "v1.1
 
 # Load available model from the repository.
 # Note that request() is an async function so we have to run the function in eventloop.
@@ -94,6 +111,24 @@ models: Model = asyncio.run(load(uri=repository, name=model, version=version))
 print(model.name)
 print(model.version)
 print(model.description)
+```
+
+**Print documentation about a model**
+
+```python
+import asyncio
+
+from furiosa.registry import help, Artifact
+
+
+# Repository where to load artifacts from.
+repository = "https://github.com/furiosa-ai/furiosa-models"
+
+# Model name described in 'artifacts.yaml' at the repository.
+model = "mlcommons_resnet50"
+
+# Render documentation provided by the repository for the  model.
+print(help(repository, model))
 ```
 
 ## Development

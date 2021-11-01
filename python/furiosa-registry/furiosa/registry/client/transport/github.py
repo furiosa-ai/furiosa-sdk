@@ -11,7 +11,7 @@ from .http import HTTPTransport
 
 
 class GithubTransport(HTTPTransport):
-    """ransport for a file fetched via Github repository.
+    """Transport for a file fetched via Github repository.
 
     This transport check specified URI has valid Github repository URL. (e.g. https://github.com/)
     """

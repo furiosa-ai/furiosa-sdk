@@ -10,10 +10,7 @@ from ..model import Model
 from .resolver import resolve
 from .transport import read
 
-__all__ = [
-    "fetch",
-    "load",
-]
+__all__ = ["listing", "load", "help"]
 
 
 async def load(uri: str, name: str, version: str = "", *args: Any, **kwargs: Any) -> Model:
@@ -29,15 +26,15 @@ async def load(uri: str, name: str, version: str = "", *args: Any, **kwargs: Any
         Model: A model loaded from the registry.
     """
 
-    artifacts = [artifact for artifact in await fetch(uri) if artifact.name == name]
+    artifacts = [artifact for artifact in await listing(uri) if artifact.name == name]
 
     assert len(artifacts) == 1, "Model name should be unique in a artifact descriptor"
 
     return await resolve(uri, artifacts[0], version, *args, **kwargs)
 
 
-async def fetch(uri: str) -> List[Artifact]:
-    """Fetch Artifacts from the specified registry URI.
+async def listing(uri: str) -> List[Artifact]:
+    """List Artifacts from the specified registry URI.
 
     Args:
         uri (str): Registry URI which have a descriptor file (artifact.toml).
@@ -61,3 +58,17 @@ async def fetch(uri: str) -> List[Artifact]:
 
     data = (await read(uri, descriptor)).decode()
     return serialize(descriptor.split(".")[1], data)
+
+
+async def help(uri: str, name: str, version: str = "") -> str:
+    """Show the documentation for the model
+
+    Args:
+        uri (str): Registry URI which have a descriptor file (artifact.toml).
+        name (str): Model name in a descriptor file.
+        version (Optional[str]): Model version to be created.
+
+    Returns:
+        str: Documentation string for the model.
+    """
+    return (await load(uri, name, version)).__doc__
