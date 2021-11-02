@@ -69,8 +69,6 @@ if __name__ == "__main__":
         name="furiosa-server",
         version=version,
         packages=find_namespace_packages(include=["furiosa.*"]),
-        entry_points={
-            "console_scripts": ["furiosa-server=furiosa.server.api.cli:main"]
-        },
+        entry_points={"console_scripts": ["furiosa-server=furiosa.server.api.cli:main"]},
         **setup_kwargs,
     )

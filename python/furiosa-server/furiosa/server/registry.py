@@ -1,6 +1,6 @@
+from abc import ABC, abstractmethod
 import glob
 import os
-from abc import ABC, abstractmethod
 from typing import List
 
 import yaml

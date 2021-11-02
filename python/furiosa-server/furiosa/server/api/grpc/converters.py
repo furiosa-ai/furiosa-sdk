@@ -1,10 +1,8 @@
-from typing import Any, Union, Mapping, Optional
-
-from .generated import predict_pb2 as pb
-from .generated import model_repository_pb2 as mr_pb
+from typing import Any, Mapping, Optional, Union
 
 from ... import types
-
+from .generated import model_repository_pb2 as mr_pb
+from .generated import predict_pb2 as pb
 
 _FIELDS = {
     "BOOL": "bool_contents",
@@ -41,15 +39,11 @@ def _merge_map(pb_map: Mapping, value_dict: Mapping) -> Mapping:
 
 class ServerMetadataResponseConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: pb.ServerMetadataResponse
-    ) -> types.MetadataServerResponse:
+    def to_types(cls, pb_object: pb.ServerMetadataResponse) -> types.MetadataServerResponse:
         pass
 
     @classmethod
-    def from_types(
-        cls, type_object: types.MetadataServerResponse
-    ) -> pb.ServerMetadataResponse:
+    def from_types(cls, type_object: types.MetadataServerResponse) -> pb.ServerMetadataResponse:
         return pb.ServerMetadataResponse(
             name=type_object.name,
             version=type_object.version,
@@ -59,15 +53,11 @@ class ServerMetadataResponseConverter:
 
 class ModelMetadataResponseConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: pb.ModelMetadataResponse
-    ) -> types.MetadataModelResponse:
+    def to_types(cls, pb_object: pb.ModelMetadataResponse) -> types.MetadataModelResponse:
         pass
 
     @classmethod
-    def from_types(
-        cls, type_object: types.MetadataModelResponse
-    ) -> pb.ModelMetadataResponse:
+    def from_types(cls, type_object: types.MetadataModelResponse) -> pb.ModelMetadataResponse:
         metadata = pb.ModelMetadataResponse(
             name=type_object.name,
             platform=type_object.platform,
@@ -89,9 +79,7 @@ class ModelMetadataResponseConverter:
 
 class TensorMetadataConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: pb.ModelMetadataResponse.TensorMetadata
-    ) -> types.MetadataTensor:
+    def to_types(cls, pb_object: pb.ModelMetadataResponse.TensorMetadata) -> types.MetadataTensor:
         pass
 
     @classmethod
@@ -121,15 +109,12 @@ class ModelInferRequestConverter:
         inference_request = types.InferenceRequest.construct(
             id=pb_object.id,
             parameters=ParametersConverter.to_types(pb_object.parameters),
-            inputs=[
-                InferInputTensorConverter.to_types(inp) for inp in pb_object.inputs
-            ],
+            inputs=[InferInputTensorConverter.to_types(inp) for inp in pb_object.inputs],
         )
 
         if pb_object.outputs:
             inference_request.outputs = [
-                InferRequestedOutputTensorConverter.to_types(out)
-                for out in pb_object.outputs
+                InferRequestedOutputTensorConverter.to_types(out) for out in pb_object.outputs
             ]
 
         return inference_request
@@ -141,9 +126,7 @@ class ModelInferRequestConverter:
         model_infer_request = pb.ModelInferRequest(
             model_name=model_name,
             model_version=model_version,
-            inputs=[
-                InferInputTensorConverter.from_types(inp) for inp in type_object.inputs
-            ],
+            inputs=[InferInputTensorConverter.from_types(inp) for inp in type_object.inputs],
         )
 
         if type_object.id is not None:
@@ -157,10 +140,7 @@ class ModelInferRequestConverter:
 
         if type_object.outputs is not None:
             model_infer_request.outputs.extend(
-                [
-                    InferRequestedOutputTensorConverter.from_types(out)
-                    for out in type_object.outputs
-                ]
+                [InferRequestedOutputTensorConverter.from_types(out) for out in type_object.outputs]
             )
 
         return model_infer_request
@@ -168,9 +148,7 @@ class ModelInferRequestConverter:
 
 class InferInputTensorConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: pb.ModelInferRequest.InferInputTensor
-    ) -> types.RequestInput:
+    def to_types(cls, pb_object: pb.ModelInferRequest.InferInputTensor) -> types.RequestInput:
         return types.RequestInput.construct(
             name=pb_object.name,
             shape=list(pb_object.shape),
@@ -180,9 +158,7 @@ class InferInputTensorConverter:
         )
 
     @classmethod
-    def from_types(
-        cls, type_object: types.RequestInput
-    ) -> pb.ModelInferRequest.InferInputTensor:
+    def from_types(cls, type_object: types.RequestInput) -> pb.ModelInferRequest.InferInputTensor:
         infer_input_tensor = pb.ModelInferRequest.InferInputTensor(
             name=type_object.name,
             shape=type_object.shape,
@@ -230,22 +206,17 @@ class InferRequestedOutputTensorConverter:
 
 class ParametersConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: Mapping[str, pb.InferParameter]
-    ) -> Optional[types.Parameters]:
+    def to_types(cls, pb_object: Mapping[str, pb.InferParameter]) -> Optional[types.Parameters]:
         if not pb_object:
             return None
 
         param_dict = {
-            key: _get_value(infer_parameter)
-            for key, infer_parameter in pb_object.items()
+            key: _get_value(infer_parameter) for key, infer_parameter in pb_object.items()
         }
         return types.Parameters(**param_dict)
 
     @classmethod
-    def from_types(
-        cls, type_object: types.Parameters
-    ) -> Mapping[str, pb.InferParameter]:
+    def from_types(cls, type_object: types.Parameters) -> Mapping[str, pb.InferParameter]:
         pb_object = {}
         as_dict = type_object.dict()
 
@@ -279,9 +250,7 @@ class InferTensorContentsConverter:
         return types.TensorData.construct(__root__=data)
 
     @classmethod
-    def from_types(
-        cls, type_object: types.TensorData, datatype: str
-    ) -> pb.InferTensorContents:
+    def from_types(cls, type_object: types.TensorData, datatype: str) -> pb.InferTensorContents:
         contents = cls._get_contents(type_object, datatype)
         return pb.InferTensorContents(**contents)
 
@@ -301,8 +270,7 @@ class ModelInferResponseConverter:
         model_infer_response = pb.ModelInferResponse(
             model_name=type_object.model_name,
             outputs=[
-                InferOutputTensorConverter.from_types(output)
-                for output in type_object.outputs
+                InferOutputTensorConverter.from_types(output) for output in type_object.outputs
             ],
         )
 
@@ -323,9 +291,7 @@ class ModelInferResponseConverter:
 
 class InferOutputTensorConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: pb.ModelInferResponse.InferOutputTensor
-    ) -> types.ResponseOutput:
+    def to_types(cls, pb_object: pb.ModelInferResponse.InferOutputTensor) -> types.ResponseOutput:
         pass
 
     @classmethod
@@ -352,25 +318,19 @@ class InferOutputTensorConverter:
 
 class RepositoryIndexRequestConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: mr_pb.RepositoryIndexRequest
-    ) -> types.RepositoryIndexRequest:
+    def to_types(cls, pb_object: mr_pb.RepositoryIndexRequest) -> types.RepositoryIndexRequest:
         return types.RepositoryIndexRequest(
             ready=pb_object.ready,
         )
 
     @classmethod
-    def from_types(
-        cls, type_object: types.RepositoryIndexRequest
-    ) -> mr_pb.RepositoryIndexRequest:
+    def from_types(cls, type_object: types.RepositoryIndexRequest) -> mr_pb.RepositoryIndexRequest:
         raise NotImplementedError("")
 
 
 class RepositoryIndexResponseConverter:
     @classmethod
-    def to_types(
-        cls, pb_object: mr_pb.RepositoryIndexResponse
-    ) -> types.RepositoryIndexResponse:
+    def to_types(cls, pb_object: mr_pb.RepositoryIndexResponse) -> types.RepositoryIndexResponse:
         raise NotImplementedError("")
 
     @classmethod
@@ -378,10 +338,7 @@ class RepositoryIndexResponseConverter:
         cls, type_object: types.RepositoryIndexResponse
     ) -> mr_pb.RepositoryIndexResponse:
         return mr_pb.RepositoryIndexResponse(
-            models=[
-                RepositoryIndexResponseItemConverter.from_types(model)
-                for model in type_object
-            ]
+            models=[RepositoryIndexResponseItemConverter.from_types(model) for model in type_object]
         )
 
 

@@ -14,8 +14,7 @@ class TransportNotFound(RegistryError):
         msg = f"Transport for {uri} not found. Available transport:\n\n"
 
         msg += "\n".join(
-            f"{type(transport).__name__}: {transport.__doc__}"
-            for transport in transports
+            f"{type(transport).__name__}: {transport.__doc__}" for transport in transports
         )
 
         super().__init__(msg)

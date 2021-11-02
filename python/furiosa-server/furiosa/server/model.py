@@ -5,9 +5,9 @@ Model class for prediction/explanation
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, overload
 
-import numpy as np
 from furiosa.runtime import session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
+import numpy as np
 
 from .settings import ModelConfig
 from .types import (
@@ -143,5 +143,4 @@ class NuxModel(Model):
         )
 
     def decode(self, tensor: TensorDesc, request_input: RequestInput) -> np.ndarray:
-        datatype: str = repr(tensor.dtype())
-        return np.array(request_input.data, datatype)
+        return np.array(request_input.data, dtype=tensor.numpy_dtype).reshape(tensor.shape)
