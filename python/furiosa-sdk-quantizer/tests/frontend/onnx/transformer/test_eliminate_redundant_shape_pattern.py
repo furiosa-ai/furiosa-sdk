@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (
+from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
     Pattern_1,
     Pattern_2,
     Pattern_3,
@@ -13,7 +13,7 @@ from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pat
     Pattern_6,
     Pattern_7,
     Pattern_8,
-    EliminateRedundantReshapePattern,
+    EliminateRedundantShapePattern,
 )
 
 from tests.frontend.onnx.transformer import TestTransformer
@@ -159,7 +159,7 @@ class UnitTestModel8(nn.Module, ABC):
         return x
 
 
-class TestFuseRedundantReshapePattern(TestTransformer, ABC):
+class TestFuseRedundantShapePattern(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes, transformer):
         orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model
@@ -278,7 +278,7 @@ class TestFuseRedundantReshapePattern(TestTransformer, ABC):
         input_shapes = [(1, 16, 24, 8)]
 
         orig_model, trans_model = self._make_test_model(
-            CompoundTestModel8(), input_shapes, EliminateRedundantReshapePattern()
+            CompoundTestModel8(), input_shapes, EliminateRedundantShapePattern()
         )
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)

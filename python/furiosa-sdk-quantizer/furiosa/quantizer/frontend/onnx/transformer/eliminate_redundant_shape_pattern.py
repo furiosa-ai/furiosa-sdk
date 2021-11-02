@@ -5,7 +5,7 @@ from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 
-class EliminateRedundantReshapePattern(Transformer):
+class EliminateRedundantShapePattern(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         for transformer in [
             Pattern_1,
