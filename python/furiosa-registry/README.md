@@ -18,7 +18,7 @@ This library
 
 Registry sources. As long as there is a descriptor file called `artifact` that defines where to list the model binary and model descriptions, it does not matter what form the registry should be. Github repository is a typical source.
 
-**aritfact.yaml**
+**artifacts.yaml**
 
 Model descriptor file. You can find a complete schema in `artfiact_schema.json` or `furiosa/registry/artifact.py`
 
@@ -55,7 +55,7 @@ artifacts:
 
 **S3, Disk, HTTP**
 
-Data binary transport types. Each repository can store their model binary in several types of transports. `location` field in `artifact.yaml` will be used to decide the transport.
+Data binary transport types. Each repository can store their model binary in several types of transports. `location` field in `artifacts.yaml` will be used to decide the transport.
 
 
 ## Getting started

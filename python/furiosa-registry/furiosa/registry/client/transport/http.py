@@ -9,7 +9,7 @@ from .base import Transport
 
 
 class HTTPTransport(Transport):
-    """Transport for a file fetched via HTTP.
+    """Transport for HTTP.
 
     This transport check specified URI has valid http scheme (e.g. https://, http://)
     """

@@ -40,7 +40,7 @@ async def list(uri: str) -> List[Artifact]:
         uri (str): Registry URI which have a descriptor file (artifact.toml).
 
     Returns:
-        List[Artifact]: Fetched Artifacts.
+        List[Artifact]: Artifacts from the registry.
     """
 
     def serialize(format: str, data: str) -> List[Artifact]:
@@ -54,7 +54,7 @@ async def list(uri: str) -> List[Artifact]:
         return [Artifact.parse_obj(artifact) for artifact in serialized["artifacts"]]
 
     # TODO(ileixe): Implement fallback for different descriptors like artifact.toml.
-    descriptor = "artifact.yaml"
+    descriptor = "artifacts.yaml"
 
     data = (await read(uri, descriptor)).decode()
     return serialize(descriptor.split(".")[1], data)

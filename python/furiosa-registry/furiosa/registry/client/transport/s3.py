@@ -8,7 +8,7 @@ from .base import Transport
 
 
 class S3Transport(Transport):
-    """Transport for a file fetched via S3.
+    """Transport for S3.
 
     This transport check specified URI has valid S3 scheme (e.g. s3://).
     """
