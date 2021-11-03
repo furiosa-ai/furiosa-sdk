@@ -15,6 +15,7 @@ from furiosa.registry import Artifact, Model, ModelMetadata, Publication
 def tflite_artifact() -> Artifact:
     return Artifact(
         name="mlcommons_resnet50_v1.5_int8",
+        version="v1.1",
         family="ResNet",
         location="models/MNISTnet_uint8_quant_without_softmax.tflite",
         format="tflite",
@@ -31,6 +32,7 @@ def tflite_artifact() -> Artifact:
 def onnx_artifact() -> Artifact:
     return Artifact(
         name="mlcommons_ssd_mobilenet_v1_int8",
+        version="v1.1",
         family="MobileNetV1",
         location="https://github.com/furiosa-ai/furiosa-models/raw/main/models/mlcommons/mlcommons_ssd_mobilenet_v1_int8.onnx",  # noqa: E501
         format="onnx",
@@ -45,6 +47,7 @@ def onnx_artifact() -> Artifact:
 def code_artifact() -> Artifact:
     return Artifact(
         name="mlcommons_ssd_resnet34_int8",
+        version="v1.1",
         family="ResNet",
         location="models/model.py",
         format="code",

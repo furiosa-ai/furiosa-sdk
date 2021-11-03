@@ -17,21 +17,19 @@ Logger = logging.getLogger(__name__)
 class CodeResolver(Resolver):
     """Model resolver from a artifact with a code (Pytorch Module, TensorFlow SavedModel)."""
 
-    async def resolve(
-        self, uri: str, artifact: Artifact, version: str = "", *args: Any, **kwargs: Any
-    ) -> Model:
+    async def resolve(self, uri: str, artifact: Artifact, *args: Any, **kwargs: Any) -> Model:
         assert is_relative(
             artifact.location
         ), "'location' should be relative path for 'code' format."
 
         model = await self.load(uri, artifact.name, artifact.location, *args, **kwargs)
 
-        # Override values provided by the artifact or user(version) when it exists
+        # Override values provided by the artifact when it exists
         model.name = artifact.name
         model.description = (
             artifact.metadata and artifact.metadata.description
         ) or model.description
-        model.version = version or model.version
+        model.version = artifact.version or model.version
 
         if artifact.doc:
             model.__doc__ = (await self.read(uri, artifact.doc)).decode()

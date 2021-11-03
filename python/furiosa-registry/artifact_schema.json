@@ -7,6 +7,10 @@
       "title": "Name",
       "type": "string"
     },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
     "family": {
       "title": "Family",
       "type": "string"
@@ -73,7 +77,8 @@
           "title": "Url",
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "ModelMetadata": {
       "title": "ModelMetadata",
@@ -87,7 +92,8 @@
         "publication": {
           "$ref": "#/definitions/Publication"
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }

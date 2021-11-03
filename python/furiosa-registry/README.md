@@ -99,8 +99,7 @@ repository = "https://github.com/furiosa-ai/furiosa-models"
 # Model name described in 'artifacts.yaml' at the repository.
 model = "mlcommons_resnet50"
 
-# Model version to be created. Note that this version is different from how the registry defined.
-# If you want to choose specific version, follow the URI scheme to indicate the required version.
+# Model version described in 'artifacts.yaml' at the repository.
 version = "v1.1
 
 # Load available model from the repository.

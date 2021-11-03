@@ -1,6 +1,6 @@
 """FuriosaAI registry client."""
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import toml
 import yaml
@@ -13,24 +13,30 @@ from .transport import read
 __all__ = ["list", "load", "help"]
 
 
-async def load(uri: str, name: str, version: str = "", *args: Any, **kwargs: Any) -> Model:
+async def load(
+    uri: str, name: str, version: Optional[str] = None, *args: Any, **kwargs: Any
+) -> Model:
     """Load models from the specified registry URI.
 
     Args:
         uri (str): Registry URI which have a descriptor file (artifact.toml).
         name (str): Model name in a descriptor file.
-        version (Optional[str]): Model version to be created.
+        version (Optional[str]): Model version in a descriptor file.
         args, kwargs (Any): Arguments for Model instantiation.
 
     Returns:
         Model: A model loaded from the registry.
     """
 
-    artifacts = [artifact for artifact in await list(uri) if artifact.name == name]
+    artifacts = [
+        artifact
+        for artifact in await list(uri)
+        if artifact.name == name and artifact.version == version
+    ]
 
     assert len(artifacts) == 1, "Model name should be unique in a artifact descriptor"
 
-    return await resolve(uri, artifacts[0], version, *args, **kwargs)
+    return await resolve(uri, artifacts[0], *args, **kwargs)
 
 
 async def list(uri: str) -> List[Artifact]:

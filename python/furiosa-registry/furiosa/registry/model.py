@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseConfig, BaseModel, Extra
+from pydantic import BaseConfig, BaseModel, Extra, Field
 
 
 class Config(BaseConfig):
@@ -36,7 +36,7 @@ class Model(BaseModel):
     #
     # See https://github.com/samuelcolvin/pydantic/discussions/2756
     #     https://github.com/samuelcolvin/pydantic/pull/2593
-    model: bytes
+    model: bytes = Field(repr=False)
     version: Optional[str] = None
     description: Optional[str] = None
 

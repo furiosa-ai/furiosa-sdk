@@ -45,6 +45,7 @@ class Artifact(BaseModel):
     __config__ = Config
 
     name: str
+    version: Optional[str] = None
     family: str
     location: str
     format: Format
