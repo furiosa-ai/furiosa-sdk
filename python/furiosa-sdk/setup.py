@@ -29,8 +29,7 @@ my_dir = dirname(__file__)
 here = os.path.abspath(os.path.dirname(__file__))
 
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
-    "cli": ["furiosa-sdk-cli~=" + version],
-    "runtime": ["furiosa-sdk-runtime~=" + version],
+    "server": ["furiosa-server~=" + version],
     "quantizer": ["furiosa-sdk-quantizer~=" + version],
     "validator": ["furiosa-sdk-model-validator~=" + version]
 }
@@ -122,6 +121,7 @@ def do_setup() -> None:
         cmdclass={
             'develop': Develop,
         },
+        entry_points={"console_scripts": ["furiosa=furiosa.cli:main"]},
         **setup_kwargs,
     )
 

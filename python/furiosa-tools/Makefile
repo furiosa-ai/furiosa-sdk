@@ -16,10 +16,7 @@ upload:
 	twine upload dist/*
 
 test:
-	pytest --capture=no
-
-doc:
-	pdoc3 --html --force --output-dir html_output furiosa
+	python ./setup.py test
 
 clean:
 	rm -rf build dist/* *.egg-info

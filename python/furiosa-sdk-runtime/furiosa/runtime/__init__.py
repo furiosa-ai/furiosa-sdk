@@ -2,7 +2,7 @@
 
 from furiosa.common.utils import get_sdk_version
 
-from ._api import LIBNUX
+from ._api import LIBNUX, runtime_version
 
 
 def full_version() -> str:

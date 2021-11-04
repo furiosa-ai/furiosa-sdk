@@ -10,14 +10,11 @@ from furiosa.common.utils import get_sdk_version
 from furiosa.quantizer.frontend.onnx import (
     post_training_quantization_with_random_calibration,
 )
+from furiosa.common.utils import eprint
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.runtime import session
 
 __version__ = get_sdk_version("furiosa.validator")
-
-
-def _eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
 
 
 def validate(model_path: Path):
@@ -30,7 +27,7 @@ def validate(model_path: Path):
     tmpfile = tempfile.NamedTemporaryFile()
 
     if not model_path.exists():
-        _eprint(f'ERROR: {model_path} does not exist')
+        eprint(f'ERROR: {model_path} does not exist')
 
     # Try quantization on input models
     print(f'[Step 1] Checking if the model can be transformed into a quantized model ...')
@@ -41,14 +38,14 @@ def validate(model_path: Path):
                                                                              mode=QuantizationMode.dfg,
                                                                              num_data=10)
     except Exception as e:
-        _eprint("[Step 1] Failed\n")
+        eprint("[Step 1] Failed\n")
         raise e
     print(f'[Step 1] Passed')
 
     try:
         onnx.save_model(quantized_model, tmpfile.name)
     except Exception as e:
-        _eprint("[ERROR] Fail to save the model\n")
+        eprint("[ERROR] Fail to save the model\n")
         raise e
 
     print(f'[Step 2] Checking the model can be compiled to a NPU program ...')
@@ -57,7 +54,7 @@ def validate(model_path: Path):
             model = model_file.read()
             session.create(model=model)
     except Exception as e:
-        _eprint("[Step 2] Failed\n")
+        eprint("[Step 2] Failed\n")
         raise e
     print(f'[Step 2] Passed')
 
