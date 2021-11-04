@@ -24,8 +24,8 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern 
     FuseRedundantReshapePattern,
 )
 from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad
-from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_reshape_pattern import (
-    EliminateRedundantReshapePattern,
+from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
+    EliminateRedundantShapePattern,
 )
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
@@ -58,7 +58,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FuseLayerNormalization().transform,
         FuseLpNormalization().transform,
         FuseRedundantReshapePattern().transform,
-        EliminateRedundantReshapePattern().transform,
+        EliminateRedundantShapePattern().transform,
     ]
     return _transform(transformers, model)
 
