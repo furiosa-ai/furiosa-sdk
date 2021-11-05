@@ -7,6 +7,7 @@ from furiosa.runtime import LIBNUX
 versionPattern = r'\d+(=?\.(\d+(=?\.(\d+)*)*)*)*'
 regexMatcher = re.compile(versionPattern)
 
+
 class TestTensor(unittest.TestCase):
     def test_version(self):
         self.assertTrue(len(runtime.__version__) > 0)

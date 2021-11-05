@@ -2,21 +2,19 @@ import random
 import unittest
 
 import numpy as np
-import tensorflow as tf
+import mnist
 from furiosa.runtime import session, errors
-from tests.test_base import MNIST_MOBINENET_V2, AsyncSessionTester, ensure_test_device
+from tests.test_base import MNIST_ONNX, AsyncSessionTester, ensure_test_device
 
 NPU_DEVICE_READY = ensure_test_device()
 
 
 class TestAsyncSession(unittest.TestCase):
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
-    x_train = np.reshape(x_train, (60000, 28, 28, 1))
-    x_test = np.reshape(x_test, (10000, 28, 28, 1))
+    mnist_images = mnist.train_images().reshape((60000, 1, 28, 28)).astype(np.float32)
 
     @classmethod
     def setUpClass(cls):
-        cls.tester = AsyncSessionTester(MNIST_MOBINENET_V2)
+        cls.tester = AsyncSessionTester(MNIST_ONNX)
 
     @classmethod
     def tearDownClass(cls):
@@ -28,7 +26,7 @@ class TestAsyncSession(unittest.TestCase):
         items = 50
         for i in range(0, items):
             idx = random.randrange(0, 9999, 1)
-            ndarray_value = self.x_test[idx:idx + 1]
+            ndarray_value = self.mnist_images[idx:idx + 1]
             async_sess.submit([ndarray_value], i)
 
         keys = set()
@@ -46,7 +44,7 @@ class TestAsyncSessionExceptions(unittest.TestCase):
         sess = None
         queue = None
         try:
-            sess, queue = session.create_async(MNIST_MOBINENET_V2,
+            sess, queue = session.create_async(MNIST_ONNX,
                                                worker_num=1,
                                                input_queue_size=1,
                                                output_queue_size=1,
@@ -61,7 +59,7 @@ class TestAsyncSessionExceptions(unittest.TestCase):
         nux_sess = None
         nux_queue = None
         try:
-            nux_sess, nux_queue = session.create_async(model=MNIST_MOBINENET_V2)
+            nux_sess, nux_queue = session.create_async(model=MNIST_ONNX)
             self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
             nux_sess.close()
             self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
@@ -79,8 +77,8 @@ class TestDeviceBusy(unittest.TestCase):
         sess = None
         queue = None
         try:
-            sess, queue = session.create_async(MNIST_MOBINENET_V2)
-            self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_MOBINENET_V2))
+            sess, queue = session.create_async(MNIST_ONNX)
+            self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_ONNX))
         finally:
             if sess:
                 sess.close()
