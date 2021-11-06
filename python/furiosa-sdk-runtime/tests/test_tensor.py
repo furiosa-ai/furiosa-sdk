@@ -34,7 +34,7 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(784, tensor.length)
         self.assertEqual(3136, tensor.size)
         self.assertEqual(tensor.__repr__(),
-                         "TensorDesc(name=\"Input3\", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)")
+                         'TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)')
 
     def test_tensor(self):
         sess = self.sess
@@ -49,7 +49,7 @@ class TestTensor(unittest.TestCase):
 
         # Testing TensorArray.__repr__()
         inputs[0] = np.zeros(inputs[0].shape, np.float32)
-        self.assertEqual(inputs[0].__repr__(), "Tensor(name=\"Input3\", shape=(1, 1, 28, 28), dtype=FLOAT32)")
+        self.assertEqual(inputs[0].__repr__(), 'Tensor(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32)')
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)

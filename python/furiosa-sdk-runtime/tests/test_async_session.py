@@ -3,6 +3,7 @@ import unittest
 
 import numpy as np
 import mnist
+
 from furiosa.runtime import session, errors
 from tests.test_base import MNIST_ONNX, AsyncSessionTester, ensure_test_device
 
