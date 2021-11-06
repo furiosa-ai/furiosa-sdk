@@ -23,10 +23,12 @@ class TestSession(unittest.TestCase):
     def test_run(self):
         sess = self.tester.session
 
-        self.assertEqual("""Inputs:
+        self.assertEqual(sess.summary(),
+                         """\
+Inputs:
 {0: TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)}
 Outputs:
-{0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""", sess.summary())
+{0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""")
 
         items = 50
         for _ in range(0, items):
@@ -37,7 +39,7 @@ Outputs:
 
             result1 = sess.run(ndarray_value)
             result2 = sess.run([ndarray_value])
-            np.array_equal(result1.numpy(), result2.numpy())
+            self.assertTrue(np.array_equal(result1.numpy(), result2.numpy()))
 
     def test_run_invalid_input(self):
         sess = self.tester.session

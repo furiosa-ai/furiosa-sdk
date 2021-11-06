@@ -53,7 +53,6 @@ class TestTensor(unittest.TestCase):
 
         for i in range(0, 10):
             idx = random.randrange(0, 9999, 1)
-            # Transpose axis and cast the type
             ndarray_value = self.mnist_images[idx:idx + 1]
 
             inputs[0] = ndarray_value
