@@ -194,7 +194,7 @@ class Tensor:
         repr = self.__class__.__name__ + "("
 
         if self.desc.name:
-            repr += "name=\"" + self.desc.name + "\", "
+            repr += f'name="{self.desc.name}", '
 
         repr += f"shape={self.desc.shape}, dtype={self.desc.dtype.__repr__()})"
 
