@@ -226,6 +226,48 @@ def getWithDistribVersion(version) {
   return version + "-" + getDistribVersion()
 }
 
+def pypiIndexUrlOption(repo) {
+  if (repo == "furiosa") {
+    return "--index-url https://internal-pypi.furiosa.dev/simple/"
+  } else if (repo == "testpypi") {
+    return "--index-url https://test.pypi.org/simple/"
+  } else if (repo == "pypi") {
+    return ""
+  }
+}
+
+def publishPackages(pythonVersion, repo) {
+  sdk_modules.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version
+
+    cd python/${it} && twine upload -r ${repo} dist/*
+    """
+  }
+}
+
+def validatePypiPackage(pythonVersion, indexOption) {
+  sdk_modules.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version
+
+    pip uninstall -y ${it}
+    """
+  }
+
+  sh """#!/bin/bash
+  source ${WORKSPACE}/miniconda/bin/activate;
+  conda activate env-${pythonVersion};
+  python --version
+
+  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${FURIOSA_SDK_VERSION}
+  """
+}
+
 pipeline {
   agent {
     kubernetes {
@@ -233,6 +275,21 @@ pipeline {
     defaultContainer "default"
     yaml officeFpgaPod("1", "4Gi")
   } }
+
+  triggers {
+    parameterizedCron('''
+# leave spaces where you want them around the parameters. They'll be trimmed.
+H 21 * * * %UPLOAD_INTERNAL_PYPI=true
+    ''')
+  }
+
+  parameters {
+    booleanParam(
+      name: 'UPLOAD_INTERNAL_PYPI',
+      defaultValue: false,
+      description: 'Skip the publish of Debian packages to Apt repository if true'
+    )
+  }
 
   environment {
     // Constants
@@ -245,6 +302,7 @@ pipeline {
     PYTHON_3_7 = "true"
     PYTHON_3_8 = "true"
     PYTHON_3_9 = "true"
+    FURIOSA_SDK_VERSION = "0.5.0.dev0"
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
@@ -314,6 +372,18 @@ pipeline {
         container('default') {
           script {
             runAllTests("3.9")
+          }
+        }
+      }
+    }
+
+    stage('Upload to Internal Pypi') {
+      when { expression { params.UPLOAD_INTERNAL_PYPI.toBoolean() } }
+      steps {
+        container('default') {
+          script {
+            publishPackages("${DEFAULT_PYTHON_VER}", "furiosa")
+            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"))
           }
         }
       }
