@@ -1,19 +1,19 @@
+import logging
 import os
 import random
+from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
-from pathlib import Path
+import onnxruntime
 
 from furiosa.runtime import session
 from tests import test_data
-import logging
 
 LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(level=LOGLEVEL)
 
 
-MNIST_MOBINENET_V2 = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
+MNIST_ONNX = test_data("mnist-8.onnx")
 NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
 
 
@@ -41,22 +41,17 @@ class AsyncSessionTester:
 
 class PredictionTester:
     def __init__(self, model_path):
-        self.tf_sess = tf.lite.Interpreter(model_path=model_path)
+        self.sess = onnxruntime.InferenceSession(model_path)
 
     def _run_nux(self, inputs: np.ndarray):
         pass
 
-    def _run_tf(self, inputs: np.ndarray):
-        self.tf_sess.allocate_tensors()
-        tf_inputs = self.tf_sess.get_input_details()
-        tf_outputs = self.tf_sess.get_output_details()
-
-        self.tf_sess.set_tensor(tf_inputs[0]['index'], inputs)
-        self.tf_sess.invoke()
-        return self.tf_sess.get_tensor(tf_outputs[0]['index'])
+    def _run_onnxrt(self, inputs: np.ndarray):
+        input_name = self.sess.get_inputs()[0].name
+        return self.sess.run(None, {input_name: inputs})
 
     def assert_equals(self, inputs: np.ndarray):
-        tf_results = self._run_tf(inputs)
+        tf_results = self._run_onnxrt(inputs)
         nux_results = self._run_nux(inputs)
 
         assert_tensors_equal(tf_results, nux_results)
