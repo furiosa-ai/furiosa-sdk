@@ -31,7 +31,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "server": ["furiosa-server~=" + version],
     "quantizer": ["furiosa-sdk-quantizer~=" + version],
-    "validator": ["furiosa-sdk-model-validator~=" + version]
+    "validator": ["furiosa-model-validator~=" + version]
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need

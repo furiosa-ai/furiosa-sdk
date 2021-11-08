@@ -64,7 +64,7 @@ Advanced Topics
 Code Examples
 -------------------
 * `Python SDK Quantization <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-quantizer>`_
-* `Python SDK Inference <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-runtime>`_
+* `Python SDK Inference <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-runtime>`_
 
 
 Other links

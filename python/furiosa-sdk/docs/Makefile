@@ -22,7 +22,7 @@ help:
 
 doc:
 	mkdir -p $(BUILDDIR)/src/$(FURIOSADOCS)
-	cp -a ../../furiosa-sdk-runtime/furiosa/runtime $(BUILDDIR)/src/$(FURIOSADOCS)/runtime
+	cp -a ../../furiosa-runtime/furiosa/runtime $(BUILDDIR)/src/$(FURIOSADOCS)/runtime
 	cp -a ../../furiosa-sdk-quantizer/furiosa/quantizer $(BUILDDIR)/src/$(FURIOSADOCS)/quantizer
 	rsync -av --progress ../furiosa $(BUILDDIR)/src --exclude runtime
 	sphinx-apidoc -o . $(BUILDDIR)/src $(BUILDDIR)/src/$(FURIOSADOCS)/runtime/errors/*

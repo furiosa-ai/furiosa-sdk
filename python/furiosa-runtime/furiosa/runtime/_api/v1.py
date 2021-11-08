@@ -1,12 +1,13 @@
 """C Native library binding"""
 
 import ctypes
+from ctypes import POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 import logging
 import os
-from ctypes import POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 from typing import List
 
-from furiosa.common.native import find_native_libs, LogLevel
+from furiosa.common.native import LogLevel, find_native_libs
+
 from furiosa.runtime import consts
 
 LOG = logging.getLogger(__name__)
@@ -97,15 +98,27 @@ LIBNUX.nux_session_get_model.restype = c_void_p
 LIBNUX.nux_session_run.argtypes = [c_void_p, c_void_p, c_void_p]
 LIBNUX.nux_session_run.restype = c_int
 
-LIBNUX.nux_session_run_with.argtypes = [c_void_p, POINTER(c_char_p), c_ulonglong, POINTER(c_char_p), c_ulonglong, \
-                                        c_void_p, c_void_p]
+LIBNUX.nux_session_run_with.argtypes = [
+    c_void_p,
+    POINTER(c_char_p),
+    c_ulonglong,
+    POINTER(c_char_p),
+    c_ulonglong,
+    c_void_p,
+    c_void_p,
+]
 LIBNUX.nux_session_run_with.restype = c_int
 
 LIBNUX.nux_session_destroy.argtypes = [c_void_p]
 LIBNUX.nux_session_destroy.restype = None
 
-LIBNUX.nux_async_session_create.argtypes = \
-    [c_void_p, c_ulonglong, c_void_p, POINTER(c_void_p), POINTER(c_void_p)]
+LIBNUX.nux_async_session_create.argtypes = [
+    c_void_p,
+    c_ulonglong,
+    c_void_p,
+    POINTER(c_void_p),
+    POINTER(c_void_p),
+]
 LIBNUX.nux_async_session_create.restype = c_int
 
 LIBNUX.nux_async_session_get_model.argtypes = [c_void_p]
@@ -117,17 +130,31 @@ LIBNUX.nux_async_session_run.restype = c_int
 LIBNUX.nux_async_session_destroy.argtypes = [c_void_p]
 LIBNUX.nux_async_session_destroy.restype = None
 
-LIBNUX.nux_completion_queue_next.argtypes = [c_void_p, POINTER(ctypes.py_object), POINTER(c_void_p), POINTER(c_int)]
+LIBNUX.nux_completion_queue_next.argtypes = [
+    c_void_p,
+    POINTER(ctypes.py_object),
+    POINTER(c_void_p),
+    POINTER(c_int),
+]
 LIBNUX.nux_completion_queue_next.restype = c_bool
 
-LIBNUX.nux_completion_queue_next_timeout.argtypes = [c_void_p, c_ulonglong, POINTER(ctypes.py_object),
-                                                     POINTER(c_void_p), POINTER(c_int)]
+LIBNUX.nux_completion_queue_next_timeout.argtypes = [
+    c_void_p,
+    c_ulonglong,
+    POINTER(ctypes.py_object),
+    POINTER(c_void_p),
+    POINTER(c_int),
+]
 LIBNUX.nux_completion_queue_next_timeout.restype = c_bool
 
 LIBNUX.nux_tensor_array_create_by_names.argtypes = [c_void_p, POINTER(ctypes.c_char_p), c_ulonglong]
 LIBNUX.nux_tensor_array_create_by_names.restype = c_void_p
 
-LIBNUX.nux_tensor_array_allocate_by_names.argtypes = [c_void_p, POINTER(ctypes.c_char_p), c_ulonglong]
+LIBNUX.nux_tensor_array_allocate_by_names.argtypes = [
+    c_void_p,
+    POINTER(ctypes.c_char_p),
+    c_ulonglong,
+]
 LIBNUX.nux_tensor_array_allocate_by_names.restype = c_void_p
 
 LIBNUX.nux_tensor_array_create_inputs.argtypes = [c_void_p]
@@ -165,8 +192,11 @@ LIBNUX.nux_tensor_len.restype = c_ulonglong
 LIBNUX.nux_tensor_size.argtypes = [c_void_p]
 LIBNUX.nux_tensor_size.restype = c_ulonglong
 
-LIBNUX.tensor_get_buffer.argtypes = \
-    [c_void_p, POINTER(POINTER(ctypes.c_uint8)), POINTER(c_ulonglong)]
+LIBNUX.tensor_get_buffer.argtypes = [
+    c_void_p,
+    POINTER(POINTER(ctypes.c_uint8)),
+    POINTER(c_ulonglong),
+]
 LIBNUX.tensor_get_buffer.restype = c_int
 
 LIBNUX.nux_buffer_destroy.argtypes = [POINTER(ctypes.c_uint8), c_ulonglong]
@@ -192,5 +222,7 @@ LIBNUX.register_signal_handler()
 
 
 def runtime_version() -> str:
-    return f"{LIBNUX.version().decode('utf-8')} " \
-           f"(rev: {LIBNUX.git_short_hash().decode('utf-8')} built at {LIBNUX.build_timestamp().decode('utf-8')})"
+    return (
+        f"{LIBNUX.version().decode('utf-8')} "
+        f"(rev: {LIBNUX.git_short_hash().decode('utf-8')} built at {LIBNUX.build_timestamp().decode('utf-8')})"
+    )

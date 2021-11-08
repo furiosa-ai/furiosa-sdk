@@ -1,9 +1,9 @@
 sdk_modules = [
     // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
   'furiosa-tools',
-  'furiosa-sdk-runtime',
+  'furiosa-runtime',
   'furiosa-sdk-quantizer',
-  'furiosa-sdk-model-validator',
+  'furiosa-model-validator',
   'furiosa-registry',
   'furiosa-sdk',
   'furiosa-server',
@@ -13,13 +13,15 @@ format_applied = [
   "furiosa-registry",
   "furiosa-server",
   'furiosa-tools',
+  'furiosa-runtime',
+  'furiosa-model-validator',
 ]
 
 test_modules = [
   "furiosa-tools",
   "furiosa-registry",
   "furiosa-sdk-quantizer",
-  "furiosa-sdk-runtime",
+  "furiosa-runtime",
   "furiosa-server"
 ]
 

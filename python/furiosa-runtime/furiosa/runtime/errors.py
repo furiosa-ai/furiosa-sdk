@@ -1,12 +1,13 @@
 """Nux Exception and Error"""
 import ctypes
-import typing
 from enum import IntEnum
+import typing
 from typing import Optional
 
 
 class NativeError(IntEnum):
     """Python object correspondnig to nux_error_t in Nux C API"""
+
     SUCCESS = 0
     NUX_CREATION_FAILED = 1
     MODEL_DEPLOY_FAILED = 2
@@ -79,6 +80,7 @@ class FuriosaError(Exception):
 
 class NativeException(FuriosaError):
     """general exception caused by Nuxpy"""
+
     native_err: Optional[NativeError]
 
     def __init__(self, message: str, native_err: NativeError = None):
@@ -103,16 +105,16 @@ class IncompatibleModel(NativeException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("model binary is not compatible",
-                         NativeError.INCOMPATIBLE_MODEL)
+        super().__init__("model binary is not compatible", NativeError.INCOMPATIBLE_MODEL)
 
 
 class CompilationFailed(NativeException):
     """when Nux fails to compile a given model image to NPU model binary"""
 
     def __init__(self):
-        super().__init__("fail to compile a given model to NPU binary",
-                         NativeError.COMPILATION_FAILED)
+        super().__init__(
+            "fail to compile a given model to NPU binary", NativeError.COMPILATION_FAILED
+        )
 
 
 class InternalError(NativeException):
@@ -126,8 +128,9 @@ class UnsupportedTensorType(NativeException):
     """Unsupported tensor type"""
 
     def __init__(self):
-        super().__init__("numpy.ndarray, TensorArray are only supported",
-                         NativeError.INVALID_INPUTS)
+        super().__init__(
+            "numpy.ndarray, TensorArray are only supported", NativeError.INVALID_INPUTS
+        )
 
 
 class UnsupportedDataType(NativeException):
@@ -141,68 +144,66 @@ class IncompatibleApiClientError(NativeException):
     """When both API client and server are incompatible"""
 
     def __init__(self):
-        super().__init__("incompatible client with Furiosa API server",
-                         NativeError.INCOMPATIBLE_API_CLIENT_ERROR)
+        super().__init__(
+            "incompatible client with Furiosa API server", NativeError.INCOMPATIBLE_API_CLIENT_ERROR
+        )
 
 
 class InvalidYamlException(NativeException):
     """When Renegade compiler cannot recognize a given model image binary"""
 
     def __init__(self):
-        super().__init__("compiler config is not valid YAML",
-                         NativeError.INVALID_YAML)
+        super().__init__("compiler config is not valid YAML", NativeError.INVALID_YAML)
 
 
 class ApiClientInitFailed(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("fail to initialize API client",
-                         NativeError.API_CLIENT_INIT_FAILED)
+        super().__init__("fail to initialize API client", NativeError.API_CLIENT_INIT_FAILED)
 
 
 class NoApiKeyException(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("no API keys. Please check your API keys.",
-                         NativeError.NO_API_KEY)
+        super().__init__("no API keys. Please check your API keys.", NativeError.NO_API_KEY)
 
 
 class InvalidSessionOption(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("invalid options passed to session.create() or create_async()",
-                         NativeError.INVALID_SESSION_OPTIONS)
+        super().__init__(
+            "invalid options passed to session.create() or create_async()",
+            NativeError.INVALID_SESSION_OPTIONS,
+        )
 
 
 class QueueWaitTimeout(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("queue waiting timed out",
-                         NativeError.QUEUE_WAIT_TIMEOUT)
+        super().__init__("queue waiting timed out", NativeError.QUEUE_WAIT_TIMEOUT)
 
 
 class SessionTerminated(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Session or AsyncSession terminated",
-                         NativeError.SESSION_TERMINATED)
+        super().__init__("Session or AsyncSession terminated", NativeError.SESSION_TERMINATED)
 
 
 class DeviceBusy(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("NPU device busy",
-                         NativeError.DEVICE_BUSY)
+        super().__init__("NPU device busy", NativeError.DEVICE_BUSY)
 
 
 class InvalidInput(FuriosaError):
     """when input tensors are invalid with any reason"""
+
     def __init__(self, message: str = "Invalid input tensors"):
         super().__init__(message)
 
@@ -211,16 +212,14 @@ class TensorNameNotFound(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Tensor name not found",
-                         NativeError.TENSOR_NAME_NOT_FOUND)
+        super().__init__("Tensor name not found", NativeError.TENSOR_NAME_NOT_FOUND)
 
 
 class UnsupportedFeature(NativeException):
     """when api client fails to initialize due to api keys or others"""
 
     def __init__(self):
-        super().__init__("Unsupported feature",
-                         NativeError.UNSUPPORTED_FEATURE)
+        super().__init__("Unsupported feature", NativeError.UNSUPPORTED_FEATURE)
 
 
 _errors_to_exceptions = {
@@ -238,6 +237,7 @@ _errors_to_exceptions = {
     NativeError.TENSOR_NAME_NOT_FOUND: TensorNameNotFound(),
     NativeError.UNSUPPORTED_FEATURE: UnsupportedFeature(),
 }
+
 
 def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
     """
@@ -263,4 +263,3 @@ def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
         return _errors_to_exceptions[err]
 
     return InternalError()
-
