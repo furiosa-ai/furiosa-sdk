@@ -303,7 +303,6 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
     PYTHON_3_7 = "true"
     PYTHON_3_8 = "true"
     PYTHON_3_9 = "true"
-    FURIOSA_SDK_VERSION = "0.5.0.dev0"
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
