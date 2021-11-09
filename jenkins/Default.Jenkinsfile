@@ -252,25 +252,30 @@ def extractSdkVersion() {
     return sh(script: """grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
 }
 
-def validatePypiPackage(pythonVersion, indexOption) {
-  sdk_modules.each() {
+def getNightlyVersion() {
+    return extractSdkVersion().replaceFirst("dev[0-9]", "dev${NIGHTLY_BUILD_ID}")
+}
+
+def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
+  sdk_modules.each { module ->
     sh """#!/bin/bash
     source ${WORKSPACE}/miniconda/bin/activate;
     conda activate env-${pythonVersion};
     python --version
 
-    pip uninstall -y ${it}
+    pip uninstall -y ${module}
+    pip install --no-cache-dir --upgrade --pre ${indexOption} ${module}==${sdkVersion}
+    pip uninstall -y ${module}
     """
   }
 
-  sdk_version = extractSdkVersion()
-
+  // Checking full dependency
   sh """#!/bin/bash
   source ${WORKSPACE}/miniconda/bin/activate;
   conda activate env-${pythonVersion};
   python --version
 
-  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${sdk_version}
+  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${sdkVersion}
   """
 }
 
@@ -390,13 +395,16 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
       steps {
         container('default') {
           script {
-            sdk_version = extractSdkVersion().replace("dev[0-9]", "${NIGHTLY_BUILD_ID}")
+            nightlyVersion = getNightlyVersion()
             sh """
             cd python/furiosa-sdk;
-            SDK_VERSION=${sdk_version} make update_version
+            SDK_VERSION=${nightlyVersion} make update_version
             """
+
+            setupPythonEnv(DEFAULT_PYTHON_VER)
+            buildPackages(DEFAULT_PYTHON_VER)
             publishPackages("${DEFAULT_PYTHON_VER}", "furiosa")
-            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"))
+            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"), nightlyVersion)
           }
         }
       }
