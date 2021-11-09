@@ -264,7 +264,8 @@ def validatePypiPackage(pythonVersion, indexOption) {
   conda activate env-${pythonVersion};
   python --version
 
-  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${FURIOSA_SDK_VERSION}
+  FURIOSA_SDK_VERSION=`grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py`
+  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==\$FURIOSA_SDK_VERSION
   """
 }
 
@@ -287,7 +288,7 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
     booleanParam(
       name: 'UPLOAD_INTERNAL_PYPI',
       defaultValue: false,
-      description: 'Skip the publish of Debian packages to Apt repository if true'
+      description: 'Upload Python packages to internal Pypi server if true'
     )
   }
 
