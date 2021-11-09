@@ -1,34 +1,38 @@
 """Session and its asynchronous API for model inference"""
 
 import ctypes
-import typing
 from ctypes import byref, c_int, c_void_p
 from pathlib import Path
-from typing import Dict, Union, Optional, List
+import typing
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import yaml
 
 from . import envs
 from ._api import LIBNUX
-from ._api.v1 import decref, increase_ref_count, runtime_version, convert_to_cchar_array
+from ._api.v1 import convert_to_cchar_array, decref, increase_ref_count, runtime_version
 from ._util import dump_info
 from .compiler import _model_image, generate_compiler_log_path
 from .errors import InvalidInput, UnsupportedTensorType, into_exception, is_err, is_ok
 from .model import Model, TensorArray
-from .tensor import TensorDesc, Tensor
+from .tensor import Tensor, TensorDesc
 
 
 def _fill_tensor(value: Union[np.ndarray, np.generic], target: Tensor):
     if value.shape != target.shape or value.dtype != target.numpy_dtype:
-        raise InvalidInput(f"{value.shape} ({value.dtype} is expected, "
-                                    f"but {target.shape} (${target.numpy_dtype}")
+        raise InvalidInput(
+            f"{value.shape} ({value.dtype} is expected, "
+            f"but {target.shape} (${target.numpy_dtype}"
+        )
 
     target.copy_from(value)
 
 
-def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Union[np.ndarray, np.generic]]],
-                      targets: TensorArray) -> TensorArray:
+def _fill_all_tensors(
+    values: Union[np.ndarray, np.generic, TensorArray, List[Union[np.ndarray, np.generic]]],
+    targets: TensorArray,
+) -> TensorArray:
     """
     Fills `targets` with buffers copied from `values`
     """
@@ -38,8 +42,9 @@ def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Un
 
     if isinstance(values, list):
         if len(values) != targets.len:
-            raise InvalidInput(f"{targets.len} tensors are expected, "
-                               f"but {len(values)} tensors are given")
+            raise InvalidInput(
+                f"{targets.len} tensors are expected, " f"but {len(values)} tensors are given"
+            )
 
         for value, target in zip(values, targets):
             _fill_tensor(value, target)
@@ -52,12 +57,14 @@ def _fill_all_tensors(values: Union[np.ndarray, np.generic, TensorArray, List[Un
     raise UnsupportedTensorType()
 
 
-def _create_session_options(device: Optional[str] = None,
-                            worker_num: Optional[int] = None,
-                            compile_config: Optional[Dict[str, object]] = None,
-                            compiler_log: Optional[Path] = None,
-                            input_queue_size: Optional[int] = None,
-                            output_queue_size: Optional[int] = None):
+def _create_session_options(
+    device: Optional[str] = None,
+    worker_num: Optional[int] = None,
+    compile_config: Optional[Dict[str, object]] = None,
+    compiler_log: Optional[Path] = None,
+    input_queue_size: Optional[int] = None,
+    output_queue_size: Optional[int] = None,
+):
     options: c_void_p = LIBNUX.nux_session_option_create()
     if device:
         LIBNUX.nux_session_option_set_device(options, device.encode())
@@ -80,8 +87,13 @@ def _create_session_options(device: Optional[str] = None,
 class Session(Model):
     """Provides a blocking API to run an inference task with a given model"""
 
-    def __init__(self, model: Union[bytes, str, Path], device:str = None, worker_num: int = None,
-                 compile_config: Dict[str, object] = None):
+    def __init__(
+        self,
+        model: Union[bytes, str, Path],
+        device: str = None,
+        worker_num: int = None,
+        compile_config: Dict[str, object] = None,
+    ):
 
         if device is None:
             device = envs.current_npu_device()
@@ -104,8 +116,10 @@ class Session(Model):
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_session_get_model(self)
 
-    def run(self, inputs: Union[np.ndarray, np.generic, TensorArray,
-                                List[Union[np.ndarray, np.generic]]]) -> TensorArray:
+    def run(
+        self,
+        inputs: Union[np.ndarray, np.generic, TensorArray, List[Union[np.ndarray, np.generic]]],
+    ) -> TensorArray:
         """
         Runs an inference task with `inputs`
 
@@ -128,7 +142,9 @@ class Session(Model):
 
         return outputs
 
-    def run_with(self, outputs: typing.List[str], inputs: Dict[str, Union[np.ndarray]]) -> TensorArray:
+    def run_with(
+        self, outputs: typing.List[str], inputs: Dict[str, Union[np.ndarray]]
+    ) -> TensorArray:
         """
         Runs an inference task with `inputs`
 
@@ -148,14 +164,19 @@ class Session(Model):
         input_names_ptr = convert_to_cchar_array(input_names)
         output_names_ptr = convert_to_cchar_array(outputs)
 
-        err = LIBNUX.nux_session_run_with(self.ref, input_names_ptr, len(input_names),
-                                          output_names_ptr, len(outputs),
-                                          input_tensors, output_tensors)
+        err = LIBNUX.nux_session_run_with(
+            self.ref,
+            input_names_ptr,
+            len(input_names),
+            output_names_ptr,
+            len(outputs),
+            input_tensors,
+            output_tensors,
+        )
         if is_err(err):
             raise into_exception(err)
 
         return output_tensors
-
 
     def close(self):
         """Close the session and release all resources belonging to the session"""
@@ -212,16 +233,13 @@ class CompletionQueue:
         if timeout:
             if timeout < 0:
                 raise RuntimeError("the timeout duration must be a positive integer")
-            self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(self.ref,
-                                                                     timeout,
-                                                                     byref(context_ref),
-                                                                     byref(outputs_ref),
-                                                                     byref(err))
+            self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(
+                self.ref, timeout, byref(context_ref), byref(outputs_ref), byref(err)
+            )
         else:
-            self.queue_ok = LIBNUX.nux_completion_queue_next(self.ref,
-                                                             byref(context_ref),
-                                                             byref(outputs_ref),
-                                                             byref(err))
+            self.queue_ok = LIBNUX.nux_completion_queue_next(
+                self.ref, byref(context_ref), byref(outputs_ref), byref(err)
+            )
         context_val = context_ref.value
         decref(context_ref)
 
@@ -271,8 +289,9 @@ class AsyncSession(Model):
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_async_session_get_model(self)
 
-    def submit(self, values: Union[np.ndarray, np.generic, TensorArray],
-               context: object = None) -> None:
+    def submit(
+        self, values: Union[np.ndarray, np.generic, TensorArray], context: object = None
+    ) -> None:
         """
         Submit a prediction request
 
@@ -311,8 +330,12 @@ class AsyncSession(Model):
         self.close()
 
 
-def create(model: Union[bytes, str, Path], device:str = None, worker_num: int = None,
-                 compile_config: Dict[str, object] = None) -> Session:
+def create(
+    model: Union[bytes, str, Path],
+    device: str = None,
+    worker_num: int = None,
+    compile_config: Dict[str, object] = None,
+) -> Session:
     """Creates a session for a model
 
     Args:
@@ -329,9 +352,15 @@ def create(model: Union[bytes, str, Path], device:str = None, worker_num: int = 
     return Session(model, device, worker_num, compile_config)
 
 
-def create_async(model: Union[bytes, str, Path], context_ty: type = None, device: str = None, worker_num: int = None,
-                 input_queue_size: int = None, output_queue_size: int = None,
-                 compile_config: Dict[str, object] = None) -> (AsyncSession, CompletionQueue):
+def create_async(
+    model: Union[bytes, str, Path],
+    context_ty: type = None,
+    device: str = None,
+    worker_num: int = None,
+    input_queue_size: int = None,
+    output_queue_size: int = None,
+    compile_config: Dict[str, object] = None,
+) -> (AsyncSession, CompletionQueue):
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:
@@ -357,14 +386,16 @@ def create_async(model: Union[bytes, str, Path], context_ty: type = None, device
 
         model_image = _model_image(model)
         log_path = generate_compiler_log_path()
-        options = _create_session_options(device, worker_num, compile_config, log_path,
-                                          input_queue_size, output_queue_size)
+        options = _create_session_options(
+            device, worker_num, compile_config, log_path, input_queue_size, output_queue_size
+        )
 
         print(f"Using furiosa-compiler {runtime_version()}")
         sess_ref = c_void_p(None)
         queue_ref = c_void_p(None)
-        err = LIBNUX.nux_async_session_create(model_image, len(model_image), options,
-                                              byref(sess_ref), byref(queue_ref))
+        err = LIBNUX.nux_async_session_create(
+            model_image, len(model_image), options, byref(sess_ref), byref(queue_ref)
+        )
         if is_ok(err):
             sess = AsyncSession(sess_ref)
             return sess, CompletionQueue(queue_ref, context_ty, sess.outputs())

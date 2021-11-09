@@ -22,7 +22,7 @@ description: |
   `Furiosa SDK Runtime <https://github.com/furiosa-ai/furiosa-sdk>`__
 
 versions:
-  - 0.2.0
+  - 0.5.0
 
 integrations:
   - integration-name: Furiosa Runtime

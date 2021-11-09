@@ -1,10 +1,10 @@
 import random
 import unittest
 
-import numpy as np
 import mnist
+import numpy as np
 
-from furiosa.runtime import session, errors
+from furiosa.runtime import errors, session
 from tests.test_base import MNIST_ONNX, AsyncSessionTester, ensure_test_device
 
 NPU_DEVICE_READY = ensure_test_device()
@@ -27,7 +27,7 @@ class TestAsyncSession(unittest.TestCase):
         items = 50
         for i in range(0, items):
             idx = random.randrange(0, 9999, 1)
-            ndarray_value = self.mnist_images[idx:idx + 1]
+            ndarray_value = self.mnist_images[idx : idx + 1]
             async_sess.submit([ndarray_value], i)
 
         keys = set()
@@ -45,11 +45,13 @@ class TestAsyncSessionExceptions(unittest.TestCase):
         sess = None
         queue = None
         try:
-            sess, queue = session.create_async(MNIST_ONNX,
-                                               worker_num=1,
-                                               input_queue_size=1,
-                                               output_queue_size=1,
-                                               compile_config={"split_after_lower": True})
+            sess, queue = session.create_async(
+                MNIST_ONNX,
+                worker_num=1,
+                input_queue_size=1,
+                output_queue_size=1,
+                compile_config={"split_after_lower": True},
+            )
         finally:
             if queue:
                 queue.close()
@@ -69,7 +71,7 @@ class TestAsyncSessionExceptions(unittest.TestCase):
             if nux_sess:
                 nux_sess.close()
             if nux_queue:
-                nux_queue.close();
+                nux_queue.close()
 
 
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")

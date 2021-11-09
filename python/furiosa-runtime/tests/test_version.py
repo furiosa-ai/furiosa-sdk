@@ -1,5 +1,5 @@
-import unittest
 import re
+import unittest
 
 from furiosa import runtime
 from furiosa.runtime import LIBNUX

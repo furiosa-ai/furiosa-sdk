@@ -1,18 +1,15 @@
 from __future__ import print_function
 
 import argparse
+from pathlib import Path
 import sys
 import tempfile
-from pathlib import Path
 
-import onnx
-from furiosa.common.utils import get_sdk_version
-from furiosa.quantizer.frontend.onnx import (
-    post_training_quantization_with_random_calibration,
-)
-from furiosa.common.utils import eprint
+from furiosa.common.utils import eprint, get_sdk_version
+from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.runtime import session
+import onnx
 
 __version__ = get_sdk_version("furiosa.validator")
 
@@ -32,11 +29,13 @@ def validate(model_path: Path):
     # Try quantization on input models
     print(f'[Step 1] Checking if the model can be transformed into a quantized model ...')
     try:
-        quantized_model = post_training_quantization_with_random_calibration(model=onnx.load_model(model_path),
-                                                                             per_channel=True,
-                                                                             static=True,
-                                                                             mode=QuantizationMode.dfg,
-                                                                             num_data=10)
+        quantized_model = post_training_quantization_with_random_calibration(
+            model=onnx.load_model(model_path),
+            per_channel=True,
+            static=True,
+            mode=QuantizationMode.dfg,
+            num_data=10,
+        )
     except Exception as e:
         eprint("[Step 1] Failed\n")
         raise e
@@ -61,8 +60,11 @@ def validate(model_path: Path):
 
 def main():
     parser = argparse.ArgumentParser(description='Validate the model')
-    parser.add_argument('model_path', type=str,
-                             help='Path to Model file (tflite, onnx, and other model formats are supported)')
+    parser.add_argument(
+        'model_path',
+        type=str,
+        help='Path to Model file (tflite, onnx, and other model formats are supported)',
+    )
     args = parser.parse_args()
     validate(Path(args.model_path))
 

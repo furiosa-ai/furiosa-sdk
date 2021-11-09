@@ -4,6 +4,7 @@ import sys
 from typing import Optional
 
 from furiosa.common.native import find_native_lib_path
+
 from furiosa.runtime import __version__, runtime_version
 
 
@@ -34,9 +35,11 @@ def dump_info(log_path: Optional[str] = None):
     eprint(f"- furiosa-libnux path: {find_native_lib_path('nux')}")
     eprint(f"- furiosa-libnux version: {runtime_version()}")
     eprint(f"- furiosa-compiler version: {runtime_version()}")
-    eprint(f"- furiosa-sdk-runtime version: {__version__}")
+    eprint(f"- furiosa-runtime version: {__version__}")
     if log_path:
-        eprint(f"\nPlease check the compiler log at {log_path}.\n"
-                  f"If you have a problem, please report the log file to https://github.com/furiosa-ai/furiosa-sdk/issues\n"
-                  f"with the information dumped above.")
+        eprint(
+            f"\nPlease check the compiler log at {log_path}.\n"
+            f"If you have a problem, please report the log file to https://github.com/furiosa-ai/furiosa-sdk/issues\n"
+            f"with the information dumped above."
+        )
     eprint("=" * width)

@@ -8,9 +8,9 @@ install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 uninstall:
-	pip uninstall -y --quiet furiosa-sdk-runtime; \
+	pip uninstall -y --quiet furiosa-runtime; \
 	pip uninstall -y --quiet furiosa-sdk-quantizer; \
-	pip uninstall -y --quiet furiosa-sdk-model-validator; \
+	pip uninstall -y --quiet furiosa-model-validator; \
 	pip uninstall -y --quiet furiosa-tools; \
 	pip uninstall -y --quiet furiosa-server; \
 	pip uninstall -y --quiet furiosa-registry; \
@@ -36,7 +36,7 @@ test:
 
 doc:
 	mkdir -p build/docs/src/furiosa
-	cp -a ../furiosa-sdk-runtime/furiosa/runtime build/docs/src/furiosa/runtime
+	cp -a ../furiosa-runtime/furiosa/runtime build/docs/src/furiosa/runtime
 	cp -a ../furiosa-sdk-quantizer/furiosa/quantizer build/docs/src/furiosa/quantizer
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
@@ -49,6 +49,6 @@ ifndef SDK_VERSION
 	$(error "SDK_VERSION is not set")
 endif
 	find ../ -name setup.py -exec sed -i "s/version = '[^']*'/version = '${SDK_VERSION}'/" '{}' \;
-	sed -i "s/furiosa-sdk-runtime ~= [^\n]*/furiosa-sdk-runtime ~= ${SDK_VERSION}/" ../furiosa-sdk-model-validator/setup.cfg
+	sed -i "s/furiosa-runtime ~= [^\n]*/furiosa-runtime ~= ${SDK_VERSION}/" ../furiosa-sdk-model-validator/setup.cfg
 	sed -i "s/furiosa-sdk-quantizer ~= [^\n]*/furiosa-sdk-quantizer ~= ${SDK_VERSION}/" ../furiosa-sdk-model-validator/setup.cfg
 

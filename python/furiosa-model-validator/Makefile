@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa/validator
+	isort --diff . && black --diff .
 
 upload_test:
 	twine upload --repository testpypi dist/*

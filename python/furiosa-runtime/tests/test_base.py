@@ -1,7 +1,7 @@
 import logging
 import os
-import random
 from pathlib import Path
+import random
 
 import numpy as np
 import onnxruntime
@@ -18,8 +18,9 @@ NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
 
 
 def assert_tensors_equal(expected, result):
-    assert np.allclose(expected, result, atol=1.0), \
-        "{} was expected, but the result was {}".format(expected, result)
+    assert np.allclose(expected, result, atol=1.0), "{} was expected, but the result was {}".format(
+        expected, result
+    )
 
 
 class SessionTester:
@@ -92,6 +93,7 @@ def exist_char_dev(dev_path: str) -> bool:
     Return True if a specified device exists, or False
     """
     import stat
+
     # NPU device is a character device
     return stat.S_ISCHR(os.stat(dev_path).st_mode)
 

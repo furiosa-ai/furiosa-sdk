@@ -1,9 +1,9 @@
 """Tensor object and its utilities"""
 
 import ctypes
-from ctypes import c_void_p, POINTER, c_uint64, c_uint8, byref
+from ctypes import POINTER, byref, c_uint8, c_uint64, c_void_p
 from enum import IntEnum
-from typing import Union, Optional
+from typing import Optional, Union
 
 import numpy as np
 
@@ -14,6 +14,7 @@ from .errors import UnsupportedTensorType
 
 class Axis(IntEnum):
     """Axis of Tensor"""
+
     WIDTH = 0
     HEIGHT = 1
     CHANNEL = 2
@@ -34,12 +35,13 @@ class Axis(IntEnum):
 
 class DataType(IntEnum):
     """Tensor data type"""
+
     FLOAT32 = 0
     UINT8 = 1
     INT8 = 2
     INT32 = 3
     INT64 = 4
-    BFLOAT16 = 5 # Not supported yet in Numpy
+    BFLOAT16 = 5  # Not supported yet in Numpy
 
     @classmethod
     def _numpy_dtypes(cls):
@@ -127,8 +129,10 @@ class TensorDesc:
         if self.name:
             repr += f"name=\"{self.name}\", "
 
-        repr += f"shape={self.shape}, dtype={self.dtype.__repr__()}, " \
-               f"format={self.format}, size={self.size}, len={self.length})"
+        repr += (
+            f"shape={self.shape}, dtype={self.dtype.__repr__()}, "
+            f"format={self.format}, size={self.size}, len={self.length})"
+        )
 
         return repr
 
@@ -241,8 +245,9 @@ class TensorArray:
             if key >= len(self):
                 raise IndexError("tensor index (%d) out of range [0, %d)" % (key, len(self)))
 
-            return Tensor(LIBNUX.nux_tensor_array_get(self, key),
-                          desc=self.descs[key], allocated=False)
+            return Tensor(
+                LIBNUX.nux_tensor_array_get(self, key), desc=self.descs[key], allocated=False
+            )
 
         if isinstance(key, slice):
             start, stop, step = key.indices(len(self))
