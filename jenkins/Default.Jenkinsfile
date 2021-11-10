@@ -248,24 +248,34 @@ def publishPackages(pythonVersion, repo) {
   }
 }
 
-def validatePypiPackage(pythonVersion, indexOption) {
-  sdk_modules.each() {
+def extractSdkVersion() {
+    return sh(script: """grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
+}
+
+def getNightlyVersion() {
+    return extractSdkVersion().replaceFirst("dev[0-9]", "dev${NIGHTLY_BUILD_ID}")
+}
+
+def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
+  sdk_modules.each { module ->
     sh """#!/bin/bash
     source ${WORKSPACE}/miniconda/bin/activate;
     conda activate env-${pythonVersion};
     python --version
 
-    pip uninstall -y ${it}
+    pip uninstall -y ${module}
+    pip install --no-cache-dir --upgrade --pre ${indexOption} ${module}==${sdkVersion}
+    pip uninstall -y ${module}
     """
   }
 
+  // Checking full dependency
   sh """#!/bin/bash
   source ${WORKSPACE}/miniconda/bin/activate;
   conda activate env-${pythonVersion};
   python --version
 
-  FURIOSA_SDK_VERSION=`grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py`
-  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==\$FURIOSA_SDK_VERSION
+  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${sdkVersion}
   """
 }
 
@@ -298,6 +308,9 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
     DEFAULT_AWS_REGION = "ap-northeast-2"
     DEBIAN_FRONTEND = "noninteractive"
     DEFAULT_PYTHON_VER = "3.8"
+
+    DATE = sh(script: "date +'%y%m%d'", returnStdout: true).trim()
+    NIGHTLY_BUILD_ID = "${DATE}"
 
     REPO_URL = 'https://internal-archive.furiosa.dev'
     PYTHON_3_7 = "true"
@@ -382,8 +395,16 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
       steps {
         container('default') {
           script {
+            nightlyVersion = getNightlyVersion()
+            sh """
+            cd python/furiosa-sdk;
+            SDK_VERSION=${nightlyVersion} make update_version
+            """
+
+            setupPythonEnv(DEFAULT_PYTHON_VER)
+            buildPackages(DEFAULT_PYTHON_VER)
             publishPackages("${DEFAULT_PYTHON_VER}", "furiosa")
-            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"))
+            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"), nightlyVersion)
           }
         }
       }
