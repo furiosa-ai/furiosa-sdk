@@ -279,6 +279,15 @@ def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
   """
 }
 
+def getPythonVersion() {
+  def matched = ("${env.JOB_NAME}" =~ /furiosa-sdk-pr-(.+)\/.+/)
+  if (matched.matches()) {
+    return matched[0][1]
+  } else {
+    return "${DEFAULT_PYTHON_VERSION}"
+  }
+}
+
 pipeline {
   agent {
     kubernetes {
@@ -286,13 +295,6 @@ pipeline {
     defaultContainer "default"
     yaml officeFpgaPod("1", "4Gi")
   } }
-
-  triggers {
-    parameterizedCron('''
-# leave spaces where you want them around the parameters. They'll be trimmed.
-H 21 * * * %UPLOAD_INTERNAL_PYPI=true
-    ''')
-  }
 
   parameters {
     booleanParam(
@@ -307,15 +309,12 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
     TZ = "UTC"
     DEFAULT_AWS_REGION = "ap-northeast-2"
     DEBIAN_FRONTEND = "noninteractive"
-    DEFAULT_PYTHON_VER = "3.8"
+    DEFAULT_PYTHON_VERSION = "3.8"
 
     DATE = sh(script: "date +'%y%m%d'", returnStdout: true).trim()
     NIGHTLY_BUILD_ID = "${DATE}"
 
     REPO_URL = 'https://internal-archive.furiosa.dev'
-    PYTHON_3_7 = "true"
-    PYTHON_3_8 = "true"
-    PYTHON_3_9 = "true"
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
@@ -357,41 +356,23 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
       }
     }
 
-    stage('Python37') {
-      when { expression { env.PYTHON_3_7.toBoolean() } }
+    stage('Build and Test') {
       steps {
         container('default') {
           script {
-            runAllTests("3.7")
-          }
-        }
-      }
-    }
-
-    stage('Python38') {
-      when { expression { env.PYTHON_3_8.toBoolean() } }
-      steps {
-        container('default') {
-          script {
-            runAllTests("3.8")
-          }
-        }
-      }
-    }
-
-    stage('Python39') {
-      when { expression { env.PYTHON_3_9.toBoolean() } }
-      steps {
-        container('default') {
-          script {
-            runAllTests("3.9")
+            runAllTests(getPythonVersion())
           }
         }
       }
     }
 
     stage('Upload to Internal Pypi') {
-      when { expression { params.UPLOAD_INTERNAL_PYPI.toBoolean() } }
+      when {
+        allOf {
+          expression { env.UPLOAD_INTERNAL_PYPI != null }
+          expression { env.UPLOAD_INTERNAL_PYPI.toBoolean() }
+        }
+      }
       steps {
         container('default') {
           script {
@@ -401,10 +382,10 @@ H 21 * * * %UPLOAD_INTERNAL_PYPI=true
             SDK_VERSION=${nightlyVersion} make update_version
             """
 
-            setupPythonEnv(DEFAULT_PYTHON_VER)
-            buildPackages(DEFAULT_PYTHON_VER)
-            publishPackages("${DEFAULT_PYTHON_VER}", "furiosa")
-            validatePypiPackage("${DEFAULT_PYTHON_VER}", pypiIndexUrlOption("furiosa"), nightlyVersion)
+            setupPythonEnv(getPythonVersion())
+            buildPackages(getPythonVersion())
+            publishPackages(getPythonVersion(), "furiosa")
+            validatePypiPackage(getPythonVersion(), pypiIndexUrlOption("furiosa"), nightlyVersion)
           }
         }
       }
