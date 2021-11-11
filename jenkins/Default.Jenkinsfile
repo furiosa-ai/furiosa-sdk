@@ -283,9 +283,14 @@ def getPythonVersion() {
   def matched = ("${env.JOB_NAME}" =~ /furiosa-sdk-pr-(.+)\/.+/)
   if (matched.matches()) {
     return matched[0][1]
-  } else {
-    return "${DEFAULT_PYTHON_VERSION}"
   }
+
+  if ("${env.JOB_NAME}" =~ /furiosa-sdk-private-bors\/.+/ || "${env.JOB_NAME}" == "furiosa-sdk-nightly") {
+    return "${env.DEFAULT_PYTHON_VERSION}"
+  }
+
+  currentBuild.result = "FAILURE"
+  throw new Exception("Python version Not Found from the Jenkins JOB_NAME")
 }
 
 pipeline {
