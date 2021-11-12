@@ -1,6 +1,4 @@
-from typing import IO, Callable, Dict, List, Text, Tuple
-from typing import Callable, Dict, IO, List, Text, Tuple, Optional
-
+from typing import IO, Callable, Dict, List, Optional, Text, Tuple
 
 import numpy as np
 import onnx
@@ -74,7 +72,7 @@ def optimize_model(
     model: onnx.ModelProto, input_shapes: Optional[Dict[str, List[int]]] = None
 ) -> onnx.ModelProto:
     model = _transform([CheckVersion().transform], model)
-    model = _transform([PolishModel().transform], model)
+    model = _transform([PolishModel(input_shapes).transform], model)
 
     # TODO check if graph_transform should apply.
     model = _transform([_reify], model)

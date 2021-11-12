@@ -1,9 +1,9 @@
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 import onnx
 import onnxsim
-
 from onnxsim.onnx_simplifier import get_input_names
+
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
