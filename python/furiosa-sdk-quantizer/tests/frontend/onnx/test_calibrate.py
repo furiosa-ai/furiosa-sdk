@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import unittest
 from pathlib import Path
+import unittest
 
-import furiosa.quantizer.frontend.onnx.calibrate
 import numpy as np
-from torchvision import datasets
-
 import onnx
 import onnx.numpy_helper
+from torchvision import datasets
+
+import furiosa.quantizer.frontend.onnx.calibrate
 
 
 class CalibrateTest(unittest.TestCase):

@@ -1,9 +1,8 @@
-from typing import List, Set, Optional
 from collections import OrderedDict
+from typing import List, Optional, Set
 
-import onnx
 import numpy as np
-
+import onnx
 from onnx import numpy_helper
 from onnx.helper import make_node, make_tensor, make_tensor_value_info
 
@@ -14,7 +13,9 @@ from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 class ONNXTransformer:
     def __init__(self, model):
         self.model = model
-        self.producer_map = {node_output: node for node in model.graph.node for node_output in node.output}
+        self.producer_map = {
+            node_output: node for node in model.graph.node for node_output in node.output
+        }
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
         self.initializer_map = {init.name: init for init in model.graph.initializer}
         self.node_input_map = {node.name: node.input for node in model.graph.node}
@@ -77,13 +78,18 @@ class ONNXTransformer:
     def make_tensor_value_info(self, name, elem_type, shape):
         return make_tensor_value_info(name, elem_type, shape)
 
-    def make_initializer_from_array(self, array: np.array, name: Optional[str] = None) -> onnx.TensorProto:
+    def make_initializer_from_array(
+        self, array: np.array, name: Optional[str] = None
+    ) -> onnx.TensorProto:
         return numpy_helper.from_array(array, name)
 
     def make_int64_initializer(self, name, target_name):
-        return make_tensor(name, onnx.TensorProto.INT64,
-                           (len(self.get_value_info_shape(target_name)),),
-                           self.get_value_info_shape(target_name))
+        return make_tensor(
+            name,
+            onnx.TensorProto.INT64,
+            (len(self.get_value_info_shape(target_name)),),
+            self.get_value_info_shape(target_name),
+        )
 
     def copy_value_info(self, name):
         if name in self.graph_input_map:
@@ -206,8 +212,9 @@ class ONNXTransformer:
 
     def update_single_initializer_map(self, initializer: onnx.TensorProto):
         self.initializer_map[initializer.name] = initializer
-        self.graph_input_map[initializer.name] = make_tensor_value_info(initializer.name, initializer.data_type,
-                                                                        numpy_helper.to_array(initializer).shape)
+        self.graph_input_map[initializer.name] = make_tensor_value_info(
+            initializer.name, initializer.data_type, numpy_helper.to_array(initializer).shape
+        )
 
     def update_multiple_initializer_map(self, initializers: List[onnx.TensorProto]):
         for init in initializers:
@@ -241,15 +248,17 @@ class ONNXTransformer:
         for node in nodes:
             self.pop_single_initializer_map(node)
 
-    def bridge_disconnected_nodes(self, node_0: onnx.NodeProto, next_nodes: List[onnx.NodeProto], new_input):
+    def bridge_disconnected_nodes(
+        self, node_0: onnx.NodeProto, next_nodes: List[onnx.NodeProto], new_input
+    ):
         """
-            For a graph changed, for example,
-                before) prev --> node_1 --> node_0 --> next
-                after) prev --> node_1 --> (   ) -/-> next
+        For a graph changed, for example,
+            before) prev --> node_1 --> node_0 --> next
+            after) prev --> node_1 --> (   ) -/-> next
 
-            This function bridges node_1 and next as follows:
-                prev --> node_1 --> next
-                by assigning next.input[y] = node_1.output[x]
+        This function bridges node_1 and next as follows:
+            prev --> node_1 --> next
+            by assigning next.input[y] = node_1.output[x]
         """
         for next_node in next_nodes:
             for idx, next_node_input in enumerate(next_node.input):
@@ -267,21 +276,26 @@ class ONNXTransformer:
 
     def transform_to_eliminate(self, nodes_to_remove: List[onnx.NodeProto], new_input):
         self.pop_multiple_optimizer_map(nodes_to_remove)
-        self.bridge_disconnected_nodes(nodes_to_remove[-1], self.find_next_node(nodes_to_remove[-1]), new_input)
+        self.bridge_disconnected_nodes(
+            nodes_to_remove[-1], self.find_next_node(nodes_to_remove[-1]), new_input
+        )
 
-    def transform_to_convert(self, nodes_to_remove: List[onnx.NodeProto],
-                             nodes_to_add: Optional[List[onnx.NodeProto]] = None,
-                             inits_to_add: Optional[List[onnx.TensorProto]] = None,
-                             vis_to_add: Optional[List[onnx.ValueInfoProto]] = None):
-        self.transform_to_fuse(nodes_to_remove,
-                               nodes_to_add,
-                               inits_to_add,
-                               vis_to_add)
+    def transform_to_convert(
+        self,
+        nodes_to_remove: List[onnx.NodeProto],
+        nodes_to_add: Optional[List[onnx.NodeProto]] = None,
+        inits_to_add: Optional[List[onnx.TensorProto]] = None,
+        vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
+    ):
+        self.transform_to_fuse(nodes_to_remove, nodes_to_add, inits_to_add, vis_to_add)
 
-    def transform_to_fuse(self, nodes_to_remove: List[onnx.NodeProto],
-                          nodes_to_add: Optional[List[onnx.NodeProto]] = None,
-                          inits_to_add: Optional[List[onnx.TensorProto]] = None,
-                          vis_to_add: Optional[List[onnx.ValueInfoProto]] = None):
+    def transform_to_fuse(
+        self,
+        nodes_to_remove: List[onnx.NodeProto],
+        nodes_to_add: Optional[List[onnx.NodeProto]] = None,
+        inits_to_add: Optional[List[onnx.TensorProto]] = None,
+        vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
+    ):
         self.pop_multiple_optimizer_map(nodes_to_remove)
 
         if nodes_to_add:

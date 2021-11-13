@@ -10,8 +10,10 @@ def check_model(model: onnx.ModelProto, check_runnable: bool = True) -> None:
     # TODO After collecting possible errors,
     #  pass through only if all error messages are "No opset import for domain 'com.microsoft'".
     #  The code below is only to see the first error encountered.
-    acceptable_error_msg = ["No opset import for domain 'com.microsoft'",
-                            'No Op registered for LayerNormalization with domain_version of 12']
+    acceptable_error_msg = [
+        "No opset import for domain 'com.microsoft'",
+        'No Op registered for LayerNormalization with domain_version of 12',
+    ]
     try:
         checker.check_model(model)
     except checker.ValidationError as e:

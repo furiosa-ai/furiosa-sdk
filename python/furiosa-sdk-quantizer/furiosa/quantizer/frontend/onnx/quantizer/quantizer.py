@@ -16,25 +16,25 @@
 # --------------------------------------------------------------------------
 
 import os
-from typing import List, Dict, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from onnx.helper import make_node, make_tensor, make_tensor_value_info, ModelProto
+from onnx.helper import ModelProto, make_node, make_tensor, make_tensor_value_info
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.quantizer import fuse_clipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
+    append_suffix,
     calculate_activation_quant_params,
     calculate_weight_quant_params,
-    append_suffix,
     get_input_tensors,
     is_float_tensor,
 )
+from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
 
@@ -556,10 +556,10 @@ class FuriosaONNXQuantizer:
         if opset is not None and opset.version < 13:
             for node in self.model.graph.node:
                 if node.op_type == "DequantizeLinear":
-                    # Bypasses the checker if node.input[0] in DequantizeLinear is 
+                    # Bypasses the checker if node.input[0] in DequantizeLinear is
                     # defined in model.graph.initializer.
                     # Since it might have 1-d scale and zero-point if per-channel quantized,
-                    # which conflicts with DequantizeLinear(opset-12) spec 
+                    # which conflicts with DequantizeLinear(opset-12) spec
                     # but also is unavoidable according to our graph representations.
                     if node.input[0] in self._quant_initializer_key:
                         continue

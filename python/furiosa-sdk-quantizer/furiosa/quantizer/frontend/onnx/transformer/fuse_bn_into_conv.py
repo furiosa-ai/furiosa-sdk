@@ -1,11 +1,11 @@
 import abc
 import logging
 
-import onnx
 import numpy as np
+import onnx
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 logger = logging.getLogger('Furiosa-Quantizer')
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +15,7 @@ default_conv_attrs = {
     'group': 1,
     'kernel_shape': [1, 1],
     'pads': [0, 0, 0, 0],
-    'strides': [1, 1]
+    'strides': [1, 1],
 }
 
 
@@ -33,11 +33,12 @@ class FuseBnIntoConv(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> Conv --> BatchNormalization --> next
-        to
-            prev --> Conv --> next
+    transform
+        prev --> Conv --> BatchNormalization --> next
+    to
+        prev --> Conv --> next
     """
+
     pattern_to_match = ['Conv', 'BatchNormalization']
 
     def pattern_matching(self, base_node):
@@ -49,23 +50,28 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
         top_node = matched_nodes[0]
 
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[*self.make_new_node(matched_nodes)],
-                               inits_to_add=[*self.make_new_init(matched_nodes)],
-                               vis_to_add=[*self.make_new_vi(matched_nodes)] if self.make_new_vi(
-                                   matched_nodes) else None
-                               )
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[*self.make_new_node(matched_nodes)],
+            inits_to_add=[*self.make_new_init(matched_nodes)],
+            vis_to_add=[*self.make_new_vi(matched_nodes)]
+            if self.make_new_vi(matched_nodes)
+            else None,
+        )
 
         return top_node.input
 
     def make_new_node(self, matched_nodes):
         top_node, base_node = matched_nodes
 
-        input_names = [node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
-                       for node_input in top_node.input]
+        input_names = [
+            node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
+            for node_input in top_node.input
+        ]
 
-        return self.make_node('Conv', input_names, [base_node.output[0]], top_node.name,
-                              **default_conv_attrs)
+        return self.make_node(
+            'Conv', input_names, [base_node.output[0]], top_node.name, **default_conv_attrs
+        )
 
     def make_new_init(self, matched_nodes):
         top_node, base_node = matched_nodes
@@ -78,7 +84,9 @@ class Pattern_1(ONNXTransformer, abc.ABC):
                 continue
             weight = self.get_initializer_array(node_input)
             fused_weight = self.fuse_bn_params(weight, multiplier, shifter)
-            inits_to_add.append(self.make_initializer_from_array(fused_weight, node_input + '_bn_fused'))
+            inits_to_add.append(
+                self.make_initializer_from_array(fused_weight, node_input + '_bn_fused')
+            )
 
         return inits_to_add
 
@@ -87,7 +95,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     def get_bn_params(self, node):
         scale = self.get_initializer_array(node.input[1])
-        if all(v == 0. for v in scale):
+        if all(v == 0.0 for v in scale):
             logger.warning(f'BatchNormalization.scale is a zero tensor: {node.input[1]}')
 
         B = self.get_initializer_array(node.input[2])
@@ -109,7 +117,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
     def get_multiplier_and_shifter(scale, B, mean, var, eps):
         reciprocal = np.sqrt(var + eps)
         multiplier = scale / reciprocal
-        shifter = - mean * scale / reciprocal + B
+        shifter = -mean * scale / reciprocal + B
 
         return multiplier, shifter
 
@@ -127,13 +135,14 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
 class Pattern_2(Pattern_1, abc.ABC):
     """
-        transform
-            prev --> BatchNormalization --> next
-        to
-            prev --> Mul --> Add --> next
+    transform
+        prev --> BatchNormalization --> next
+    to
+        prev --> Mul --> Add --> next
 
-        if prev.op_type != Conv
+    if prev.op_type != Conv
     """
+
     pattern_to_match = ['BatchNormalization']
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -146,11 +155,18 @@ class Pattern_2(Pattern_1, abc.ABC):
     def make_new_node(self, matched_nodes):
         node = matched_nodes[0]
         return [
-            self.make_node('Mul', [node.input[0], node.output[0] + '_bn_multiplier'],
-                           [node.output[0] + '_bn_multiplied'], node.name),
-            self.make_node('Add',
-                           [node.output[0] + '_bn_multiplied', node.output[0] + '_bn_shifter'],
-                           [node.output[0]], node.name)
+            self.make_node(
+                'Mul',
+                [node.input[0], node.output[0] + '_bn_multiplier'],
+                [node.output[0] + '_bn_multiplied'],
+                node.name,
+            ),
+            self.make_node(
+                'Add',
+                [node.output[0] + '_bn_multiplied', node.output[0] + '_bn_shifter'],
+                [node.output[0]],
+                node.name,
+            ),
         ]
 
     def make_new_init(self, matched_nodes):
@@ -159,17 +175,23 @@ class Pattern_2(Pattern_1, abc.ABC):
         multiplier, shifter = self.get_multiplier_and_shifter(*bn_params)
         num_features = self.get_value_info_shape(node.output[0])[0]
         return [
-            self.make_initializer_from_array(multiplier.reshape(num_features, -1, 1, 1),
-                                             name=node.output[0] + '_bn_multiplier'),
-            self.make_initializer_from_array(shifter.reshape(num_features, -1, 1, 1),
-                                             name=node.output[0] + '_bn_shifter')
+            self.make_initializer_from_array(
+                multiplier.reshape(num_features, -1, 1, 1), name=node.output[0] + '_bn_multiplier'
+            ),
+            self.make_initializer_from_array(
+                shifter.reshape(num_features, -1, 1, 1), name=node.output[0] + '_bn_shifter'
+            ),
         ]
 
     def make_new_vi(self, matched_nodes):
         node = matched_nodes[0]
-        return [self.make_tensor_value_info(node.output[0] + '_bn_multiplied',
-                                            onnx.TensorProto.FLOAT,
-                                            shape=self.get_value_info_shape(node.output[0]))]
+        return [
+            self.make_tensor_value_info(
+                node.output[0] + '_bn_multiplied',
+                onnx.TensorProto.FLOAT,
+                shape=self.get_value_info_shape(node.output[0]),
+            )
+        ]
 
 
 class Pattern_3(Pattern_1, abc.ABC):
@@ -182,6 +204,7 @@ class Pattern_3(Pattern_1, abc.ABC):
     if 1. Mul has only one initializer
        2. Add has only one initializer
     """
+
     pattern_to_match = ['Conv', 'Mul', 'Add']
 
     def pattern_matching(self, base_node):
@@ -194,12 +217,14 @@ class Pattern_3(Pattern_1, abc.ABC):
             return inputs
 
         top_node = matched_nodes[0]
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[*self.make_new_node(matched_nodes)],
-                               inits_to_add=[*self.make_new_init(matched_nodes)],
-                               vis_to_add=[*self.make_new_vi(matched_nodes)] if self.make_new_vi(
-                                   matched_nodes) else None
-                               )
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[*self.make_new_node(matched_nodes)],
+            inits_to_add=[*self.make_new_init(matched_nodes)],
+            vis_to_add=[*self.make_new_vi(matched_nodes)]
+            if self.make_new_vi(matched_nodes)
+            else None,
+        )
 
         return top_node.input
 
@@ -230,8 +255,15 @@ class Pattern_3(Pattern_1, abc.ABC):
         else:
             input_names.append(top_node.output[0] + '_bias_bn_fused')
 
-        return [self.make_node('Conv', input_names, [bottom_node.output[0]], top_node.name,
-                               **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})]
+        return [
+            self.make_node(
+                'Conv',
+                input_names,
+                [bottom_node.output[0]],
+                top_node.name,
+                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute},
+            )
+        ]
 
     def make_new_init(self, matched_nodes):
         top_node, middle_node, bottom_node = matched_nodes
@@ -251,7 +283,7 @@ class Pattern_3(Pattern_1, abc.ABC):
 
         return [
             self.make_initializer_from_array(fused_weight, name=fused_weight_name),
-            self.make_initializer_from_array(fused_bias, name=fused_bias_name)
+            self.make_initializer_from_array(fused_bias, name=fused_bias_name),
         ]
 
     def get_multiplier_and_shifter(self, mul_node, add_node):

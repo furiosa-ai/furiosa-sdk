@@ -32,12 +32,14 @@ class UnitTestModel1(nn.Module, ABC):
 
 class UnitTestModel2(nn.Module, ABC):
     """
-        This creates Conv + Add graph for testing Pattern_3
+    This creates Conv + Add graph for testing Pattern_3
     """
 
     def __init__(self, in_channel, out_channel):
         super(UnitTestModel2, self).__init__()
-        self.conv = nn.Conv2d(in_channels=in_channel, out_channels=out_channel, kernel_size=(3, 3), bias=False)
+        self.conv = nn.Conv2d(
+            in_channels=in_channel, out_channels=out_channel, kernel_size=(3, 3), bias=False
+        )
 
     def forward(self, x):
         x = self.conv(x)
@@ -70,9 +72,7 @@ class MultiTestModel1(UnitTestModel1):
 
 class TestFuseConv(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes):
-        orig_model, trans_model = self.make_test_model(torch_model,
-                                                       FuseConv(),
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(torch_model, FuseConv(), input_shapes)
         return orig_model, trans_model
 
     def test_case1(self):
@@ -82,7 +82,9 @@ class TestFuseConv(TestTransformer, ABC):
 
         op_types = ['Unsqueeze', 'Conv', 'Squeeze']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -94,7 +96,9 @@ class TestFuseConv(TestTransformer, ABC):
 
         op_types = ['Unsqueeze', 'Conv', 'Squeeze']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel1(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel1(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -106,7 +110,9 @@ class TestFuseConv(TestTransformer, ABC):
 
         op_types = ['Mul', 'Unsqueeze', 'Conv', 'Squeeze', 'Add']
 
-        orig_model, trans_model = self._make_test_model(MultiTestModel(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            MultiTestModel(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
@@ -118,14 +124,16 @@ class TestFuseConv(TestTransformer, ABC):
 
         op_types = ['Mul', 'Unsqueeze', 'Conv', 'Squeeze', 'Add']
 
-        orig_model, trans_model = self._make_test_model(MultiTestModel1(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            MultiTestModel1(in_channel, out_channel), input_shapes
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
 
     def test_case5(self):
         """
-            This tests Pattern_3
+        This tests Pattern_3
         """
         input_shapes = [(1, 16, 8, 8)]
         in_channel = 16
@@ -133,7 +141,9 @@ class TestFuseConv(TestTransformer, ABC):
 
         op_types = ['Conv']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel2(in_channel, out_channel), input_shapes)
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel2(in_channel, out_channel), input_shapes
+        )
 
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)

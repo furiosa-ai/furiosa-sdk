@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
-
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -33,8 +32,8 @@ class TestFuseGELU(TestTransformer):
 
     def test_case1(self):
         """
-            Test whether the original model is well transformed for unit operator model,
-            which contains only GELU operator
+        Test whether the original model is well transformed for unit operator model,
+        which contains only GELU operator
         """
         input_shapes = [(1, 1, 4, 4)]
         op_types = ['Gelu']
@@ -47,8 +46,8 @@ class TestFuseGELU(TestTransformer):
 
     def test_case2(self):
         """
-            Test whether the original model is well transformed for multi operator model,
-             which contains operators other than Gelu
+        Test whether the original model is well transformed for multi operator model,
+         which contains operators other than Gelu
         """
         input_shapes = [(2, 4, 8, 8, 16)]
 

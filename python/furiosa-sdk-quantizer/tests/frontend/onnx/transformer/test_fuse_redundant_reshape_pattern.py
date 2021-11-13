@@ -3,8 +3,12 @@ from abc import ABC
 import torch
 import torch.nn as nn
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (Pattern_1, Pattern_2, Pattern_3,
-                                                                          FuseRedundantReshapePattern)
+from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (
+    FuseRedundantReshapePattern,
+    Pattern_1,
+    Pattern_2,
+    Pattern_3,
+)
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -41,9 +45,7 @@ class UnitTestModel3(nn.Module, ABC):
 
 class TestFuseRedundantReshapePattern(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes, transformer):
-        orig_model, trans_model = self.make_test_model(torch_model,
-                                                       transformer,
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model
 
     def test_case1(self):
@@ -71,7 +73,9 @@ class TestFuseRedundantReshapePattern(TestTransformer, ABC):
 
         op_types = ['Reshape']
 
-        orig_model, trans_model = self._make_test_model(UnitTestModel2(), input_shapes, FuseRedundantReshapePattern())
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel2(), input_shapes, FuseRedundantReshapePattern()
+        )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)

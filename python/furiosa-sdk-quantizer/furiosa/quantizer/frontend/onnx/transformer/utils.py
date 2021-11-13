@@ -2,9 +2,10 @@ import logging
 
 import onnx
 from onnx import numpy_helper
-from onnx.helper import make_model, make_tensor_value_info, make_opsetid
-from furiosa.quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
+from onnx.helper import make_model, make_opsetid, make_tensor_value_info
+
 from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
+from furiosa.quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
 
 logger = logging.getLogger('Furiosa-Quantizer')
 logging.basicConfig(level=logging.INFO)
@@ -137,7 +138,8 @@ def fix_batch_size_as_one(model):
         if batch_dim.dim_param:
             logger.info(
                 "Dynamic batch size is detected at input_name: {}. "
-                "Fix batch_size=1 for valid shape inference.".format(input.name))
+                "Fix batch_size=1 for valid shape inference.".format(input.name)
+            )
             input.type.tensor_type.shape.dim[0].dim_value = 1
 
     return model

@@ -1,4 +1,4 @@
-from typing import Callable, Dict, IO, List, Text, Tuple
+from typing import IO, Callable, Dict, List, Text, Tuple
 
 import numpy as np
 import onnx
@@ -8,28 +8,28 @@ __OPSET_VERSION__ = 12
 
 from furiosa.quantizer.frontend.onnx import calibrate, spec
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer
-from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
+from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
+    ConvertConv1dToConv2d,
+)
+from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
+    EliminateRedundantShapePattern,
+)
 from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose import (
     FuseBnIntoConvTranspose,
 )
-from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from furiosa.quantizer.frontend.onnx.transformer.fuse_layer_normalization import (
     FuseLayerNormalization,
 )
+from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
+from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad
 from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (
     FuseRedundantReshapePattern,
 )
-from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad
-from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
-    EliminateRedundantShapePattern,
-)
-from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
-    ConvertConv1dToConv2d,
-)
+from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa.quantizer.frontend.onnx.utils.version_checker import CheckVersion
 

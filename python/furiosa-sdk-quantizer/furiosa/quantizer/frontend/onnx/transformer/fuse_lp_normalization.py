@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class FuseLpNormalization(Transformer):
@@ -18,12 +18,12 @@ class FuseLpNormalization(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> ReduceL2/ReduceL1 --> Clip --> Expand -->  Div --> next
-                 +                                           +
-                 -------------------------------------------->
-        to
-            prev --> LpNormalization --> next
+    transform
+        prev --> ReduceL2/ReduceL1 --> Clip --> Expand -->  Div --> next
+             +                                           +
+             -------------------------------------------->
+    to
+        prev --> LpNormalization --> next
     """
 
     def pattern_matching(self, base_node):
@@ -36,12 +36,18 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
         top_node = matched_nodes[0]
 
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[
-                                   self.make_node('LpNormalization', [top_node.input[0]], [base_node.output[0]],
-                                                  top_node.name,
-                                                  **self.get_attrs(top_node))
-                               ])
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[
+                self.make_node(
+                    'LpNormalization',
+                    [top_node.input[0]],
+                    [base_node.output[0]],
+                    top_node.name,
+                    **self.get_attrs(top_node),
+                )
+            ],
+        )
 
         return top_node.input
 

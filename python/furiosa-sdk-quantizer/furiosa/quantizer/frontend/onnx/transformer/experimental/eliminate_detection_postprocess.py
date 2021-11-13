@@ -1,9 +1,10 @@
-import onnx
 from typing import List
 
-from furiosa.quantizer.interfaces.transformer import Transformer
+import onnx
+
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class EliminateSSDDetectionPostprocess(Transformer):
@@ -51,14 +52,17 @@ class EliminateSSDDetectionPostprocess(Transformer):
         # backward traverse
         while True:
             import copy
+
             prev_postprocess_nodes = copy.deepcopy(postprocess_nodes)
 
             for node in model.graph.node:
                 is_append = False
                 for postprocess_node in postprocess_nodes:
                     for node_output in node.output:
-                        if node_output in postprocess_node.input \
-                                and node_output not in ssd_output_tensors:
+                        if (
+                            node_output in postprocess_node.input
+                            and node_output not in ssd_output_tensors
+                        ):
                             is_append = True
                 if is_append and node not in postprocess_nodes:
                     postprocess_nodes.append(node)
