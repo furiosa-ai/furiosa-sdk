@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa.quantizer
+	isort --diff . && black --diff .
 
 upload_test:
 	twine upload --repository testpypi dist/*
