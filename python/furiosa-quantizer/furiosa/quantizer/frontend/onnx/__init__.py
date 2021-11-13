@@ -20,6 +20,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose impo
 )
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
+from furiosa.quantizer.frontend.onnx.transformer.fuse_gather_matmul import FuseGatherMatMul
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from furiosa.quantizer.frontend.onnx.transformer.fuse_layer_normalization import (
     FuseLayerNormalization,
@@ -58,6 +59,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FuseLayerNormalization().transform,
         FuseLpNormalization().transform,
         FuseRedundantReshapePattern().transform,
+        FuseGatherMatMul().transform,
         EliminateRedundantShapePattern().transform,
     ]
     return _transform(transformers, model)
