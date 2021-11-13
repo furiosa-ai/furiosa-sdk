@@ -48,7 +48,7 @@ def gemm_shapes(input_shapes, transA, transB):
 
 
 def slice_offset_dict(starts, axes, input_shape):
-    offsets = [0, ] * len(input_shape)
+    offsets = [0] * len(input_shape)
     for start, axis in zip(starts, axes):
         offsets[axis] = start
 

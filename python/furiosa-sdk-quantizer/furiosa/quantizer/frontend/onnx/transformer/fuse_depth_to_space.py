@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class FuseDepthToSpace(Transformer):
@@ -18,12 +18,12 @@ class FuseDepthToSpace(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> Reshape --> Transpose --> Reshape --> next
-        to
-            prev --> DepthToSpace --> next
+    transform
+        prev --> Reshape --> Transpose --> Reshape --> next
+    to
+        prev --> DepthToSpace --> next
 
-        if Transpose.perm == [0, 1, 4, 2, 5, 3] or == [0, 3, 4, 1, 5, 2]
+    if Transpose.perm == [0, 1, 4, 2, 5, 3] or == [0, 3, 4, 1, 5, 2]
     """
 
     def pattern_matching(self, base_node):
@@ -38,12 +38,18 @@ class Pattern_1(ONNXTransformer, abc.ABC):
             return inputs
 
         top_node, mid_node, _ = matched_nodes
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[
-                                   self.make_node('DepthToSpace', [top_node.input[0]], [base_node.output[0]],
-                                                  top_node.name,
-                                                  **self.get_attrs(top_node, mid_node))
-                               ])
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[
+                self.make_node(
+                    'DepthToSpace',
+                    [top_node.input[0]],
+                    [base_node.output[0]],
+                    top_node.name,
+                    **self.get_attrs(top_node, mid_node),
+                )
+            ],
+        )
 
         return top_node.input
 

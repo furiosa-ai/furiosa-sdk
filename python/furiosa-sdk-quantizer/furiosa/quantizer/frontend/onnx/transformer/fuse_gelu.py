@@ -1,11 +1,11 @@
 import onnx
 from onnx.helper import ModelProto
-from onnxruntime.transformers.onnx_model import OnnxModel
 from onnxruntime.transformers.fusion_gelu import FusionGelu
+from onnxruntime.transformers.onnx_model import OnnxModel
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class BertOnnxModel(OnnxModel):
@@ -34,10 +34,16 @@ class FuseGELU(Transformer):
         optimizer.fuse_gelu()
 
         model = optimizer.model
-        gelu_by_input_name = {node.input[0]: node for node in model.graph.node if node.op_type == 'Gelu'}
+        gelu_by_input_name = {
+            node.input[0]: node for node in model.graph.node if node.op_type == 'Gelu'
+        }
 
-        value_info = {vi.name: vi for vi in
-                      list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)}
+        value_info = {
+            vi.name: vi
+            for vi in list(model.graph.value_info)
+            + list(model.graph.input)
+            + list(model.graph.output)
+        }
 
         # nodes are not topologically sorted as a result of onnxruntime optimization
         sorted_nodes = []

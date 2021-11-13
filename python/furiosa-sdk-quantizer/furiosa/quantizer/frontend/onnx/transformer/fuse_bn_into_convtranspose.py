@@ -1,7 +1,7 @@
 import onnx
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import fuse_bn_into_conv
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class FuseBnIntoConvTranspose(Transformer):

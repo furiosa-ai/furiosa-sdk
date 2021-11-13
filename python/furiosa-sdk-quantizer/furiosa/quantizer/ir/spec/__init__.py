@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from furiosa.quantizer.ir.common.operator import HeightWidth, Padding, HorizontalPadding
+from furiosa.quantizer.ir.common.operator import HeightWidth, HorizontalPadding, Padding
 
 
 class Spec:
@@ -17,7 +17,7 @@ class Spec:
             'option': {
                 # quantizer only supports 'OperatorSpec'.
                 'Operator': self.option.as_dict(),
-            }
+            },
         }
 
 
@@ -26,7 +26,9 @@ class OperatorSpec:
         raise NotImplementedError()
 
     def as_dict(self) -> Dict[str, any]:
-        return {self.kind(): dict(map(lambda item: self._handle_nested_spec(*item), vars(self).items()))}
+        return {
+            self.kind(): dict(map(lambda item: self._handle_nested_spec(*item), vars(self).items()))
+        }
 
     @staticmethod
     def _handle_nested_spec(k, v):
@@ -45,8 +47,18 @@ class Conv2d(OperatorSpec):
     def kind(self):
         return 'Conv2d'
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, input_channel: int, output_channel: int, groups: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        input_channel: int,
+        output_channel: int,
+        groups: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -67,8 +79,16 @@ class MaxPool2d(OperatorSpec):
     def kind(self):
         return 'MaxPool2d'
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, channel: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        channel: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -82,8 +102,16 @@ class AveragePool2d(OperatorSpec):
     def kind(self):
         return 'AveragePool2d'
 
-    def __init__(self, input: HeightWidth, kernel: HeightWidth, stride: HeightWidth, dilation: HeightWidth,
-                 batch: int, channel: int, padding: Padding):
+    def __init__(
+        self,
+        input: HeightWidth,
+        kernel: HeightWidth,
+        stride: HeightWidth,
+        dilation: HeightWidth,
+        batch: int,
+        channel: int,
+        padding: Padding,
+    ):
         self.input = input
         self.kernel = kernel
         self.stride = stride
@@ -118,7 +146,9 @@ class DepthToSpace(OperatorSpec):
     def kind(self):
         return 'DepthToSpace'
 
-    def __init__(self, batch: int, height: int, width: int, channel: int, block_size: int, mode: str):
+    def __init__(
+        self, batch: int, height: int, width: int, channel: int, block_size: int, mode: str
+    ):
         self.batch = batch
         self.height = height
         self.width = width
@@ -297,7 +327,9 @@ class Clip(OperatorSpec):
     def kind(self):
         return 'Clip'
 
-    def __init__(self, input_shape: List[int], min: Optional[float] = None, max: Optional[float] = None):
+    def __init__(
+        self, input_shape: List[int], min: Optional[float] = None, max: Optional[float] = None
+    ):
         self.input_shape = input_shape
         self.min = min
         self.max = max

@@ -1,28 +1,30 @@
 from typing import Dict
-
 import unittest
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from tests import torch_to_onnx, make_test_model, make_test_model_with_init_val
 from furiosa.quantizer.frontend.onnx.spec.export_spec import OnnxExportSpec
 from furiosa.quantizer.ir.spec import Spec
+from tests import make_test_model, make_test_model_with_init_val, torch_to_onnx
 
 
 class Test_get_inputs_for_gen_spec(unittest.TestCase):
-    def evaluate_test(self,
-                      expected_input_shapes,
-                      expected_output_shapes,
-                      expected_attributes,
-                      expected_init_shapes=None):
-        model, node = make_test_model(expected_input_shapes,
-                                      expected_output_shapes,
-                                      expected_attributes,
-                                      expected_init_shapes)
+    def evaluate_test(
+        self,
+        expected_input_shapes,
+        expected_output_shapes,
+        expected_attributes,
+        expected_init_shapes=None,
+    ):
+        model, node = make_test_model(
+            expected_input_shapes, expected_output_shapes, expected_attributes, expected_init_shapes
+        )
 
-        input_shapes, output_shapes, attributes = OnnxExportSpec(model).get_inputs_for_gen_spec(node)
+        input_shapes, output_shapes, attributes = OnnxExportSpec(model).get_inputs_for_gen_spec(
+            node
+        )
 
         if expected_init_shapes:
             expected_input_shapes += expected_init_shapes
@@ -50,8 +52,9 @@ class Test_get_inputs_for_gen_spec(unittest.TestCase):
 
 class Test_conv2d(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Conv', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Conv', check_model=True
+        )
         assert node.op_type == 'Conv'
 
         return model, node
@@ -60,15 +63,30 @@ class Test_conv2d(unittest.TestCase):
         self.assertEqual(expected['batch'], spec.option.batch)
         self.assertEqual(expected['input_channel'], spec.option.input_channel)
         self.assertEqual(expected['output_channel'], spec.option.output_channel)
-        self.assertEqual((expected['height'], expected['width']), (spec.option.input.height, spec.option.input.width))
-        self.assertEqual(expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width))
-        self.assertEqual(expected.get('strides', (1, 1)), (spec.option.stride.height, spec.option.stride.width))
-        self.assertEqual(expected.get('dilations', (1, 1)), (spec.option.dilation.height, spec.option.dilation.width))
+        self.assertEqual(
+            (expected['height'], expected['width']),
+            (spec.option.input.height, spec.option.input.width),
+        )
+        self.assertEqual(
+            expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width)
+        )
+        self.assertEqual(
+            expected.get('strides', (1, 1)), (spec.option.stride.height, spec.option.stride.width)
+        )
+        self.assertEqual(
+            expected.get('dilations', (1, 1)),
+            (spec.option.dilation.height, spec.option.dilation.width),
+        )
         self.assertEqual(expected.get('group', 1), spec.option.groups)
-        self.assertEqual(expected.get('pads', (0, 0, 0, 0)), (spec.option.padding_spec.Custom.top,
-                                                              spec.option.padding_spec.Custom.bottom,
-                                                              spec.option.padding_spec.Custom.left,
-                                                              spec.option.padding_spec.Custom.right))
+        self.assertEqual(
+            expected.get('pads', (0, 0, 0, 0)),
+            (
+                spec.option.padding_spec.Custom.top,
+                spec.option.padding_spec.Custom.bottom,
+                spec.option.padding_spec.Custom.left,
+                spec.option.padding_spec.Custom.right,
+            ),
+        )
 
     def test_case_1(self):
         input_shapes = [(1, 3, 8, 12)]
@@ -97,8 +115,7 @@ class Test_conv2d(unittest.TestCase):
             'strides': (3, 8),
             'dilations': (4, 5),
             'group': 16,
-            'pads': (2, 4, 2, 4)
-
+            'pads': (2, 4, 2, 4),
         }
         init_shapes = [(128, 32, 2, 4)]
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_shapes)
@@ -118,8 +135,14 @@ class Test_conv2d(unittest.TestCase):
 
 class Test_convtranspose2d(Test_conv2d, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='ConvTranspose', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='ConvTranspose',
+            check_model=True,
+        )
         assert node.op_type == 'ConvTranspose'
 
         return model, node
@@ -151,8 +174,7 @@ class Test_convtranspose2d(Test_conv2d, unittest.TestCase):
             'strides': (3, 8),
             'dilations': (4, 5),
             'group': 16,
-            'pads': (2, 4, 2, 4)
-
+            'pads': (2, 4, 2, 4),
         }
         init_shapes = [(128, 32, 2, 4)]
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_shapes)
@@ -172,23 +194,43 @@ class Test_convtranspose2d(Test_conv2d, unittest.TestCase):
 
 class Test_maxpool2d(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='MaxPool', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='MaxPool',
+            check_model=True,
+        )
         assert node.op_type == 'MaxPool'
 
         return model, node
 
     def evaluate_test(self, expected: Dict, spec: Spec):
         self.assertEqual(expected['batch'], spec.option.batch)
-        self.assertEqual((expected['height'], expected['width']), (spec.option.input.height, spec.option.input.width))
-        self.assertEqual(expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width))
-        self.assertEqual(expected.get('strides', (1, 1)),
-                         (spec.option.stride.height, spec.option.stride.width))
-        self.assertEqual(expected.get('dilations', (1, 1)), (spec.option.dilation.height, spec.option.dilation.width))
-        self.assertEqual(expected.get('pads', (0, 0, 0, 0)), (spec.option.padding_spec.Custom.top,
-                                                              spec.option.padding_spec.Custom.bottom,
-                                                              spec.option.padding_spec.Custom.left,
-                                                              spec.option.padding_spec.Custom.right))
+        self.assertEqual(
+            (expected['height'], expected['width']),
+            (spec.option.input.height, spec.option.input.width),
+        )
+        self.assertEqual(
+            expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width)
+        )
+        self.assertEqual(
+            expected.get('strides', (1, 1)), (spec.option.stride.height, spec.option.stride.width)
+        )
+        self.assertEqual(
+            expected.get('dilations', (1, 1)),
+            (spec.option.dilation.height, spec.option.dilation.width),
+        )
+        self.assertEqual(
+            expected.get('pads', (0, 0, 0, 0)),
+            (
+                spec.option.padding_spec.Custom.top,
+                spec.option.padding_spec.Custom.bottom,
+                spec.option.padding_spec.Custom.left,
+                spec.option.padding_spec.Custom.right,
+            ),
+        )
 
     def test_case_1(self):
         input_shapes = [(1, 3, 8, 12)]
@@ -218,11 +260,7 @@ class Test_maxpool2d(unittest.TestCase):
 
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).maxpool2d(node)
-        kwargs = {
-            'batch': 2,
-            'height': 64,
-            'width': 48
-        }
+        kwargs = {'batch': 2, 'height': 64, 'width': 48}
         kwargs.update(attributes)
 
         self.evaluate_test(kwargs, spec)
@@ -230,29 +268,52 @@ class Test_maxpool2d(unittest.TestCase):
 
 class Test_avgpool2d(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='AveragePool', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='AveragePool',
+            check_model=True,
+        )
         assert node.op_type == 'AveragePool'
 
         return model, node
 
     def make_test_model_1(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='GlobalAveragePool', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='GlobalAveragePool',
+            check_model=True,
+        )
         assert node.op_type == 'GlobalAveragePool'
 
         return model, node
 
     def evaluate_test(self, expected: Dict, spec: Spec):
         self.assertEqual(expected['batch'], spec.option.batch)
-        self.assertEqual((expected['height'], expected['width']), (spec.option.input.height, spec.option.input.width))
-        self.assertEqual(expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width))
-        self.assertEqual(expected.get('strides', (1, 1)),
-                         (spec.option.stride.height, spec.option.stride.width))
-        self.assertEqual(expected.get('pads', (0, 0, 0, 0)), (spec.option.padding_spec.Custom.top,
-                                                              spec.option.padding_spec.Custom.bottom,
-                                                              spec.option.padding_spec.Custom.left,
-                                                              spec.option.padding_spec.Custom.right))
+        self.assertEqual(
+            (expected['height'], expected['width']),
+            (spec.option.input.height, spec.option.input.width),
+        )
+        self.assertEqual(
+            expected['kernel_shape'], (spec.option.kernel.height, spec.option.kernel.width)
+        )
+        self.assertEqual(
+            expected.get('strides', (1, 1)), (spec.option.stride.height, spec.option.stride.width)
+        )
+        self.assertEqual(
+            expected.get('pads', (0, 0, 0, 0)),
+            (
+                spec.option.padding_spec.Custom.top,
+                spec.option.padding_spec.Custom.bottom,
+                spec.option.padding_spec.Custom.left,
+                spec.option.padding_spec.Custom.right,
+            ),
+        )
 
     def test_case_1(self):
         input_shapes = [(1, 3, 8, 12)]
@@ -281,11 +342,7 @@ class Test_avgpool2d(unittest.TestCase):
 
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).avgpool2d(node)
-        kwargs = {
-            'batch': 2,
-            'height': 64,
-            'width': 48
-        }
+        kwargs = {'batch': 2, 'height': 64, 'width': 48}
         kwargs.update(attributes)
 
         self.evaluate_test(kwargs, spec)
@@ -314,12 +371,7 @@ class Test_avgpool2d(unittest.TestCase):
 
         model, node = self.make_test_model_1(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).avgpool2d(node)
-        kwargs = {
-            'kernel_shape': (64, 48),
-            'batch': 2,
-            'height': 64,
-            'width': 48
-        }
+        kwargs = {'kernel_shape': (64, 48), 'batch': 2, 'height': 64, 'width': 48}
         kwargs.update(attributes)
 
         self.evaluate_test(kwargs, spec)
@@ -327,8 +379,9 @@ class Test_avgpool2d(unittest.TestCase):
 
 class Test_gemm(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Gemm', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Gemm', check_model=True
+        )
         assert node.op_type == 'Gemm'
 
         return model, node
@@ -388,8 +441,9 @@ class Test_gemm(unittest.TestCase):
 
 class Test_matmul(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='MatMul', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='MatMul', check_model=True
+        )
         assert node.op_type == 'MatMul'
 
         return model, node
@@ -405,8 +459,7 @@ class Test_matmul(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).matmul(node)
 
-        kwargs = {'lhs_shape': [1, 16, 128, 256],
-                  'rhs_shape': [1, 16, 256, 368]}
+        kwargs = {'lhs_shape': [1, 16, 128, 256], 'rhs_shape': [1, 16, 256, 368]}
 
         self.evaluate_test(kwargs, spec)
 
@@ -418,16 +471,21 @@ class Test_matmul(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_shapes)
         spec = OnnxExportSpec(model).matmul(node)
 
-        kwargs = {'lhs_shape': [32, 48],
-                  'rhs_shape': [48, 24]}
+        kwargs = {'lhs_shape': [32, 48], 'rhs_shape': [48, 24]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_depthtospace(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='DepthToSpace', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='DepthToSpace',
+            check_model=True,
+        )
         assert node.op_type == 'DepthToSpace'
 
         return model, node
@@ -443,19 +501,11 @@ class Test_depthtospace(unittest.TestCase):
     def test_case_1(self):
         input_shapes = [(1, 1024, 44, 88)]
         output_shapes = [(1, 256, 88, 176)]
-        attributes = {
-            'blocksize': 2
-        }
+        attributes = {'blocksize': 2}
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).depthtospace(node)
 
-        kwargs = {
-            'batch': 1,
-            'height': 44,
-            'width': 88,
-            'channel': 1024,
-            'mode': 'DepthColumnRow'
-        }
+        kwargs = {'batch': 1, 'height': 44, 'width': 88, 'channel': 1024, 'mode': 'DepthColumnRow'}
         kwargs.update(attributes)
 
         self.evaluate_test(kwargs, spec)
@@ -463,10 +513,7 @@ class Test_depthtospace(unittest.TestCase):
     def test_case_2(self):
         input_shapes = [(1, 1024, 44, 88)]
         output_shapes = [(1, 256, 88, 176)]
-        attributes = {
-            'blocksize': 2,
-            'mode': 'CRD'
-        }
+        attributes = {'blocksize': 2, 'mode': 'CRD'}
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).depthtospace(node)
 
@@ -484,8 +531,9 @@ class Test_depthtospace(unittest.TestCase):
 
 class Test_resize(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values):
-        model, node = make_test_model_with_init_val(input_shapes, output_shapes, attributes, init_values,
-                                                    op_type='Resize', check_model=True)
+        model, node = make_test_model_with_init_val(
+            input_shapes, output_shapes, attributes, init_values, op_type='Resize', check_model=True
+        )
         assert node.op_type == 'Resize'
 
         return model, node
@@ -504,18 +552,16 @@ class Test_resize(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_values)
         spec = OnnxExportSpec(model).resize(node)
 
-        kwargs = {'shape': [1, 3, 224, 224],
-                  'roi': [],
-                  'scales': [],
-                  'sizes': [1, 3, 112, 112]}
+        kwargs = {'shape': [1, 3, 224, 224], 'roi': [], 'scales': [], 'sizes': [1, 3, 112, 112]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_add(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Add', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Add', check_model=True
+        )
         assert node.op_type == 'Add'
 
         return model, node
@@ -537,8 +583,9 @@ class Test_add(unittest.TestCase):
 
 class Test_sub(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Sub', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Sub', check_model=True
+        )
         assert node.op_type == 'Sub'
 
         return model, node
@@ -557,8 +604,9 @@ class Test_sub(Test_add, unittest.TestCase):
 
 class Test_mul(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Mul', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Mul', check_model=True
+        )
         assert node.op_type == 'Mul'
 
         return model, node
@@ -577,8 +625,9 @@ class Test_mul(Test_add, unittest.TestCase):
 
 class Test_div(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Div', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Div', check_model=True
+        )
         assert node.op_type == 'Div'
 
         return model, node
@@ -597,8 +646,9 @@ class Test_div(Test_add, unittest.TestCase):
 
 class Test_exp(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Exp', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Exp', check_model=True
+        )
         assert node.op_type == 'Exp'
 
         return model, node
@@ -617,8 +667,14 @@ class Test_exp(Test_add, unittest.TestCase):
 
 class Test_sigmoid(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Sigmoid', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Sigmoid',
+            check_model=True,
+        )
         assert node.op_type == 'Sigmoid'
 
         return model, node
@@ -640,8 +696,14 @@ class Test_softplus(unittest.TestCase):
         self.assertEqual(expected['shape'], spec.option.input_shape)
 
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Softplus', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Softplus',
+            check_model=True,
+        )
         assert node.op_type == 'Softplus'
 
         return model, node
@@ -660,8 +722,9 @@ class Test_softplus(unittest.TestCase):
 
 class Test_gelu(Test_add, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Gelu', check_model=False)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Gelu', check_model=False
+        )
         assert node.op_type == 'Gelu'
 
         return model, node
@@ -680,8 +743,14 @@ class Test_gelu(Test_add, unittest.TestCase):
 
 class Test_reduce_mean(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='ReduceMean', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='ReduceMean',
+            check_model=True,
+        )
         assert node.op_type == 'ReduceMean'
 
         return model, node
@@ -698,15 +767,20 @@ class Test_reduce_mean(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).reduce_mean(node)
 
-        kwargs = {'shape': [12, 22, 32],
-                  'axes': [2, 1]}
+        kwargs = {'shape': [12, 22, 32], 'axes': [2, 1]}
         self.evaluate_test(kwargs, spec)
 
 
 class Test_reduce_sum(Test_reduce_mean, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='ReduceSum', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='ReduceSum',
+            check_model=True,
+        )
         assert node.op_type == 'ReduceSum'
 
         return model, node
@@ -719,15 +793,20 @@ class Test_reduce_sum(Test_reduce_mean, unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).reduce_sum(node)
 
-        kwargs = {'shape': [12, 22, 32],
-                  'axes': [2, 1]}
+        kwargs = {'shape': [12, 22, 32], 'axes': [2, 1]}
         self.evaluate_test(kwargs, spec)
 
 
 class Test_reduce_l2(Test_reduce_mean, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='ReduceL2', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='ReduceL2',
+            check_model=True,
+        )
         assert node.op_type == 'ReduceL2'
 
         return model, node
@@ -740,15 +819,20 @@ class Test_reduce_l2(Test_reduce_mean, unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).reduce_l2(node)
 
-        kwargs = {'shape': [12, 22, 32],
-                  'axes': [2, 1]}
+        kwargs = {'shape': [12, 22, 32], 'axes': [2, 1]}
         self.evaluate_test(kwargs, spec)
 
 
 class Test_squeeze(Test_reduce_mean, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Squeeze', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Squeeze',
+            check_model=True,
+        )
         assert node.op_type == 'Squeeze'
 
         return model, node
@@ -761,15 +845,20 @@ class Test_squeeze(Test_reduce_mean, unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).squeeze(node)
 
-        kwargs = {'shape': [12, 22, 32],
-                  'axes': [2, 1]}
+        kwargs = {'shape': [12, 22, 32], 'axes': [2, 1]}
         self.evaluate_test(kwargs, spec)
 
 
 class Test_unsqueeze(Test_reduce_mean, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Unsqueeze', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Unsqueeze',
+            check_model=True,
+        )
         assert node.op_type == 'Unsqueeze'
 
         return model, node
@@ -782,15 +871,20 @@ class Test_unsqueeze(Test_reduce_mean, unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).unsqueeze(node)
 
-        kwargs = {'shape': [12, 22, 32],
-                  'axes': [2, 1]}
+        kwargs = {'shape': [12, 22, 32], 'axes': [2, 1]}
         self.evaluate_test(kwargs, spec)
 
 
 class Test_reshape(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values):
-        model, node = make_test_model_with_init_val(input_shapes, output_shapes, attributes, init_values,
-                                                    op_type='Reshape', check_model=True)
+        model, node = make_test_model_with_init_val(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_values,
+            op_type='Reshape',
+            check_model=True,
+        )
         assert node.op_type == 'Reshape'
 
         return model, node
@@ -807,10 +901,7 @@ class Test_reshape(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_values)
         spec = OnnxExportSpec(model).reshape(node)
 
-        kwargs = {
-            'input_shape': [32, 16, 256, 256],
-            'output_shape': [32, 64, 128, 128]
-        }
+        kwargs = {'input_shape': [32, 16, 256, 256], 'output_shape': [32, 64, 128, 128]}
 
         self.evaluate_test(kwargs, spec)
 
@@ -819,8 +910,14 @@ class Test_expand(Test_reshape, unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values):
         # TODO fix Process finished with exit code 139 (interrupted by signal 11: SIGSEGV)
         #  when check_model=True
-        model, node = make_test_model_with_init_val(input_shapes, output_shapes, attributes, init_values,
-                                                    op_type='Expand', check_model=False)
+        model, node = make_test_model_with_init_val(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_values,
+            op_type='Expand',
+            check_model=False,
+        )
         assert node.op_type == 'Expand'
 
         return model, node
@@ -833,18 +930,16 @@ class Test_expand(Test_reshape, unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_values)
         spec = OnnxExportSpec(model).expand(node)
 
-        kwargs = {
-            'input_shape': [32, 1, 12, 12],
-            'output_shape': [32, 8, 12, 12]
-        }
+        kwargs = {'input_shape': [32, 1, 12, 12], 'output_shape': [32, 8, 12, 12]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_concatenation(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Concat', check_model=True)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Concat', check_model=True
+        )
         assert node.op_type == 'Concat'
 
         return model, node
@@ -861,8 +956,7 @@ class Test_concatenation(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).concatenation(node)
 
-        kwargs = {'tensors': [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
-                  'axis': 2}
+        kwargs = {'tensors': [[1, 2, 3], [1, 2, 3], [1, 2, 3]], 'axis': 2}
 
         self.evaluate_test(kwargs, spec)
 
@@ -881,8 +975,14 @@ class Test_concatenation(unittest.TestCase):
 
 class Test_transpose(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Transpose', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Transpose',
+            check_model=True,
+        )
         assert node.op_type == 'Transpose'
 
         return model, node
@@ -899,16 +999,16 @@ class Test_transpose(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).transpose(node)
 
-        kwargs = {'shape': [1, 2, 3, 4],
-                  'permutation': [1, 0, 3, 2]}
+        kwargs = {'shape': [1, 2, 3, 4], 'permutation': [1, 0, 3, 2]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_slice(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values):
-        model, node = make_test_model_with_init_val(input_shapes, output_shapes, attributes, init_values,
-                                                    op_type='Slice', check_model=True)
+        model, node = make_test_model_with_init_val(
+            input_shapes, output_shapes, attributes, init_values, op_type='Slice', check_model=True
+        )
         assert node.op_type == 'Slice'
 
         return model, node
@@ -925,18 +1025,21 @@ class Test_slice(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_values)
         spec = OnnxExportSpec(model).slice(node)
 
-        kwargs = {
-            'shape': [1, 3, 224, 224],
-            'offset': [0, 1, 0, 0]
-        }
+        kwargs = {'shape': [1, 3, 224, 224], 'offset': [0, 1, 0, 0]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_flatten(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Flatten', check_model=True)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Flatten',
+            check_model=True,
+        )
         assert node.op_type == 'Flatten'
 
         return model, node
@@ -979,17 +1082,16 @@ class Test_flatten(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).flatten(node)
 
-        kwargs = {
-            'shape': [1, 2, 3, 4, 5, 6, 7, 8],
-            'axis': 7}
+        kwargs = {'shape': [1, 2, 3, 4, 5, 6, 7, 8], 'axis': 7}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_pad(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values):
-        model, node = make_test_model_with_init_val(input_shapes, output_shapes, attributes, init_values,
-                                                    op_type='Pad', check_model=True)
+        model, node = make_test_model_with_init_val(
+            input_shapes, output_shapes, attributes, init_values, op_type='Pad', check_model=True
+        )
         assert node.op_type == 'Pad'
 
         return model, node
@@ -1006,18 +1108,21 @@ class Test_pad(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes, init_values)
         spec = OnnxExportSpec(model).pad(node)
 
-        kwargs = {
-            'shape': [1, 2, 3, 4],
-            'pad': [(1, 5), (2, 6), (3, 7), (4, 8)]
-        }
+        kwargs = {'shape': [1, 2, 3, 4], 'pad': [(1, 5), (2, 6), (3, 7), (4, 8)]}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_layer_norm(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='LayerNorm', check_model=False)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='LayerNorm',
+            check_model=False,
+        )
         assert node.op_type == 'LayerNorm'
 
         return model, node
@@ -1042,8 +1147,9 @@ class Test_layer_norm(unittest.TestCase):
 
 class Test_split(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Split', check_model=False)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_shapes, op_type='Split', check_model=False
+        )
         assert node.op_type == 'Split'
 
         return model, node
@@ -1056,26 +1162,25 @@ class Test_split(unittest.TestCase):
     def test_case(self):
         input_shapes = [(1, 284, 2)]
         output_shapes = [(1, 284, 1), (1, 284, 1)]
-        attributes = {
-            'split': (1, 1),
-            'axis': -1
-        }
+        attributes = {'split': (1, 1), 'axis': -1}
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).split(node)
 
-        kwargs = {
-            'shape': [1, 284, 2],
-            'split': [1, 1],
-            'axis': 2
-        }
+        kwargs = {'shape': [1, 284, 2], 'split': [1, 1], 'axis': 2}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_softmax(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_shapes=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_shapes,
-                                      op_type='Softmax', check_model=False)
+        model, node = make_test_model(
+            input_shapes,
+            output_shapes,
+            attributes,
+            init_shapes,
+            op_type='Softmax',
+            check_model=False,
+        )
         assert node.op_type == 'Softmax'
 
         return model, node
@@ -1093,18 +1198,16 @@ class Test_softmax(unittest.TestCase):
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).softmax(node)
 
-        kwargs = {
-            'input_shape': [1, 1001, 224],
-            'axis': 2
-        }
+        kwargs = {'input_shape': [1, 1001, 224], 'axis': 2}
 
         self.evaluate_test(kwargs, spec)
 
 
 class Test_clip(unittest.TestCase):
     def make_test_model(self, input_shapes, output_shapes, attributes, init_values=None):
-        model, node = make_test_model(input_shapes, output_shapes, attributes, init_values,
-                                      op_type='Clip', check_model=False)
+        model, node = make_test_model(
+            input_shapes, output_shapes, attributes, init_values, op_type='Clip', check_model=False
+        )
         assert node.op_type == 'Clip'
 
         return model, node
@@ -1132,10 +1235,7 @@ class Test_clip(unittest.TestCase):
     def test_case_1(self):
         input_shapes = [(1, 2, 3, 4)]
         output_shapes = [(1, 2, 3, 4)]
-        attributes = {
-            'min': 0.0,
-            'max': 6.0
-        }
+        attributes = {'min': 0.0, 'max': 6.0}
         model, node = self.make_test_model(input_shapes, output_shapes, attributes)
         spec = OnnxExportSpec(model).clip(node)
 
@@ -1168,9 +1268,11 @@ class Test_clip(unittest.TestCase):
         model, node = self.make_test_model_1(kwargs, input_shapes)
         spec = OnnxExportSpec(model).clip(node)
 
-        kwargs.update({
-            'input_shape': [1, 2, 3, 4],
-        })
+        kwargs.update(
+            {
+                'input_shape': [1, 2, 3, 4],
+            }
+        )
 
         self.evaluate_test(kwargs, spec)
 
@@ -1180,24 +1282,25 @@ class Test_clip(unittest.TestCase):
         model, node = self.make_test_model_1(kwargs, input_shapes)
         spec = OnnxExportSpec(model).clip(node)
 
-        kwargs.update({
-            'input_shape': [1, 2, 3, 4],
-        })
+        kwargs.update(
+            {
+                'input_shape': [1, 2, 3, 4],
+            }
+        )
 
         self.evaluate_test(kwargs, spec)
 
     def test_case_5(self):
         input_shapes = [(1, 2, 3, 4)]
-        kwargs = {
-            'min': 0.0,
-            'max': 6.0
-        }
+        kwargs = {'min': 0.0, 'max': 6.0}
         model, node = self.make_test_model_1(kwargs, input_shapes)
         spec = OnnxExportSpec(model).clip(node)
 
-        kwargs.update({
-            'input_shape': [1, 2, 3, 4],
-        })
+        kwargs.update(
+            {
+                'input_shape': [1, 2, 3, 4],
+            }
+        )
 
         self.evaluate_test(kwargs, spec)
 
@@ -1215,6 +1318,7 @@ class Test_multi_node_lp_norm(unittest.TestCase):
         model = torch_to_onnx(LpNorm(kwargs), input_shapes)
         node = model.graph.node[-1]
         from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
+
         model = InferenceShape(model).inference_shape()
 
         assert node.op_type == 'Div'
@@ -1228,16 +1332,10 @@ class Test_multi_node_lp_norm(unittest.TestCase):
 
     def test_case(self):
         input_shapes = [(1, 2, 3, 4)]
-        kwargs = {
-            'dim': 1,
-            'p': 2
-        }
+        kwargs = {'dim': 1, 'p': 2}
         model, node = self.make_test_model(kwargs, input_shapes)
         spec, _ = OnnxExportSpec(model).multi_node_lp_norm(node)
 
-        kwargs.update({
-            'input_shape': [1, 2, 3, 4],
-            'axis': 1
-        })
+        kwargs.update({'input_shape': [1, 2, 3, 4], 'axis': 1})
 
         self.evaluate_test(kwargs, spec)

@@ -2,20 +2,23 @@ import abc
 from typing import List, Tuple, Union
 import unittest
 
+import numpy as np
 import onnx
 from onnx import numpy_helper
 import onnxruntime as ort
-import numpy as np
 
-from tests import torch_to_onnx
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
+from furiosa.quantizer.interfaces.transformer import Transformer
+from tests import torch_to_onnx
 
 
 class TestTransformer(unittest.TestCase):
     @staticmethod
-    def make_test_model(torch_model: callable, transformer: Union[Transformer, abc.ABCMeta],
-                        input_shapes: List[Tuple[int, ...]]):
+    def make_test_model(
+        torch_model: callable,
+        transformer: Union[Transformer, abc.ABCMeta],
+        input_shapes: List[Tuple[int, ...]],
+    ):
         orig_model = torch_to_onnx(torch_model, input_shapes)
         # apply polish_model by default
         orig_model = PolishModel().transform(orig_model)
@@ -54,8 +57,12 @@ class TestTransformer(unittest.TestCase):
             self.assertListAlmostEqual(act, exp, 4, msg=f"{np_arrays}")
 
     def check_value_info(self, model):
-        value_info = {vi.name: vi for vi in
-                      list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)}
+        value_info = {
+            vi.name: vi
+            for vi in list(model.graph.value_info)
+            + list(model.graph.input)
+            + list(model.graph.output)
+        }
 
         for node in model.graph.node:
             for input in list(node.input) + list(node.output):
@@ -78,8 +85,7 @@ class TestTransformer(unittest.TestCase):
             self.assertAlmostEqual(a, b, tol, msg=msg)
 
 
-def run_onnx_model(model: onnx.ModelProto,
-                   input_arrays: List[np.array]) -> List[List[float]]:
+def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.array]) -> List[List[float]]:
     sess = ort.InferenceSession(model.SerializeToString())
     input_names = [inp.name for inp in sess.get_inputs()]
     output_names = [out.name for out in sess.get_outputs()]

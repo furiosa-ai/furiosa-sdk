@@ -1,11 +1,11 @@
 import onnx
 from onnx.helper import ModelProto
-from onnxruntime.transformers.onnx_model import OnnxModel
 from onnxruntime.transformers.fusion_layernorm import FusionLayerNormalization
+from onnxruntime.transformers.onnx_model import OnnxModel
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class BertOnnxModel(OnnxModel):
@@ -34,8 +34,9 @@ class FuseLayerNormalization(Transformer):
         optimizer.fuse_layer_normalization()
 
         model = optimizer.model
-        layer_norm_by_input_name = {node.input[0]: node for node in model.graph.node
-                                    if node.op_type == 'LayerNormalization'}
+        layer_norm_by_input_name = {
+            node.input[0]: node for node in model.graph.node if node.op_type == 'LayerNormalization'
+        }
 
         # nodes are not topologically sorted as a result of onnxruntime optimization
         sorted_nodes = []

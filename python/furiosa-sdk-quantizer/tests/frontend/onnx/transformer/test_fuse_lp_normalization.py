@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
-
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -35,19 +34,21 @@ class MultiTestModel(UnitTestModel, abc.ABC):
 
 class TestFuseLpNormalization(TestTransformer):
     def make_unit_model(self, input_shapes, p, dim):
-        orig_model, trans_model = self.make_test_model(UnitTestModel(p, dim), FuseLpNormalization(),
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(
+            UnitTestModel(p, dim), FuseLpNormalization(), input_shapes
+        )
         return orig_model, trans_model
 
     def make_multi_model(self, input_shapes, p, dim):
-        orig_model, trans_model = self.make_test_model(MultiTestModel(p, dim), FuseLpNormalization(),
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(
+            MultiTestModel(p, dim), FuseLpNormalization(), input_shapes
+        )
         return orig_model, trans_model
 
     def test_case1(self):
         """
-            Test whether the original model is well transformed for unit operator model,
-            which contains only LpNormalization operator
+        Test whether the original model is well transformed for unit operator model,
+        which contains only LpNormalization operator
         """
         input_shapes = [(1, 4, 8)]
         p = 2
@@ -67,8 +68,8 @@ class TestFuseLpNormalization(TestTransformer):
     )
     def test_case2(self):
         """
-            Test whether the original model is well transformed for multi operator model,
-             which contains operators other than LpNormalization
+        Test whether the original model is well transformed for multi operator model,
+         which contains operators other than LpNormalization
         """
         input_shapes = [(1, 4, 8)]
         p = 1

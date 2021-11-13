@@ -10,11 +10,12 @@ sdk_modules = [
 ]
 
 format_applied = [
-  "furiosa-registry",
-  "furiosa-server",
-  'furiosa-tools',
-  'furiosa-runtime',
   'furiosa-model-validator',
+  'furiosa-registry',
+  'furiosa-runtime',
+  'furiosa-sdk-quantizer',
+  'furiosa-server',
+  'furiosa-tools',
 ]
 
 test_modules = [

@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import (Pattern_1, Pattern_2, FusePad)
+from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad, Pattern_1, Pattern_2
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -37,9 +37,15 @@ class UnitTestModel_1(nn.Module, ABC):
 class UnitTestModel2(nn.Module, ABC):
     def __init__(self):
         super(UnitTestModel2, self).__init__()
-        self.avgpool = nn.AvgPool2d(kernel_size=3, stride=3, padding=0, ceil_mode=False, count_include_pad=False)
-        self.avgpool_1 = nn.AvgPool2d(kernel_size=4, stride=3, padding=2, ceil_mode=False, count_include_pad=True)
-        self.avgpool_2 = nn.AvgPool2d(kernel_size=5, stride=3, padding=1, ceil_mode=False, count_include_pad=False)
+        self.avgpool = nn.AvgPool2d(
+            kernel_size=3, stride=3, padding=0, ceil_mode=False, count_include_pad=False
+        )
+        self.avgpool_1 = nn.AvgPool2d(
+            kernel_size=4, stride=3, padding=2, ceil_mode=False, count_include_pad=True
+        )
+        self.avgpool_2 = nn.AvgPool2d(
+            kernel_size=5, stride=3, padding=1, ceil_mode=False, count_include_pad=False
+        )
 
     def forward(self, x):
         x = F.pad(x, [1, 1, 1, 1, 0, 0, 0, 0], value=0.0)
@@ -61,9 +67,7 @@ class UnitTestModel3(nn.Module, ABC):
 
 class TestFusePad(TestTransformer, ABC):
     def _make_test_model(self, torch_model, input_shapes, transformer):
-        orig_model, trans_model = self.make_test_model(torch_model,
-                                                       transformer,
-                                                       input_shapes)
+        orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model
 
     def test_case1(self):

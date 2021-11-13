@@ -2,8 +2,8 @@ import abc
 
 import onnx
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class FuseConv(Transformer):
@@ -20,15 +20,16 @@ class FuseConv(Transformer):
 
 class Pattern_1(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> MatMul --> Add --> next
-        to
-            prev --> Unsqueeze --> Conv --> Squeeze --> next
+    transform
+        prev --> MatMul --> Add --> next
+    to
+        prev --> Unsqueeze --> Conv --> Squeeze --> next
 
-        if 1. MatMul.ndim == 2
-           2. MatMul must have at most one initializer
-           3. Add must have at most one initializer
+    if 1. MatMul.ndim == 2
+       2. MatMul must have at most one initializer
+       3. Add must have at most one initializer
     """
+
     pattern_to_match = ['MatMul', 'Add']
 
     def pattern_matching(self, base_node):
@@ -43,16 +44,12 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
         top_node = matched_nodes[0]
 
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[
-                                   *self.make_nodes(**self.get_new_node_args(matched_nodes))
-                               ],
-                               inits_to_add=[
-                                   *self.make_initializers(**self.get_new_init_args(matched_nodes))
-                               ],
-                               vis_to_add=[
-                                   *self.make_value_infos(**self.get_new_vi_args(matched_nodes))
-                               ])
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[*self.make_nodes(**self.get_new_node_args(matched_nodes))],
+            inits_to_add=[*self.make_initializers(**self.get_new_init_args(matched_nodes))],
+            vis_to_add=[*self.make_value_infos(**self.get_new_vi_args(matched_nodes))],
+        )
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -109,25 +106,35 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return args
 
     def make_nodes(self, node_input, node_output, w_input, b_input, **kwargs):
-        unsqueeze_node = self.make_node('Unsqueeze', inputs=[node_input],
-                                        outputs=[node_input + '_unsqueezed'], name=node_input + '_1',
-                                        **{'axes': [2, 3]})
+        unsqueeze_node = self.make_node(
+            'Unsqueeze',
+            inputs=[node_input],
+            outputs=[node_input + '_unsqueezed'],
+            name=node_input + '_1',
+            **{'axes': [2, 3]},
+        )
 
-        conv_node = self.make_node('Conv',
-                                   inputs=[unsqueeze_node.output[0], w_input + '_fused',
-                                           b_input + '_fused'],
-                                   outputs=[node_input + '_fused'], name=node_input + '_2',
-                                   **{
-                                       'dilations': [1, 1],
-                                       'group': 1,
-                                       'kernel_shape': [1, 1],
-                                       'pads': [0, 0, 0, 0],
-                                       'strides': [1, 1]
-                                   })
+        conv_node = self.make_node(
+            'Conv',
+            inputs=[unsqueeze_node.output[0], w_input + '_fused', b_input + '_fused'],
+            outputs=[node_input + '_fused'],
+            name=node_input + '_2',
+            **{
+                'dilations': [1, 1],
+                'group': 1,
+                'kernel_shape': [1, 1],
+                'pads': [0, 0, 0, 0],
+                'strides': [1, 1],
+            },
+        )
 
-        squeeze_node = self.make_node('Squeeze', inputs=[conv_node.output[0]],
-                                      outputs=[node_output], name=node_input + '_3',
-                                      **{'axes': [2, 3]})
+        squeeze_node = self.make_node(
+            'Squeeze',
+            inputs=[conv_node.output[0]],
+            outputs=[node_output],
+            name=node_input + '_3',
+            **{'axes': [2, 3]},
+        )
         return unsqueeze_node, conv_node, squeeze_node
 
     def make_initializers(self, w_input, b_input=None, **kwargs):
@@ -151,27 +158,32 @@ class Pattern_1(ONNXTransformer, abc.ABC):
 
     def make_value_infos(self, node_input, node_output):
 
-        conv_input_vi = self.make_tensor_value_info(node_input + '_unsqueezed',
-                                                    onnx.TensorProto.FLOAT,
-                                                    self.get_value_info_shape(node_input) + [1, 1])
+        conv_input_vi = self.make_tensor_value_info(
+            node_input + '_unsqueezed',
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(node_input) + [1, 1],
+        )
 
-        conv_output_vi = self.make_tensor_value_info(node_input + '_fused',
-                                                     onnx.TensorProto.FLOAT,
-                                                     self.get_value_info_shape(node_output) + [1, 1])
+        conv_output_vi = self.make_tensor_value_info(
+            node_input + '_fused',
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(node_output) + [1, 1],
+        )
 
         return conv_input_vi, conv_output_vi
 
 
 class Pattern_2(Pattern_1, abc.ABC):
     """
-        transform
-            prev --> Gemm --> next
-        to
-            prev --> Unsqueeze --> Conv --> Squeeze --> next
+    transform
+        prev --> Gemm --> next
+    to
+        prev --> Unsqueeze --> Conv --> Squeeze --> next
 
-        if 1. one of Gemm.A and Gemm.B must have initializer
-           2. Gemm.C must have initializer if defined
+    if 1. one of Gemm.A and Gemm.B must have initializer
+       2. Gemm.C must have initializer if defined
     """
+
     pattern_to_match = ['Gemm']
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -245,12 +257,13 @@ class Pattern_2(Pattern_1, abc.ABC):
 
 class Pattern_3(ONNXTransformer, abc.ABC):
     """
-        transform
-            prev --> Conv --> Add --> next
-        to
-            prev --> Conv --> next
-        if len(Conv.input) == 2
+    transform
+        prev --> Conv --> Add --> next
+    to
+        prev --> Conv --> next
+    if len(Conv.input) == 2
     """
+
     pattern_to_match = ['Conv', 'Add']
 
     def pattern_matching(self, base_node):
@@ -265,13 +278,11 @@ class Pattern_3(ONNXTransformer, abc.ABC):
 
         top_node, base_node = matched_nodes
 
-        self.transform_to_fuse(matched_nodes,
-                               nodes_to_add=[
-                                   self.make_nodes(*matched_nodes)
-                               ],
-                               inits_to_add=[
-                                   self.make_initializers(base_node)
-                               ])
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[self.make_nodes(*matched_nodes)],
+            inits_to_add=[self.make_initializers(base_node)],
+        )
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
@@ -279,10 +290,13 @@ class Pattern_3(ONNXTransformer, abc.ABC):
         return len(top_node.input) == 2
 
     def make_nodes(self, top_node, base_node):
-        conv_node = self.make_node('Conv',
-                                   inputs=[*top_node.input, self.get_init_node_input(base_node) + '_fused'],
-                                   outputs=[base_node.output[0]], name=top_node.name,
-                                   **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute})
+        conv_node = self.make_node(
+            'Conv',
+            inputs=[*top_node.input, self.get_init_node_input(base_node) + '_fused'],
+            outputs=[base_node.output[0]],
+            name=top_node.name,
+            **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute},
+        )
 
         return conv_node
 

@@ -4,25 +4,24 @@ import torch
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
-
 from tests.frontend.onnx.transformer import TestTransformer
 
 
 class UnitTestModel(nn.Module, abc.ABC):
     """
-        DepthToSpace DRC mode
-            https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
-            b, c, h, w = x.shape
-            tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
-            tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
-            y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize]
+    DepthToSpace DRC mode
+        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
+        b, c, h, w = x.shape
+        tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
+        tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
+        y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize]
 
-        DepthToSpace CRD mode
-            https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
-            b, c, h, w = x.shape
-            tmp = np.reshape(x, [b, c // (blocksize ** 2), blocksize, blocksize, h, w])
-            tmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])
-            y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
+    DepthToSpace CRD mode
+        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
+        b, c, h, w = x.shape
+        tmp = np.reshape(x, [b, c // (blocksize ** 2), blocksize, blocksize, h, w])
+        tmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])
+        y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
     """
 
     def __init__(self, input_shape, blocksize, mode):
@@ -65,19 +64,21 @@ class MultiTestModel(UnitTestModel, abc.ABC):
 
 class TestReifyDepthToSpace(TestTransformer):
     def make_unit_model(self, input_shapes, blocksize, mode):
-        orig_model, trans_model = self.make_test_model(UnitTestModel(input_shapes[0], blocksize, mode),
-                                                       FuseDepthToSpace(), input_shapes)
+        orig_model, trans_model = self.make_test_model(
+            UnitTestModel(input_shapes[0], blocksize, mode), FuseDepthToSpace(), input_shapes
+        )
         return orig_model, trans_model
 
     def make_multi_model(self, input_shapes, blocksize, mode):
-        orig_model, trans_model = self.make_test_model(UnitTestModel(input_shapes[0], blocksize, mode),
-                                                       FuseDepthToSpace(), input_shapes)
+        orig_model, trans_model = self.make_test_model(
+            UnitTestModel(input_shapes[0], blocksize, mode), FuseDepthToSpace(), input_shapes
+        )
         return orig_model, trans_model
 
     def test_case1(self):
         """
-            Test whether the original model is well transformed for unit operator model,
-            which contains only DepthToSpace operator
+        Test whether the original model is well transformed for unit operator model,
+        which contains only DepthToSpace operator
         """
         input_shapes = [(1, 4, 8, 8)]
         blocksize = 2
@@ -93,8 +94,8 @@ class TestReifyDepthToSpace(TestTransformer):
 
     def test_case2(self):
         """
-            Test whether the original model is well transformed for unit operator model,
-            which contains only DepthToSpace operator
+        Test whether the original model is well transformed for unit operator model,
+        which contains only DepthToSpace operator
         """
         input_shapes = [(1, 9, 4, 4)]
         blocksize = 3
@@ -110,8 +111,8 @@ class TestReifyDepthToSpace(TestTransformer):
 
     def test_case3(self):
         """
-            Test whether the original model is well transformed for multi operator model,
-             which contains operators other than DepthToSpace
+        Test whether the original model is well transformed for multi operator model,
+         which contains operators other than DepthToSpace
         """
         input_shapes = [(1, 4, 8, 8)]
         blocksize = 2

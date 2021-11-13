@@ -1,5 +1,6 @@
-import onnx
 import abc
+
+import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.interfaces.transformer import Transformer

@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
+    EliminateRedundantShapePattern,
     Pattern_1,
     Pattern_2,
     Pattern_3,
@@ -13,9 +14,7 @@ from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_patte
     Pattern_6,
     Pattern_7,
     Pattern_8,
-    EliminateRedundantShapePattern,
 )
-
 from tests.frontend.onnx.transformer import TestTransformer
 
 

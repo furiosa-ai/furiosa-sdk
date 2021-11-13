@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
+import pickle
 import unittest
 
 import onnx
-import pickle
 
 from furiosa.quantizer.frontend.onnx import post_training_quantize
 
 
 class ONNXTest(unittest.TestCase):
     def test_post_training_quantize(self):
-        model = onnx.load(
-            Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx"
-        )
+        model = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
         # val2017-10.pickle contains a calibration dataset that consists
         # of 10 images in the COCO validation dataset [val2017.zip][].
         #

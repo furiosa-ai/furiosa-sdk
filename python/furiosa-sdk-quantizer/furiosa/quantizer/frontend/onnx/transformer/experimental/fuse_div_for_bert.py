@@ -2,10 +2,10 @@ import onnx
 from onnx import numpy_helper
 from onnx.helper import make_model
 
-from furiosa.quantizer.interfaces.transformer import Transformer
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class FuseDivForBert(Transformer):
@@ -55,7 +55,8 @@ class FuseDivForBert(Transformer):
             arr = numpy_helper.to_array(self.initializers[prev_node_4.input[1]])
 
             model.graph.initializer.append(
-                numpy_helper.from_array(arr / scalar, name=prev_node_4.input[1] + '_div_fused'))
+                numpy_helper.from_array(arr / scalar, name=prev_node_4.input[1] + '_div_fused')
+            )
             prev_node_4.input[1] = prev_node_4.input[1] + '_div_fused'
             prev_node_1.output[0] = node.output[0]
             removed_nodes.append(node)

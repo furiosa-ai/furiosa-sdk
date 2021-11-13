@@ -1,10 +1,9 @@
 import onnx
-
 from onnx import version_converter
 
 from furiosa.quantizer.frontend.onnx import __OPSET_VERSION__
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 from furiosa.quantizer.frontend.onnx.transformer.utils import include_initializer_to_graph_input
+from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 
@@ -27,5 +26,7 @@ class CheckVersion(Transformer[onnx.ModelProto]):
                 model = version_converter.convert_version(model, __OPSET_VERSION__)
                 check_model(model)
             except Exception:
-                raise Exception(f"Can't convert the model (ONNX opset {version}) to ONNX opset {__OPSET_VERSION__}")
+                raise Exception(
+                    f"Can't convert the model (ONNX opset {version}) to ONNX opset {__OPSET_VERSION__}"
+                )
         return model

@@ -1,6 +1,5 @@
-from typing import List, Set, IO, Text
-
 import collections
+from typing import IO, List, Set, Text
 
 import yaml
 from yaml import representer
@@ -25,6 +24,7 @@ class ExportSpec:
         # To remove process_tag (class name with '!!')
         def noop(*args, **kwargs):
             pass
+
         yaml.emitter.Emitter.process_tag = noop
         yaml.add_representer(collections.defaultdict, representer.Representer.represent_dict)
         yaml.dump(specs, output, default_flow_style=False, sort_keys=False)
