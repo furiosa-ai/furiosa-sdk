@@ -1,7 +1,8 @@
 import abc
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 import unittest
 
+import torch
 import numpy as np
 import onnx
 from onnx import numpy_helper
@@ -18,8 +19,9 @@ class TestTransformer(unittest.TestCase):
         torch_model: callable,
         transformer: Union[Transformer, abc.ABCMeta],
         input_shapes: List[Tuple[int, ...]],
+        dtype: Optional[torch.dtype] = torch.float32,
     ):
-        orig_model = torch_to_onnx(torch_model, input_shapes)
+        orig_model = torch_to_onnx(torch_model, input_shapes, dtype)
         # apply polish_model by default
         orig_model = PolishModel().transform(orig_model)
         copy_model = onnx.ModelProto()
