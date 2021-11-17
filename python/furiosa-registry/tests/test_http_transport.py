@@ -1,7 +1,8 @@
 from aiohttp import web
 import pytest
 
-from furiosa.registry.client.transport import HTTPTransport
+import furiosa.registry as registry
+from furiosa.registry.client.transport import supported
 
 
 @pytest.fixture(scope="function")
@@ -16,19 +17,15 @@ async def server(aiohttp_server):
     yield await aiohttp_server(app)
 
 
-@pytest.fixture(scope="function")
-def transport() -> HTTPTransport:
-    return HTTPTransport()
-
-
 @pytest.mark.asyncio
-async def test_fetch(transport, artifact_file, artifacts, server):
+async def test_list(server, tflite_artifact, artifacts):
     # Load from yaml format artifact config.
-    assert (
-        await transport.fetch(f"http://{server.host}:{server.port}/{artifact_file}")
-    ) == artifacts
+    assert (await registry.list(f"http://{server.host}:{server.port}/tests/fixtures")) == artifacts
 
 
 @pytest.mark.asyncio
-async def test_download(transport, model_file, MNISTnet, server):
-    assert await transport.download(f"http://{server.host}:{server.port}/{model_file}") == MNISTnet
+async def test_read(server, model_file, model_binary):
+    with supported("http://") as transport:
+        assert (
+            await transport.read(f"http://{server.host}:{server.port}/{model_file}") == model_binary
+        )
