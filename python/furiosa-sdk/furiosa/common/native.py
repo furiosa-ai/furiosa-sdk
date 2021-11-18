@@ -1,10 +1,9 @@
+from ctypes import CDLL, c_char_p, c_int, util
+from enum import IntEnum
 import glob
 import logging
 import os
-from ctypes import CDLL, c_char_p, util, c_int
-from enum import IntEnum
 from sys import platform
-
 
 LOG = logging.getLogger(__name__)
 
@@ -83,10 +82,14 @@ def find_native_libs(libname: str):
 
     if ciface:
         __register_common_capis(ciface)
-        LOG.info('loaded native library %s (%s %s)' % (
-            libpath,
-            ciface.version().decode(DEFAULT_ENCODING),
-            ciface.git_short_hash().decode(DEFAULT_ENCODING)))
+        LOG.info(
+            'loaded native library %s (%s %s)'
+            % (
+                libpath,
+                ciface.version().decode(DEFAULT_ENCODING),
+                ciface.git_short_hash().decode(DEFAULT_ENCODING),
+            )
+        )
     else:
         raise SystemExit('fail to load native library')
 
@@ -95,6 +98,7 @@ def find_native_libs(libname: str):
 
 class LogLevel(IntEnum):
     """Python object correspondnig to nux_log_level_t in Nux C API"""
+
     OFF = 0
     ERROR = 1
     WARN = 2
