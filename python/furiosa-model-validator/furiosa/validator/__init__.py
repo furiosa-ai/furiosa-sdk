@@ -5,11 +5,12 @@ from pathlib import Path
 import sys
 import tempfile
 
+import onnx
+
 from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.runtime import session
-import onnx
 
 __version__ = get_sdk_version("furiosa.validator")
 
