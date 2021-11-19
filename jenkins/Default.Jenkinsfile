@@ -2,7 +2,7 @@ sdk_modules = [
     // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
   'furiosa-tools',
   'furiosa-runtime',
-  'furiosa-sdk-quantizer',
+  'furiosa-quantizer',
   'furiosa-model-validator',
   'furiosa-registry',
   'furiosa-sdk',
@@ -11,19 +11,19 @@ sdk_modules = [
 
 format_applied = [
   'furiosa-model-validator',
+  'furiosa-quantizer',
   'furiosa-registry',
   'furiosa-runtime',
-  'furiosa-sdk-quantizer',
   'furiosa-server',
   'furiosa-tools',
 ]
 
 test_modules = [
-  "furiosa-tools",
+  "furiosa-quantizer",
   "furiosa-registry",
-  "furiosa-sdk-quantizer",
   "furiosa-runtime",
-  "furiosa-server"
+  "furiosa-server",
+  "furiosa-tools",
 ]
 
 LINUX_DISTRIB = "ubuntu:focal"
