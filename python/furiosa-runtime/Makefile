@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	isort --diff . && black --diff .
+	isort --check --diff . && black --check --diff .
 
 upload_test:
 	twine upload --repository testpypi dist/*
