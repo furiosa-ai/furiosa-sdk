@@ -1,22 +1,19 @@
-import asyncio
 from functools import partial
-from typing import List
+from typing import Optional
 
-from furiosa.registry import Model, request
+import furiosa.registry as registry
+from furiosa.registry import Model
 
-version = "main"
-repository = f"https://raw.githubusercontent.com/furiosa-ai/furiosa-models/{version}"
-
-# TODO(yan): Provide lazy loading interface.
-models: List[Model] = asyncio.run(request(uri=repository, version=version))
+version = "v1.1"
+repository = "https://github.com/furiosa-ai/furiosa-artifacts"
 
 
-def Model(name: str):
-    return next(iter(model for model in models if model.name == name))
+async def load(name, *args, **kwargs) -> Optional[Model]:
+    return await registry.load(uri=repository, version=version, name=name)
 
 
-MLCommons_ResNet50_V1_5 = partial(Model, name="mlcommons_resnet50_v1.5_int8")
+MLCommonsResNet50 = partial(load, name="mlcommons_resnet50")
 
-MLCommons_MobileNetV1 = partial(Model, name="mlcommons_ssd_mobilenet_v1_int8")
+MLCommonsMobileNet = partial(load, name="mlcommons_ssd_mobilenet")
 
-MLCommons_SSD1200_ResNet34 = partial(Model, name="mlcommons_ssd_resnet34_int8")
+MLCommonsSSDResNet34 = partial(load, name="mlcommons_ssd_resnet34")
