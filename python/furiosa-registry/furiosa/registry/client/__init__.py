@@ -15,7 +15,7 @@ __all__ = ["list", "load", "help"]
 
 async def load(
     uri: str, name: str, version: Optional[str] = None, *args: Any, **kwargs: Any
-) -> Model:
+) -> Optional[Model]:
     """Load models from the specified registry URI.
 
     Args:
@@ -33,6 +33,9 @@ async def load(
         for artifact in await list(uri)
         if artifact.name == name and artifact.version == version
     ]
+
+    if not artifacts:
+        return None
 
     assert len(artifacts) == 1, "Model name should be unique in a artifact descriptor"
 
