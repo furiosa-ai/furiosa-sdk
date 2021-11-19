@@ -9,7 +9,7 @@ install:
 
 uninstall:
 	pip uninstall -y --quiet furiosa-runtime; \
-	pip uninstall -y --quiet furiosa-sdk-quantizer; \
+	pip uninstall -y --quiet furiosa-quantizer; \
 	pip uninstall -y --quiet furiosa-model-validator; \
 	pip uninstall -y --quiet furiosa-tools; \
 	pip uninstall -y --quiet furiosa-server; \
@@ -37,7 +37,7 @@ test:
 doc:
 	mkdir -p build/docs/src/furiosa
 	cp -a ../furiosa-runtime/furiosa/runtime build/docs/src/furiosa/runtime
-	cp -a ../furiosa-sdk-quantizer/furiosa/quantizer build/docs/src/furiosa/quantizer
+	cp -a ../furiosa-quantizer/furiosa/quantizer build/docs/src/furiosa/quantizer
 	cp -a furiosa build/docs/src
 	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
 
