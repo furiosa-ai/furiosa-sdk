@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+from distutils import log
 import glob
 import logging
 import os
-import subprocess
-from distutils import log
 from os.path import dirname, relpath
+import subprocess
 from textwrap import wrap
 from typing import Dict, List
 
@@ -31,12 +31,14 @@ here = os.path.abspath(os.path.dirname(__file__))
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "server": ["furiosa-server~=" + version],
     "quantizer": ["furiosa-sdk-quantizer~=" + version],
-    "validator": ["furiosa-model-validator~=" + version]
+    "validator": ["furiosa-model-validator~=" + version],
 }
 
 # Requirements for all "user" extras (no devel). They are de-duplicated. Note that we do not need
 # to separately add providers requirements - they have been already added as 'providers' extras above
-_all_requirements = list({req for extras_reqs in EXTRAS_REQUIREMENTS.values() for req in extras_reqs})
+_all_requirements = list(
+    {req for extras_reqs in EXTRAS_REQUIREMENTS.values() for req in extras_reqs}
+)
 
 EXTRAS_REQUIREMENTS["full"] = _all_requirements
 
@@ -105,7 +107,9 @@ class Develop(develop_orig):
             ]
             self.announce(f'Uninstalling ${furiosa_sdk_extras}!', level=log.INFO)
             if furiosa_sdk_extras:
-                subprocess.check_call(["python3", "-m", "pip", "uninstall", "--yes", *furiosa_sdk_extras])
+                subprocess.check_call(
+                    ["python3", "-m", "pip", "uninstall", "--yes", *furiosa_sdk_extras]
+                )
         except subprocess.CalledProcessError as e:
             self.announce(f'Error when uninstalling Furiosa SDK packages: {e}!', level=log.WARN)
         super().run()

@@ -4,7 +4,6 @@ import sys
 from typing import Optional
 
 from furiosa.common.native import find_native_lib_path
-
 from furiosa.runtime import __version__, runtime_version
 
 
