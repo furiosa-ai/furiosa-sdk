@@ -161,23 +161,19 @@ def checkFormat(pythonVersion) {
     python --version;
 
     echo "Checking the isort ...";
-    isort --check python/${it};
+    isort --check --diff python/${it};
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass isort";
-
-      isort --diff python/${it};
       echo "=========================================="
       exit 1
     fi
 
     echo "Checking the black ...";
-    black --check python/${it};
+    black --check --diff python/${it};
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass black"
-
-      black --diff python/${it};
       echo "=========================================="
       exit 1
     fi
