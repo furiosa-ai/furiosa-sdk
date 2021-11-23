@@ -73,11 +73,6 @@ spec:
     envFrom:
       - secretRef:
           name: internal-pypi-secret
-    # TODO, remove later
-    securityContext:
-      privileged: true
-      capabilities:
-        drop: ["ALL"]
     resources:
       limits:
         cpu: "${cpu}"
