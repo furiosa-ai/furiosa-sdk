@@ -36,9 +36,7 @@ def git_version(version_: str) -> str:
             logger.warning(".git directory not found: Cannot compute the git version")
             return ""
         except git.InvalidGitRepositoryError:
-            logger.warning(
-                "Invalid .git directory not found: Cannot compute the git version"
-            )
+            logger.warning("Invalid .git directory not found: Cannot compute the git version")
             return ""
     except ImportError:
         logger.warning("gitpython not found: Cannot compute the git version.")
@@ -52,9 +50,7 @@ def git_version(version_: str) -> str:
     return "no_git_version"
 
 
-def write_version(
-    filename: str = os.path.join(*[my_dir, "furiosa/models", "git_version"])
-):
+def write_version(filename: str = os.path.join(*[my_dir, "furiosa/models", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
     :param str filename: Destination file to write

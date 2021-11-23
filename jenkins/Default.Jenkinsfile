@@ -7,6 +7,7 @@ sdk_modules = [
   'furiosa-registry',
   'furiosa-sdk',
   'furiosa-server',
+  'furiosa-models'
 ]
 
 format_applied = [
@@ -16,6 +17,7 @@ format_applied = [
   'furiosa-runtime',
   'furiosa-server',
   'furiosa-tools',
+  'furiosa-models'
 ]
 
 test_modules = [
@@ -24,6 +26,7 @@ test_modules = [
   "furiosa-runtime",
   "furiosa-server",
   "furiosa-tools",
+  "furiosa-models"
 ]
 
 LINUX_DISTRIB = "ubuntu:focal"
