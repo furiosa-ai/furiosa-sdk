@@ -67,7 +67,12 @@ class FuriosaONNXQuantizer:
         copy_model = ModelProto()
         copy_model.CopyFrom(model)
         self.model = copy_model
-
+        self.opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        if self.opset is None:
+            raise ValueError(
+                "opset in ai.onnx domain is missing. "
+                "the version of the ONNX OperatorSet must be specified."
+            )
         self.raw_data = raw_data
 
         self.input_tensors = list(map(lambda tensor: tensor[0], get_input_tensors(model)))
@@ -188,7 +193,11 @@ class FuriosaONNXQuantizer:
                     if len(self.consumer_map[node_input]) > 1
                     else None
                 )
-                self.make_quant_dequant_node(node_input, suffix)
+                self.make_quant_dequant_node(
+                    node_input,
+                    idx=suffix,
+                    axis=self._decide_qdq_axis(node_input, node.op_type),
+                )
                 node.input[idx] += '_dequantized' + (
                     f'_{str(suffix)}' if suffix is not None else ''
                 )
@@ -220,7 +229,9 @@ class FuriosaONNXQuantizer:
 
         return self.model
 
-    def make_quant_dequant_node(self, node_input, idx=None):
+    def make_quant_dequant_node(
+        self, node_input: str, axis: Optional[Dict] = None, idx: Optional[int] = None
+    ) -> None:
         scale = node_input + '_scale'
         zero_point = node_input + '_zero_point'
         qlinear_output = node_input + '_quantized'
@@ -233,6 +244,7 @@ class FuriosaONNXQuantizer:
             op_type='QuantizeLinear',
             inputs=[node_input, scale, zero_point],
             outputs=[qlinear_output],
+            attrs=axis,
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
@@ -246,6 +258,7 @@ class FuriosaONNXQuantizer:
             op_type='DequantizeLinear',
             inputs=[qlinear_output, scale, zero_point],
             outputs=[dqlinear_output],
+            attrs=axis,
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
@@ -506,19 +519,13 @@ class FuriosaONNXQuantizer:
         )
 
     def _stack_quant_node(
-        self,
-        inputs: List[str],
-        outputs: List[str],
-        op_type: str,
-        attributes: Optional[List[onnx.AttributeProto]] = None,
+        self, inputs: List[str], outputs: List[str], op_type: str, attrs: Optional[Dict] = None
     ) -> None:
-        if attributes is None:
-            attributes = []
+        if attrs is None:
+            attrs = {}
 
         # make quantized node proto
-        attr_kwargs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in attributes}
-
-        quant_node = make_node(op_type, inputs, outputs, **attr_kwargs)
+        quant_node = make_node(op_type, inputs, outputs, **attrs)
 
         # stack quantized node
         self._quant_node.update({outputs[0]: quant_node})
@@ -643,8 +650,7 @@ class FuriosaONNXQuantizer:
                 ), f'Unknown data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
 
         # Checks if scale/zero-point of DequantizedLienar/QuantizeLinear (OpSet < 13) are scalars.
-        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
-        if opset is not None and opset.version < 13:
+        if self.opset.version < 13:
             for node in self.model.graph.node:
                 if node.op_type == "DequantizeLinear":
                     # Bypasses the checker if node.input[0] in DequantizeLinear is
@@ -658,19 +664,19 @@ class FuriosaONNXQuantizer:
                     zero_point = self._quant_param[node.input[2]]
                     assert (
                         not scale.dims
-                    ), f"the 'x_scale' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                    ), f"the 'x_scale' input of DequantizeLinear (OpSet {self.opset.version}) must be a scalar"
                     assert (
                         not zero_point.dims
-                    ), f"the 'x_zero_point' input of DequantizeLinear (OpSet {opset.version}) must be a scalar"
+                    ), f"the 'x_zero_point' input of DequantizeLinear (OpSet {self.opset.version}) must be a scalar"
                 elif node.op_type == "QuantizeLinear":
                     scale = self._quant_param[node.input[1]]
                     zero_point = self._quant_param[node.input[2]]
                     assert (
                         not scale.dims
-                    ), f"the 'y_scale' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
+                    ), f"the 'y_scale' input of QuantizeLinear (OpSet {self.opset.version}) must be a scalar"
                     assert (
                         not zero_point.dims
-                    ), f"the 'y_zero_point' input of QuantizeLinear (OpSet {opset.version}) must be a scalar"
+                    ), f"the 'y_zero_point' input of QuantizeLinear (OpSet {self.opset.version}) must be a scalar"
 
         # Checks if quantization parameters are at best 1-d array.
         for init in self.model.graph.initializer:
@@ -761,3 +767,20 @@ class FuriosaONNXQuantizer:
         if result is None:
             raise Exception(f"dynamic-range '{origin}' is missing")
         return result
+
+    def _decide_qdq_axis(self, node_input: str, op_type: str) -> Optional[Dict]:
+        """
+        This function decides axis for onnx opset >= 13 QuantizeLinear and DequantizeLinear
+        """
+        if self.opset.version < 13 or node_input not in self.initializer:
+            return None
+        if op_type == 'Conv':
+            # axis for Conv weight/bias
+            return {'axis': 0}
+        if op_type == 'ConvTranspose':
+            if len(self.initializer.get(node_input).dims) < 2:
+                # axis for ConvTranspose bias
+                return {'axis': 0}
+            # axis for ConvTranspose weight
+            return {'axis': 1}
+        return None
