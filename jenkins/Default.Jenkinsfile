@@ -73,11 +73,6 @@ spec:
     envFrom:
       - secretRef:
           name: internal-pypi-secret
-    # TODO, remove later
-    securityContext:
-      privileged: true
-      capabilities:
-        drop: ["ALL"]
     resources:
       limits:
         cpu: "${cpu}"
@@ -161,23 +156,19 @@ def checkFormat(pythonVersion) {
     python --version;
 
     echo "Checking the isort ...";
-    isort --check python/${it};
+    isort --check --diff python/${it};
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass isort";
-
-      isort --diff python/${it};
       echo "=========================================="
       exit 1
     fi
 
     echo "Checking the black ...";
-    black --check python/${it};
+    black --check --diff python/${it};
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass black"
-
-      black --diff python/${it};
       echo "=========================================="
       exit 1
     fi
@@ -324,8 +315,8 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.1-2+nightly-210930"
-    NUX_VERSION = "0.4.0-2+nightly-211105"
+    FIRMWARE_VERSION = "0.3.1-2"
+    NUX_VERSION = "0.5.0-2"
   }
 
   stages {

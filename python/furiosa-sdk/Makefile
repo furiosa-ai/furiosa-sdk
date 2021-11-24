@@ -23,7 +23,7 @@ build:
 	python -m build
 
 lint:
-	pylint furiosa
+	isort --check --diff . && black --check --diff .
 
 upload_test:
 	twine upload --repository testpypi dist/*
