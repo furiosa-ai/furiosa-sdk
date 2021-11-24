@@ -69,10 +69,10 @@ class FuriosaError(Exception):
     @property
     def message(self) -> str:
         """Error message"""
-        return self.message
+        return self._message
 
     def __repr__(self):
-        return '{}'.format(self.message)
+        return '{}'.format(self._message)
 
     def __str__(self):
         return self.__repr__()
@@ -81,21 +81,21 @@ class FuriosaError(Exception):
 class NativeException(FuriosaError):
     """general exception caused by Nuxpy"""
 
-    native_err: Optional[NativeError]
+    _native_err: Optional[NativeError]
 
     def __init__(self, message: str, native_err: NativeError = None):
-        self.native_err = native_err
+        self._native_err = native_err
         super().__init__(message)
 
     def native_error(self) -> Optional[NativeError]:
         """Return a native error if this exception comes from C native extension"""
-        return self.native_err
+        return self._native_err
 
     def __repr__(self):
-        if self.native_err is None:
+        if self._native_err is None:
             return self.message
 
-        return f'{self.message} (native error code: {self.native_err})'
+        return f'{self.message} (native error code: {self._native_err})'
 
     def __str__(self):
         return self.__repr__()
