@@ -24,10 +24,23 @@ class TestAsyncSession(unittest.TestCase):
     def test_run_async(self):
         async_sess = self.tester.session
 
+        self.assertEqual(
+            async_sess.summary(),
+            """\
+Inputs:
+{0: TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)}
+Outputs:
+{0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""",
+        )
+
         items = 50
         for i in range(0, items):
             idx = random.randrange(0, 9999, 1)
             ndarray_value = self.mnist_images[idx : idx + 1]
+
+            self.assertEqual(ndarray_value.shape, async_sess.input(0).shape)
+            self.assertEqual(ndarray_value.dtype, async_sess.input(0).dtype.numpy_dtype)
+
             async_sess.submit([ndarray_value], i)
 
         keys = set()
