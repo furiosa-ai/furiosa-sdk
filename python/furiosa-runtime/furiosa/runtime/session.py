@@ -280,11 +280,11 @@ class AsyncSession(Model):
     """An asynchronous session for a given model allows to submit predictions"""
 
     def __init__(self, ref: c_void_p):
-        self.ref = ref
-        self._as_parameter_ = self.ref
+        self._ref = ref
+        self._as_parameter_ = self._ref
         super().__init__()
 
-        self.inputs = self.allocate_inputs()
+        self._tensor_buffers = self.allocate_inputs()
 
     def _get_model_ref(self) -> c_void_p:
         return LIBNUX.nux_async_session_get_model(self)
@@ -302,10 +302,10 @@ class AsyncSession(Model):
             values: Input values
             context: an additional context to identify the prediction request
         """
-        _fill_all_tensors(values, self.inputs)
+        _fill_all_tensors(values, self._tensor_buffers)
         # manually increase reference count to keep the context object while running
         increase_ref_count(context)
-        err = LIBNUX.nux_async_session_run(self.ref, context, self.inputs)
+        err = LIBNUX.nux_async_session_run(self._ref, context, self._tensor_buffers)
 
         if is_err(err):
             raise into_exception(err)
@@ -316,9 +316,9 @@ class AsyncSession(Model):
         After a session is closed, CompletionQueue will return an error
         if CompletionQueue.recv() is called.
         """
-        if self.ref:
-            LIBNUX.nux_async_session_destroy(self.ref)
-            self.ref = None
+        if self._ref:
+            LIBNUX.nux_async_session_destroy(self._ref)
+            self._ref = None
 
     def __enter__(self):
         return self
