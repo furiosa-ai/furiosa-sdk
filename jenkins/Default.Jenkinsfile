@@ -333,7 +333,7 @@ pipeline {
         container('default') {
           sh "env"
 
-          sh "apt-get update && apt-get install -qq -y ca-certificates apt-transport-https gnupg wget"
+          sh "apt-get update && apt-get install -qq -y ca-certificates apt-transport-https gnupg wget python3-opencv"
           installConda()
 
           sh "apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E"
