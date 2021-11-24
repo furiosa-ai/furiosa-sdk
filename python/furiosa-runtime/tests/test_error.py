@@ -1,8 +1,7 @@
 import re
 import unittest
 
-from furiosa.runtime.errors import *
-
+from furiosa.runtime.errors import DeviceBusy
 
 versionPattern = r'\d+(=?\.(\d+(=?\.(\d+)*)*)*)*'
 regexMatcher = re.compile(versionPattern)
