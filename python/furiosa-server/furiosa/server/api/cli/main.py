@@ -28,17 +28,13 @@ class LogLevel(str, enum.Enum):
 @synchronous
 async def start(
     log_level: LogLevel = LogLevel.INFO,
-    model_path: str = typer.Option(None, help="Path to Model file (tflite, onnx are supported)"),
-    model_name: str = typer.Option(None, help="Model name used in URL path"),
-    model_version: str = typer.Option("default", help="Model version used in URL path"),
-    host: str = typer.Option("0.0.0.0", help="IP address to bind"),
-    http_port: int = typer.Option(8080, help="HTTP port to listen to requests"),
-    model_config: typer.FileText = typer.Option(
-        None, help="Path to a config file about models with specific configurations"
-    ),
-    server_config: typer.FileText = typer.Option(
-        None, help="Path to Model file (tflite, onnx are supported)"
-    ),
+    model_path: str = typer.Option(None, help="Path to a model file (tflite, onnx are supported)"),
+    model_name: str = typer.Option(None, help="Model name"),
+    model_version: str = typer.Option("default", help="Model version"),
+    host: str = typer.Option("0.0.0.0", help="IPv4 address to bind"),
+    http_port: int = typer.Option(8080, help="HTTP port to bind"),
+    model_config: typer.FileText = typer.Option(None, help="Path to a model config file"),
+    server_config: typer.FileText = typer.Option(None, help="Path to a server config file"),
 ):
     """
     Start serving models from FuriosaAI model server
