@@ -28,8 +28,8 @@ class LogLevel(str, enum.Enum):
 @synchronous
 async def start(
     log_level: LogLevel = LogLevel.INFO,
+    model_name: str = typer.Option(..., help="Model name"),
     model_path: str = typer.Option(None, help="Path to a model file (tflite, onnx are supported)"),
-    model_name: str = typer.Option(None, help="Model name"),
     model_version: str = typer.Option("default", help="Model version"),
     host: str = typer.Option("0.0.0.0", help="IPv4 address to bind"),
     http_port: int = typer.Option(8080, help="HTTP port to bind"),
