@@ -1,0 +1,8 @@
+pytest
+pytest-asyncio
+
+# Runtime dependency from https://github.com/furiosa-ai/furiosa-artifacts/blob/main/requirements.txt
+furiosa-registry
+opencv-python
+pycocotools
+torch
