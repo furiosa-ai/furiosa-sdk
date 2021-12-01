@@ -38,7 +38,7 @@ class OnnxExportSpec(ExportSpec):
         self._MULTI_NODE_SPEC = None
         self._SINGLE_NODE_SPEC = None
 
-    def export(self) -> (List[spec.OperatorSpec], Set[str]):
+    def export(self) -> Tuple[List[spec.OperatorSpec], Set[str]]:
         """
         Traverse graph and export nodes as specs.
         Returns (a list of Spec, a set of unsupported ops)
