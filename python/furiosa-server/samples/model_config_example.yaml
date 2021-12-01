@@ -9,4 +9,4 @@ model_config_list:
   - name: ssd
     model: "samples/data/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
     version: 1
-    npu_device: npu1
+    npu_device: npu0pe1
