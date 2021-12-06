@@ -11,6 +11,15 @@ from .tensor import TensorArray, TensorDesc
 class Model(ABC):
     """NPU model binary compiled by Renegade compiler"""
 
+    def __init__(self):
+        self._named_tensors = {}
+        for desc in self.inputs():
+            if desc.name:
+                self._named_tensors[desc.name] = desc
+        for desc in self.outputs():
+            if desc.name:
+                self._named_tensors[desc.name] = desc
+
     @abstractmethod
     def _get_model_ref(self) -> c_void_p:
         """
@@ -59,20 +68,24 @@ class Model(ABC):
 
     def allocate_tensors(self, names: List[str]) -> TensorArray:
         """Creates an array of tensors corresponding to tensor names with allocated buffers"""
+        tensor_descs = [self._named_tensors[name] for name in names]
         ptrs = convert_to_cchar_array(names)
+
         return TensorArray(
             LIBNUX.nux_tensor_array_allocate_by_names(self._get_model_ref(), ptrs, len(names)),
-            self.inputs(),
+            tensor_descs,
             allocated=True,
         )
 
     def create_tensors(self, names: List[str]) -> TensorArray:
         """Creates an array of tensors corresponding to tensor names without allocated buffers"""
+        tensor_descs = [self._named_tensors[name] for name in names]
         ptrs = convert_to_cchar_array(names)
+
         return TensorArray(
             LIBNUX.nux_tensor_array_create_by_names(self._get_model_ref(), ptrs, len(names)),
-            self.inputs(),
-            allocated=True,
+            tensor_descs,
+            allocated=False,
         )
 
     def allocate_inputs(self) -> TensorArray:

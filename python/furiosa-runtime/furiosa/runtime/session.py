@@ -156,6 +156,10 @@ class Session(Model):
         Returns:
             Inference output
         """
+        # FIXME: outputs=None should be supported in the future
+        if outputs is None:
+            raise InvalidInput(message="outputs must be given")
+
         input_names = [name for name in inputs.keys()]
         input_tensors = self.allocate_tensors(input_names)
         output_tensors = self.create_tensors(outputs)
