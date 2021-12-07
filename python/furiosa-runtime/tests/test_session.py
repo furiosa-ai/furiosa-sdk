@@ -119,8 +119,10 @@ class TestSessionWithNames(unittest.TestCase):
             self.assert_named_tensors(sess, [2, 0, 1], [0, 1, 2])
             self.assert_named_tensors(sess, [1, 2, 0], [0, 1, 2])
 
-            self.assert_named_tensors(sess, [2, 1, 0], [2, 0, 1])
+            self.assert_named_tensors(sess, [2, 1, 0], [0, 2, 1])
             self.assert_named_tensors(sess, [2, 1, 0], [1, 2, 0])
+            self.assert_named_tensors(sess, [2, 1, 0], [2, 0, 1])
+            self.assert_named_tensors(sess, [2, 1, 0], [2, 1, 0])
 
 
 if __name__ == '__main__':
