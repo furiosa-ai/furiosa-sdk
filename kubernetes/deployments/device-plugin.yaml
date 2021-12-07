@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: furiosa-device-plugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: furiosa-device-plugin
+  template:
+    metadata:
+      labels:
+        k8s-app: furiosa-device-plugin
+    spec:
+      containers:
+      - image: ghcr.io/furiosa-ai/k8s-device-plugin:latest
+        name: furiosa-device-plugin
+        imagePullPolicy: Always
+        workingDir: /opt/bin
+        command: ["./k8s-device-plugin"]
+        args: ["--interval", "10"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+          - name: sys
+            mountPath: /sys
+          - name: dev
+            mountPath: /dev
+          - name: dp
+            mountPath: /var/lib/kubelet/device-plugins
+          - name: furiosactl
+            mountPath: /usr/bin/furiosactl
+      volumes:
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: dev
+          hostPath:
+            path: /dev
+        - name: dp
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: furiosactl
+          hostPath:
+            path: /usr/bin/furiosactl
+      nodeSelector:
+        kubernetes.io/os: linux
+        alpha.furiosa.ai/npu.family: warboy
