@@ -13,13 +13,15 @@ from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 
 
 def torch_to_onnx(
-    torch_model: torch.nn.Module, input_shapes: List[Tuple[int, ...]]
+    torch_model: torch.nn.Module,
+    input_shapes: List[Tuple[int, ...]],
+    dtype: Optional[torch.dtype] = torch.float32,
 ) -> onnx.ModelProto:
     torch_model.eval()
     f = io.BytesIO()
     dummies = []
     for shape in input_shapes:
-        dummies.append(torch.ones(shape, dtype=torch.float32))
+        dummies.append(torch.ones(shape, dtype=dtype))
 
     torch.onnx.export(torch_model, *dummies, f, opset_version=__OPSET_VERSION__)
     return onnx.load_model(io.BytesIO(f.getvalue()), helper.ModelProto)
