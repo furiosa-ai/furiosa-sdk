@@ -1,4 +1,4 @@
-# FuriosaAI NPU Tools for Kubernetes
+# FuriosaAI NPU support in Kubernetes'
 ## FuriosaAI NPU Device Plugin
 ### Introduction
 This is a Kubernetes [Device Plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/) implementation 
