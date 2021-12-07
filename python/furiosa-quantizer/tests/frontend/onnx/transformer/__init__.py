@@ -1,5 +1,4 @@
-import abc
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Type, Union
 import unittest
 
 import numpy as np
@@ -8,6 +7,7 @@ from onnx import numpy_helper
 import onnxruntime as ort
 import torch
 
+from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.interfaces.transformer import Transformer
 from tests import torch_to_onnx
@@ -17,7 +17,7 @@ class TestTransformer(unittest.TestCase):
     @staticmethod
     def make_test_model(
         torch_model: callable,
-        transformer: Union[Transformer, abc.ABCMeta],
+        transformer: Union[Transformer, Type[ONNXTransformer]],
         input_shapes: List[Tuple[int, ...]],
         dtype: Optional[torch.dtype] = torch.float32,
     ):
@@ -29,10 +29,10 @@ class TestTransformer(unittest.TestCase):
 
         if isinstance(transformer, Transformer):
             trans_model = transformer.transform(copy_model)
-        elif isinstance(transformer, abc.ABCMeta):
+        elif issubclass(transformer, ONNXTransformer):
             trans_model = transformer(copy_model).transform()
         else:
-            raise Exception()
+            raise TypeError(repr(transformer))
 
         return orig_model, trans_model
 

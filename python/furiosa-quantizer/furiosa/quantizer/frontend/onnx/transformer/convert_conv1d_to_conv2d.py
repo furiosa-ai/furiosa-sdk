@@ -1,5 +1,3 @@
-import abc
-
 import numpy as np
 import onnx
 
@@ -17,7 +15,7 @@ class ConvertConv1dToConv2d(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Reshape --> Conv --> Reshape --> next

@@ -1,5 +1,3 @@
-import abc
-
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -23,7 +21,7 @@ class EliminateRedundantShapePattern(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Flatten/Squeeze --> Unsqueeze --> next
@@ -58,7 +56,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return False
 
 
-class Pattern_2(Pattern_1, abc.ABC):
+class Pattern_2(Pattern_1):
     """
     transform
         prev --> Reshape --> Flatten/Squeeze --> Unsqueeze --> next
@@ -70,7 +68,7 @@ class Pattern_2(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Flatten/Squeeze', 'Unsqueeze']
 
 
-class Pattern_3(Pattern_1, abc.ABC):
+class Pattern_3(Pattern_1):
     """
     transform
         prev --> Reshape --> next
@@ -82,7 +80,7 @@ class Pattern_3(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape']
 
 
-class Pattern_4(Pattern_1, abc.ABC):
+class Pattern_4(Pattern_1):
     """
     transform
         prev --> Reshape --> Expand --> Expand --> Reshape --> next
@@ -95,7 +93,7 @@ class Pattern_4(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Expand', 'Expand', 'Reshape']
 
 
-class Pattern_5(Pattern_1, abc.ABC):
+class Pattern_5(Pattern_1):
     """
     transform
         prev --> Reshape --> Expand --> Reshape --> next
@@ -107,7 +105,7 @@ class Pattern_5(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Expand', 'Reshape']
 
 
-class Pattern_6(Pattern_1, abc.ABC):
+class Pattern_6(Pattern_1):
     """
     transform
         prev --> Reshape --> Reshape --> next
@@ -119,7 +117,7 @@ class Pattern_6(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Reshape']
 
 
-class Pattern_7(Pattern_1, abc.ABC):
+class Pattern_7(Pattern_1):
     """
     transform
         prev --> Reshape --> Reshape --> Reshape --> next
@@ -131,7 +129,7 @@ class Pattern_7(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Reshape', 'Reshape']
 
 
-class Pattern_8(Pattern_1, abc.ABC):
+class Pattern_8(Pattern_1):
     """
     transform
         prev --> Expand --> next
