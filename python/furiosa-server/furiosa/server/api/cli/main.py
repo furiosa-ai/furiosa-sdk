@@ -28,7 +28,7 @@ class LogLevel(str, enum.Enum):
 @synchronous
 async def start(
     log_level: LogLevel = LogLevel.INFO,
-    model_name: str = typer.Option(..., help="Model name"),
+    model_name: str = typer.Option(None, help="Model name"),
     model_path: str = typer.Option(None, help="Path to a model file (tflite, onnx are supported)"),
     model_version: str = typer.Option("default", help="Model version"),
     host: str = typer.Option("0.0.0.0", help="IPv4 address to bind"),
@@ -41,14 +41,21 @@ async def start(
     """
     logging.basicConfig(level=log_level.value)
 
-    if not model_config and not model_path:
-        typer.echo("Model should be given either of model_path or model_config")
-        raise typer.Exit(1)
+    if not model_config:
+        if not model_path:
+            typer.echo("Missing option '--model-path'")
+            raise typer.Exit(1)
+
+        if not model_name:
+            typer.echo("Missing option '--model-name'")
+            raise typer.Exit(1)
 
     if server_config:
         config = load_server_config(server_config)
     else:
-        rest_config = RESTServerConfig(port=http_port, debug=(log_level == LogLevel.DEBUG))
+        rest_config = RESTServerConfig(
+            host=host, port=http_port, debug=(log_level == LogLevel.DEBUG)
+        )
         config = ServerConfig(rest_server_config=rest_config)
 
     if model_config:
