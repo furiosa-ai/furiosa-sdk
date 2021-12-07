@@ -5,6 +5,7 @@ from typing import List
 
 from ._api import LIBNUX, convert_to_cchar_array
 from ._util import list_to_dict
+from .errors import InvalidInput
 from .tensor import TensorArray, TensorDesc
 
 
@@ -66,9 +67,15 @@ class Model(ABC):
         """Tensor descriptions of all output tensors of Model"""
         return [self._output(idx) for idx in range(self.output_num)]
 
+    def _named_tensor_descs(self, names: List[str]) -> List[TensorDesc]:
+        try:
+            return [self._named_tensors[name] for name in names]
+        except KeyError as e:
+            raise InvalidInput(f"Tensor '{e.args[0]}' not found in model")
+
     def allocate_tensors(self, names: List[str]) -> TensorArray:
         """Creates an array of tensors corresponding to tensor names with allocated buffers"""
-        tensor_descs = [self._named_tensors[name] for name in names]
+        tensor_descs = self._named_tensor_descs(names)
         ptrs = convert_to_cchar_array(names)
 
         return TensorArray(
@@ -79,7 +86,7 @@ class Model(ABC):
 
     def create_tensors(self, names: List[str]) -> TensorArray:
         """Creates an array of tensors corresponding to tensor names without allocated buffers"""
-        tensor_descs = [self._named_tensors[name] for name in names]
+        tensor_descs = self._named_tensor_descs(names)
         ptrs = convert_to_cchar_array(names)
 
         return TensorArray(

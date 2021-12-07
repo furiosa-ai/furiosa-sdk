@@ -88,14 +88,16 @@ class TestSessionOptions(unittest.TestCase):
 
 class TestSessionWithNames(unittest.TestCase):
     def assert_named_tensors(self, sess, input_indices: List[int], output_indices: List[int]):
+        from furiosa.runtime import tensor
+
         inputs = [sess.input(idx) for idx in input_indices]
         output_names = [sess.output(idx).name for idx in output_indices]
         outputs = sess.run_with(
             output_names,
             {
-                inputs[0].name: np.zeros(inputs[0].shape, dtype=np.single),
-                inputs[1].name: np.zeros(inputs[1].shape, dtype=np.single),
-                inputs[2].name: np.zeros(inputs[2].shape, dtype=np.single),
+                inputs[0].name: tensor.rand(inputs[0]),
+                inputs[1].name: tensor.rand(inputs[1]),
+                inputs[2].name: tensor.rand(inputs[2]),
             },
         )
 
@@ -123,6 +125,27 @@ class TestSessionWithNames(unittest.TestCase):
             self.assert_named_tensors(sess, [2, 1, 0], [1, 2, 0])
             self.assert_named_tensors(sess, [2, 1, 0], [2, 0, 1])
             self.assert_named_tensors(sess, [2, 1, 0], [2, 1, 0])
+
+    def test_run_with_invalid_names(self):
+        from furiosa.runtime import tensor
+
+        with session.create(MNIST_ONNX) as sess:
+            self.assertEqual(sess.input(0).name, "Input3")
+            self.assertEqual(sess.output(0).name, "Plus214_Output_0")
+            sess.run_with(["Plus214_Output_0"], {"Input3": tensor.rand(sess.input(0))})
+
+            # Wrong output
+            self.assertRaises(
+                errors.InvalidInput,
+                lambda: sess.run_with(["WrongOutput"], {"Input3": tensor.rand(sess.input(0))}),
+            )
+            # Wrong input
+            self.assertRaises(
+                errors.InvalidInput,
+                lambda: sess.run_with(
+                    ["Plus214_Output_0"], {"WrongInput3": tensor.rand(sess.input(0))}
+                ),
+            )
 
 
 if __name__ == '__main__':
