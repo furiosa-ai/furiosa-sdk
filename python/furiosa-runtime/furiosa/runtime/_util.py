@@ -38,7 +38,7 @@ def dump_info(log_path: Optional[str] = None):
     if log_path:
         eprint(
             f"\nPlease check the compiler log at {log_path}.\n"
-            f"If you have a problem, please report the log file to https://github.com/furiosa-ai/furiosa-sdk/issues\n"
+            f"If you have a problem, please report the log file to https://furiosa-ai.atlassian.net/servicedesk/customer/portals\n"
             f"with the information dumped above."
         )
     eprint("=" * width)
