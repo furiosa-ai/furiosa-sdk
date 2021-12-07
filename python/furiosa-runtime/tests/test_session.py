@@ -132,18 +132,18 @@ class TestSessionWithNames(unittest.TestCase):
         with session.create(MNIST_ONNX) as sess:
             self.assertEqual(sess.input(0).name, "Input3")
             self.assertEqual(sess.output(0).name, "Plus214_Output_0")
-            sess.run_with(["Plus214_Output_0"], {"Input3": tensor.rand(sess.input(0))})
+            sess.run_with(["Plus214_Output_0"], {"Input3": tensor.zeros(sess.input(0))})
 
             # Wrong output
             self.assertRaises(
                 errors.InvalidInput,
-                lambda: sess.run_with(["WrongOutput"], {"Input3": tensor.rand(sess.input(0))}),
+                lambda: sess.run_with(["WrongOutput"], {"Input3": tensor.zeros(sess.input(0))}),
             )
             # Wrong input
             self.assertRaises(
                 errors.InvalidInput,
                 lambda: sess.run_with(
-                    ["Plus214_Output_0"], {"WrongInput3": tensor.rand(sess.input(0))}
+                    ["Plus214_Output_0"], {"WrongInput3": tensor.zeros(sess.input(0))}
                 ),
             )
 

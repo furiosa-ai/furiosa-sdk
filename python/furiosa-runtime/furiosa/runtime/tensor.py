@@ -307,4 +307,4 @@ def rand(tensor: TensorDesc) -> np.ndarray:
 
 def zeros(tensor: TensorDesc) -> np.ndarray:
     """Return a new array of given shape and type, filled with zeros."""
-    return np.random.rand(*tensor.shape).astype(tensor.numpy_dtype)
+    return np.zeros(shape=tensor.shape, dtype=tensor.numpy_dtype)
