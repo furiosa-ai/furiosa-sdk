@@ -4,7 +4,10 @@ Command line interface for FuriosaAI model server
 
 import enum
 import logging
+from typing import Any, Dict
 
+from pydantic import ValidationError
+from pydantic.error_wrappers import display_errors
 import typer
 
 from ...server import ModelServer
@@ -23,6 +26,10 @@ class LogLevel(str, enum.Enum):
     WARN = "WARN"
     DEBUG = "DEBUG"
     TRACE = "TRACE"
+
+
+def _display_error_loc(error: Dict[str, Any]) -> str:
+    return ' -> '.join(str(e) for e in error['loc'])
 
 
 @synchronous
@@ -47,15 +54,15 @@ async def start(
             raise typer.Exit(1)
 
         if not model_name:
-            typer.echo("Missing option '--model-name'")
+            typer.echo("ERROR: missing option '--model-name'")
             raise typer.Exit(1)
     else:
         if model_path:
-            typer.echo("Option '--model-path' cannot be used with '--model-config'")
+            typer.echo("ERROR: '--model-path' cannot be used with '--model-config'")
             raise typer.Exit(1)
 
         if model_name:
-            typer.echo("Option '--model-name' cannot be used with '--model-config'")
+            typer.echo("ERROR: '--model-name' cannot be used with '--model-config'")
             raise typer.Exit(1)
 
     if server_config:
@@ -67,7 +74,12 @@ async def start(
         config = ServerConfig(rest_server_config=rest_config)
 
     if model_config:
-        model_configs = load_model_config(model_config)
+        try:
+            model_configs = load_model_config(model_config)
+        except ValidationError as e:
+            first_err = e.errors()[0]
+            typer.echo(f"ERROR: {_display_error_loc(first_err)} {first_err['msg']}")
+            raise typer.Exit(1)
     else:
         model_configs = [ModelConfig(model=model_path, name=model_name, version=model_version)]
 
