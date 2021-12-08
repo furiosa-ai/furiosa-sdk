@@ -1,5 +1,3 @@
-from abc import ABC
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,7 +16,7 @@ from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_patte
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     def forward(self, x):
         x = torch.flatten(x, 1)
         x = torch.unsqueeze(x, dim=1)
@@ -26,7 +24,7 @@ class UnitTestModel(nn.Module, ABC):
         return x
 
 
-class UnitTestModel_1(nn.Module, ABC):
+class UnitTestModel_1(nn.Module):
     def forward(self, x):
         x = torch.add(x, torch.ones_like(x))
         x = torch.flatten(x, 1)
@@ -34,7 +32,7 @@ class UnitTestModel_1(nn.Module, ABC):
         return x
 
 
-class UnitTestModel2(nn.Module, ABC):
+class UnitTestModel2(nn.Module):
     def forward(self, x):
         x = torch.add(x, torch.ones_like(x))
         y = torch.reshape(x, x.shape)
@@ -46,7 +44,7 @@ class UnitTestModel2(nn.Module, ABC):
         return x, y
 
 
-class UnitTestModel2_1(nn.Module, ABC):
+class UnitTestModel2_1(nn.Module):
     def forward(self, x):
         x = torch.div(x, torch.ones_like(x))
         y = torch.reshape(x, x.shape)
@@ -59,7 +57,7 @@ class UnitTestModel2_1(nn.Module, ABC):
         return x, y
 
 
-class UnitTestModel3(nn.Module, ABC):
+class UnitTestModel3(nn.Module):
     def forward(self, x):
         x = torch.reshape(x, x.shape)
         x = torch.div(x, torch.ones_like(x))
@@ -67,7 +65,7 @@ class UnitTestModel3(nn.Module, ABC):
         return x, y
 
 
-class UnitTestModel3_1(nn.Module, ABC):
+class UnitTestModel3_1(nn.Module):
     def forward(self, x):
         x = torch.reshape(x, x.shape)
         x = torch.div(x, torch.ones_like(x))
@@ -76,7 +74,7 @@ class UnitTestModel3_1(nn.Module, ABC):
         return x, y
 
 
-class UnitTestModel4(nn.Module, ABC):
+class UnitTestModel4(nn.Module):
     def forward(self, x):
         x_origin = x
         new_shape = int(np.prod(x_origin.shape))
@@ -88,7 +86,7 @@ class UnitTestModel4(nn.Module, ABC):
         return x
 
 
-class UnitTestModel5(nn.Module, ABC):
+class UnitTestModel5(nn.Module):
     def forward(self, x):
         x_origin = x
         new_shape = int(np.prod(x_origin.shape))
@@ -99,7 +97,7 @@ class UnitTestModel5(nn.Module, ABC):
         return x
 
 
-class UnitTestModel5_1(nn.Module, ABC):
+class UnitTestModel5_1(nn.Module):
     def forward(self, x):
         x_origin = x
         new_shape = int(np.prod(x_origin.shape))
@@ -109,7 +107,7 @@ class UnitTestModel5_1(nn.Module, ABC):
         return x
 
 
-class UnitTestModel6(nn.Module, ABC):
+class UnitTestModel6(nn.Module):
     def forward(self, x):
         x_origin = x
         new_shape = int(np.prod(x_origin.shape[1:]))
@@ -119,7 +117,7 @@ class UnitTestModel6(nn.Module, ABC):
         return x
 
 
-class UnitTestModel7(nn.Module, ABC):
+class UnitTestModel7(nn.Module):
     def forward(self, x):
         x_origin = x
         new_shape = int(np.prod(x_origin.shape[1:]))
@@ -130,7 +128,7 @@ class UnitTestModel7(nn.Module, ABC):
         return x
 
 
-class CompoundTestModel8(nn.Module, ABC):
+class CompoundTestModel8(nn.Module):
     def forward(self, x):
         x = UnitTestModel()(x)
         x = UnitTestModel_1()(x)
@@ -145,7 +143,7 @@ class CompoundTestModel8(nn.Module, ABC):
         return x, a, b, c
 
 
-class UnitTestModel8(nn.Module, ABC):
+class UnitTestModel8(nn.Module):
     def __init__(self):
         super(UnitTestModel8, self).__init__()
         self.conv = nn.Conv2d(4, 4, 2)
@@ -158,7 +156,7 @@ class UnitTestModel8(nn.Module, ABC):
         return x
 
 
-class TestFuseRedundantShapePattern(TestTransformer, ABC):
+class TestFuseRedundantShapePattern(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes, transformer):
         orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model

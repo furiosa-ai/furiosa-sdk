@@ -1,5 +1,3 @@
-import abc
-
 import torch
 import torch.nn as nn
 
@@ -7,13 +5,13 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, abc.ABC):
+class UnitTestModel(nn.Module):
     def forward(self, x):
         x = nn.functional.gelu(x)
         return x
 
 
-class MultiTestModel(UnitTestModel, abc.ABC):
+class MultiTestModel(UnitTestModel):
     def forward(self, x):
         x = torch.sub(x, torch.ones(x.shape))
         x = nn.functional.gelu(x)

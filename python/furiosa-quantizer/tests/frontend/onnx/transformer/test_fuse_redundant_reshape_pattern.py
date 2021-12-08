@@ -1,5 +1,3 @@
-from abc import ABC
-
 import torch
 import torch.nn as nn
 
@@ -12,14 +10,14 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern 
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     def forward(self, x):
         x = x.reshape(shape=(4, 4, 8))
         x = x.reshape(shape=(8, 2, 8))
         return x
 
 
-class UnitTestModel1(nn.Module, ABC):
+class UnitTestModel1(nn.Module):
     def forward(self, x):
         x = x.reshape(shape=(4, 4, 8))
         x = x.reshape(shape=(8, 2, 8))
@@ -27,7 +25,7 @@ class UnitTestModel1(nn.Module, ABC):
         return x
 
 
-class UnitTestModel2(nn.Module, ABC):
+class UnitTestModel2(nn.Module):
     def forward(self, x):
         x = x.reshape(shape=(4, 4, 8))
         x = x.reshape(shape=(8, 2, 8))
@@ -36,14 +34,14 @@ class UnitTestModel2(nn.Module, ABC):
         return x
 
 
-class UnitTestModel3(nn.Module, ABC):
+class UnitTestModel3(nn.Module):
     def forward(self, x):
         x = torch.squeeze(x, dim=1)
         x = torch.unsqueeze(x, dim=0)
         return x
 
 
-class TestFuseRedundantReshapePattern(TestTransformer, ABC):
+class TestFuseRedundantReshapePattern(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes, transformer):
         orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model

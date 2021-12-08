@@ -1,5 +1,3 @@
-from abc import ABC
-
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
@@ -8,7 +6,7 @@ from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(UnitTestModel, self).__init__()
         self.in_ch = in_channels
@@ -24,7 +22,7 @@ class UnitTestModel(nn.Module, ABC):
         return x
 
 
-class TestConvertConv1dToConv2d(TestTransformer, ABC):
+class TestConvertConv1dToConv2d(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
         orig_model, trans_model = self.make_test_model(
             torch_model, ConvertConv1dToConv2d(), input_shapes

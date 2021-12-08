@@ -1,5 +1,3 @@
-from abc import ABC
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,7 +6,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad, Patter
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     def __init__(self):
         super(UnitTestModel, self).__init__()
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True)
@@ -22,7 +20,7 @@ class UnitTestModel(nn.Module, ABC):
         return x
 
 
-class UnitTestModel_1(nn.Module, ABC):
+class UnitTestModel_1(nn.Module):
     def __init__(self):
         super(UnitTestModel_1, self).__init__()
         self.maxpool3d = nn.MaxPool3d(kernel_size=7, stride=3, padding=1, ceil_mode=False)
@@ -34,7 +32,7 @@ class UnitTestModel_1(nn.Module, ABC):
         return x
 
 
-class UnitTestModel2(nn.Module, ABC):
+class UnitTestModel2(nn.Module):
     def __init__(self):
         super(UnitTestModel2, self).__init__()
         self.avgpool = nn.AvgPool2d(
@@ -57,7 +55,7 @@ class UnitTestModel2(nn.Module, ABC):
         return x
 
 
-class UnitTestModel3(nn.Module, ABC):
+class UnitTestModel3(nn.Module):
     def forward(self, x):
         x = UnitTestModel()(x)
         x = UnitTestModel2()(x)
@@ -65,7 +63,7 @@ class UnitTestModel3(nn.Module, ABC):
         return x
 
 
-class TestFusePad(TestTransformer, ABC):
+class TestFusePad(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes, transformer):
         orig_model, trans_model = self.make_test_model(torch_model, transformer, input_shapes)
         return orig_model, trans_model
