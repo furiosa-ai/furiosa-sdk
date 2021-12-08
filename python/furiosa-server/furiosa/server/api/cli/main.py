@@ -49,6 +49,14 @@ async def start(
         if not model_name:
             typer.echo("Missing option '--model-name'")
             raise typer.Exit(1)
+    else:
+        if model_path:
+            typer.echo("Option '--model-path' cannot be used with '--model-config'")
+            raise typer.Exit(1)
+
+        if model_name:
+            typer.echo("Option '--model-name' cannot be used with '--model-config'")
+            raise typer.Exit(1)
 
     if server_config:
         config = load_server_config(server_config)
