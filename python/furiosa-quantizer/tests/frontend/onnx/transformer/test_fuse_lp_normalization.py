@@ -1,4 +1,3 @@
-import abc
 import unittest
 
 import onnxruntime
@@ -9,7 +8,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import Fu
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, abc.ABC):
+class UnitTestModel(nn.Module):
     def __init__(self, p, dim):
         super(UnitTestModel, self).__init__()
         self.lp_normalization = nn.functional.normalize
@@ -21,7 +20,7 @@ class UnitTestModel(nn.Module, abc.ABC):
         return x
 
 
-class MultiTestModel(UnitTestModel, abc.ABC):
+class MultiTestModel(UnitTestModel):
     def __init__(self, p, dim):
         super(MultiTestModel, self).__init__(p, dim)
 

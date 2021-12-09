@@ -7,6 +7,7 @@ sdk_modules = [
   'furiosa-registry',
   'furiosa-sdk',
   'furiosa-server',
+  'furiosa-models'
 ]
 
 format_applied = [
@@ -16,6 +17,7 @@ format_applied = [
   'furiosa-runtime',
   'furiosa-server',
   'furiosa-tools',
+  'furiosa-models'
 ]
 
 test_modules = [
@@ -24,6 +26,7 @@ test_modules = [
   "furiosa-runtime",
   "furiosa-server",
   "furiosa-tools",
+  "furiosa-models"
 ]
 
 LINUX_DISTRIB = "ubuntu:focal"
@@ -325,7 +328,7 @@ pipeline {
         container('default') {
           sh "env"
 
-          sh "apt-get update && apt-get install -qq -y ca-certificates apt-transport-https gnupg wget"
+          sh "apt-get update && apt-get install -qq -y ca-certificates apt-transport-https gnupg wget python3-opencv"
           installConda()
 
           sh "apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E"

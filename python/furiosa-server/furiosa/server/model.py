@@ -116,8 +116,11 @@ class NuxModel(Model):
             return True
 
         # TODO(yan): Wrap functions with async thread now. Replace the functions itself
-        # TODO(yan): Implement option passing in furiosa-sdk and use compiler config
-        self._session = await asynchronous(session.create)(self._config.model)
+        self._session = await asynchronous(session.create)(
+            self._config.model,
+            device=self._config.npu_device,
+            compile_config=self._config.compiler_config,
+        )
         self._session.run = asynchronous(self._session.run)
         return await super().load()
 

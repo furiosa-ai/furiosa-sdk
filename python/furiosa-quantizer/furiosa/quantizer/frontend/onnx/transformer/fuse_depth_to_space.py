@@ -1,5 +1,3 @@
-import abc
-
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -16,7 +14,7 @@ class FuseDepthToSpace(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Reshape --> Transpose --> Reshape --> next

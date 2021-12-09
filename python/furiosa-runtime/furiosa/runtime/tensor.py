@@ -298,3 +298,13 @@ def numpy_dtype(value):
         return value.numpy_dtype
 
     raise TypeError
+
+
+def rand(tensor: TensorDesc) -> np.ndarray:
+    """Return a new array of given shape and type, filled with random numbers."""
+    return np.random.rand(*tensor.shape).astype(tensor.numpy_dtype)
+
+
+def zeros(tensor: TensorDesc) -> np.ndarray:
+    """Return a new array of given shape and type, filled with zeros."""
+    return np.zeros(shape=tensor.shape, dtype=tensor.numpy_dtype)

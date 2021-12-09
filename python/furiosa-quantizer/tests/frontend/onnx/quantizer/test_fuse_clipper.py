@@ -1,5 +1,3 @@
-from abc import ABC
-
 import torch
 import torch.nn as nn
 
@@ -7,7 +5,7 @@ from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import FuseClipper
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     """
     This creates Conv + Relu graph for testing Pattern_1
     """
@@ -35,7 +33,7 @@ class UnitTestModel1(UnitTestModel):
         return x
 
 
-class UnitTestModel2(nn.Module, ABC):
+class UnitTestModel2(nn.Module):
     """
     This creates Add + Relu graph for testing Pattern_3
     """
@@ -47,7 +45,7 @@ class UnitTestModel2(nn.Module, ABC):
         return x
 
 
-class UnitTestModel3(nn.Module, ABC):
+class UnitTestModel3(nn.Module):
     """
     This creates Add + Clip graph for testing Pattern_4
     """
@@ -59,7 +57,7 @@ class UnitTestModel3(nn.Module, ABC):
         return x
 
 
-class TestFuseClipper(TestTransformer, ABC):
+class TestFuseClipper(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
         orig_model, trans_model = self.make_test_model(torch_model, FuseClipper(), input_shapes)
         return orig_model, trans_model

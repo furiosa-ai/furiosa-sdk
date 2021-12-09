@@ -1,5 +1,3 @@
-from abc import ABC
-
 import torch
 import torch.nn as nn
 
@@ -9,7 +7,7 @@ from tests.frontend.onnx.transformer import TestTransformer
 
 # TODO 1. Generate test model that does not meet conditions for conv fusion
 # TODO 2. Generate MatMul + Add test model directly by onnx
-class UnitTestModel(nn.Module, ABC):
+class UnitTestModel(nn.Module):
     def __init__(self, in_channel, out_channel):
         super(UnitTestModel, self).__init__()
         self.linear = nn.Linear(in_features=in_channel, out_features=out_channel, bias=False)
@@ -20,7 +18,7 @@ class UnitTestModel(nn.Module, ABC):
         return x
 
 
-class UnitTestModel1(nn.Module, ABC):
+class UnitTestModel1(nn.Module):
     def __init__(self, in_channel, out_channel):
         super(UnitTestModel1, self).__init__()
         self.linear = nn.Linear(in_features=in_channel, out_features=out_channel, bias=True)
@@ -30,7 +28,7 @@ class UnitTestModel1(nn.Module, ABC):
         return x
 
 
-class UnitTestModel2(nn.Module, ABC):
+class UnitTestModel2(nn.Module):
     """
     This creates Conv + Add graph for testing Pattern_3
     """
@@ -70,7 +68,7 @@ class MultiTestModel1(UnitTestModel1):
         return x
 
 
-class TestFuseConv(TestTransformer, ABC):
+class TestFuseConv(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
         orig_model, trans_model = self.make_test_model(torch_model, FuseConv(), input_shapes)
         return orig_model, trans_model

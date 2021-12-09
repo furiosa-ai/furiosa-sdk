@@ -1,5 +1,3 @@
-import abc
-
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -14,7 +12,7 @@ class FusePad(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Pad --> MaxPool --> next
@@ -156,7 +154,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         )
 
 
-class Pattern_2(Pattern_1, abc.ABC):
+class Pattern_2(Pattern_1):
     """
     transform
         prev --> Pad --> AveragePool --> next

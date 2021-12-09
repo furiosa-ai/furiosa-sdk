@@ -1,5 +1,3 @@
-import abc
-
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -18,7 +16,7 @@ class FuseConv(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> MatMul --> Add --> next
@@ -173,7 +171,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return conv_input_vi, conv_output_vi
 
 
-class Pattern_2(Pattern_1, abc.ABC):
+class Pattern_2(Pattern_1):
     """
     transform
         prev --> Gemm --> next
@@ -255,7 +253,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         return {'transB': transB}
 
 
-class Pattern_3(ONNXTransformer, abc.ABC):
+class Pattern_3(ONNXTransformer):
     """
     transform
         prev --> Conv --> Add --> next

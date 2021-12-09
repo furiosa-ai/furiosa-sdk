@@ -1,4 +1,3 @@
-import abc
 import logging
 
 import numpy as np
@@ -31,7 +30,7 @@ class FuseBnIntoConv(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Conv --> BatchNormalization --> next
@@ -133,7 +132,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
             raise Exception('Unknown weight ndim: %s' % weight.dim)
 
 
-class Pattern_2(Pattern_1, abc.ABC):
+class Pattern_2(Pattern_1):
     """
     transform
         prev --> BatchNormalization --> next
@@ -194,7 +193,7 @@ class Pattern_2(Pattern_1, abc.ABC):
         ]
 
 
-class Pattern_3(Pattern_1, abc.ABC):
+class Pattern_3(Pattern_1):
     """
     transform
         prev --> Conv --> Mul --> Add --> next

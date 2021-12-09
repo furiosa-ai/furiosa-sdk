@@ -1,5 +1,3 @@
-import abc
-
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -18,7 +16,7 @@ class FuseRedundantReshapePattern(Transformer):
         return model
 
 
-class Pattern_1(ONNXTransformer, abc.ABC):
+class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> Reshape --> Reshape --> next
@@ -79,7 +77,7 @@ class Pattern_1(ONNXTransformer, abc.ABC):
         return None
 
 
-class Pattern_2(Pattern_1, abc.ABC):
+class Pattern_2(Pattern_1):
     """
     transform
         prev --> Reshape --> Reshape --> Reshape --> next
@@ -92,7 +90,7 @@ class Pattern_2(Pattern_1, abc.ABC):
     pattern_to_match = ['Reshape', 'Reshape', 'Reshape']
 
 
-class Pattern_3(Pattern_1, abc.ABC):
+class Pattern_3(Pattern_1):
     """
     transform
         prev --> Flatten/Squeeze --> Unsqueeze --> next

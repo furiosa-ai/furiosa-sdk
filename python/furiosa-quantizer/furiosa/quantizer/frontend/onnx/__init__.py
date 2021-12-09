@@ -1,4 +1,4 @@
-from typing import IO, Callable, Dict, List, Text, Tuple
+from typing import IO, Callable, Dict, List, Optional, Text, Tuple
 
 import numpy as np
 import onnx
@@ -20,6 +20,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose impo
 )
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
+from furiosa.quantizer.frontend.onnx.transformer.fuse_gather_matmul import FuseGatherMatMul
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from furiosa.quantizer.frontend.onnx.transformer.fuse_layer_normalization import (
     FuseLayerNormalization,
@@ -58,6 +59,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FuseLayerNormalization().transform,
         FuseLpNormalization().transform,
         FuseRedundantReshapePattern().transform,
+        FuseGatherMatMul().transform,
         EliminateRedundantShapePattern().transform,
     ]
     return _transform(transformers, model)
@@ -68,9 +70,12 @@ def export_spec(model: onnx.ModelProto, output: IO[Text]):
     spec.export_spec.OnnxExportSpec(model).dump(output)
 
 
-def optimize_model(model: onnx.ModelProto) -> onnx.ModelProto:
+def optimize_model(
+    model: onnx.ModelProto, input_shapes: Optional[Dict[str, List[int]]] = None
+) -> onnx.ModelProto:
     model = _transform([CheckVersion().transform], model)
-    model = _transform([PolishModel().transform], model)
+    model = _transform([PolishModel(input_shapes).transform], model)
+
     # TODO check if graph_transform should apply.
     model = _transform([_reify], model)
     return model

@@ -1,12 +1,13 @@
-import abc
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Type, Union
 import unittest
 
 import numpy as np
 import onnx
 from onnx import numpy_helper
 import onnxruntime as ort
+import torch
 
+from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.interfaces.transformer import Transformer
 from tests import torch_to_onnx
@@ -16,10 +17,11 @@ class TestTransformer(unittest.TestCase):
     @staticmethod
     def make_test_model(
         torch_model: callable,
-        transformer: Union[Transformer, abc.ABCMeta],
+        transformer: Union[Transformer, Type[ONNXTransformer]],
         input_shapes: List[Tuple[int, ...]],
+        dtype: Optional[torch.dtype] = torch.float32,
     ):
-        orig_model = torch_to_onnx(torch_model, input_shapes)
+        orig_model = torch_to_onnx(torch_model, input_shapes, dtype)
         # apply polish_model by default
         orig_model = PolishModel().transform(orig_model)
         copy_model = onnx.ModelProto()
@@ -27,10 +29,10 @@ class TestTransformer(unittest.TestCase):
 
         if isinstance(transformer, Transformer):
             trans_model = transformer.transform(copy_model)
-        elif isinstance(transformer, abc.ABCMeta):
+        elif issubclass(transformer, ONNXTransformer):
             trans_model = transformer(copy_model).transform()
         else:
-            raise Exception()
+            raise TypeError(repr(transformer))
 
         return orig_model, trans_model
 
@@ -48,13 +50,16 @@ class TestTransformer(unittest.TestCase):
         for node, op_type in zip(model.graph.node, op_types):
             self.assertTrue(node.op_type == op_type)
 
-    def check_output_value(self, orig_model, trans_model, input_shapes):
-        np_arrays = [np.random.randn(*shape).astype(np.float32) for shape in input_shapes]
-        actual = run_onnx_model(orig_model, np_arrays)
-        expected = run_onnx_model(trans_model, np_arrays)
+    def check_output_value(self, orig_model, trans_model, input_shapes, data=None):
+        if data is None:
+            rng = np.random.default_rng()
+            data = [rng.standard_normal(shape, dtype=np.float32) for shape in input_shapes]
+
+        actual = run_onnx_model(orig_model, data)
+        expected = run_onnx_model(trans_model, data)
 
         for act, exp in zip(actual, expected):
-            self.assertListAlmostEqual(act, exp, 4, msg=f"{np_arrays}")
+            self.assertListAlmostEqual(act, exp, 4, msg=f"{data}")
 
     def check_value_info(self, model):
         value_info = {

@@ -1,5 +1,3 @@
-import abc
-
 import torch
 import torch.nn as nn
 
@@ -7,7 +5,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import Fuse
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module, abc.ABC):
+class UnitTestModel(nn.Module):
     """
     DepthToSpace DRC mode
         https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
@@ -49,7 +47,7 @@ class UnitTestModel(nn.Module, abc.ABC):
         return x
 
 
-class MultiTestModel(UnitTestModel, abc.ABC):
+class MultiTestModel(UnitTestModel):
     def __init__(self, input_shape, blocksize, mode):
         super(MultiTestModel, self).__init__(input_shape, blocksize, mode)
 

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: npu-pod
+spec:
+  containers:
+    - name: npu-pod
+      image: ubuntu:focal
+      resources:
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+          alpha.furiosa.ai/npu: "1"
+        requests:
+          cpu: "4"
+          memory: "8Gi"
+          alpha.furiosa.ai/npu: "1"
