@@ -13,15 +13,6 @@ EXAMPLE: str = """example:
 
     # Compile foo.onnx into foo.enf
     furiosa compile foo.onnx -o foo.enf
-
-    # In addition to compilation, analyze the memory allocation and write the HTML report to bar.html
-    furiosa compile foo.onnx -o foo.enf --analyze-memory bar.html
-
-    # In addition to compilation, write the dot graph of the model graph into to bar.dot
-    furiosa compile foo.onnx -o foo.enf --dot-graph bar.dot
-    
-    # Set the genetic algorithm parameters for optimization
-    furiosa compile foo.onnx -o foo.enf -ga population_size=100,generation_limit=500
 """
 
 NPU_IDS = ["warboy", "warboy-2pe"]
