@@ -71,5 +71,3 @@ class CommandTests(unittest.TestCase):
             self.assert_file_created(output_file)
         finally:
             shutil.rmtree(tmpdir)
-
-
