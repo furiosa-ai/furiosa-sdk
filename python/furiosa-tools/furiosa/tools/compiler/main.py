@@ -122,24 +122,10 @@ class CommandCompile:
             help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)',
         )
         self.parser.add_argument(
-            '--target-ir',
-            type=str,
-            default='enf',
-            help='Target IR (dfg|cdfg|gir|lir|enf) (default: enf)',
-        )
-        self.parser.add_argument(
             '--target-npu',
             type=str,
             default='warboy',
             help='Target NPU: warboy (default), warboy-2pe',
-        )
-        self.parser.add_argument(
-            '--analyze-memory',
-            type=str,
-            help='Analyzes the memory allocation and save the report to <ANALYZE_MEMORY>',
-        )
-        self.parser.add_argument(
-            '--dot-graph', type=str, help='Filename to write DOT-formatted graph to'
         )
         self.parser.add_argument(
             '-v',
@@ -160,30 +146,13 @@ class CommandCompile:
             action="store_true",
             help='Find the optimal batch size automatically',
         )
-        self.parser.add_argument(
-            '--split-after-lower', action="store_true", help='Enable the split after lower'
-        )
-        self.parser.add_argument(
-            '-ga',
-            '--genetic-optimization',
-            type=str,
-            help='Use generic optimization with parameters',
-        )
 
     def run(self) -> int:
-        ga_params = None
-        if self.args.genetic_optimization:
-            ga_params = ga_options(self.args.genetic_optimization)
-
         return compile(
             self.args.source,
             output=self.args.output,
-            target_ir=self.args.target_ir,
-            dot_graph=self.args.dot_graph,
-            analyze_memory=self.args.analyze_memory,
             batch_size=self.args.batch_size,
             auto_batch_size=self.args.auto_batch_size,
-            ga_params=ga_params,
             target_npu=self.args.target_npu,
             verbose=self.args.verbose,
         )
