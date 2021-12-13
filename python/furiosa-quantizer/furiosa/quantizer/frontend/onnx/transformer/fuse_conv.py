@@ -214,16 +214,20 @@ class Pattern_2(Pattern_1):
 
     def get_new_init_args(self, matched_nodes):
         node = matched_nodes[0]
+        assert node.op_type == "Gemm", node.op_type
 
-        fw_input = node.input[1]
-        fb_input = None
-        if len(node.input) == 3:
-            fb_input = node.input[2]
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
 
-        args = {'w_input': fw_input, 'b_input': fb_input}
-        args.update(self.get_attrs(node))
+        alpha = attrs.get('alpha', 1.0)
+        beta = attrs.get('beta', 1.0)
+        if alpha != 1.0 or beta != 1.0:
+            raise NotImplementedError(f"Gemm.alpha = {alpha}, Gemm.beta = {beta}")
 
-        return args
+        return {
+            'w_input': node.input[1],
+            'b_input': (node.input[2] if len(node.input) == 3 else None),
+            'transB': attrs.get('transB', 0),
+        }
 
     def get_new_vi_args(self, matched_nodes):
         node = matched_nodes[0]
@@ -241,16 +245,6 @@ class Pattern_2(Pattern_1):
 
         new_arr = w_arr.reshape(n, c, 1, 1)
         return new_arr
-
-    def get_attrs(self, node):
-        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-        alpha = attrs['alpha']
-        beta = attrs['beta']
-        assert alpha == beta == 1.0, "Assume alpha = beta = 1.0"
-
-        transB = attrs['transB']
-
-        return {'transB': transB}
 
 
 class Pattern_3(ONNXTransformer):
