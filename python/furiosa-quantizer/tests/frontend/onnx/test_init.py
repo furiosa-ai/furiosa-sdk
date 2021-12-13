@@ -28,53 +28,73 @@ class ONNXTest(unittest.TestCase):
         model = post_training_quantize(model, dataset)
 
     def test__is_sandwiched(self):
-        model = onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        test_node = graph.node[2]
-        self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
+        )
+        test_node = model.graph.node[2]
+        self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched2(self):
-        model = onnx.load(Path(__file__).resolve().parent / "partially_sandwiched(top).onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        test_node = graph.node[2]
-        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "sandwiched_i64.onnx")
+        )
+        test_node = model.graph.node[0]
+        self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched3(self):
-        model = onnx.load(Path(__file__).resolve().parent / "partially_sandwiched.onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        test_node = graph.node[1]
-        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "partially_sandwiched_top.onnx")
+        )
+        test_node = model.graph.node[2]
+        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched4(self):
-        model = onnx.load(Path(__file__).resolve().parent / "partially_sandwiched(bot).onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        test_node = graph.node[0]
-        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "partially_sandwiched.onnx")
+        )
+        test_node = model.graph.node[1]
+        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
+
+    def test__is_sandwiched5(self):
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "partially_sandwiched_bot.onnx")
+        )
+        test_node = model.graph.node[0]
+        self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode(self):
-        model = onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        self.assertTrue(_is_fully_quantized_in_dfg_mode(graph, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
+        )
+        self.assertTrue(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode2(self):
-        model = onnx.load(Path(__file__).resolve().parent / "quantized_in_dfg_mode.onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        self.assertTrue(_is_fully_quantized_in_dfg_mode(graph, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "quantized_in_dfg_mode.onnx")
+        )
+        self.assertTrue(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode3(self):
-        model = onnx.load(Path(__file__).resolve().parent / "partially_sandwiched(top).onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        self.assertFalse(_is_fully_quantized_in_dfg_mode(graph, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "partially_sandwiched_top.onnx")
+        )
+        self.assertFalse(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_fake_quant_mode(self):
-        model = onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        self.assertTrue(_is_fully_quantized_in_fake_quant_mode(graph, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "sandwiched.onnx")
+        )
+        self.assertTrue(
+            _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
+        )
 
     def test__is_fully_quantized_in_fake_quant_mode2(self):
-        model = onnx.load(Path(__file__).resolve().parent / "partially_sandwiched(bot).onnx")
-        graph = shape_inference.infer_shapes(model).graph
-        self.assertFalse(_is_fully_quantized_in_fake_quant_mode(graph, *parse_onnx_graph(graph)))
+        model = shape_inference.infer_shapes(
+            onnx.load(Path(__file__).resolve().parent / "partially_sandwiched_bot.onnx")
+        )
+        self.assertFalse(
+            _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
+        )
 
     def test__is_fully_quantized(self):
         model = onnx.load(Path(__file__).resolve().parent / "quantized_in_dfg_mode.onnx")
