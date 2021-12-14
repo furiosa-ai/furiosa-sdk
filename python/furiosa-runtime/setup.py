@@ -8,7 +8,7 @@ from setuptools import find_namespace_packages, setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.5.0.dev0'
+version = '0.6.0.dev.0'
 
 my_dir = dirname(__file__)
 
