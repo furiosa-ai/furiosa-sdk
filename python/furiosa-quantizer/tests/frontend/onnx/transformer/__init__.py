@@ -1,29 +1,22 @@
-from typing import List, Optional, Tuple, Type, Union
+from typing import Dict, List, Type, Union
 import unittest
 
 import numpy as np
 import onnx
-from onnx import numpy_helper
 import onnxruntime as ort
-import torch
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
-from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.interfaces.transformer import Transformer
-from tests import torch_to_onnx
+from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 
 
 class TestTransformer(unittest.TestCase):
     @staticmethod
     def make_test_model(
-        torch_model: torch.nn.Module,
+        model_desc: Dict,
         transformer: Union[Transformer, Type[ONNXTransformer]],
-        input_shapes: List[Tuple[int, ...]],
-        dtype: Optional[torch.dtype] = torch.float32,
     ):
-        orig_model = torch_to_onnx(torch_model, input_shapes, dtype)
-        # apply polish_model by default
-        orig_model = PolishModel().transform(orig_model)
+        orig_model = make_onnx_model(model_desc)
         copy_model = onnx.ModelProto()
         copy_model.CopyFrom(orig_model)
 
@@ -100,8 +93,3 @@ def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> Li
     flattened_outputs = [val.flatten().tolist() for val in outputs]
 
     return flattened_outputs
-
-
-def init_to_numpy(model, init_name):
-    initializer = {init.name: init for init in model.graph.initializer}
-    return numpy_helper.to_array(initializer[init_name])
