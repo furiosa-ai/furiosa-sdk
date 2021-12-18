@@ -145,29 +145,25 @@ def fix_batch_size_as_one(model):
     return model
 
 
-def make_conv_bias_name_unique(model):
-    # Renames Conv operators' biases, if necessary, to make their names
-    # unique so that the biases can be associated with different
-    # quantization scale parameters.
+def make_initializer_name_unique(model):
+    # Renames Operators' initializers, if necessary, to make their names unique
     initializer = {init.name: init for init in model.graph.initializer}
     seen = set()
     for node in model.graph.node:
-        if node.op_type != "Conv" or len(node.input) < 3:
-            continue
+        for idx, node_input in enumerate(node.input):
+            if node_input not in initializer:
+                continue
 
-        bias = node.input[2]
-        if bias not in seen:
-            seen.add(bias)
-            continue
-
-        tensor = onnx.TensorProto()
-        tensor.CopyFrom(initializer[bias])
-        # HACK: This attempts to give the bias tensor a new unique name.
-        # Although it is unlikely, there is a possibility that the new
-        # name is already occupied by a tensor in the model.
-        tensor.name = f"{bias}_{node.output[0]}"
-
-        node.input[2] = tensor.name
-        model.graph.initializer.append(tensor)
+            if node_input not in seen:
+                seen.add(node_input)
+                continue
+            tensor = onnx.TensorProto()
+            tensor.CopyFrom(initializer[node_input])
+            # HACK: This attempts to give the initializer a new unique name.
+            # Although it is unlikely, there is a possibility that the new
+            # name is already occupied by a tensor in the model.
+            tensor.name = f"{node_input}_{node.output[0]}"
+            node.input[idx] = tensor.name
+            model.graph.initializer.append(tensor)
 
     return model

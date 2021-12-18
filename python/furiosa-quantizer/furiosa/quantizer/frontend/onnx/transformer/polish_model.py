@@ -20,7 +20,7 @@ class PolishModel(Transformer[onnx.ModelProto]):
 
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         model = utils.name_nodes(model)
-        model = utils.make_conv_bias_name_unique(model)
+        model = utils.make_initializer_name_unique(model)
         model = utils.fix_batch_size_as_one(model)
 
         model = onnxoptimizer.optimize(model, passes=["extract_constant_to_initializer"])
