@@ -4,6 +4,8 @@ from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 
+# TODO: consider (init, data) input case for MatMul
+# related issue: https://github.com/furiosa-ai/furiosa-sdk-private/issues/243
 class FuseConv(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         for transformer in [
@@ -22,153 +24,144 @@ class Pattern_1(ONNXTransformer):
         prev --> MatMul --> Add --> next
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
-
     if 1. MatMul.ndim == 2
-       2. MatMul must have at most one initializer
-       3. Add must have at most one initializer
+       2. MatMul must have exactly one initializer
+       3. Add must have exactly one initializer
+       4. Add initializer.ndim <= 2
+          if Add initializer.ndim == 2, its batch_dim == 1
     """
 
     pattern_to_match = ['MatMul', 'Add']
 
     def pattern_matching(self, base_node):
-        inputs = base_node.input
-
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
-        top_node = matched_nodes[0]
+            return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[*self.make_nodes(**self.get_new_node_args(matched_nodes))],
-            inits_to_add=[*self.make_initializers(**self.get_new_init_args(matched_nodes))],
-            vis_to_add=[*self.make_value_infos(**self.get_new_vi_args(matched_nodes))],
+            nodes_to_add=self.make_nodes(**self.get_new_node_args(matched_nodes)),
+            inits_to_add=self.make_initializers(**self.get_new_init_args(matched_nodes)),
+            vis_to_add=self.make_value_infos(**self.get_new_vi_args(matched_nodes)),
         )
+
+        top_node = matched_nodes[0]
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        top_node, base_node = nodes_to_check
+        matmul, add = nodes_to_check
 
-        if not self.check_condition_1(top_node.output[0]):
-            return False
-
-        if not self.check_condition_2(top_node):
-            return False
-
-        if not self.check_condition_2(base_node):
-            return False
+        return (
+            self.check_condition_1(matmul.output[0])
+            and self.check_condition_2(matmul)
+            and self.check_condition_2(add)
+            and self.check_condition_3(add)
+        )
 
     def check_condition_1(self, tensor_name):
-        if len(self.get_value_info_shape(tensor_name)) == 2:
-            return True
-        return False
+        return len(self.get_value_info_shape(tensor_name)) == 2
 
     def check_condition_2(self, node):
-        num_init = 0
-        for node_input in node.input:
-            if node_input in self.initializer_map:
-                num_init += 1
+        return (node.input[0] in self.initializer_map) != (node.input[1] in self.initializer_map)
 
-        if num_init == 1:
-            return True
-        return False
+    def check_condition_3(self, node):
+        array = self.get_initializer_array(self.get_init_node_input(node))
+        return (array.ndim == 2 and array.shape[0] == 1) or array.ndim == 1
 
     def get_new_vi_args(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
+        matmul, add = matched_nodes
 
-        fnode_input = self.get_data_node_input(top_node)
-        fnode_output = base_node.output[0]
-
-        return {'node_input': fnode_input, 'node_output': fnode_output}
+        return {
+            'input_tensor_name': self.get_data_node_input(matmul),
+            'output_tensor_name': add.output[0],
+        }
 
     def get_new_init_args(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
+        matmul, add = matched_nodes
 
-        fw_input = self.get_init_node_input(top_node)
-        fb_input = self.get_init_node_input(base_node)
-
-        return {'w_input': fw_input, 'b_input': fb_input}
+        return {
+            'weight_tensor_name': self.get_init_node_input(matmul),
+            'bias_tensor_name': self.get_init_node_input(add),
+        }
 
     def get_new_node_args(self, matched_nodes):
         args = dict()
-
         args.update(self.get_new_vi_args(matched_nodes))
         args.update(self.get_new_init_args(matched_nodes))
-
         return args
 
-    def make_nodes(self, node_input, node_output, w_input, b_input, **kwargs):
-        unsqueeze_node = self.make_node(
+    def make_nodes(
+        self, input_tensor_name, output_tensor_name, weight_tensor_name, bias_tensor_name
+    ):
+        unsqueeze = self.make_node(
             'Unsqueeze',
-            inputs=[node_input],
-            outputs=[node_output + '_unsqueezed'],
-            name=node_input + '_1',
-            **{'axes': [2, 3]},
+            inputs=[input_tensor_name],
+            outputs=[output_tensor_name + '_unsqueezed'],
+            name=input_tensor_name + '_1',
+            axes=[2, 3],
         )
 
-        conv_node = self.make_node(
+        conv = self.make_node(
             'Conv',
-            inputs=[unsqueeze_node.output[0], w_input + '_fused', b_input + '_fused'],
-            outputs=[node_output + '_fused'],
-            name=node_input + '_2',
-            **{
-                'dilations': [1, 1],
-                'group': 1,
-                'kernel_shape': [1, 1],
-                'pads': [0, 0, 0, 0],
-                'strides': [1, 1],
-            },
+            inputs=[
+                unsqueeze.output[0],
+                weight_tensor_name + '_fused',
+                bias_tensor_name + '_fused',
+            ],
+            outputs=[output_tensor_name + '_fused'],
+            name=input_tensor_name + '_2',
         )
 
-        squeeze_node = self.make_node(
+        squeeze = self.make_node(
             'Squeeze',
-            inputs=[conv_node.output[0]],
-            outputs=[node_output],
-            name=node_input + '_3',
-            **{'axes': [2, 3]},
+            inputs=[conv.output[0]],
+            outputs=[output_tensor_name],
+            name=input_tensor_name + '_3',
+            axes=[2, 3],
         )
-        return unsqueeze_node, conv_node, squeeze_node
 
-    def make_initializers(self, w_input, b_input=None, **kwargs):
+        return [unsqueeze, conv, squeeze]
+
+    def make_initializers(self, weight_tensor_name, bias_tensor_name=None, **kwargs):
         new_inits = []
-        w_arr = self.get_initializer_array(w_input)
-        new_w_arr = self.weight_transformation(w_arr, **kwargs)
-        new_w_init = self.make_initializer_from_array(new_w_arr, w_input + '_fused')
-        new_inits.append(new_w_init)
+        weight_array = self.get_initializer_array(weight_tensor_name)
+        new_weight_array = self.weight_transformation(weight_array, **kwargs)
+        new_weight_init = self.make_initializer_from_array(
+            new_weight_array, weight_tensor_name + '_fused'
+        )
+        new_inits.append(new_weight_init)
 
-        if b_input:
-            b_arr = self.get_initializer_array(b_input).flatten()
-            new_b_init = self.make_initializer_from_array(b_arr, b_input + '_fused')
-            new_inits.append(new_b_init)
+        if bias_tensor_name is not None:
+            bias_array = self.get_initializer_array(bias_tensor_name).flatten()
+            new_bias_init = self.make_initializer_from_array(
+                bias_array, bias_tensor_name + '_fused'
+            )
+            new_inits.append(new_bias_init)
 
         return new_inits
 
-    def weight_transformation(self, w_arr, **kwargs):
-        c, n = w_arr.shape
-        new_w_arr = w_arr.transpose().reshape(n, c, 1, 1)
-        return new_w_arr
+    def weight_transformation(self, weight_array, **kwargs):
+        c, n = weight_array.shape
+        return weight_array.transpose().reshape(n, c, 1, 1)
 
-    def make_value_infos(self, node_input, node_output):
+    def make_value_infos(self, input_tensor_name, output_tensor_name):
 
         conv_input_vi = self.make_tensor_value_info(
-            node_output + '_unsqueezed',
+            output_tensor_name + '_unsqueezed',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(node_input) + [1, 1],
+            self.get_value_info_shape(input_tensor_name) + [1, 1],
         )
 
         conv_output_vi = self.make_tensor_value_info(
-            node_output + '_fused',
+            output_tensor_name + '_fused',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(node_output) + [1, 1],
+            self.get_value_info_shape(output_tensor_name) + [1, 1],
         )
 
-        return conv_input_vi, conv_output_vi
+        return [conv_input_vi, conv_output_vi]
 
 
 class Pattern_2(Pattern_1):
@@ -177,125 +170,232 @@ class Pattern_2(Pattern_1):
         prev --> Gemm --> next
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
-
-    if 1. one of Gemm.A and Gemm.B must have initializer
-       2. Gemm.C must have initializer if defined
+    if 1. Gemm.B must be defined in initializer whereas Gemm.A must not
+       2. if Gemm.C is defined, Gemm.C must be an initializer and Gemm.C.ndim <=2, especially, Gemm.C.shape[0] == 1 for Gemm.C.ndim == 2
     """
 
     pattern_to_match = ['Gemm']
 
     def pattern_condition_checker(self, nodes_to_check):
-        node = nodes_to_check[0]
-        if not self.check_condition_3(node):
-            return False
+        (gemm,) = nodes_to_check
+        return self.check_condition_1(gemm) and self.check_condition_2(gemm)
 
-        if not self.check_condition_4(node):
-            return False
+    def check_condition_1(self, node):
+        return node.input[0] not in self.initializer_map and node.input[1] in self.initializer_map
 
-        return True
-
-    def check_condition_3(self, node):
-        num_init = 0
-        for idx, node_input in enumerate(node.input):
-            if idx == 2:
-                break
-            if node_input in self.initializer_map:
-                num_init += 1
-
-        if num_init == 1:
-            return True
-        return False
-
-    def check_condition_4(self, node):
+    def check_condition_2(self, node):
         if len(node.input) == 3:
-            if node.input[2] not in self.initializer_map:
+            if node.input[2] in self.initializer_map:
+                array = self.get_initializer_array(node.input[2])
+                return array.ndim == 2 and array.shape[0] == 1 or array.ndim == 1
+            else:
+                # returns False since Gemm.C has no initializer to be fused
                 return False
-        return True
+        else:
+            # always returns True if Gemm.C is not defined.
+            return True
 
     def get_new_init_args(self, matched_nodes):
-        node = matched_nodes[0]
-        assert node.op_type == "Gemm", node.op_type
-
-        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-
-        alpha = attrs.get('alpha', 1.0)
-        beta = attrs.get('beta', 1.0)
-        if alpha != 1.0 or beta != 1.0:
-            raise NotImplementedError(f"Gemm.alpha = {alpha}, Gemm.beta = {beta}")
-
+        (gemm,) = matched_nodes
         return {
-            'w_input': node.input[1],
-            'b_input': (node.input[2] if len(node.input) == 3 else None),
-            'transB': attrs.get('transB', 0),
+            'weight_tensor_name': gemm.input[1],
+            'bias_tensor_name': (gemm.input[2] if len(gemm.input) == 3 else None),
+            **self.get_attrs(gemm),
         }
 
     def get_new_vi_args(self, matched_nodes):
-        node = matched_nodes[0]
-        fnode_input = node.input[0]
-        fnode_output = node.output[0]
+        (gemm,) = matched_nodes
+        return {
+            'input_tensor_name': self.get_data_node_input(gemm),
+            'output_tensor_name': gemm.output[0],
+            'attrs': self.get_attrs(gemm),
+        }
 
-        return {'node_input': fnode_input, 'node_output': fnode_output}
+    def make_nodes(
+        self,
+        input_tensor_name,
+        output_tensor_name,
+        weight_tensor_name,
+        bias_tensor_name=None,
+        **kwargs,
+    ):
+        new_nodes = []
+        unsqueeze_node_input = input_tensor_name
+        if self.need_transpose(input_tensor_name, kwargs):
+            unsqueeze_node_input = input_tensor_name + '_transposed'
+            transpose_node = self.make_node(
+                'Transpose',
+                inputs=[input_tensor_name],
+                outputs=[unsqueeze_node_input],
+                name=output_tensor_name + '_0',
+            )
+            new_nodes.append(transpose_node)
 
-    def weight_transformation(self, w_arr, **kwargs):
-        transB = kwargs['transB']
-        if transB == 0:
-            w_arr = w_arr.transpose()
+        unsqueeze_node = self.make_node(
+            'Unsqueeze',
+            inputs=[unsqueeze_node_input],
+            outputs=[input_tensor_name + '_unsqueezed'],
+            name=output_tensor_name + '_1',
+            axes=[2, 3],
+        )
 
-        n, c = w_arr.shape
+        conv_inputs = [unsqueeze_node.output[0], weight_tensor_name + '_fused']
+        if bias_tensor_name is not None:
+            conv_inputs.append(bias_tensor_name + '_fused')
 
-        new_arr = w_arr.reshape(n, c, 1, 1)
-        return new_arr
+        conv_node = self.make_node(
+            'Conv',
+            conv_inputs,
+            outputs=[input_tensor_name + '_fused'],
+            name=output_tensor_name + '_2',
+        )
+
+        squeeze_node = self.make_node(
+            'Squeeze',
+            inputs=[conv_node.output[0]],
+            outputs=[output_tensor_name],
+            name=output_tensor_name + '_3',
+            axes=[2, 3],
+        )
+
+        new_nodes.extend([unsqueeze_node, conv_node, squeeze_node])
+        return new_nodes
+
+    def make_initializers(self, weight_tensor_name, bias_tensor_name=None, **kwargs):
+        new_inits = []
+        weight_array = self.get_initializer_array(weight_tensor_name) * kwargs['alpha']
+
+        transpose_conv_weight = not kwargs['transB']
+        new_weight_array = self.weight_transformation(weight_array, transpose_conv_weight)
+        new_inits.append(
+            self.make_initializer_from_array(new_weight_array, weight_tensor_name + '_fused')
+        )
+
+        if bias_tensor_name is not None:
+            bias_array = self.get_initializer_array(bias_tensor_name) * kwargs['beta']
+            new_inits.append(
+                self.make_initializer_from_array(bias_array, bias_tensor_name + '_fused')
+            )
+
+        return new_inits
+
+    def make_value_infos(self, input_tensor_name, output_tensor_name, attrs):
+        new_vis = []
+        if self.need_transpose(input_tensor_name, attrs):
+            transpose_output_vi = self.make_tensor_value_info(
+                input_tensor_name + '_transposed',
+                onnx.TensorProto.FLOAT,
+                self.get_value_info_shape(input_tensor_name)[::-1],
+            )
+            new_vis.append(transpose_output_vi)
+
+        conv_input_vi = self.make_tensor_value_info(
+            input_tensor_name + '_unsqueezed',
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(input_tensor_name) + [1, 1],
+        )
+
+        conv_output_vi = self.make_tensor_value_info(
+            input_tensor_name + '_fused',
+            onnx.TensorProto.FLOAT,
+            self.get_value_info_shape(output_tensor_name) + [1, 1],
+        )
+        new_vis.extend([conv_input_vi, conv_output_vi])
+        return new_vis
+
+    def weight_transformation(self, weight_array, need_transpose):
+        if need_transpose:
+            weight_array = weight_array.transpose()
+
+        n, c = weight_array.shape
+
+        return weight_array.reshape(n, c, 1, 1)
+
+    def get_attrs(self, node):
+        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
+        return {
+            'alpha': attrs.get('alpha', 1.0),
+            'beta': attrs.get('beta', 1.0),
+            'transA': attrs.get('transA', 0),
+            'transB': attrs.get('transB', 0),
+        }
+
+    def need_transpose(self, input_tensor_name, attrs):
+        input_idx = self.get_node_input_idx(input_tensor_name)
+        assert input_idx in [0, 1]
+        if input_idx == 0:
+            return attrs['transA']
+        else:
+            return attrs['transB']
 
 
-class Pattern_3(ONNXTransformer):
+class Pattern_3(Pattern_1):
     """
     transform
         prev --> Conv --> Add --> next
     to
         prev --> Conv --> next
-    if 1. len(Conv.input) == 2
-       2. Add has only one initializer
+    if 1. Add has exactly one initializer
+       2. Add.initializer.ndim == 4 and (its batch_dim == 1 or == Add.input.shape[0])
     """
 
     pattern_to_match = ['Conv', 'Add']
 
     def pattern_matching(self, base_node):
-        inputs = base_node.input
-
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
-        top_node, base_node = matched_nodes
+            return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[self.make_nodes(*matched_nodes)],
-            inits_to_add=[self.make_initializers(base_node)],
+            nodes_to_add=self.make_nodes(matched_nodes),
+            inits_to_add=self.make_initializers(matched_nodes),
         )
-        return top_node.input
+        conv = matched_nodes[0]
+        return conv.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        top_node, base_node = nodes_to_check
-        return len(top_node.input) == 2 and self.get_init_node_input(base_node)
+        _, add = nodes_to_check
+        return self.check_condition_1(add) and self.check_condition_2(add)
 
-    def make_nodes(self, top_node, base_node):
-        conv_node = self.make_node(
-            'Conv',
-            inputs=[*top_node.input, self.get_init_node_input(base_node) + '_fused'],
-            outputs=[base_node.output[0]],
-            name=top_node.name,
-            **{attr.name: onnx.helper.get_attribute_value(attr) for attr in top_node.attribute},
-        )
+    def check_condition_1(self, node):
+        return sum(node_input in self.initializer_map for node_input in node.input) == 1
 
-        return conv_node
+    def check_condition_2(self, node):
+        array = self.get_initializer_array(self.get_init_node_input(node))
+        input_shape = self.get_value_info_shape(self.get_data_node_input(node))
+        return array.ndim == 4 and (array.shape[0] == 1 or array.shape[0] == input_shape[0])
 
-    def make_initializers(self, base_node):
-        b_input = self.get_init_node_input(base_node)
-        b_arr = self.get_initializer_array(b_input)
-        new_b_init = self.make_initializer_from_array(b_arr.flatten(), b_input + '_fused')
+    def make_nodes(self, matched_nodes):
+        conv, add = matched_nodes
+        return [
+            self.make_node(
+                'Conv',
+                inputs=[*conv.input[:2], self.get_init_node_input(add) + '_fused'],
+                outputs=[add.output[0]],
+                name=conv.name,
+                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in conv.attribute},
+            )
+        ]
 
-        return new_b_init
+    def make_initializers(self, matched_nodes):
+        conv, add = matched_nodes
+        bias_tensor_name = self.get_init_node_input(add)
+        bias_array = self.get_initializer_array(bias_tensor_name).flatten()
+        if len(conv.input) == 3:
+            bias_array += self.get_initializer_array(conv.input[2]).flatten()
+        return [self.make_initializer_from_array(bias_array, bias_tensor_name + '_fused')]
+
+
+# TODO: fuse Conv + Mul into Conv
+# class Pattern_4(Pattern_1):
+#    """
+#    transform
+#        prev --> Conv --> Mul --> next
+#    to
+#        prev --> Conv --> next
+#    if ...
+#    """

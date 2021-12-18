@@ -1,4 +1,4 @@
-from collections import Counter, OrderedDict
+from collections import Counter, OrderedDict, defaultdict
 from typing import List, Optional, Set
 
 import numpy as np
@@ -12,10 +12,14 @@ from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
 class ONNXTransformer:
     def __init__(self, model):
-        self.model = model
+        self.model = utils.name_nodes(model)
         self.producer_map = {
             node_output: node for node in model.graph.node for node_output in node.output
         }
+        self.consumer_map = defaultdict(list)
+        for node in model.graph.node:
+            for tensor in node.input:
+                self.consumer_map[tensor].append(node)
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
         self.initializer_map = {init.name: init for init in model.graph.initializer}
         self.node_input_map = {node.name: node.input for node in model.graph.node}
@@ -135,13 +139,13 @@ class ONNXTransformer:
         return numpy_helper.to_array(self.initializer_map[node_input])
 
     def get_init_node_input(self, node):
-        init_node_input = None
-        for node_input in node.input:
-            if node_input not in self.initializer_map:
-                continue
-            init_node_input = node_input
-
-        return init_node_input
+        # FIXME new implementation gets node.input and returns list of input with initializer,
+        # so that takes any number of node inputs.
+        assert len(node.input) == 2
+        return next(
+            (tensor_name for tensor_name in node.input[:2] if tensor_name in self.initializer_map),
+            None,
+        )
 
     def get_data_node_input(self, node):
         data_node_input = None
@@ -151,6 +155,10 @@ class ONNXTransformer:
             data_node_input = node_input
 
         return data_node_input
+
+    def get_node_input_idx(self, node_input):
+        assert len(self.consumer_map[node_input]) == 1
+        return list(self.consumer_map[node_input][0].input).index(node_input)
 
     def make_field_unique(self, values):
         seen = []
