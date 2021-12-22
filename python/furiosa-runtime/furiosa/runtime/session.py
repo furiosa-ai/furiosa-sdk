@@ -22,8 +22,7 @@ from .tensor import Tensor, TensorDesc
 def _fill_tensor(value: Union[np.ndarray, np.generic], target: Tensor):
     if value.shape != target.shape or value.dtype != target.numpy_dtype:
         raise InvalidInput(
-            f"{value.shape} ({value.dtype} is expected, "
-            f"but {target.shape} (${target.numpy_dtype}"
+            f"expected {target.shape} ({target.numpy_dtype}) but got {value.shape} ({value.dtype})"
         )
 
     target.copy_from(value)
