@@ -643,6 +643,27 @@ class FuriosaONNXQuantizer:
                 b_scale_arr, (i_scale_arr * w_scale_arr).reshape(-1)
             ), f'Conv bias scale is incorrect: {b_scale_name}'
 
+        # check if transposeconv bias scale is correct
+        for node in self.model.graph.node:
+            if node.op_type != "ConvTranspose":
+                continue
+
+            if len(node.input) != 3:
+                continue
+
+            i_scale_arr = numpy_helper.to_array(
+                self._quant_param[node.input[0].split('_dequantized')[0] + '_scale']
+            )
+            w_scale_arr = numpy_helper.to_array(
+                self._quant_param[node.input[1].split('_dequantized')[0] + '_scale']
+            )
+            b_scale_name = node.inpu[2].split('_dequantized')[0] + '_scale'
+            b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
+
+            assert np.allclose(
+                b_scale_arr, (i_scale_arr * w_scale_arr).reshape(-1)
+            ), f'Conv bias scale is incorrect: {b_scale_name}'
+
     def _get_quant_param(self, origin, postfix=None):
         result = self._quant_param.get(f'{origin}{postfix or ""}', None)
         if result is None:
