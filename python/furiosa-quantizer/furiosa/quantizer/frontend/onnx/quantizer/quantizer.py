@@ -175,7 +175,6 @@ class FuriosaONNXQuantizer:
                     node.input[idx] += '_' + str(self.count - 1)
 
             self._quant_node.update({node.output[0]: node})
-
         for output in self.model.graph.output:
             if not is_float_tensor(self.value_info[output.name]):
                 continue
@@ -185,8 +184,8 @@ class FuriosaONNXQuantizer:
 
             self.model.graph.value_info.append(output)
             output.name += '_dequantized'
-            if output.name + str(self.count - 1) in self._quant_node:
-                output.name += str(self.count - 1)
+            if output.name + '_' + str(self.count - 1) in self._quant_node:
+                output.name += '_' + str(self.count - 1)
             self._quant_value_info.pop(output.name)
 
         self.model = utils.rebuild_model(
