@@ -143,7 +143,7 @@ class Pattern_1(ONNXTransformer):
         new_inits.append(new_w_init)
 
         if b_input:
-            b_arr = self.get_initializer_array(b_input)
+            b_arr = self.get_initializer_array(b_input).flatten()
             new_b_init = self.make_initializer_from_array(b_arr, b_input + '_fused')
             new_inits.append(new_b_init)
 
