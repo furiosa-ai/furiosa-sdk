@@ -40,16 +40,22 @@ metadata:
     app: jenkins-worker
     jenkins: npu-tools
 spec:
+  hostAliases:
+  - ip: "52.69.186.44"
+    hostnames:
+    - "github.com"
   imagePullSecrets:
   - name: ecr-docker-login
   nodeSelector:
     alpha.furiosa.ai/npu.family: warboy
     alpha.furiosa.ai/npu.hwtype: u250
-    alpha.furiosa.ai/kernel.version: 2.8
+    alpha.furiosa.ai/driver.version: 2.8
   tolerations:
-  - key: "app"
-    operator: "Equal"
-    value: "jenkins-worker"
+  - key: "fpga"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node.kubernetes.io/unschedulable"
+    operator: "Exists"
     effect: "NoSchedule"
   volumes:
   - name: apt-auth-conf-d
@@ -61,12 +67,6 @@ spec:
   - name: internal-pypi-secret
     secret:
       secretName: internal-pypi-secret
-  - name: furioa-api-secret-prod
-    secret:
-      secretName: furioa-api-secret-prod
-  - name: furioa-api-secret-staging
-    secret:
-      secretName: furioa-api-secret-staging
   containers:
   - name: default
     image: ${image}
@@ -90,10 +90,6 @@ spec:
     - name: internal-pypi-secret
       mountPath: /root/.netrc
       subPath: .netrc
-    - name: furioa-api-secret-prod # Furiosa API Key for Production
-      mountPath: /root/.furiosa-prod
-    - name: furioa-api-secret-staging # Furiosa API Key for Staging
-      mountPath: /root/.furiosa-staging
     env:
     - name: NPU_WAIT_FOR_COMMIT_TIMEOUT
       value: 360000 # 360s
@@ -318,7 +314,7 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.3.1-2"
+    FIRMWARE_VERSION = "0.3.1-2+nightly-211230"
     NUX_VERSION = "0.5.0-2"
   }
 
