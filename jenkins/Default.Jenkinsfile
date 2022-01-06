@@ -51,7 +51,7 @@ spec:
     alpha.furiosa.ai/npu.hwtype: u250
     alpha.furiosa.ai/driver.version: 2.8
   tolerations:
-  - key: "fpga"
+  - key: "furiosa.ai/fpga"
     operator: "Exists"
     effect: "NoSchedule"
   - key: "node.kubernetes.io/unschedulable"
