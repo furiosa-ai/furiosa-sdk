@@ -1,11 +1,10 @@
-import torch
-import torch.nn as nn
+import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
+from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import Pattern_1
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module):
+def _get_args(input_shape, blocksize, mode):
     """
     DepthToSpace DRC mode
         https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
@@ -22,70 +21,51 @@ class UnitTestModel(nn.Module):
         y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
     """
 
-    def __init__(self, input_shape, blocksize, mode):
-        super(UnitTestModel, self).__init__()
-        b, c, h, w = input_shape
+    b, c, h, w = input_shape
 
-        channel_split = c // (blocksize**2)
-        assert channel_split * blocksize**2 == c
+    channel_split = c // (blocksize**2)
+    assert channel_split * blocksize**2 == c
 
-        if mode == 'DCR':
-            self.permute = [0, 3, 4, 1, 5, 2]
-            self.shape_0 = [b, blocksize, blocksize, channel_split, h, w]
-        elif mode == 'CRD':
-            self.permute = [0, 1, 4, 2, 5, 3]
-            self.shape_0 = [b, channel_split, blocksize, blocksize, h, w]
-        else:
-            raise Exception()
+    assert mode in ['DCR', 'CRD'], f"Unknown mode: {mode}. 'mode' must be either 'DCR' or 'CRD'."
 
-        self.shape_1 = [b, channel_split, h * blocksize, w * blocksize]
+    if mode == 'DCR':
+        permute = [0, 3, 4, 1, 5, 2]
+        pre_reshape = [b, blocksize, blocksize, channel_split, h, w]
+    elif mode == 'CRD':
+        permute = [0, 1, 4, 2, 5, 3]
+        pre_reshape = [b, channel_split, blocksize, blocksize, h, w]
 
-    def forward(self, x):
-        x = torch.reshape(x, shape=self.shape_0)
-        x = x.permute(dims=self.permute)
-        x = torch.reshape(x, shape=self.shape_1)
-        return x
+    post_reshape = [b, channel_split, h * blocksize, w * blocksize]
+
+    return pre_reshape, permute, post_reshape
 
 
-class MultiTestModel(UnitTestModel):
-    def __init__(self, input_shape, blocksize, mode):
-        super(MultiTestModel, self).__init__(input_shape, blocksize, mode)
-
-    def forward(self, x):
-        x = torch.add(x, x)
-        x = torch.reshape(x, shape=self.shape_0)
-        x = x.permute(dims=self.permute)
-        x = torch.reshape(x, shape=self.shape_1)
-        x = torch.mul(x, torch.ones_like(x))
-        return x
-
-
-class TestReifyDepthToSpace(TestTransformer):
-    def make_unit_model(self, input_shapes, blocksize, mode):
-        orig_model, trans_model = self.make_test_model(
-            UnitTestModel(input_shapes[0], blocksize, mode), FuseDepthToSpace(), input_shapes
-        )
-        return orig_model, trans_model
-
-    def make_multi_model(self, input_shapes, blocksize, mode):
-        orig_model, trans_model = self.make_test_model(
-            UnitTestModel(input_shapes[0], blocksize, mode), FuseDepthToSpace(), input_shapes
-        )
-        return orig_model, trans_model
-
+class TestFuseDepthToSpace(TestTransformer):
     def test_case1(self):
         """
         Test whether the original model is well transformed for unit operator model,
         which contains only DepthToSpace operator
         """
-        input_shapes = [(1, 4, 8, 8)]
+        input_shape = [1, 4, 8, 8]
+        output_shape = [1, 1, 16, 16]
         blocksize = 2
         mode = 'DCR'
-        op_types = ['DepthToSpace']
+        pre_reshape, permute, post_reshape = _get_args(input_shape, blocksize, mode)
 
-        orig_model, trans_model = self.make_unit_model(input_shapes, blocksize, mode)
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {"shape": np.array(pre_reshape), "shape1": np.array(post_reshape)},
+            "node": [
+                ("Reshape", ["x", "shape"], ["0"]),
+                ("Transpose", ["0"], ["1"], {"perm": permute}),
+                ("Reshape", ["1", "shape1"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['DepthToSpace'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
         self.check_attribute(blocksize, trans_model.graph.node[0].attribute[0].i)
         self.check_attribute(str.encode(mode), trans_model.graph.node[0].attribute[1].s)
@@ -95,14 +75,26 @@ class TestReifyDepthToSpace(TestTransformer):
         Test whether the original model is well transformed for unit operator model,
         which contains only DepthToSpace operator
         """
-        input_shapes = [(1, 9, 4, 4)]
+        input_shape = [1, 9, 4, 4]
+        output_shape = [1, 1, 12, 12]
         blocksize = 3
         mode = 'CRD'
-        op_types = ['DepthToSpace']
+        pre_reshape, permute, post_reshape = _get_args(input_shape, blocksize, mode)
 
-        orig_model, trans_model = self.make_unit_model(input_shapes, blocksize, mode)
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {"shape": np.array(pre_reshape), "shape1": np.array(post_reshape)},
+            "node": [
+                ("Reshape", ["x", "shape"], ["0"]),
+                ("Transpose", ["0"], ["1"], {"perm": permute}),
+                ("Reshape", ["1", "shape1"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['DepthToSpace'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
         self.check_attribute(blocksize, trans_model.graph.node[0].attribute[0].i)
         self.check_attribute(str.encode(mode), trans_model.graph.node[0].attribute[1].s)
@@ -112,10 +104,29 @@ class TestReifyDepthToSpace(TestTransformer):
         Test whether the original model is well transformed for multi operator model,
          which contains operators other than DepthToSpace
         """
-        input_shapes = [(1, 4, 8, 8)]
+        input_shape = [1, 4, 8, 8]
+        output_shape = [1, 1, 16, 16]
         blocksize = 2
         mode = 'CRD'
+        pre_reshape, permute, post_reshape = _get_args(input_shape, blocksize, mode)
 
-        orig_model, trans_model = self.make_multi_model(input_shapes, blocksize, mode)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "shape": np.array(pre_reshape),
+                "shape1": np.array(post_reshape),
+                "w": (np.float32, output_shape),
+            },
+            "node": [
+                ("Add", ["x", "x"], ["0"]),
+                ("Reshape", ["0", "shape"], ["1"]),
+                ("Transpose", ["1"], ["2"], {"perm": permute}),
+                ("Reshape", ["2", "shape1"], ["3"]),
+                ("Mul", ["3", "w"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
