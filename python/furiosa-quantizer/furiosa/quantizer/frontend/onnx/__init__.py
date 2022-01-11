@@ -8,7 +8,7 @@ import onnx
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 12
 
-from furiosa.quantizer.frontend.onnx import calibrate, spec
+from furiosa.quantizer.frontend.onnx import calibrate
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
@@ -72,11 +72,6 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         EliminateRedundantShapePattern().transform,
     ]
     return _transform(transformers, model)
-
-
-def export_spec(model: onnx.ModelProto, output: IO[Text]):
-    model = _transform([_inference_shape, _reify], model)
-    spec.export_spec.OnnxExportSpec(model).dump(output)
 
 
 def optimize_model(

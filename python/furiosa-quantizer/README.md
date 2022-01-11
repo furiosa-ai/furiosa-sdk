@@ -11,37 +11,6 @@ Static per-channel post-training quantization tool for fp onnx model.
 # Test model aws link
 - [download link](https://s3.console.aws.amazon.com/s3/buckets/furiosa-private-artifacts?region=ap-northeast-2&prefix=onnx-model-exporter/target-dir/&showversions=false)
 
-# Export Spec
-- example code: spec을 export하기 전에 항상 optimize_model 함수를 호출해야합니다. 
-    ```python
-    from quantizer.frontend.onnx import export_spec, optimize_model
-    
-    model = onnx.load_model(path-to-onnx-model)
-    
-    model = optimize_model(model)
-    export_spec(model, open(path-to-write-spec, 'w'))
-    ```
-- example code: `torch`에서 `torch.onnx.export`을 사용하여 모델을 직접 export하는 경우에 `opset_version=12` 옵션을 주어야 합니다.
-    ``` python
-    import onnx
-    import torch
-    
-    from efficientnet_pytorch import EfficientNet
-    from quantizer.frontend.onnx import export_spec, optimize_model
-  
-  
-    model = EfficientNet.from_pretrained('efficientnet-b0')
-    model.set_swish(memory_efficient=False)
-    dummy_input = torch.randn(10, 3, 224, 224)
-    torch.onnx.export(model, dummy_input, "test-b0.onnx", opset_version=12)
-    
-    
-    model = onnx.load_model('test-b0.onnx')
-    
-    model = optimize_model(model)
-    export_spec(model, open('test-b0.spec', 'w'))
-    ```
-
 # Quantize all test models
 1. [test models](https://s3.console.aws.amazon.com/s3/buckets/furiosa-private-artifacts?region=ap-northeast-2&prefix=onnx-model-exporter/target-dir/&showversions=false)를 로컬에 다운 받습니다.
 
