@@ -3,21 +3,19 @@
 """A post-training quantization example.
 """
 
-import sys
 from pathlib import Path
+import sys
 from typing import Dict, List
 
-import furiosa.quantizer
+from PIL import Image
 import numpy as np
 import onnx
-
-# prevent seg fault in Mac OS X
-import onnxruntime
 import torch
-from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets.imagenet import ImageNet
+
+from furiosa.quantizer.frontend.onnx import post_training_quantize
 
 
 def main():
@@ -49,9 +47,7 @@ def main():
     ]
 
     # Quantizes the model using the calibration dataset.
-    quantized_model = furiosa.quantizer.post_training_quantize(
-        model, calibration_dataset
-    )
+    quantized_model = post_training_quantize(model, calibration_dataset)
 
     # Saves the quantized model.
     onnx.save(quantized_model, "MobileNetV2_10c_10d-quantized.onnx")
