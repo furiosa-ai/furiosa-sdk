@@ -230,18 +230,10 @@ class Pattern_3(Pattern_1):
     def pattern_condition_checker(self, nodes_to_check):
         _, mul_node, add_node = nodes_to_check
 
-        if self.check_condition_1(mul_node):
-            return True
-
-        if self.check_condition_1(add_node):
-            return True
-
-        return False
-
-    def check_condition_1(self, node):
-        if self.get_init_node_input(node):
-            return True
-        return False
+        # This checks if a node has a initializer, \
+        # assuming a node has exactly one initializer if it has one. \
+        # That is, there is no node with two initialzier.
+        return self.get_init_node_input(mul_node) and self.get_init_node_input(add_node)
 
     def make_new_node(self, matched_nodes):
         top_node, middle_node, bottom_node = matched_nodes
