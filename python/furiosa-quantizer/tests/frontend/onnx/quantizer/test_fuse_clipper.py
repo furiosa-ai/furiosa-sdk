@@ -57,6 +57,30 @@ class UnitTestModel3(nn.Module):
         return x
 
 
+class UnitTestModel4(nn.Module):
+    """
+    This creates Unsqueeze --> Unsqueeze --> Conv --> Squeeze --> Relu graph for testing Pattern_5
+    """
+
+    def __init__(self, num_channel):
+        super().__init__()
+        self.conv = nn.Conv2d(in_channels=num_channel, out_channels=num_channel, kernel_size=(1, 1))
+        self.relu = nn.ReLU()
+        self.clip = torch.clip
+
+        self.dims = [2, 3]
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, 2)
+        x = torch.unsqueeze(x, 3)
+        x = self.conv(x)
+        x = torch.squeeze(x, -1)
+        x = torch.squeeze(x, -1)
+        x = nn.functional.relu(x)
+
+        return x
+
+
 class TestFuseClipper(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
         orig_model, trans_model = self.make_test_model(torch_model, FuseClipper(), input_shapes)
@@ -115,5 +139,18 @@ class TestFuseClipper(TestTransformer):
         op_types = ['Add']
 
         orig_model, trans_model = self._make_test_model(UnitTestModel3(), input_shapes)
+        self.check_graph_node(trans_model, op_types)
+        self.check_value_info(trans_model)
+
+    def test_case5(self):
+        """
+        This tests Pattern_5
+        """
+        num_channel = 32
+        input_shapes = [(1, num_channel)]
+
+        op_types = ['Unsqueeze', 'Unsqueeze', 'Conv', 'Squeeze']
+
+        orig_model, trans_model = self._make_test_model(UnitTestModel4(num_channel), input_shapes)
         self.check_graph_node(trans_model, op_types)
         self.check_value_info(trans_model)
