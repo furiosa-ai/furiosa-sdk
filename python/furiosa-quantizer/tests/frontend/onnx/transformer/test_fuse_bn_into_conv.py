@@ -60,6 +60,21 @@ class UnitTestModel3(UnitTestModel):
         return x
 
 
+class UnitTestModel3_1(UnitTestModel):
+    """
+    This creates Conv + Mul + Add graph for testing Pattern_3
+    """
+
+    def __init__(self, in_channel, out_channel):
+        super().__init__(in_channel, out_channel)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = torch.mul(x, torch.ones((1, x.shape[1], 1, 1)))
+        x = torch.add(x, x)
+        return x
+
+
 class MultiTestModel(UnitTestModel):
     def __init__(self, in_channel, out_channel):
         super(MultiTestModel, self).__init__(in_channel, out_channel)
@@ -163,7 +178,7 @@ class TestFuseBNIntoConv(TestTransformer):
         self.check_output_value(orig_model, trans_model, input_shapes)
         self.check_value_info(trans_model)
 
-    def test_case5(self):
+    def test_case5_1(self):
         """
         This tests Pattern_3
         """
@@ -175,6 +190,20 @@ class TestFuseBNIntoConv(TestTransformer):
 
         orig_model, trans_model = self._make_test_model(
             UnitTestModel3(in_channel, out_channel), input_shapes
+        )
+        self.check_graph_node(trans_model, op_types)
+        self.check_output_value(orig_model, trans_model, input_shapes)
+        self.check_value_info(trans_model)
+
+    def test_case5_2(self):
+        input_shapes = [(1, 4, 4, 4)]
+        in_channel = 4
+        out_channel = 8
+
+        op_types = ['Conv', 'Mul', 'Add']
+
+        orig_model, trans_model = self._make_test_model(
+            UnitTestModel3_1(in_channel, out_channel), input_shapes
         )
         self.check_graph_node(trans_model, op_types)
         self.check_output_value(orig_model, trans_model, input_shapes)
