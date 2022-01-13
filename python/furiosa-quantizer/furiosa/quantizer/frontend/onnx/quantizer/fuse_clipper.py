@@ -12,6 +12,7 @@ class FuseClipper(Transformer):
             Pattern_3,
             Pattern_4,
             Pattern_5,
+            Pattern_6,
         ]:
             model = transformer(model).transform()
 
@@ -101,3 +102,14 @@ class Pattern_5(ClipperFusion):
     """
 
     pattern_to_match = ['Conv', 'Squeeze', 'Relu']
+
+
+class Pattern_6(ClipperFusion):
+    """
+    transform
+        prev --> Conv --> Squeeze --> Clip --> next
+    to
+        prev --> Conv --> Squeeze --> next
+    """
+
+    pattern_to_match = ['Conv', 'Squeeze', 'Clip']

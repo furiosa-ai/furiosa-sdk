@@ -81,6 +81,22 @@ class UnitTestModel4(nn.Module):
         return x
 
 
+class UnitTestModel5(UnitTestModel4):
+    """
+    This creates Unsqueeze --> Unsqueeze --> Conv --> Squeeze --> Clip graph for testing Pattern_6
+    """
+
+    def forward(self, x):
+        x = torch.unsqueeze(x, 2)
+        x = torch.unsqueeze(x, 3)
+        x = self.conv(x)
+        x = torch.squeeze(x, -1)
+        x = torch.squeeze(x, -1)
+        x = torch.clip(x, 0.0, 1.0)
+
+        return x
+
+
 class TestFuseClipper(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
         orig_model, trans_model = self.make_test_model(torch_model, FuseClipper(), input_shapes)
@@ -152,5 +168,18 @@ class TestFuseClipper(TestTransformer):
         op_types = ['Unsqueeze', 'Unsqueeze', 'Conv', 'Squeeze']
 
         orig_model, trans_model = self._make_test_model(UnitTestModel4(num_channel), input_shapes)
+        self.check_graph_node(trans_model, op_types)
+        self.check_value_info(trans_model)
+
+    def test_case6(self):
+        """
+        This tests Pattern_6
+        """
+        num_channel = 32
+        input_shapes = [(1, num_channel)]
+
+        op_types = ['Unsqueeze', 'Unsqueeze', 'Conv', 'Squeeze']
+
+        orig_model, trans_model = self._make_test_model(UnitTestModel5(num_channel), input_shapes)
         self.check_graph_node(trans_model, op_types)
         self.check_value_info(trans_model)
