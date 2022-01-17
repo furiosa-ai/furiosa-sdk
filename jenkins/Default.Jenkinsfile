@@ -109,7 +109,7 @@ def ubuntuDistribName(full_name) {
 }
 
 def installConda() {
-  sh "wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
+  sh "wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
   sh "sh /tmp/Miniconda3.sh -b -p ${WORKSPACE}/miniconda"
 }
 
@@ -121,8 +121,8 @@ def setupPythonEnv(pythonVersion) {
   conda activate env-${pythonVersion};
 
   python --version;
-  pip install --upgrade --quiet pip;
-  pip install --upgrade --quiet build twine gitpython papermill black isort;
+  pip install --upgrade pip;
+  pip install --upgrade build twine gitpython papermill black isort;
   """
 }
 
@@ -134,7 +134,7 @@ def buildPackages(pythonVersion) {
     python --version;
 
     cd python/${it} && make clean build && \
-    pip install --quiet dist/${it}-*.tar.gz
+    pip install dist/${it}-*.tar.gz
     """
   }
 
@@ -186,7 +186,7 @@ def testModules(pythonVersion) {
 
     if [ -f tests/requirements.txt ]; then
       echo 'Installing ${it}/tests/requirements.txt ..';
-      pip install --quiet -r tests/requirements.txt;
+      pip install -r tests/requirements.txt
     else
       echo 'No requirements.txt file ${it}'
     fi
@@ -202,7 +202,7 @@ def testExamples(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    pip install --quiet -r examples/inferences/requirements.txt && \
+    pip install -r examples/inferences/requirements.txt && \
     tests/test_examples.sh
     """
 }
@@ -214,8 +214,8 @@ def testNotebooks(pythonVersion) {
     python --version;
 
     cd examples/notebooks/ && \
-    pip install --quiet -r ./requirements.txt && \
-    pip install --quiet nbmake && \
+    pip install -r ./requirements.txt && \
+    pip install nbmake && \
     pytest --nbmake .
     """
 }
