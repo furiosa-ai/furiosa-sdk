@@ -8,9 +8,8 @@ import subprocess
 from textwrap import wrap
 from typing import Dict, List
 
-from setuptools import Command, Distribution, Extension, find_namespace_packages, setup
+from setuptools import find_namespace_packages, setup
 from setuptools.command.develop import develop as develop_orig
-from setuptools.command.install import install as install_orig
 
 # Controls whether providers are installed from packages or directly from sources
 # It is turned on by default in case of development environments such as Breeze

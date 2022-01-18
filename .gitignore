@@ -11,3 +11,4 @@ build
 _build
 *.enf
 .DS_Store
+.ipynb_checkpoints

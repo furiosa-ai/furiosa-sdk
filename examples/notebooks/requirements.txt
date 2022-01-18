@@ -1,0 +1,5 @@
+furiosa-sdk
+mnist
+onnxruntime ~= 1.8.1
+pillow
+matplotlib

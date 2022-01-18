@@ -1,0 +1,1 @@
+sa_malloc: true # use simulated annealing to optimize memory allocation

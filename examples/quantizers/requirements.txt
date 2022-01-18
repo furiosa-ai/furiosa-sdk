@@ -1,0 +1,1 @@
+furiosa-sdk[quantizer] >= 0.1.0
