@@ -196,6 +196,30 @@ def testModules(pythonVersion) {
   }
 }
 
+def testExamples(pythonVersion) {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
+
+    pip install --quiet -r examples/inferences/requirements.txt && \
+    tests/test_examples.sh
+    """
+}
+
+def testNotebooks(pythonVersion) {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
+
+    cd examples/notebooks/ && \
+    pip install --quiet -r ./requirements.txt && \
+    pip install --quiet nbmake && \
+    pytest --nbmake .
+    """
+}
+
 def runAllTests(pythonVersion) {
   setupPythonEnv(pythonVersion)
   buildPackages(pythonVersion)
@@ -357,6 +381,26 @@ pipeline {
         container('default') {
           script {
             runAllTests(getPythonVersion())
+          }
+        }
+      }
+    }
+
+    stage('Test Examples') {
+      steps {
+        container('default') {
+          script {
+            testExamples(getPythonVersion())
+          }
+        }
+      }
+    }
+
+    stage('Test Notebooks') {
+      steps {
+        container('default') {
+          script {
+            testNotebooks(getPythonVersion())
           }
         }
       }
