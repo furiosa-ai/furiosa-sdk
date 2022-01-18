@@ -19,4 +19,4 @@ profile = 'black'
 
 [tool.pytest]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode
-asyncio_mode = auto
+asyncio_mode = 'auto'
