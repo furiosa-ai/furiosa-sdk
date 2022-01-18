@@ -65,7 +65,7 @@ FuriosaAI SDK가 지원하는 양자화 방식은  *post-training 8-bit quantiza
      - 22.137
      - 22.815
      - 1.392
-   * - SSD MobileNet 1200x1200
+   * - SSD Resnet34 1200x1200
      - 22.308
      - 22.069
      - 1.071
