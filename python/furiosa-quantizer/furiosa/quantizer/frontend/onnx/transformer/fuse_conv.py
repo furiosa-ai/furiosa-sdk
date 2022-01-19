@@ -259,7 +259,8 @@ class Pattern_3(ONNXTransformer):
         prev --> Conv --> Add --> next
     to
         prev --> Conv --> next
-    if len(Conv.input) == 2
+    if 1. len(Conv.input) == 2
+       2. Add has only one initializer
     """
 
     pattern_to_match = ['Conv', 'Add']
@@ -284,8 +285,8 @@ class Pattern_3(ONNXTransformer):
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        top_node, _ = nodes_to_check
-        return len(top_node.input) == 2
+        top_node, base_node = nodes_to_check
+        return len(top_node.input) == 2 and self.get_init_node_input(base_node)
 
     def make_nodes(self, top_node, base_node):
         conv_node = self.make_node(
