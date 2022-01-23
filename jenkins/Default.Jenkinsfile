@@ -49,9 +49,9 @@ spec:
   nodeSelector:
     alpha.furiosa.ai/npu.family: warboy
     alpha.furiosa.ai/npu.hwtype: u250
-    alpha.furiosa.ai/driver.version: 2.8
+    role: fpga
   tolerations:
-  - key: "furiosa.ai/fpga"
+  - key: "fpga"
     operator: "Exists"
     effect: "NoSchedule"
   - key: "node.kubernetes.io/unschedulable"
