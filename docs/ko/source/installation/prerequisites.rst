@@ -29,13 +29,13 @@ Linux에서 필수 패키지 설치
   $ apt-get install cmake build-essential
 
 
-onnxruntime 1.8.1을 설치한다.
+onnxruntime 1.9.0을 설치한다.
 onnxruntime은 `ONNX <https://onnx.ai/>`_ 모델 형식 지원과 모델 양자화를 위해 사용된다.
 
 .. code-block::
 
-  $ wget https://github.com/hyunsik/onnxruntime/releases/download/v1.8.1/libonnxruntime-1.8.1_amd64.deb
-  $ apt-get install -y ./libonnxruntime-1.8.1_amd64.deb
+  $ wget https://github.com/hyunsik/onnxruntime/releases/download/v1.9.0/libonnxruntime-1.9.0-focal_amd64.deb
+  $ apt-get install ./libonnxruntime-1.9.0-focal_amd64.deb
 
 
 .. _SetupPython:

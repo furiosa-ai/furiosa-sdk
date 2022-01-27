@@ -8,16 +8,16 @@ install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 uninstall:
-	pip uninstall -y --quiet furiosa-runtime; \
-	pip uninstall -y --quiet furiosa-quantizer; \
-	pip uninstall -y --quiet furiosa-model-validator; \
-	pip uninstall -y --quiet furiosa-tools; \
-	pip uninstall -y --quiet furiosa-server; \
-	pip uninstall -y --quiet furiosa-registry; \
-	pip uninstall -y --quiet furiosa-sdk
+	pip uninstall -y furiosa-runtime; \
+	pip uninstall -y furiosa-quantizer; \
+	pip uninstall -y furiosa-model-validator; \
+	pip uninstall -y furiosa-tools; \
+	pip uninstall -y furiosa-server; \
+	pip uninstall -y furiosa-registry; \
+	pip uninstall -y furiosa-sdk
 
 install_full:
-	pip install --quiet --use-feature=in-tree-build .[full]
+	pip install --use-feature=in-tree-build .[full]
 
 build:
 	python -m build
