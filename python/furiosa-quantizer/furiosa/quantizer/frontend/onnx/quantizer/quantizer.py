@@ -657,7 +657,7 @@ class FuriosaONNXQuantizer:
             w_scale_arr = numpy_helper.to_array(
                 self._quant_param[node.input[1].split('_dequantized')[0] + '_scale']
             )
-            b_scale_name = node.inpu[2].split('_dequantized')[0] + '_scale'
+            b_scale_name = node.input[2].split('_dequantized')[0] + '_scale'
             b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
 
             assert np.allclose(
