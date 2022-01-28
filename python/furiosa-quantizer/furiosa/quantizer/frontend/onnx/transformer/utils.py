@@ -167,3 +167,9 @@ def make_initializer_name_unique(model):
             model.graph.initializer.append(tensor)
 
     return model
+
+
+def pop_tensor_from_value_info(dfg_importable, tensor_name):
+    if any(tensor_name == output.name for output in dfg_importable.model.graph.output):
+        return
+    dfg_importable.value_info.pop(tensor_name)

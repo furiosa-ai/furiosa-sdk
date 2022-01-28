@@ -780,16 +780,16 @@ class DFGImportable:
             node_o0 = self.node_by_input[node.output[0]]
             rm_nodes.extend([node_i0, node_i1, node_o0])
 
-            self.value_info_pop_tensor(node_i0.output[0])
-            self.value_info_pop_tensor(node_i1.output[0])
-            self.value_info_pop_tensor(node_o0.input[0])
+            utils.pop_tensor_from_value_info(self, node_i0.output[0])
+            utils.pop_tensor_from_value_info(self, node_i1.output[0])
+            utils.pop_tensor_from_value_info(self, node_o0.input[0])
 
             node_i2 = None
             if len(node.input) == 3:
                 node_i2 = self.node_by_output[node.input[2]]
                 rm_nodes.append(node_i2)
 
-                self.value_info_pop_tensor(node_i2.output[0])
+                utils.pop_tensor_from_value_info(self, node_i2.output[0])
 
             rm_nodes.extend([node])
             new_nodes.append(
@@ -853,11 +853,6 @@ class DFGImportable:
     def _update_graph_field(self, field, proto):
         self.model.graph.ClearField(field)
         getattr(self.model.graph, field).extend(proto)
-
-    def value_info_pop_tensor(self, tensor_name):
-        if any(tensor_name == output.name for output in self.model.graph.output):
-            return
-        self.value_info.pop(tensor_name)
 
 
 class ONNXRuntimeExecutable(DFGImportable):
