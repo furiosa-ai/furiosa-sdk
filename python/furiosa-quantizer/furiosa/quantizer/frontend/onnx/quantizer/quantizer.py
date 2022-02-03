@@ -780,16 +780,18 @@ class DFGImportable:
             node_o0 = self.node_by_input[node.output[0]]
             rm_nodes.extend([node_i0, node_i1, node_o0])
 
-            utils.pop_tensor_from_value_info(self, node_i0.output[0])
-            utils.pop_tensor_from_value_info(self, node_i1.output[0])
-            utils.pop_tensor_from_value_info(self, node_o0.input[0])
+            # When a tensor is used as model's output, it is not in the value_info.
+            # 'None' argument to handle the case.
+            self.value_info.pop(node_i0.output[0], None)
+            self.value_info.pop(node_i1.output[0], None)
+            self.value_info.pop(node_o0.input[0], None)
 
             node_i2 = None
             if len(node.input) == 3:
                 node_i2 = self.node_by_output[node.input[2]]
                 rm_nodes.append(node_i2)
 
-                utils.pop_tensor_from_value_info(self, node_i2.output[0])
+                self.value_info.pop(node_i2.output[0], None)
 
             rm_nodes.extend([node])
             new_nodes.append(
