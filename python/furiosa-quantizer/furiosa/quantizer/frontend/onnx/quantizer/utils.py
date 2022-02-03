@@ -61,7 +61,7 @@ def asymmetric_scale_zeropoint(rmin, rmax, activation_qtype):
     scale = np.float32((rmax - rmin) / 255 if rmin != rmax else 1)
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
-    scale = max(scale, 2 ** -149)
+    scale = max(scale, 2**-149)
     if activation_qtype == TensorProto.UINT8:
         initial_zero_point = (0 - rmin) / scale
         zero_point = np.uint8(round(max(0, min(255, initial_zero_point))))
@@ -189,7 +189,7 @@ def calculate_weight_quant_params(
 
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
-    scale = max(scale, 2 ** -149)
+    scale = max(scale, 2**-149)
     return zero_point, scale
 
 
