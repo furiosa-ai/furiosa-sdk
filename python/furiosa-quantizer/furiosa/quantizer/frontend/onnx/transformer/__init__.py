@@ -301,6 +301,9 @@ class ONNXTransformer:
         inits_to_add: Optional[List[onnx.TensorProto]] = None,
         vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
     ):
+        # Pattern should be linear, and if pattern's last node has multiple outputs, they should be specified in the transformed node.
+        assert len(nodes_to_remove[-1].output) == len(nodes_to_add[-1].output)
+
         # remove nodes after the last node with multiple output receiver(except for the last node).
         last_node_with_multiple_output_receiver = None
         for i, node in enumerate(reversed(nodes_to_remove)):
