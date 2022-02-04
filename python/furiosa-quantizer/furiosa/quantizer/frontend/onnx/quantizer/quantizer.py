@@ -175,7 +175,6 @@ class FuriosaONNXQuantizer:
                     node.input[idx] += '_' + str(self.count - 1)
 
             self._quant_node.update({node.output[0]: node})
-
         for output in self.model.graph.output:
             if not is_float_tensor(self.value_info[output.name]):
                 continue
@@ -185,8 +184,8 @@ class FuriosaONNXQuantizer:
 
             self.model.graph.value_info.append(output)
             output.name += '_dequantized'
-            if output.name + str(self.count - 1) in self._quant_node:
-                output.name += str(self.count - 1)
+            if output.name + '_' + str(self.count - 1) in self._quant_node:
+                output.name += '_' + str(self.count - 1)
             self._quant_value_info.pop(output.name)
 
         self.model = utils.rebuild_model(
@@ -781,16 +780,18 @@ class DFGImportable:
             node_o0 = self.node_by_input[node.output[0]]
             rm_nodes.extend([node_i0, node_i1, node_o0])
 
-            self.value_info.pop(node_i0.output[0])
-            self.value_info.pop(node_i1.output[0])
-            self.value_info.pop(node_o0.input[0])
+            # When a tensor is used as model's output, it is not in the value_info.
+            # 'None' argument to handle the case.
+            self.value_info.pop(node_i0.output[0], None)
+            self.value_info.pop(node_i1.output[0], None)
+            self.value_info.pop(node_o0.input[0], None)
 
             node_i2 = None
             if len(node.input) == 3:
                 node_i2 = self.node_by_output[node.input[2]]
                 rm_nodes.append(node_i2)
 
-                self.value_info.pop(node_i2.output[0])
+                self.value_info.pop(node_i2.output[0], None)
 
             rm_nodes.extend([node])
             new_nodes.append(
