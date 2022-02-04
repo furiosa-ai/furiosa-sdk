@@ -22,6 +22,8 @@ class ONNXTransformer:
         self.value_info_map = {vi.name: vi for vi in model.graph.value_info}
         self.graph_input_map = {inp.name: inp for inp in model.graph.input}
         self.graph_output_map = {out.name: out for out in model.graph.output}
+        self.check_runnable = True
+        self.remove_unused = False
 
         self.input_count_map = Counter()
         for node in model.graph.node:
@@ -72,7 +74,9 @@ class ONNXTransformer:
                 raise Exception(member)
 
         model = utils.rebuild_model(model, new_nodes)
-        check_model(model)
+        if self.remove_unused:
+            model = utils.remove_unused_operators(model)
+        check_model(model, self.check_runnable)
 
         return model
 
@@ -319,7 +323,6 @@ class ONNXTransformer:
             nodes_to_remove = nodes_to_remove[last_node_with_multiple_output_receiver + 1 :]
 
         self.pop_multiple_optimizer_map(nodes_to_remove)
-
         if nodes_to_add:
             self.update_multiple_optimizer_map(nodes_to_add, nodes_to_remove[0].name)
         if inits_to_add:

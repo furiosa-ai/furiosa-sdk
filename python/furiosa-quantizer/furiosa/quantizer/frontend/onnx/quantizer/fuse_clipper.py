@@ -14,7 +14,11 @@ class FuseClipper(Transformer):
             Pattern_5,
             Pattern_6,
         ]:
-            model = transformer(model).transform()
+            remove_unused = True if transformer in [Pattern_2, Pattern_4, Pattern_6] else False
+            transformer = transformer(model)
+            transformer.check_runnable = False
+            transformer.remove_unused = remove_unused
+            model = transformer.transform()
 
         return model
 
@@ -36,7 +40,7 @@ class ClipperFusion(ONNXTransformer):
         return top_node.input
 
     def make_nodes_to_add(self, matched_nodes):
-        *nodes, node, clip = matched_nodes
+        *nodes, node, _qlinear_1, _deqlinear, clip, qlinear_2 = matched_nodes
         assert clip.op_type in ("Clip", "Relu"), repr(clip)
         fused_node = self.make_node(
             node.op_type,
@@ -46,70 +50,89 @@ class ClipperFusion(ONNXTransformer):
             **{attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute},
         )
         nodes.append(fused_node)
+        nodes.append(qlinear_2)
         return nodes
 
 
 class Pattern_1(ClipperFusion):
     """
     transform
-        prev --> Conv --> Relu --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Relu --> QuantizeLinear --> next
     to
-        prev --> Conv --> next
+        prev --> Conv --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Conv', 'Relu']
+    pattern_to_match = ['Conv', 'QuantizeLinear', 'DequantizeLinear', 'Relu', 'QuantizeLinear']
 
 
 class Pattern_2(ClipperFusion):
     """
     transform
-        prev --> Conv --> Clip --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Clip --> QuantizeLinear --> next
     to
-        prev --> Conv --> next
+        prev --> Conv --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Conv', 'Clip']
+    pattern_to_match = ['Conv', 'QuantizeLinear', 'DequantizeLinear', 'Clip', 'QuantizeLinear']
 
 
 class Pattern_3(ClipperFusion):
     """
     transform
-        prev --> Add --> Relu --> next
+        prev --> Add --> QuantizeLinear --> DequantizeLinear --> Relu --> QuantizeLinear --> next
     to
-        prev --> Add --> next
+        prev --> Add --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Add', 'Relu']
+    pattern_to_match = ['Add', 'QuantizeLinear', 'DequantizeLinear', 'Relu', 'QuantizeLinear']
 
 
 class Pattern_4(ClipperFusion):
     """
     transform
-        prev --> Add --> Clip --> next
+        prev --> Add --> QuantizeLinear --> DequantizeLinear --> Clip --> QuantizeLinear --> next
     to
-        prev --> Add --> next
+        prev --> Add --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Add', 'Clip']
+    pattern_to_match = ['Add', 'QuantizeLinear', 'DequantizeLinear', 'Clip', 'QuantizeLinear']
 
 
 class Pattern_5(ClipperFusion):
     """
     transform
-        prev --> Conv --> Squeeze --> Relu --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Squeeze --> QuantizeLinear --> DequantizeLinear --> Relu --> QuantizeLinear --> next
     to
-        prev --> Conv --> Squeeze --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Squeeze --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Conv', 'Squeeze', 'Relu']
+    pattern_to_match = [
+        'Conv',
+        'QuantizeLinear',
+        'DequantizeLinear',
+        'Squeeze',
+        'QuantizeLinear',
+        'DequantizeLinear',
+        'Relu',
+        'QuantizeLinear',
+    ]
 
 
 class Pattern_6(ClipperFusion):
     """
     transform
-        prev --> Conv --> Squeeze --> Clip --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Squeeze --> QuantizeLinear --> DequantizeLinear --> Clip --> QuantizeLinear --> next
     to
-        prev --> Conv --> Squeeze --> next
+        prev --> Conv --> QuantizeLinear --> DequantizeLinear --> Squeeze --> QuantizeLinear --> next
     """
 
-    pattern_to_match = ['Conv', 'Squeeze', 'Clip']
+    pattern_to_match = [
+        'Conv',
+        'QuantizeLinear',
+        'DequantizeLinear',
+        'Squeeze',
+        'QuantizeLinear',
+        'DequantizeLinear',
+        'Clip',
+        'QuantizeLinear',
+    ]

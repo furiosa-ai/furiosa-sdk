@@ -1,7 +1,11 @@
 import torch
 import torch.nn as nn
 
+from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import FuseClipper
+from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
+from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
+from tests import torch_to_onnx
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -99,7 +103,11 @@ class UnitTestModel5(UnitTestModel4):
 
 class TestFuseClipper(TestTransformer):
     def _make_test_model(self, torch_model, input_shapes):
-        orig_model, trans_model = self.make_test_model(torch_model, FuseClipper(), input_shapes)
+        orig_model = torch_to_onnx(torch_model, input_shapes, torch.float32)
+        orig_model = PolishModel().transform(orig_model)
+        trans_model = post_training_quantization_with_random_calibration(
+            model=orig_model, per_channel=True, static=True, mode=QuantizationMode.DFG, num_data=1
+        )
         return orig_model, trans_model
 
     def test_case1(self):
@@ -110,7 +118,7 @@ class TestFuseClipper(TestTransformer):
         in_channel = 16
         out_channel = 8
 
-        op_types = ['Conv']
+        op_types = ['QuantizeLinear', 'QLinearConv', 'DequantizeLinear']
 
         orig_model, trans_model = self._make_test_model(
             UnitTestModel(in_channel, out_channel), input_shapes
@@ -126,7 +134,7 @@ class TestFuseClipper(TestTransformer):
         in_channel = 6
         out_channel = 9
 
-        op_types = ['Conv']
+        op_types = ['QuantizeLinear', 'QLinearConv', 'DequantizeLinear']
 
         orig_model, trans_model = self._make_test_model(
             UnitTestModel1(in_channel, out_channel), input_shapes
@@ -140,7 +148,14 @@ class TestFuseClipper(TestTransformer):
         """
         input_shapes = [(1, 3, 8, 8)]
 
-        op_types = ['Add']
+        op_types = [
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'DequantizeLinear',
+            'Add',
+            'QuantizeLinear',
+            'DequantizeLinear',
+        ]
 
         orig_model, trans_model = self._make_test_model(UnitTestModel2(), input_shapes)
         self.check_graph_node(trans_model, op_types)
@@ -152,7 +167,14 @@ class TestFuseClipper(TestTransformer):
         """
         input_shapes = [(1, 3, 8, 8)]
 
-        op_types = ['Add']
+        op_types = [
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'DequantizeLinear',
+            'Add',
+            'QuantizeLinear',
+            'DequantizeLinear',
+        ]
 
         orig_model, trans_model = self._make_test_model(UnitTestModel3(), input_shapes)
         self.check_graph_node(trans_model, op_types)
@@ -165,7 +187,20 @@ class TestFuseClipper(TestTransformer):
         num_channel = 32
         input_shapes = [(1, num_channel)]
 
-        op_types = ['Unsqueeze', 'Unsqueeze', 'Conv', 'Squeeze']
+        op_types = [
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'Unsqueeze',
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'Unsqueeze',
+            'QuantizeLinear',
+            'QLinearConv',
+            'DequantizeLinear',
+            'Squeeze',
+            'QuantizeLinear',
+            'DequantizeLinear',
+        ]
 
         orig_model, trans_model = self._make_test_model(UnitTestModel4(num_channel), input_shapes)
         self.check_graph_node(trans_model, op_types)
@@ -178,7 +213,20 @@ class TestFuseClipper(TestTransformer):
         num_channel = 32
         input_shapes = [(1, num_channel)]
 
-        op_types = ['Unsqueeze', 'Unsqueeze', 'Conv', 'Squeeze']
+        op_types = [
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'Unsqueeze',
+            'QuantizeLinear',
+            'DequantizeLinear',
+            'Unsqueeze',
+            'QuantizeLinear',
+            'QLinearConv',
+            'DequantizeLinear',
+            'Squeeze',
+            'QuantizeLinear',
+            'DequantizeLinear',
+        ]
 
         orig_model, trans_model = self._make_test_model(UnitTestModel5(num_channel), input_shapes)
         self.check_graph_node(trans_model, op_types)

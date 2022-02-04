@@ -1,3 +1,4 @@
+from collections import Counter, OrderedDict
 import logging
 
 import onnx
@@ -122,6 +123,33 @@ def rebuild_model(model, new_nodes, eliminate=True, renaming=True):
     if renaming:
         model = name_nodes(model)
     model.producer_name = __PRODUCER__
+    return model
+
+
+def remove_unused_operators(model):
+    operators_in_use = set()
+    producer_map = {node_output: node for node in model.graph.node for node_output in node.output}
+    name_to_node = OrderedDict({node.name: node for node in model.graph.node})
+    nodes_to_search = []
+    for output in model.graph.output:
+        if output.name in producer_map:
+            nodes_to_search.append(producer_map[output.name].name)
+
+    while len(nodes_to_search) > 0:
+        current_node = nodes_to_search[-1]
+        nodes_to_search.pop()
+        operators_in_use.add(current_node)
+        for input_tensor in name_to_node[current_node].input:
+            if input_tensor in producer_map:
+                if producer_map[input_tensor].name not in operators_in_use:
+                    nodes_to_search.append(producer_map[input_tensor].name)
+
+    for node in list(name_to_node):
+        if node not in operators_in_use:
+            del name_to_node[node]
+    model.graph.ClearField('node')
+    model.graph.node.extend(list(name_to_node.values()))
+    eliminate_unused_protos(model)
     return model
 
 
