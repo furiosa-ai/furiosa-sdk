@@ -26,8 +26,8 @@ class UnitTestModel(nn.Module):
         super(UnitTestModel, self).__init__()
         b, c, h, w = input_shape
 
-        channel_split = c // (blocksize ** 2)
-        assert channel_split * blocksize ** 2 == c
+        channel_split = c // (blocksize**2)
+        assert channel_split * blocksize**2 == c
 
         if mode == 'DCR':
             self.permute = [0, 3, 4, 1, 5, 2]
