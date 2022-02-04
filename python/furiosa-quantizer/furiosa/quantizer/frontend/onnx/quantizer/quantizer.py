@@ -296,8 +296,14 @@ class FuriosaONNXQuantizer:
                 continue
 
     def _quantize_pad_constant(self, node):
-        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-        mode = attrs.get("mode", b"constant")
+        mode = next(
+            (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name == "mode"
+            ),
+            b"constant",
+        )
 
         if mode != b'constant':
             return

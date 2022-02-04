@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from typing import List, Optional, Set
 
 import numpy as np
@@ -23,10 +23,10 @@ class ONNXTransformer:
         self.graph_input_map = {inp.name: inp for inp in model.graph.input}
         self.graph_output_map = {out.name: out for out in model.graph.output}
 
-        self.input_count_map = {}
+        self.input_count_map = Counter()
         for node in model.graph.node:
             for input in node.input:
-                self.input_count_map[input] = self.input_count_map.get(input, 0) + 1
+                self.input_count_map[input] += 1
 
     def transform(self):
         outputs = list(self.graph_output_map.keys())
@@ -309,10 +309,10 @@ class ONNXTransformer:
             for output in node.output:
                 if self.input_count_map[output] > 1:
                     last_node_with_multiple_output_receiver = len(nodes_to_remove) - 1 - i
-            if last_node_with_multiple_output_receiver != None:
+            if last_node_with_multiple_output_receiver is not None:
                 break
 
-        if last_node_with_multiple_output_receiver != None:
+        if last_node_with_multiple_output_receiver is not None:
             nodes_to_remove = nodes_to_remove[last_node_with_multiple_output_receiver + 1 :]
 
         self.pop_multiple_optimizer_map(nodes_to_remove)
