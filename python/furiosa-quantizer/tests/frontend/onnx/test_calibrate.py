@@ -6,7 +6,6 @@ import unittest
 import numpy as np
 import onnx
 import onnx.numpy_helper
-from torchvision import datasets
 
 import furiosa.quantizer.frontend.onnx.calibrate
 
@@ -50,6 +49,7 @@ class CalibrateTest(unittest.TestCase):
     def test_calibrate_2(self):
         current_dir = Path(__file__).resolve().parent
         model = onnx.load(current_dir / "mnist/model.onnx")
+        rng = np.random.default_rng()
         # https://github.com/onnx/models/tree/master/vision/classification/mnist#inference
         #
         # > # Input
@@ -61,10 +61,10 @@ class CalibrateTest(unittest.TestCase):
         # >
         # > Images are resized into (28x28) in grayscale, with a black background and a white
         # > foreground (the number should be in white). Color value is scaled to [0.0, 1.0].
-        fake_mnist = datasets.FakeData(size=8, image_size=(28, 28), num_classes=10)
+        fake_mnist = rng.integers(low=0, high=255, size=(8, 28, 28), dtype=np.uint8)
         dataset = [
             {"Input3": np.asarray(image, dtype=np.float32)[np.newaxis, np.newaxis, ...] / 255}
-            for image, _label in fake_mnist
+            for image in fake_mnist
         ]
         self.assertEqual(
             len(furiosa.quantizer.frontend.onnx.calibrate.calibrate(model, dataset)), 13
