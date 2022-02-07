@@ -22,6 +22,7 @@ class Pattern_1(ONNXTransformer):
              -------------------------------------------->
     to
         prev --> LpNormalization --> next
+    # TODO Check if Div has no initialzier
     """
 
     def pattern_matching(self, base_node):
@@ -62,3 +63,14 @@ class Pattern_1(ONNXTransformer):
             raise Exception()
 
         return {"axis": int(axes[0]), "p": int(p)}
+
+
+# TODO Implement Pattern_2 in case of unsimplified graph, containing Shape operator:
+# transform
+#   prev --> ReduceL2/ReduceL1 --> Clip --> Expand -->  Div --> next
+#        +                                +          +
+#        ------------------------> Shape ->
+#        +                                           +
+#        -------------------------------------------->
+# to
+#   prev --> LpNormalization --> next
