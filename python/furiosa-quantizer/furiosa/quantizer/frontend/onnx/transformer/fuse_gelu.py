@@ -38,13 +38,6 @@ class FuseGELU(Transformer):
             node.input[0]: node for node in model.graph.node if node.op_type == 'Gelu'
         }
 
-        value_info = {
-            vi.name: vi
-            for vi in list(model.graph.value_info)
-            + list(model.graph.input)
-            + list(model.graph.output)
-        }
-
         # nodes are not topologically sorted as a result of onnxruntime optimization
         sorted_nodes = []
         visited = 0
