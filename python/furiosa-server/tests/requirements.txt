@@ -3,5 +3,5 @@ grpcio-tools
 mypy
 mypy-protobuf
 pytest
-pytest-asyncio
+pytest-asyncio ~= 0.17.2
 types-PyYAML
