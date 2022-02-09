@@ -50,7 +50,7 @@ class ClipperElimination(ONNXTransformer, ABC):
         if not self.pattern_condition_checker(matched_nodes):
             return base_node.input
 
-        # cut out DQ(dqlinear)-clip-Q1(qlinear) in ...-op-Q-DQ-clip-Q1-(DQ1)
+        # cut out DQ(dqlinear)-clip-Q1(qlinear1) in ...-op-Q-DQ-clip-Q1-(DQ1)
         # connect op-Q with DQ1
         op, qlinear, dqlinear, clip, qlinear1 = matched_nodes[-5:]
 
@@ -60,7 +60,10 @@ class ClipperElimination(ONNXTransformer, ABC):
         return op.input
 
     def pattern_condition_checker(self, matched_nodes):
-        clip = matched_nodes[-2]
+        *_, _, qlinear, _, clip, _ = matched_nodes
+        return self.check_condition_1(clip) and self.check_condition_2(qlinear)
+
+    def check_condition_1(self, clip):
         assert clip.op_type in ("Clip", "Relu"), repr(clip)
         if clip.op_type == "Relu":
             return True
@@ -74,6 +77,24 @@ class ClipperElimination(ONNXTransformer, ABC):
             min_tensor = self.find_prev_node(self.find_prev_node(clip.input[1]).input[0]).input[0]
             max_tensor = self.find_prev_node(self.find_prev_node(clip.input[2]).input[0]).input[0]
             return min_tensor in self.initializer_map and max_tensor in self.initializer_map
+
+    def check_condition_2(self, qlinear):
+        """
+        We assume multiple dqlinears(DQs) might follow from qlinear(Q) like in ...-op-Q-DQ-clip-Q1-...
+                                                                                      +-DQ_1-clip-Q1_1-...
+                                                                                      +-      ...
+        Logic below checks the equality of qlinear1s(Q1s)' quantization parameters.
+        """
+        dqlinears = self.consumer_map[qlinear.output[0]]
+        scales = set()
+        zero_points = set()
+        for dqlinear in dqlinears:
+            clip = self.consumer_map[dqlinear.output[0]][0]
+            qlinear1 = self.consumer_map[clip.output[0]][0]
+            assert qlinear1.op_type == "QuantizeLinear", repr(qlinear1)
+            scales.add(float(self.get_initializer_array(qlinear1.input[1])))
+            zero_points.add(int(self.get_initializer_array(qlinear1.input[2])))
+        return len(scales) == len(zero_points) == 1
 
     def remove_clip_qdq(self, clip):
         assert clip.op_type in ("Clip", "Relu"), repr(clip)

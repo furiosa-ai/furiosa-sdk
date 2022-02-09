@@ -17,7 +17,7 @@ class ONNXTransformer:
             node_output: node for node in model.graph.node for node_output in node.output
         }
         self.consumer_map = defaultdict(list)
-        for node in model.graph.node:
+        for node in self.model.graph.node:
             for tensor in node.input:
                 self.consumer_map[tensor].append(node)
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
