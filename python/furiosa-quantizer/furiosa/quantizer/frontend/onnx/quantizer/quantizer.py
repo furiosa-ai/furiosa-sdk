@@ -25,7 +25,7 @@ from onnx.helper import ModelProto, make_node, make_tensor, make_tensor_value_in
 from onnx.mapping import TENSOR_TYPE_TO_NP_TYPE
 import tqdm
 
-from furiosa.quantizer.frontend.onnx.quantizer import fuse_clipper
+from furiosa.quantizer.frontend.onnx.quantizer import eliminate_clipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import (
     QuantizationMode,
     append_suffix,
@@ -193,8 +193,10 @@ class FuriosaONNXQuantizer:
             proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
         )
 
-        # apply fuse_clipper on QDQ graph
-        self.model = fuse_clipper.FuseClipper().transform(self.model)
+        # eliminate clippers like Relu, Clip into Conv, Add
+        # and replace the letters' output quantization parameters with the formers
+        # for marginal accuracy gain
+        self.model = eliminate_clipper.EliminateClipper().transform(self.model)
 
         if self.mode == QuantizationMode.DFG:
             self.model = DFGImportable(self.model, self.raw_data).transform()

@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import (
+from furiosa.quantizer.frontend.onnx.quantizer.eliminate_clipper import (
     Pattern_1,
     Pattern_2,
     Pattern_3,
@@ -11,7 +11,7 @@ from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import (
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class TestFuseClipper(TestTransformer):
+class TestEliminateClipper(TestTransformer):
     def test_case1(self):
         in_channel = 16
         input_shape = [2, in_channel, 4, 4]
