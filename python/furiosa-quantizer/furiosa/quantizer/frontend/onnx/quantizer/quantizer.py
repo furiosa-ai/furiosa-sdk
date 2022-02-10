@@ -37,6 +37,13 @@ from furiosa.quantizer.frontend.onnx.quantizer.utils import (
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
+transformers = [
+    # eliminate clippers like Relu, Clip into Conv, Add
+    # and replace the letters' output quantization parameters with the formers
+    # for marginal accuracy gain
+    eliminate_clipper.EliminateClipper().transform
+]
+
 
 class FuriosaONNXQuantizer:
     def __init__(
@@ -149,6 +156,19 @@ class FuriosaONNXQuantizer:
         self._quantize_weight()
 
     def build_quantized_model(self):
+        self.model = self.make_intermediate_representation()
+
+        for transform in transformers:
+            self.model = transform(self.model)
+
+        if self.mode == QuantizationMode.DFG:
+            self.model = DFGImportable(self.model, self.raw_data).transform()
+        elif self.mode == QuantizationMode.FAKE:
+            self.model = ONNXRuntimeExecutable(self.model, self.raw_data).transform()
+
+        return self.model
+
+    def make_intermediate_representation(self):
         self.count = 0
         for node in self.model.graph.node:
             # TODO tmp assumption: Original model with QuantizeLinear and DequantizeLinear is not acceptable.
@@ -192,18 +212,6 @@ class FuriosaONNXQuantizer:
             field='value_info',
             proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
         )
-
-        # eliminate clippers like Relu, Clip into Conv, Add
-        # and replace the letters' output quantization parameters with the formers
-        # for marginal accuracy gain
-        self.model = eliminate_clipper.EliminateClipper().transform(self.model)
-
-        if self.mode == QuantizationMode.DFG:
-            self.model = DFGImportable(self.model, self.raw_data).transform()
-        elif self.mode == QuantizationMode.FAKE:
-            self.model = ONNXRuntimeExecutable(self.model, self.raw_data).transform()
-        else:
-            raise Exception('Unsupported mode.')
 
         return self.model
 
