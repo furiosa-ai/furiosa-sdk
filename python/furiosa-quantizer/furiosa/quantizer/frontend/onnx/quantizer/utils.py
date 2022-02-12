@@ -142,7 +142,7 @@ def calculate_activation_quant_params(
 
 
 def calculate_weight_quant_params(
-    data: np.array, weight_qtype: TensorProto, name: str
+    data: np.ndarray, weight_qtype: TensorProto, name: str
 ) -> Tuple[int, float]:
     """
     :parameter data: data to quantize
