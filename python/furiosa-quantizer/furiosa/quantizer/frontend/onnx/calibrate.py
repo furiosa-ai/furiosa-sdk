@@ -118,19 +118,11 @@ def calibrate_with_random_data(
                     raise CalibrationError(
                         f"The static shape of tensor '{value_info.name}' must be provided"
                     )
-            if shape:
-                if value_info.type.tensor_type.elem_type == onnx.TensorProto.DataType.FLOAT:
-                    inputs[value_info.name] = rng.standard_normal(size=shape, dtype=np.float32)
-                else:
-                    raise NotImplementedError(
-                        onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
-                    )
+            if value_info.type.tensor_type.elem_type == onnx.TensorProto.DataType.FLOAT:
+                inputs[value_info.name] = rng.standard_normal(size=shape, dtype=np.float32)
             else:
-                if value_info.type.tensor_type.elem_type == onnx.TensorProto.DataType.FLOAT:
-                    inputs[value_info.name] = rng.standard_normal(dtype=np.float32)
-                else:
-                    raise NotImplementedError(
-                        onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
-                    )
+                raise NotImplementedError(
+                    onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
+                )
         calibrator.collect_data(CalibrationDataReaderForIterator(iter([inputs])))
     return calibrator.compute_range()
