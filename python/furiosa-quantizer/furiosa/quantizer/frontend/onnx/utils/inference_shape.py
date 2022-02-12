@@ -13,7 +13,7 @@ class InferenceShape:
     https://github.com/daquexian/onnx-simplifier
     """
 
-    def __init__(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def __init__(self, model: onnx.ModelProto) -> None:
         self.model = utils.rebuild_model(model, model.graph.node)
 
     def inference_shape(
