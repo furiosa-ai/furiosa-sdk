@@ -16,7 +16,7 @@ from tests import torch_to_onnx
 class TestTransformer(unittest.TestCase):
     @staticmethod
     def make_test_model(
-        torch_model: callable,
+        torch_model: torch.nn.Module,
         transformer: Union[Transformer, Type[ONNXTransformer]],
         input_shapes: List[Tuple[int, ...]],
         dtype: Optional[torch.dtype] = torch.float32,
