@@ -84,7 +84,7 @@ class ONNXTransformer:
         return make_tensor_value_info(name, elem_type, shape)
 
     def make_initializer_from_array(
-        self, array: np.array, name: Optional[str] = None
+        self, array: np.ndarray, name: Optional[str] = None
     ) -> onnx.TensorProto:
         return numpy_helper.from_array(array, name)
 

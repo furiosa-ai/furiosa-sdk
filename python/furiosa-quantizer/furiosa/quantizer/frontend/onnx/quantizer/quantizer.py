@@ -836,7 +836,7 @@ class DFGImportable:
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
@@ -957,7 +957,7 @@ class ONNXRuntimeExecutable(DFGImportable):
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
@@ -976,7 +976,7 @@ class ONNXRuntimeExecutable(DFGImportable):
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         quantized_data = self._quantize_data(data, scale, zero_point, axis)
         flattened = quantized_data.flatten()
         if self.raw_data:
