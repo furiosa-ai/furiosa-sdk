@@ -1,3 +1,4 @@
+import numpy as np
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -345,8 +346,9 @@ class Pattern_3(Pattern_1):
         prev --> Conv --> Add --> next
     to
         prev --> Conv --> next
-    if 1. Add has exactly one initializer
-       2. Add.initializer.ndim == 4 and (its batch_dim == 1 or == Add.input.shape[0])
+    if  1. len(Conv.input) == 2 or (len(Conv.input) == 3 and Conv.input[2] has initializer)
+        2. Add has only one initializer
+        3. Add's input with initializer is multidirectional broadcastable to (1, oC, 1, 1)
     """
 
     pattern_to_match = ['Conv', 'Add']
@@ -368,16 +370,28 @@ class Pattern_3(Pattern_1):
         return conv.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        _, add = nodes_to_check
-        return self.check_condition_1(add) and self.check_condition_2(add)
+        conv, add = nodes_to_check
+        return (
+            self.check_condition_1(conv)
+            and self.check_condition_2(add)
+            and self.check_condition_3(conv, add)
+        )
 
     def check_condition_1(self, node):
-        return sum(node_input in self.initializer_map for node_input in node.input) == 1
+        return len(node.input) == 2 or node.input[2] in self.initializer_map
 
     def check_condition_2(self, node):
-        array = self.get_initializer_array(self.get_init_node_input(node))
-        input_shape = self.get_value_info_shape(self.get_data_node_input(node))
-        return array.ndim == 4 and (array.shape[0] == 1 or array.shape[0] == input_shape[0])
+        return sum(node_input in self.initializer_map for node_input in node.input) == 1
+
+    def check_condition_3(self, conv, add):
+        bias_tensor_name = self.get_init_node_input(add)
+        bias_array = self.get_initializer_array(bias_tensor_name)
+        oC = self.get_value_info_shape(conv.output[0])[1]
+        try:
+            np.broadcast_to(bias_array, (1, oC, 1, 1))
+            return True
+        except ValueError:
+            return False
 
     def make_nodes(self, matched_nodes):
         conv, add = matched_nodes
@@ -394,7 +408,9 @@ class Pattern_3(Pattern_1):
     def make_initializers(self, matched_nodes):
         conv, add = matched_nodes
         bias_tensor_name = self.get_init_node_input(add)
-        bias_array = self.get_initializer_array(bias_tensor_name).flatten()
+        bias_array = self.get_initializer_array(bias_tensor_name)
+        oC = self.get_value_info_shape(conv.output[0])[1]
+        bias_array = np.broadcast_to(bias_array, (1, oC, 1, 1)).flatten()
         if len(conv.input) == 3:
             bias_array += self.get_initializer_array(conv.input[2]).flatten()
         return [self.make_initializer_from_array(bias_array, bias_tensor_name + '_fused')]
