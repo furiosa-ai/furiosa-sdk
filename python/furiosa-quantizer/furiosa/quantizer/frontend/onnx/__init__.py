@@ -123,7 +123,7 @@ def post_training_quantize(
 
     model = optimize_model(model)
     ranges = calibrate.calibrate(model, dataset)
-    return quantize(model, per_channel, True, quantizer.QuantizationMode.dfg, ranges)
+    return quantize(model, per_channel, True, quantizer.QuantizationMode.DFG, ranges)
 
 
 def post_training_quantization_with_random_calibration(
@@ -135,8 +135,6 @@ def post_training_quantization_with_random_calibration(
 ) -> onnx.ModelProto:
     if not static:
         raise Exception("Currently only supports static quantization.")
-    if mode not in [quantizer.QuantizationMode.dfg, quantizer.QuantizationMode.fake]:
-        raise Exception("Currently only supports QuantizationMode dfg or fake.")
 
     if _is_fully_quantized(model):
         return model

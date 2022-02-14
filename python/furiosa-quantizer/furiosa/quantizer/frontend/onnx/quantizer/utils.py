@@ -1,3 +1,4 @@
+from enum import Enum
 import logging
 from typing import Dict, List, Tuple
 
@@ -12,11 +13,11 @@ logging.basicConfig(level=logging.INFO)
 __PRODUCER__ = "jason_furiosa"
 
 
-class QuantizationMode:
-    # dfg: Quantize graph to DFG(Quantized graph) export
-    dfg = 0
-    # fake: Evaluate quantized graph replacing QConvLinear with Conv2d/MatMul &
-    fake = 1
+class QuantizationMode(Enum):
+    # DFG: Quantize graph to DFG(Quantized graph) export
+    DFG = 0
+    # FAKE: Evaluate quantized graph replacing QConvLinear with Conv2d/MatMul &
+    FAKE = 1
 
 
 def get_qrange(qtype):
