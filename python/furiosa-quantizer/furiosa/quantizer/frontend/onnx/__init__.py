@@ -152,7 +152,9 @@ def post_training_quantization_with_random_calibration(
 
 def parse_onnx_graph(
     model: onnx.ModelProto,
-) -> Tuple[Dict[str, onnx.NodeProto], Dict[str, List[onnx.NodeProto]]]:
+) -> Tuple[
+    Dict[str, onnx.ValueInfoProto], Dict[str, onnx.NodeProto], Dict[str, List[onnx.NodeProto]]
+]:
     model = onnx.shape_inference.infer_shapes(model)
 
     value_infos = {
