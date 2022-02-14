@@ -90,7 +90,7 @@ class TestTransformer(unittest.TestCase):
             self.assertAlmostEqual(a, b, tol, msg=msg)
 
 
-def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.array]) -> List[List[float]]:
+def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> List[List[float]]:
     sess = ort.InferenceSession(model.SerializeToString())
     input_names = [inp.name for inp in sess.get_inputs()]
     output_names = [out.name for out in sess.get_outputs()]
