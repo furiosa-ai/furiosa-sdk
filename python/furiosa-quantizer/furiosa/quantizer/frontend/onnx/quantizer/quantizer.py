@@ -75,12 +75,11 @@ class FuriosaONNXQuantizer:
         self.dynamic_ranges = dynamic_ranges
 
         # set quantization option guided by mode
-        self.quant_mode = QuantizationMode()
         self.mode = mode
         self.activation_qtype = self.weight_qtype = onnx.TensorProto.INT8
 
         # use uint8 dtype for activation in fake_quant mode
-        if mode == QuantizationMode.fake:
+        if mode == QuantizationMode.FAKE:
             self.activation_qtype = onnx.TensorProto.UINT8
 
         # set model a proto to use
@@ -201,9 +200,9 @@ class FuriosaONNXQuantizer:
             proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
         )
 
-        if self.mode == QuantizationMode.dfg:
+        if self.mode == QuantizationMode.DFG:
             self.model = DFGImportable(self.model, self.raw_data).transform()
-        elif self.mode == QuantizationMode.fake:
+        elif self.mode == QuantizationMode.FAKE:
             self.model = ONNXRuntimeExecutable(self.model, self.raw_data).transform()
         else:
             raise Exception('Unsupported mode.')
@@ -242,7 +241,7 @@ class FuriosaONNXQuantizer:
 
     def check_model(self):
         check_runnable = True
-        if self.mode == self.quant_mode.dfg:
+        if self.mode == QuantizationMode.DFG:
             # pass runnable check, as dfg mode does not assume to run on onnxruntime
             check_runnable = False
         check_model(self.model, check_runnable)
@@ -258,7 +257,7 @@ class FuriosaONNXQuantizer:
         self._check_quant_initializer()
         self._check_quant_value_info()
 
-        if self.mode == QuantizationMode.dfg:
+        if self.mode == QuantizationMode.DFG:
             self._check_quant_param()
 
     def _quantize_activation(self):
