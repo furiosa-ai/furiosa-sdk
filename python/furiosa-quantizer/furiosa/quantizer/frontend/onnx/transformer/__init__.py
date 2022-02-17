@@ -23,7 +23,6 @@ class ONNXTransformer:
         self.graph_input_map = {inp.name: inp for inp in model.graph.input}
         self.graph_output_map = {out.name: out for out in model.graph.output}
         self.check_runnable = True
-        self.remove_unused = False
 
         self.input_count_map = Counter()
         for node in model.graph.node:
@@ -74,8 +73,6 @@ class ONNXTransformer:
                 raise Exception(member)
 
         model = utils.rebuild_model(model, new_nodes)
-        if self.remove_unused:
-            model = utils.remove_unused_operators(model)
         check_model(model, self.check_runnable)
 
         return model

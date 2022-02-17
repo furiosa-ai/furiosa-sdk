@@ -14,10 +14,8 @@ class FuseClipper(Transformer):
             Pattern_5,
             Pattern_6,
         ]:
-            remove_unused = True if transformer in [Pattern_2, Pattern_4, Pattern_6] else False
             transformer = transformer(model)
             transformer.check_runnable = False
-            transformer.remove_unused = remove_unused
             model = transformer.transform()
 
         return model
@@ -36,11 +34,21 @@ class ClipperFusion(ONNXTransformer):
 
         top_node = matched_nodes[0]
         self.transform_to_fuse(matched_nodes, nodes_to_add=self.make_nodes_to_add(matched_nodes))
+        self.remove_clip_qdq(matched_nodes[-2])
 
         return top_node.input
 
+    def remove_clip_qdq(self, clip):
+        prev_nodes = []
+        for input in clip.input:
+            dqlinear = self.traverse_prev_node(input, ["DequantizeLinear"])
+            qlinear = self.traverse_prev_node(dqlinear.input[0], ["QuantizeLinear"])
+            prev_nodes.extend([dqlinear, qlinear])
+
+        self.pop_multiple_optimizer_map(prev_nodes)
+
     def make_nodes_to_add(self, matched_nodes):
-        *nodes, node, _qlinear_1, _deqlinear, clip, qlinear_2 = matched_nodes
+        *nodes, node, _, _, clip, qlinear_2 = matched_nodes
         assert clip.op_type in ("Clip", "Relu"), repr(clip)
         fused_node = self.make_node(
             node.op_type,
