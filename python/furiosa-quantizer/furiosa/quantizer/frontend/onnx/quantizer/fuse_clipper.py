@@ -15,6 +15,10 @@ class FuseClipper(Transformer):
             Pattern_6,
         ]:
             transformer = transformer(model)
+            # FuseClipper().transform() is called on QDQ graph.
+            # QDQ graph will apply QuantizeLinear - DequantizeLinear to bias of Conv operators.
+            # bias of QLinearConv operator should be i32, so QDQ graph will have i32 quantization information for bias.
+            # However, QuantizeLinear operator of onnx are only defined on i8 quantization parmeter, so temporarily, QDQ graph is not valid.
             transformer.check_runnable = False
             model = transformer.transform()
 
