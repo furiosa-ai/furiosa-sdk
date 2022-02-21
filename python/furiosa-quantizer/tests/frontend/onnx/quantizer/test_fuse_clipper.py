@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
-from furiosa.quantizer.frontend.onnx.quantizer.fuse_clipper import FuseClipper
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from tests import torch_to_onnx
