@@ -327,7 +327,6 @@ class FuriosaONNXQuantizer:
     def _quantize_clip_minmax(self, node):
         s = numpy_helper.to_array(self._get_quant_param(node.input[0], '_scale'))
         zp = numpy_helper.to_array(self._get_quant_param(node.input[0], '_zero_point'))
-        assert len(node.input) == 3
 
         for idx, input in enumerate(node.input):
             if input not in self.initializer.keys():
