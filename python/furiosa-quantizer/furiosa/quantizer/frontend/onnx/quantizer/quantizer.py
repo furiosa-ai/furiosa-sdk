@@ -133,9 +133,6 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
-        # pre-optimization
-        self.pre_optimize()
-
         # quantize weight and activation
         self.quantize_model()
 
@@ -146,10 +143,6 @@ class FuriosaONNXQuantizer:
         self.check_model()
 
         return self.model
-
-    def pre_optimize(self):
-        # fuse clippers like Relu, Clip into Conv, Add
-        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
     def quantize_model(self):
         self._quantize_activation()
@@ -199,6 +192,9 @@ class FuriosaONNXQuantizer:
             field='value_info',
             proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
         )
+
+        # apply fuse_clipper on QDQ graph
+        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
         if self.mode == QuantizationMode.DFG:
             self.model = DFGImportable(self.model, self.raw_data).transform()
@@ -331,7 +327,6 @@ class FuriosaONNXQuantizer:
     def _quantize_clip_minmax(self, node):
         s = numpy_helper.to_array(self._get_quant_param(node.input[0], '_scale'))
         zp = numpy_helper.to_array(self._get_quant_param(node.input[0], '_zero_point'))
-        assert len(node.input) == 3
 
         for idx, input in enumerate(node.input):
             if input not in self.initializer.keys():
