@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+import numpy as np
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -55,6 +56,7 @@ class ClipperElimination(ONNXTransformer, ABC):
         op, qlinear, dqlinear, clip, qlinear1 = matched_nodes[-5:]
 
         self.transform_to_eliminate([dqlinear, clip, qlinear1], qlinear.output[0])
+        self.replace_quant_params(qlinear, qlinear1)
         self.remove_clip_qdq(clip)
 
         return op.input
@@ -105,6 +107,22 @@ class ClipperElimination(ONNXTransformer, ABC):
             if qlinear.input[0] in self.initializer_map:
                 self.pop_single_optimizer_map(dqlinear)
                 self.pop_single_optimizer_map(qlinear)
+
+    def replace_quant_params(self, qlinear, qlinear1):
+        assert qlinear.op_type == "QuantizeLinear", repr(qlinear)
+        assert qlinear1.op_type == "QuantizeLinear", repr(qlinear1)
+
+        # replace qlinear's quant params with qlinear1's
+        for idx in range(1, 3):
+            old_tensor = qlinear.input[idx]
+            new_tensor = qlinear1.input[idx]
+            if np.array_equal(
+                self.get_initializer_array(old_tensor), self.get_initializer_array(new_tensor)
+            ):
+                # if replacement already happened, then skip.
+                continue
+            self.initializer_map.pop(old_tensor)
+            qlinear.input[idx] = new_tensor
 
 
 class Pattern_1(ClipperElimination):
