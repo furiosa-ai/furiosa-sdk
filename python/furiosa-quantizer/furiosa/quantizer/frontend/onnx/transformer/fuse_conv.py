@@ -358,7 +358,7 @@ class Pattern_2(ONNXTransformer):
         return new_vis
 
 
-class Pattern_3(Pattern_1):
+class Pattern_3(ONNXTransformer):
     """
     transform
         prev --> Conv --> Add --> next
@@ -371,7 +371,7 @@ class Pattern_3(Pattern_1):
 
     pattern_to_match = ['Conv', 'Add']
 
-    def pattern_matching(self, base_node):
+    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -381,13 +381,13 @@ class Pattern_3(Pattern_1):
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_nodes(matched_nodes),
-            inits_to_add=self.make_initializers(matched_nodes),
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
         )
         conv = matched_nodes[0]
         return conv.input
 
-    def pattern_condition_checker(self, nodes_to_check):
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
         conv, add = nodes_to_check
         return (
             self.check_condition_1(conv)
@@ -395,23 +395,20 @@ class Pattern_3(Pattern_1):
             and self.check_condition_3(conv, add)
         )
 
-    def check_condition_1(self, node):
+    def check_condition_1(self, node: onnx.NodeProto) -> bool:
         return len(node.input) == 2 or node.input[2] in self.initializer_map
 
-    def check_condition_2(self, node):
+    def check_condition_2(self, node: onnx.NodeProto) -> bool:
         return sum(node_input in self.initializer_map for node_input in node.input) == 1
 
-    def check_condition_3(self, conv, add):
-        bias_tensor_name = self.get_init_node_input(add)
-        bias_array = self.get_initializer_array(bias_tensor_name)
-        oC = self.get_value_info_shape(conv.output[0])[1]
-        try:
-            np.broadcast_to(bias_array, (1, oC, 1, 1))
-            return True
-        except ValueError:
-            return False
+    def check_condition_3(self, node: onnx.NodeProto, node_1: onnx.NodeProto) -> bool:
+        bias_tensor = self.get_init_node_input(node_1)
+        bias_arr = self.get_initializer_array(bias_tensor)
+        oC = self.get_value_info_shape(node.output[0])[1]
 
-    def make_nodes(self, matched_nodes):
+        return _is_np_broadcastable(bias_arr, (1, oC, 1, 1))
+
+    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         conv, add = matched_nodes
         return [
             self.make_node(
@@ -423,7 +420,7 @@ class Pattern_3(Pattern_1):
             )
         ]
 
-    def make_initializers(self, matched_nodes):
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         conv, add = matched_nodes
         bias_tensor_name = self.get_init_node_input(add)
         bias_array = self.get_initializer_array(bias_tensor_name)
