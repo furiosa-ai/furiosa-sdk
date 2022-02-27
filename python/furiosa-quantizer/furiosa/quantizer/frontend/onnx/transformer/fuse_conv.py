@@ -1,4 +1,4 @@
-from typing import Iterable, List, Sequence
+from typing import AbstractSet, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import onnx
@@ -33,6 +33,50 @@ def _matmul_weight_transform(weight: np.ndarray) -> np.ndarray:
     c, oC = weight.shape
     new_w_arr = weight.transpose().reshape(oC, c, 1, 1)
     return new_w_arr
+
+
+def _gemm_weight_transfrom(weight: np.ndarray, attrs: Dict) -> np.ndarray:
+    if attrs['transB'] != 0:
+        weight = weight.transpose()
+    return _matmul_weight_transform(weight)
+
+
+def _get_gemm_inputs(
+    node: onnx.NodeProto, init_keys: AbstractSet[str]
+) -> Tuple[str, str, Optional[str]]:
+    assert node.op_type == "Gemm", repr(node)
+
+    for node_input in node.input[:2]:
+        if node_input in init_keys:
+            weight_tensor = node_input
+        else:
+            input_tensor = node_input
+
+    bias_tensor = node.input[2] if len(node.input) == 3 else None
+
+    return input_tensor, weight_tensor, bias_tensor
+
+
+def _get_input_index(input_tensor: str, node: onnx.NodeProto) -> int:
+    return list(node.input).index(input_tensor)
+
+
+def _needs_gemm_transpose(input_idx: int, attrs: Dict) -> bool:
+    assert input_idx in (0, 1)
+    return attrs['transA' if input_idx == 0 else 'transB'] != 0
+
+
+def _get_gemm_attrs(node: onnx.NodeProto) -> Dict:
+    assert node.op_type == "Gemm", repr(node)
+
+    attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
+
+    return {
+        'alpha': attrs.get('alpha', 1.0),
+        'beta': attrs.get('beta', 1.0),
+        'transA': attrs.get('transA', 0),
+        'transB': attrs.get('transB', 0),
+    }
 
 
 class Pattern_1(ONNXTransformer):
@@ -166,33 +210,30 @@ class Pattern_2(ONNXTransformer):
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
     if 1. Gemm.B must be defined in initializer whereas Gemm.A must not
-       2. if Gemm.C is defined, Gemm.C must be an initializer and Gemm.C.ndim <=2, especially, Gemm.C.shape[0] == 1 for Gemm.C.ndim == 2
+       2. if Gemm.C is defined, Gemm.C must be an initializer and multidirectional broadcastable to (1, oC)
        3. all of Gemm.input must have onnx.TensorProto.FLOAT dtype
     """
 
     pattern_to_match = ['Gemm']
 
-    def pattern_matching(self, base_node):
-        inputs = base_node.input
-
+    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
-        top_node = matched_nodes[0]
+            return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[*self.make_nodes(**self.get_new_node_args(matched_nodes))],
-            inits_to_add=[*self.make_initializers(**self.get_new_init_args(matched_nodes))],
-            vis_to_add=[*self.make_value_infos(**self.get_new_vi_args(matched_nodes))],
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
+            vis_to_add=self.make_new_vi(matched_nodes),
         )
-        return top_node.input
+        gemm = matched_nodes[0]
+        return gemm.input
 
-    def pattern_condition_checker(self, nodes_to_check):
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
         (gemm,) = nodes_to_check
         return (
             self.check_condition_1(gemm)
@@ -200,159 +241,121 @@ class Pattern_2(ONNXTransformer):
             and self.check_condition_3(gemm)
         )
 
-    def check_condition_1(self, node):
+    def check_condition_1(self, node: onnx.NodeProto) -> bool:
         return node.input[0] not in self.initializer_map and node.input[1] in self.initializer_map
 
-    def check_condition_2(self, node):
+    def check_condition_2(self, node: onnx.NodeProto) -> bool:
         if len(node.input) == 3:
             if node.input[2] in self.initializer_map:
                 array = self.get_initializer_array(node.input[2])
-                return array.ndim == 2 and array.shape[0] == 1 or array.ndim == 1
+                oC = self.get_value_info_shape(node.output[0])[1]
+
+                return _is_np_broadcastable(array, (1, oC))
             # returns False since Gemm.C has no initializer to be fused
             return False
         # always returns True if Gemm.C is not defined.
         return True
 
-    def check_condition_3(self, node):
+    def check_condition_3(self, node: onnx.NodeProto) -> bool:
         return all(
             self.get_value_info_dtype(tensor) == onnx.TensorProto.FLOAT for tensor in node.input
         )
 
-    def get_new_node_args(self, matched_nodes):
-        args = {}
-        args.update(self.get_new_vi_args(matched_nodes))
-        args.update(self.get_new_init_args(matched_nodes))
-        return args
-
-    def get_new_init_args(self, matched_nodes):
+    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         (gemm,) = matched_nodes
-        return {
-            'weight_tensor_name': gemm.input[1],
-            'bias_tensor_name': (gemm.input[2] if len(gemm.input) == 3 else None),
-            **self.get_attrs(gemm),
-        }
+        input_tensor, weight_tensor, bias_tensor = _get_gemm_inputs(gemm, set(self.initializer_map))
+        attrs = _get_gemm_attrs(gemm)
 
-    def get_new_vi_args(self, matched_nodes):
-        (gemm,) = matched_nodes
-        return {
-            'input_tensor_name': self.get_data_node_input(gemm),
-            'output_tensor_name': gemm.output[0],
-            'attrs': self.get_attrs(gemm),
-        }
-
-    def make_nodes(
-        self,
-        input_tensor_name,
-        output_tensor_name,
-        weight_tensor_name,
-        bias_tensor_name=None,
-        **kwargs,
-    ):
         new_nodes = []
-        unsqueeze_node_input = input_tensor_name
-        if self.need_transpose(input_tensor_name, kwargs):
-            unsqueeze_node_input = input_tensor_name + '_transposed'
-            transpose_node = self.make_node(
+        unsqueeze_input = input_tensor
+        input_idx = _get_input_index(input_tensor, gemm)
+        if _needs_gemm_transpose(input_idx, attrs):
+            unsqueeze_input += '_transposed'
+            transpose = self.make_node(
                 'Transpose',
-                inputs=[input_tensor_name],
-                outputs=[unsqueeze_node_input],
-                name=output_tensor_name + '_0',
+                inputs=[input_tensor],
+                outputs=[unsqueeze_input],
+                name=gemm.output[0] + '_0',
             )
-            new_nodes.append(transpose_node)
+            new_nodes.append(transpose)
 
-        unsqueeze_node = self.make_node(
+        unsqueeze = self.make_node(
             'Unsqueeze',
-            inputs=[unsqueeze_node_input],
-            outputs=[input_tensor_name + '_unsqueezed'],
-            name=output_tensor_name + '_1',
+            inputs=[unsqueeze_input],
+            outputs=[gemm.output[0] + '_unsqueezed'],
+            name=gemm.output[0] + '_1',
             axes=[2, 3],
         )
 
-        conv_inputs = [unsqueeze_node.output[0], weight_tensor_name + '_fused']
-        if bias_tensor_name is not None:
-            conv_inputs.append(bias_tensor_name + '_fused')
-
-        conv_node = self.make_node(
+        conv_inputs = [unsqueeze.output[0], weight_tensor + '_fused']
+        if bias_tensor is not None:
+            conv_inputs.append(bias_tensor + '_fused')
+        conv = self.make_node(
             'Conv',
-            conv_inputs,
-            outputs=[input_tensor_name + '_fused'],
-            name=output_tensor_name + '_2',
+            inputs=conv_inputs,
+            outputs=[gemm.output[0] + '_fused'],
+            name=gemm.output[0] + '_2',
         )
 
-        squeeze_node = self.make_node(
+        squeeze = self.make_node(
             'Squeeze',
-            inputs=[conv_node.output[0]],
-            outputs=[output_tensor_name],
-            name=output_tensor_name + '_3',
+            inputs=[conv.output[0]],
+            outputs=[gemm.output[0]],
+            name=gemm.output[0] + '_3',
             axes=[2, 3],
         )
 
-        new_nodes.extend([unsqueeze_node, conv_node, squeeze_node])
+        new_nodes.extend([unsqueeze, conv, squeeze])
         return new_nodes
 
-    def make_initializers(self, weight_tensor_name, bias_tensor_name=None, **kwargs):
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        (gemm,) = matched_nodes
+        _, weight_tensor, bias_tensor = _get_gemm_inputs(gemm, set(self.initializer_map))
+        attrs = _get_gemm_attrs(gemm)
+
         new_inits = []
-        weight_array = self.get_initializer_array(weight_tensor_name) * kwargs['alpha']
+        w_arr = self.get_initializer_array(weight_tensor) * attrs['alpha']
+        new_w_arr = _gemm_weight_transfrom(w_arr, attrs)
+        new_w_init = self.make_initializer_from_array(new_w_arr, weight_tensor + '_fused')
+        new_inits.append(new_w_init)
 
-        transpose_conv_weight = not kwargs['transB']
-        new_weight_array = self.weight_transformation(weight_array, transpose_conv_weight)
-        new_inits.append(
-            self.make_initializer_from_array(new_weight_array, weight_tensor_name + '_fused')
-        )
-
-        if bias_tensor_name is not None:
-            bias_array = self.get_initializer_array(bias_tensor_name) * kwargs['beta']
-            new_inits.append(
-                self.make_initializer_from_array(bias_array, bias_tensor_name + '_fused')
-            )
+        if bias_tensor:
+            b_arr = self.get_initializer_array(bias_tensor)
+            oC = self.get_value_info_shape(gemm.output[0])[1]
+            new_b_arr = np.broadcast_to(b_arr, (1, oC)).flatten() * attrs['beta']
+            new_b_init = self.make_initializer_from_array(new_b_arr, bias_tensor + '_fused')
+            new_inits.append(new_b_init)
 
         return new_inits
 
-    def make_value_infos(self, input_tensor_name, output_tensor_name, attrs):
+    def make_new_vi(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
+        (gemm,) = matched_nodes
+        input_tensor, _, _ = _get_gemm_inputs(gemm, set(self.initializer_map))
+
         new_vis = []
-        if self.need_transpose(input_tensor_name, attrs):
+        attrs = _get_gemm_attrs(gemm)
+        input_idx = _get_input_index(input_tensor, gemm)
+        if _needs_gemm_transpose(input_idx, attrs):
             transpose_output_vi = self.make_tensor_value_info(
-                input_tensor_name + '_transposed',
+                input_tensor + '_transposed',
                 onnx.TensorProto.FLOAT,
-                self.get_value_info_shape(input_tensor_name)[::-1],
+                self.get_value_info_shape(input_tensor)[::-1],
             )
             new_vis.append(transpose_output_vi)
 
         conv_input_vi = self.make_tensor_value_info(
-            input_tensor_name + '_unsqueezed',
+            gemm.output[0] + '_unsqueezed',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(input_tensor_name) + [1, 1],
+            self.get_value_info_shape(input_tensor) + [1, 1],
         )
 
         conv_output_vi = self.make_tensor_value_info(
-            input_tensor_name + '_fused',
+            gemm.output[0] + '_fused',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(output_tensor_name) + [1, 1],
+            self.get_value_info_shape(gemm.output[0]) + [1, 1],
         )
         new_vis.extend([conv_input_vi, conv_output_vi])
         return new_vis
-
-    def weight_transformation(self, weight_array, need_transpose):
-        if need_transpose:
-            weight_array = weight_array.transpose()
-
-        n, c = weight_array.shape
-
-        return weight_array.reshape(n, c, 1, 1)
-
-    def get_attrs(self, node):
-        attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-        return {
-            'alpha': attrs.get('alpha', 1.0),
-            'beta': attrs.get('beta', 1.0),
-            'transA': attrs.get('transA', 0),
-            'transB': attrs.get('transB', 0),
-        }
-
-    def need_transpose(self, input_tensor_name, attrs):
-        input_idx = self.get_node_input_idx(input_tensor_name)
-        assert input_idx in [0, 1]
-        return attrs['transA' if input_idx == 0 else 'transB']
 
 
 class Pattern_3(Pattern_1):

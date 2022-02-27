@@ -294,3 +294,37 @@ class TestFuseConv(TestTransformer):
         self.check_graph_node(trans_model, op_types=['MatMul', 'Add'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
+
+    def test_case16(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {"w": (np.float32, [8, 6]), "b": (np.float32, [1])},
+            "node": [
+                ("Gemm", ["x", "w", "b"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case17(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {"w": (np.float32, [8, 6]), "b": (np.float32, [4, 6])},
+            "node": [
+                ("Gemm", ["x", "w", "b"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['Gemm'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
