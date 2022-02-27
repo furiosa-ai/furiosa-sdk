@@ -161,7 +161,7 @@ class Pattern_1(ONNXTransformer):
         return [conv_input_vi, conv_output_vi]
 
 
-class Pattern_2(Pattern_1):
+class Pattern_2(ONNXTransformer):
     """
     transform
         prev --> Gemm --> next
@@ -173,6 +173,26 @@ class Pattern_2(Pattern_1):
     """
 
     pattern_to_match = ['Gemm']
+
+    def pattern_matching(self, base_node):
+        inputs = base_node.input
+
+        matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
+        if not matched_nodes:
+            return inputs
+
+        if not self.pattern_condition_checker(matched_nodes):
+            return inputs
+
+        top_node = matched_nodes[0]
+
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=[*self.make_nodes(**self.get_new_node_args(matched_nodes))],
+            inits_to_add=[*self.make_initializers(**self.get_new_init_args(matched_nodes))],
+            vis_to_add=[*self.make_value_infos(**self.get_new_vi_args(matched_nodes))],
+        )
+        return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
         (gemm,) = nodes_to_check
@@ -199,6 +219,14 @@ class Pattern_2(Pattern_1):
         return all(
             self.get_value_info_dtype(tensor) == onnx.TensorProto.FLOAT for tensor in node.input
         )
+
+    def get_new_node_args(self, matched_nodes):
+        args = dict()
+
+        args.update(self.get_new_vi_args(matched_nodes))
+        args.update(self.get_new_init_args(matched_nodes))
+
+        return args
 
     def get_new_init_args(self, matched_nodes):
         (gemm,) = matched_nodes
