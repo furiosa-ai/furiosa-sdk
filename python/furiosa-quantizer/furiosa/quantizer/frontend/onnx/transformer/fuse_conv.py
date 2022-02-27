@@ -1,3 +1,5 @@
+from typing import Iterable, List, Sequence
+
 import numpy as np
 import onnx
 
@@ -19,22 +21,36 @@ class FuseConv(Transformer):
         return model
 
 
+def _is_np_broadcastable(array: np.ndarray, to_shape: Sequence[int]) -> bool:
+    try:
+        np.broadcast_to(array, to_shape)
+        return True
+    except ValueError:
+        return False
+
+
+def _matmul_weight_transform(weight: np.ndarray) -> np.ndarray:
+    c, oC = weight.shape
+    new_w_arr = weight.transpose().reshape(oC, c, 1, 1)
+    return new_w_arr
+
+
 class Pattern_1(ONNXTransformer):
     """
     transform
         prev --> MatMul --> Add --> next
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
+
     if 1. MatMul.ndim == 2
        2. MatMul must have exactly one initializer
        3. Add must have exactly one initializer
-       4. Add initializer.ndim <= 2
-          if Add initializer.ndim == 2, its batch_dim == 1
+       4. Add's input with initializer is multidirectional broadcastable to (1, oC)
     """
 
     pattern_to_match = ['MatMul', 'Add']
 
-    def pattern_matching(self, base_node):
+    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -44,60 +60,47 @@ class Pattern_1(ONNXTransformer):
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_nodes(
-                **self.get_new_vi_args(matched_nodes), **self.get_new_init_args(matched_nodes)
-            ),
-            inits_to_add=self.make_initializers(**self.get_new_init_args(matched_nodes)),
-            vis_to_add=self.make_value_infos(**self.get_new_vi_args(matched_nodes)),
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
+            vis_to_add=self.make_new_vi(matched_nodes),
         )
 
-        top_node = matched_nodes[0]
-        return top_node.input
+        matmul = matched_nodes[0]
+        return matmul.input
 
-    def pattern_condition_checker(self, nodes_to_check):
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
         matmul, add = nodes_to_check
-
         return (
-            self.check_condition_1(matmul.output[0])
+            self.check_condition_1(matmul)
             and self.check_condition_2(matmul)
             and self.check_condition_2(add)
-            and self.check_condition_3(add)
+            and self.check_condition_3(matmul, add)
         )
 
-    def check_condition_1(self, tensor_name):
-        return len(self.get_value_info_shape(tensor_name)) == 2
+    def check_condition_1(self, node: onnx.NodeProto) -> bool:
+        return len(self.get_value_info_shape(node.output[0])) == 2
 
-    def check_condition_2(self, node):
-        return (node.input[0] in self.initializer_map) != (node.input[1] in self.initializer_map)
+    def check_condition_2(self, node: onnx.NodeProto) -> bool:
+        return sum(node_input in self.initializer_map for node_input in node.input) == 1
 
-    def check_condition_3(self, node):
-        array = self.get_initializer_array(self.get_init_node_input(node))
-        return (array.ndim == 2 and array.shape[0] == 1) or array.ndim == 1
+    def check_condition_3(self, node: onnx.NodeProto, node_1: onnx.NodeProto) -> bool:
+        bias_tensor = self.get_init_node_input(node_1)
+        bias_arr = self.get_initializer_array(bias_tensor)
+        oC = self.get_value_info_shape(node.output[0])[1]
 
-    def get_new_vi_args(self, matched_nodes):
+        return _is_np_broadcastable(bias_arr, (1, oC))
+
+    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         matmul, add = matched_nodes
+        matmul_data_tensor = self.get_data_node_input(matmul)
+        matmul_init_tensor = self.get_init_node_input(matmul)
+        add_init_tensor = self.get_init_node_input(add)
 
-        return {
-            'input_tensor_name': self.get_data_node_input(matmul),
-            'output_tensor_name': add.output[0],
-        }
-
-    def get_new_init_args(self, matched_nodes):
-        matmul, add = matched_nodes
-
-        return {
-            'weight_tensor_name': self.get_init_node_input(matmul),
-            'bias_tensor_name': self.get_init_node_input(add),
-        }
-
-    def make_nodes(
-        self, input_tensor_name, output_tensor_name, weight_tensor_name, bias_tensor_name
-    ):
         unsqueeze = self.make_node(
             'Unsqueeze',
-            inputs=[input_tensor_name],
-            outputs=[output_tensor_name + '_unsqueezed'],
-            name=input_tensor_name + '_1',
+            inputs=[matmul_data_tensor],
+            outputs=[matmul.output[0] + '_unsqueezed'],
+            name=matmul.output[0] + '_1',
             axes=[2, 3],
         )
 
@@ -105,57 +108,52 @@ class Pattern_1(ONNXTransformer):
             'Conv',
             inputs=[
                 unsqueeze.output[0],
-                weight_tensor_name + '_fused',
-                bias_tensor_name + '_fused',
+                matmul_init_tensor + '_fused',
+                add_init_tensor + '_fused',
             ],
-            outputs=[output_tensor_name + '_fused'],
-            name=input_tensor_name + '_2',
+            outputs=[matmul.output[0] + '_fused'],
+            name=matmul.output[0] + '_2',
         )
 
-        squeeze = self.make_node(
+        squeeze_node = self.make_node(
             'Squeeze',
             inputs=[conv.output[0]],
-            outputs=[output_tensor_name],
-            name=input_tensor_name + '_3',
+            outputs=[add.output[0]],
+            name=matmul.output[0] + '_3',
             axes=[2, 3],
         )
+        return [unsqueeze, conv, squeeze_node]
 
-        return [unsqueeze, conv, squeeze]
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        matmul, add = matched_nodes
 
-    def make_initializers(self, weight_tensor_name, bias_tensor_name=None, **kwargs):
-        new_inits = []
-        weight_array = self.get_initializer_array(weight_tensor_name)
-        new_weight_array = self.weight_transformation(weight_array, **kwargs)
-        new_weight_init = self.make_initializer_from_array(
-            new_weight_array, weight_tensor_name + '_fused'
-        )
-        new_inits.append(new_weight_init)
+        weight_tensor = self.get_init_node_input(matmul)
+        w_arr = self.get_initializer_array(weight_tensor)
+        new_w_arr = _matmul_weight_transform(w_arr)
+        new_weight = self.make_initializer_from_array(new_w_arr, weight_tensor + '_fused')
 
-        if bias_tensor_name is not None:
-            bias_array = self.get_initializer_array(bias_tensor_name).flatten()
-            new_bias_init = self.make_initializer_from_array(
-                bias_array, bias_tensor_name + '_fused'
-            )
-            new_inits.append(new_bias_init)
+        bias_tensor = self.get_init_node_input(add)
+        bias_arr = self.get_initializer_array(bias_tensor)
+        oC = self.get_value_info_shape(matmul.output[0])[1]
+        new_bias_arr = np.broadcast_to(bias_arr, (1, oC)).flatten()
+        new_bias = self.make_initializer_from_array(new_bias_arr, bias_tensor + '_fused')
 
-        return new_inits
+        return [new_weight, new_bias]
 
-    def weight_transformation(self, weight_array, **kwargs):
-        c, n = weight_array.shape
-        return weight_array.transpose().reshape(n, c, 1, 1)
-
-    def make_value_infos(self, input_tensor_name, output_tensor_name):
+    def make_new_vi(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
+        matmul, _ = matched_nodes
+        matmul_data_tensor = self.get_data_node_input(matmul)
 
         conv_input_vi = self.make_tensor_value_info(
-            output_tensor_name + '_unsqueezed',
+            matmul.output[0] + '_unsqueezed',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(input_tensor_name) + [1, 1],
+            self.get_value_info_shape(matmul_data_tensor) + [1, 1],
         )
 
         conv_output_vi = self.make_tensor_value_info(
-            output_tensor_name + '_fused',
+            matmul.output[0] + '_fused',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(output_tensor_name) + [1, 1],
+            self.get_value_info_shape(matmul.output[0]) + [1, 1],
         )
 
         return [conv_input_vi, conv_output_vi]
@@ -221,11 +219,9 @@ class Pattern_2(ONNXTransformer):
         )
 
     def get_new_node_args(self, matched_nodes):
-        args = dict()
-
+        args = {}
         args.update(self.get_new_vi_args(matched_nodes))
         args.update(self.get_new_init_args(matched_nodes))
-
         return args
 
     def get_new_init_args(self, matched_nodes):

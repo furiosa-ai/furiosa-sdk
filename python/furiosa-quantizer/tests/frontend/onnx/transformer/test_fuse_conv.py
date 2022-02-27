@@ -4,6 +4,7 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import Pattern_1, Pat
 from tests.frontend.onnx.transformer import TestTransformer
 
 
+# TODO 1. Generate test model that does not meet conditions for conv fusion
 class TestFuseConv(TestTransformer):
     def test_case1(self):
         input_shape = [4, 8]
@@ -249,5 +250,47 @@ class TestFuseConv(TestTransformer):
 
         orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
         self.check_graph_node(trans_model, op_types=['Conv', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case14(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [8, 6]),
+                "a": (np.float32, [1]),
+            },
+            "node": [
+                ("MatMul", ["x", "w"], ["0"]),
+                ("Add", ["0", "a"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case15(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [8, 6]),
+                "a": (np.float32, [4, 6]),
+            },
+            "node": [
+                ("MatMul", ["x", "w"], ["0"]),
+                ("Add", ["0", "a"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['MatMul', 'Add'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
