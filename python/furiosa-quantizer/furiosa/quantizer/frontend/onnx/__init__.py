@@ -16,10 +16,7 @@ from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import
 from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
     EliminateRedundantShapePattern,
 )
-from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_conv import FuseBnIntoConv
-from furiosa.quantizer.frontend.onnx.transformer.fuse_bn_into_convtranspose import (
-    FuseBnIntoConvTranspose,
-)
+from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import FuseBatchNorm
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gather_matmul import FuseGatherMatMul
@@ -61,8 +58,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         ConvertConv1dToConv2d().transform,
         FuseConv().transform,
         FusePad().transform,
-        FuseBnIntoConvTranspose().transform,
-        FuseBnIntoConv().transform,
+        FuseBatchNorm().transform,
         FuseDepthToSpace().transform,
         FuseGELU().transform,
         FuseLayerNormalization().transform,
