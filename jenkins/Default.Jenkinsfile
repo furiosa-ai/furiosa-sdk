@@ -20,6 +20,10 @@ format_applied = [
   'furiosa-models'
 ]
 
+lint_applied = [
+  'furiosa-quantizer',
+]
+
 test_modules = [
   "furiosa-quantizer",
   "furiosa-registry",
@@ -122,8 +126,8 @@ def setupPythonEnv(pythonVersion) {
   conda activate env-${pythonVersion};
 
   python --version;
-  pip install --upgrade pip;
-  pip install --upgrade build twine gitpython papermill black isort;
+  pip install --upgrade pip setuptools wheel;
+  pip install --upgrade build twine gitpython papermill black isort pylint;
   """
 }
 
@@ -169,6 +173,25 @@ def checkFormat(pythonVersion) {
     if [ \$? != 0 ];then
       echo "=========================================="
       echo "${it} fails to pass black"
+      echo "=========================================="
+      exit 1
+    fi
+    """
+  }
+}
+
+def runLint(pythonVersion) {
+  lint_applied.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
+
+    echo "Runnig Pylint ...";
+    pylint --rcfile=python/${it}/.pylintrc --jobs=0 python/${it}/**/*.py;
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass pylint";
       echo "=========================================="
       exit 1
     fi
@@ -225,6 +248,7 @@ def runAllTests(pythonVersion) {
   setupPythonEnv(pythonVersion)
   buildPackages(pythonVersion)
   checkFormat(pythonVersion)
+  runLint(pythonVersion)
   testModules(pythonVersion)
 }
 

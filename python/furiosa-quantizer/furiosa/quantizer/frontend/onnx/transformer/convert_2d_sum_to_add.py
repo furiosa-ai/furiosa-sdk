@@ -1,5 +1,5 @@
 import onnx
-from onnx.helper import TensorProto, make_node, make_tensor
+from onnx.helper import make_node
 
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
