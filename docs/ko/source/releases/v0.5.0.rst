@@ -42,7 +42,7 @@ Session을 생성할 때 NPU 장치를 지정할 수 있다.
   async_sess, queue = session.create_async(“model2.onnx”, device=”npu1pe2”)
 
 
-두번째 API 개선 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk-private/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_)
+두번째 API 개선 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_)
 은 텐서 이름 (tensor name) 지원이다. 기존 API는 모델에 내장된 텐서 순서를 파악하여 `session.run()` 에
 입력 파라메터로 전달하는 방법만 했다. 0.5.0 부터는 아래 처럼 명시적으로 입력, 출력 텐서를 위해 이름을 지정할 수 있다.
 
