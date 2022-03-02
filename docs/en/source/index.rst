@@ -6,16 +6,16 @@
 FuriosaAI SDK Documentation
 =================================================
 
-This document covers the process for installing and using the FuriosaAI SDK. 
+This document covers the process for installing and using the FuriosaAI SDK.
 
 .. note::
 
-   The FuriosaAI SDK includes command line tools, runtime libraries, and Python libraries. 
-   FuriosaAI NPU's kernel driver, firmware, and runtime are distributed according to 
-   FuriosaAI's evaluation program registration and End User License Agreement. 
+   The FuriosaAI SDK includes command line tools, runtime libraries, and Python libraries.
+   FuriosaAI NPU's kernel driver, firmware, and runtime are distributed according to
+   FuriosaAI's evaluation program registration and End User License Agreement.
    For questions about downloading and evaluating the program, please contact us at contact@furiosa.ai.
 
-SDK Installation 
+SDK Installation
 -------------------------------------------------
 * :doc:`SDK Installation Prerequisites (Required) </installation/prerequisites>`
 * :doc:`NPU Kernel Driver and Firmware Installation (Required) </installation/driver>`
@@ -59,18 +59,20 @@ Advanced Topics
 -------------------
 * :doc:`Model Quantization </advanced/quantization>`
 * :doc:`NPU Acceleration Operators List </advanced/supported_operators>`
-   
+
 
 Code Examples
 -------------------
 * `Python SDK Quantization <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-quantizer>`_
 * `Python SDK Inference <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-runtime>`_
 
+References
+-------------------
+* `C API Reference <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
+* :doc:`Python API Reference </api/python/modules>`
 
 Other links
 -------------------
 * `FuriosaAI Homepage <https://furiosa.ai>`_
 * `FuriosaAI SDK Github <https://github.com/furiosa-ai/furiosa-sdk>`_
-* `C Language SDK Reference <https://furiosa-ai.github.io/renegade-manual/references/nux/>`_
-* `Python SDK Reference <https://furiosa-ai.github.io/renegade-manual/references/python/>`_
 

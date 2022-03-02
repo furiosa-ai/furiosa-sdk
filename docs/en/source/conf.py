@@ -31,7 +31,9 @@ release = 'furiosa-docs'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-  'sphinx.ext.autosectionlabel'
+  'sphinx.ext.autosectionlabel',
+  'sphinx.ext.autodoc',  # Core library for html generation from docstrings
+  'sphinx.ext.autosummary',  # Create neat summary tables
 ]
 
 # Add any paths that contain templates here, relative to this directory.

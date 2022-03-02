@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Furiosa SDK 문서'
+project = 'FuriosaAI NPU 및 Software 문서'
 copyright = '2021, FuriosaAI Inc.'
 author = 'FuriosaAI Inc.'
 
@@ -31,7 +31,8 @@ release = 'furiosa-docs'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-  'sphinx.ext.autosectionlabel'
+  'sphinx.ext.autosectionlabel',
+  'sphinx_tabs.tabs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,3 +68,6 @@ autosectionlabel_prefix_document = True
 html_theme_options = {
     'navigation_depth': 3,
 }
+
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
