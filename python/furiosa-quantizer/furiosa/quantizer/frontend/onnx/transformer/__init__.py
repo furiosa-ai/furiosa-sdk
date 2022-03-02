@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from typing import List, Optional, Set
 
 import numpy as np
@@ -22,6 +22,12 @@ class ONNXTransformer:
         self.value_info_map = {vi.name: vi for vi in model.graph.value_info}
         self.graph_input_map = {inp.name: inp for inp in model.graph.input}
         self.graph_output_map = {out.name: out for out in model.graph.output}
+        self.check_runnable = True
+
+        self.input_count_map = Counter()
+        for node in model.graph.node:
+            for input in node.input:
+                self.input_count_map[input] += 1
 
     def transform(self):
         outputs = list(self.graph_output_map.keys())
@@ -67,7 +73,7 @@ class ONNXTransformer:
                 raise Exception(member)
 
         model = utils.rebuild_model(model, new_nodes)
-        check_model(model)
+        check_model(model, self.check_runnable)
 
         return model
 
@@ -79,7 +85,7 @@ class ONNXTransformer:
         return make_tensor_value_info(name, elem_type, shape)
 
     def make_initializer_from_array(
-        self, array: np.array, name: Optional[str] = None
+        self, array: np.ndarray, name: Optional[str] = None
     ) -> onnx.TensorProto:
         return numpy_helper.from_array(array, name)
 
@@ -296,8 +302,24 @@ class ONNXTransformer:
         inits_to_add: Optional[List[onnx.TensorProto]] = None,
         vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
     ):
-        self.pop_multiple_optimizer_map(nodes_to_remove)
+        # Pattern should be linear, and if pattern's last node has multiple outputs, they should be specified in the transformed node.
+        assert len(nodes_to_remove[-1].output) == len(nodes_to_add[-1].output)
 
+        # remove nodes after the last node with multiple output receiver(except for the last node).
+        last_node_with_multiple_output_receiver = None
+        for i, node in enumerate(reversed(nodes_to_remove)):
+            if i == 0:
+                continue
+            for output in node.output:
+                if self.input_count_map[output] > 1:
+                    last_node_with_multiple_output_receiver = len(nodes_to_remove) - 1 - i
+            if last_node_with_multiple_output_receiver is not None:
+                break
+
+        if last_node_with_multiple_output_receiver is not None:
+            nodes_to_remove = nodes_to_remove[last_node_with_multiple_output_receiver + 1 :]
+
+        self.pop_multiple_optimizer_map(nodes_to_remove)
         if nodes_to_add:
             self.update_multiple_optimizer_map(nodes_to_add, nodes_to_remove[0].name)
         if inits_to_add:

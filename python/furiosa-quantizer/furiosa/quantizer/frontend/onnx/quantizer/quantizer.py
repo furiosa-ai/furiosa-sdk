@@ -75,12 +75,11 @@ class FuriosaONNXQuantizer:
         self.dynamic_ranges = dynamic_ranges
 
         # set quantization option guided by mode
-        self.quant_mode = QuantizationMode()
         self.mode = mode
         self.activation_qtype = self.weight_qtype = onnx.TensorProto.INT8
 
         # use uint8 dtype for activation in fake_quant mode
-        if mode == QuantizationMode.fake:
+        if mode == QuantizationMode.FAKE:
             self.activation_qtype = onnx.TensorProto.UINT8
 
         # set model a proto to use
@@ -134,9 +133,6 @@ class FuriosaONNXQuantizer:
         self._quant_value_info_key = list()
 
     def quantize(self) -> onnx.ModelProto:
-        # pre-optimization
-        self.pre_optimize()
-
         # quantize weight and activation
         self.quantize_model()
 
@@ -147,10 +143,6 @@ class FuriosaONNXQuantizer:
         self.check_model()
 
         return self.model
-
-    def pre_optimize(self):
-        # fuse clippers like Relu, Clip into Conv, Add
-        self.model = fuse_clipper.FuseClipper().transform(self.model)
 
     def quantize_model(self):
         self._quantize_activation()
@@ -175,7 +167,6 @@ class FuriosaONNXQuantizer:
                     node.input[idx] += '_' + str(self.count - 1)
 
             self._quant_node.update({node.output[0]: node})
-
         for output in self.model.graph.output:
             if not is_float_tensor(self.value_info[output.name]):
                 continue
@@ -185,8 +176,8 @@ class FuriosaONNXQuantizer:
 
             self.model.graph.value_info.append(output)
             output.name += '_dequantized'
-            if output.name + str(self.count - 1) in self._quant_node:
-                output.name += str(self.count - 1)
+            if output.name + '_' + str(self.count - 1) in self._quant_node:
+                output.name += '_' + str(self.count - 1)
             self._quant_value_info.pop(output.name)
 
         self.model = utils.rebuild_model(
@@ -202,9 +193,12 @@ class FuriosaONNXQuantizer:
             proto=list(self._quant_value_info.values()) + list(self.model.graph.value_info),
         )
 
-        if self.mode == QuantizationMode.dfg:
+        # apply fuse_clipper on QDQ graph
+        self.model = fuse_clipper.FuseClipper().transform(self.model)
+
+        if self.mode == QuantizationMode.DFG:
             self.model = DFGImportable(self.model, self.raw_data).transform()
-        elif self.mode == QuantizationMode.fake:
+        elif self.mode == QuantizationMode.FAKE:
             self.model = ONNXRuntimeExecutable(self.model, self.raw_data).transform()
         else:
             raise Exception('Unsupported mode.')
@@ -243,7 +237,7 @@ class FuriosaONNXQuantizer:
 
     def check_model(self):
         check_runnable = True
-        if self.mode == self.quant_mode.dfg:
+        if self.mode == QuantizationMode.DFG:
             # pass runnable check, as dfg mode does not assume to run on onnxruntime
             check_runnable = False
         check_model(self.model, check_runnable)
@@ -259,7 +253,7 @@ class FuriosaONNXQuantizer:
         self._check_quant_initializer()
         self._check_quant_value_info()
 
-        if self.mode == QuantizationMode.dfg:
+        if self.mode == QuantizationMode.DFG:
             self._check_quant_param()
 
     def _quantize_activation(self):
@@ -297,7 +291,12 @@ class FuriosaONNXQuantizer:
 
     def _quantize_pad_constant(self, node):
         mode = next(
-            onnx.helper.get_attribute_value(attr) for attr in node.attribute if attr.name == "mode"
+            (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name == "mode"
+            ),
+            b"constant",
         )
 
         if mode != b'constant':
@@ -328,7 +327,6 @@ class FuriosaONNXQuantizer:
     def _quantize_clip_minmax(self, node):
         s = numpy_helper.to_array(self._get_quant_param(node.input[0], '_scale'))
         zp = numpy_helper.to_array(self._get_quant_param(node.input[0], '_zero_point'))
-        assert len(node.input) == 3
 
         for idx, input in enumerate(node.input):
             if input not in self.initializer.keys():
@@ -657,7 +655,7 @@ class FuriosaONNXQuantizer:
             w_scale_arr = numpy_helper.to_array(
                 self._quant_param[node.input[1].split('_dequantized')[0] + '_scale']
             )
-            b_scale_name = node.inpu[2].split('_dequantized')[0] + '_scale'
+            b_scale_name = node.input[2].split('_dequantized')[0] + '_scale'
             b_scale_arr = numpy_helper.to_array(self._quant_param[b_scale_name])
 
             assert np.allclose(
@@ -781,16 +779,18 @@ class DFGImportable:
             node_o0 = self.node_by_input[node.output[0]]
             rm_nodes.extend([node_i0, node_i1, node_o0])
 
-            self.value_info.pop(node_i0.output[0])
-            self.value_info.pop(node_i1.output[0])
-            self.value_info.pop(node_o0.input[0])
+            # When a tensor is used as model's output, it is not in the value_info.
+            # 'None' argument to handle the case.
+            self.value_info.pop(node_i0.output[0], None)
+            self.value_info.pop(node_i1.output[0], None)
+            self.value_info.pop(node_o0.input[0], None)
 
             node_i2 = None
             if len(node.input) == 3:
                 node_i2 = self.node_by_output[node.input[2]]
                 rm_nodes.append(node_i2)
 
-                self.value_info.pop(node_i2.output[0])
+                self.value_info.pop(node_i2.output[0], None)
 
             rm_nodes.extend([node])
             new_nodes.append(
@@ -830,7 +830,7 @@ class DFGImportable:
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
@@ -951,7 +951,7 @@ class ONNXRuntimeExecutable(DFGImportable):
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         data_arr = np.atleast_1d(numpy_helper.to_array(data)).astype(np.float32)
         scale_arr = np.atleast_1d(numpy_helper.to_array(scale)).astype(np.float32)
         zero_point_arr = np.atleast_1d(numpy_helper.to_array(zero_point)).astype(np.float32)
@@ -970,7 +970,7 @@ class ONNXRuntimeExecutable(DFGImportable):
         scale: onnx.TensorProto,
         zero_point: onnx.TensorProto,
         axis: Optional[int] = None,
-    ) -> np.array:
+    ) -> np.ndarray:
         quantized_data = self._quantize_data(data, scale, zero_point, axis)
         flattened = quantized_data.flatten()
         if self.raw_data:

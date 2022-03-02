@@ -16,7 +16,7 @@ from tests import torch_to_onnx
 class TestTransformer(unittest.TestCase):
     @staticmethod
     def make_test_model(
-        torch_model: callable,
+        torch_model: torch.nn.Module,
         transformer: Union[Transformer, Type[ONNXTransformer]],
         input_shapes: List[Tuple[int, ...]],
         dtype: Optional[torch.dtype] = torch.float32,
@@ -90,7 +90,7 @@ class TestTransformer(unittest.TestCase):
             self.assertAlmostEqual(a, b, tol, msg=msg)
 
 
-def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.array]) -> List[List[float]]:
+def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> List[List[float]]:
     sess = ort.InferenceSession(model.SerializeToString())
     input_names = [inp.name for inp in sess.get_inputs()]
     output_names = [out.name for out in sess.get_outputs()]

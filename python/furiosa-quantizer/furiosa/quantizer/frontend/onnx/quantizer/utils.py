@@ -1,3 +1,4 @@
+from enum import Enum
 import logging
 from typing import Dict, List, Tuple
 
@@ -12,11 +13,11 @@ logging.basicConfig(level=logging.INFO)
 __PRODUCER__ = "jason_furiosa"
 
 
-class QuantizationMode:
-    # dfg: Quantize graph to DFG(Quantized graph) export
-    dfg = 0
-    # fake: Evaluate quantized graph replacing QConvLinear with Conv2d/MatMul &
-    fake = 1
+class QuantizationMode(Enum):
+    # DFG: Quantize graph to DFG(Quantized graph) export
+    DFG = 0
+    # FAKE: Evaluate quantized graph replacing QConvLinear with Conv2d/MatMul &
+    FAKE = 1
 
 
 def get_qrange(qtype):
@@ -61,7 +62,7 @@ def asymmetric_scale_zeropoint(rmin, rmax, activation_qtype):
     scale = np.float32((rmax - rmin) / 255 if rmin != rmax else 1)
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
-    scale = max(scale, 2 ** -149)
+    scale = max(scale, 2**-149)
     if activation_qtype == TensorProto.UINT8:
         initial_zero_point = (0 - rmin) / scale
         zero_point = np.uint8(round(max(0, min(255, initial_zero_point))))
@@ -142,7 +143,7 @@ def calculate_activation_quant_params(
 
 
 def calculate_weight_quant_params(
-    data: np.array, weight_qtype: TensorProto, name: str
+    data: np.ndarray, weight_qtype: TensorProto, name: str
 ) -> Tuple[int, float]:
     """
     :parameter data: data to quantize
@@ -189,7 +190,7 @@ def calculate_weight_quant_params(
 
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
     # source: https://en.wikipedia.org/wiki/Single-precision_floating-point_format#Exponent_encoding
-    scale = max(scale, 2 ** -149)
+    scale = max(scale, 2**-149)
     return zero_point, scale
 
 

@@ -23,7 +23,7 @@ def torch_to_onnx(
     for shape in input_shapes:
         dummies.append(torch.ones(shape, dtype=dtype))
 
-    torch.onnx.export(torch_model, *dummies, f, opset_version=__OPSET_VERSION__)
+    torch.onnx.export(torch_model, tuple(dummies), f, opset_version=__OPSET_VERSION__)
     return onnx.load_model(io.BytesIO(f.getvalue()), helper.ModelProto)
 
 

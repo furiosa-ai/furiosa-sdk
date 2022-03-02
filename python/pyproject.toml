@@ -10,9 +10,15 @@ requires = [
 line-length = 100
 skip-string-normalization = true
 target-version = ['py37', 'py38', 'py39']
+extend-exclude = '/generated/'
 
 [tool.isort]
 force_sort_within_sections = true
 known_first_party = ['furiosa']
 line_length = 100
 profile = 'black'
+extend_skip_glob = ['**/generated/**']
+
+[tool.pytest.ini_options]
+# https://github.com/pytest-dev/pytest-asyncio#auto-mode
+asyncio_mode = 'auto'

@@ -20,6 +20,10 @@ format_applied = [
   'furiosa-models'
 ]
 
+lint_applied = [
+  'furiosa-quantizer',
+]
+
 test_modules = [
   "furiosa-quantizer",
   "furiosa-registry",
@@ -49,9 +53,9 @@ spec:
   nodeSelector:
     alpha.furiosa.ai/npu.family: warboy
     alpha.furiosa.ai/npu.hwtype: u250
-    alpha.furiosa.ai/driver.version: 2.8
+    role: fpga
   tolerations:
-  - key: "furiosa.ai/fpga"
+  - key: "fpga"
     operator: "Exists"
     effect: "NoSchedule"
   - key: "node.kubernetes.io/unschedulable"
@@ -109,8 +113,9 @@ def ubuntuDistribName(full_name) {
 }
 
 def installConda() {
-  sh "wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
+  sh "wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
   sh "sh /tmp/Miniconda3.sh -b -p ${WORKSPACE}/miniconda"
+  sh "${WORKSPACE}/miniconda/bin/conda update --yes conda"
 }
 
 def setupPythonEnv(pythonVersion) {
@@ -121,8 +126,8 @@ def setupPythonEnv(pythonVersion) {
   conda activate env-${pythonVersion};
 
   python --version;
-  pip install --upgrade --quiet pip;
-  pip install --upgrade --quiet build twine gitpython papermill black isort;
+  pip install --upgrade pip setuptools wheel;
+  pip install --upgrade build twine gitpython papermill black isort pylint;
   """
 }
 
@@ -134,7 +139,7 @@ def buildPackages(pythonVersion) {
     python --version;
 
     cd python/${it} && make clean build && \
-    pip install --quiet dist/${it}-*.tar.gz
+    pip install dist/${it}-*.tar.gz
     """
   }
 
@@ -175,6 +180,25 @@ def checkFormat(pythonVersion) {
   }
 }
 
+def runLint(pythonVersion) {
+  lint_applied.each() {
+    sh """#!/bin/bash
+    source ${WORKSPACE}/miniconda/bin/activate;
+    conda activate env-${pythonVersion};
+    python --version;
+
+    echo "Runnig Pylint ...";
+    pylint --rcfile=python/${it}/.pylintrc --jobs=0 python/${it}/**/*.py;
+    if [ \$? != 0 ];then
+      echo "=========================================="
+      echo "${it} fails to pass pylint";
+      echo "=========================================="
+      exit 1
+    fi
+    """
+  }
+}
+
 def testModules(pythonVersion) {
   test_modules.each() {
     sh """#!/bin/bash
@@ -186,7 +210,7 @@ def testModules(pythonVersion) {
 
     if [ -f tests/requirements.txt ]; then
       echo 'Installing ${it}/tests/requirements.txt ..';
-      pip install --quiet -r tests/requirements.txt;
+      pip install -r tests/requirements.txt
     else
       echo 'No requirements.txt file ${it}'
     fi
@@ -202,7 +226,7 @@ def testExamples(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    pip install --quiet -r examples/inferences/requirements.txt && \
+    pip install -r examples/inferences/requirements.txt && \
     tests/test_examples.sh
     """
 }
@@ -214,8 +238,8 @@ def testNotebooks(pythonVersion) {
     python --version;
 
     cd examples/notebooks/ && \
-    pip install --quiet -r ./requirements.txt && \
-    pip install --quiet nbmake && \
+    pip install -r ./requirements.txt && \
+    pip install nbmake && \
     pytest --nbmake .
     """
 }
@@ -224,6 +248,7 @@ def runAllTests(pythonVersion) {
   setupPythonEnv(pythonVersion)
   buildPackages(pythonVersion)
   checkFormat(pythonVersion)
+  runLint(pythonVersion)
   testModules(pythonVersion)
 }
 
@@ -338,8 +363,8 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.3.1-2+nightly-211230"
-    NUX_VERSION = "0.5.0-2"
+    FIRMWARE_VERSION = "0.5.2-2"
+    NUX_VERSION = "0.6.0-2"
   }
 
   stages {
@@ -370,7 +395,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libnpu-xrt=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
-          libonnxruntime=1.8.1*
+          libonnxruntime=1.9.*
           """
         }
       }

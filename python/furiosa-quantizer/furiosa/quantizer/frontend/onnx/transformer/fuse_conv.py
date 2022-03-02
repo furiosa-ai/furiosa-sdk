@@ -107,7 +107,7 @@ class Pattern_1(ONNXTransformer):
         unsqueeze_node = self.make_node(
             'Unsqueeze',
             inputs=[node_input],
-            outputs=[node_input + '_unsqueezed'],
+            outputs=[node_output + '_unsqueezed'],
             name=node_input + '_1',
             **{'axes': [2, 3]},
         )
@@ -115,7 +115,7 @@ class Pattern_1(ONNXTransformer):
         conv_node = self.make_node(
             'Conv',
             inputs=[unsqueeze_node.output[0], w_input + '_fused', b_input + '_fused'],
-            outputs=[node_input + '_fused'],
+            outputs=[node_output + '_fused'],
             name=node_input + '_2',
             **{
                 'dilations': [1, 1],
@@ -143,7 +143,7 @@ class Pattern_1(ONNXTransformer):
         new_inits.append(new_w_init)
 
         if b_input:
-            b_arr = self.get_initializer_array(b_input)
+            b_arr = self.get_initializer_array(b_input).flatten()
             new_b_init = self.make_initializer_from_array(b_arr, b_input + '_fused')
             new_inits.append(new_b_init)
 
@@ -157,13 +157,13 @@ class Pattern_1(ONNXTransformer):
     def make_value_infos(self, node_input, node_output):
 
         conv_input_vi = self.make_tensor_value_info(
-            node_input + '_unsqueezed',
+            node_output + '_unsqueezed',
             onnx.TensorProto.FLOAT,
             self.get_value_info_shape(node_input) + [1, 1],
         )
 
         conv_output_vi = self.make_tensor_value_info(
-            node_input + '_fused',
+            node_output + '_fused',
             onnx.TensorProto.FLOAT,
             self.get_value_info_shape(node_output) + [1, 1],
         )
@@ -253,7 +253,8 @@ class Pattern_3(ONNXTransformer):
         prev --> Conv --> Add --> next
     to
         prev --> Conv --> next
-    if len(Conv.input) == 2
+    if 1. len(Conv.input) == 2
+       2. Add has only one initializer
     """
 
     pattern_to_match = ['Conv', 'Add']
@@ -278,8 +279,8 @@ class Pattern_3(ONNXTransformer):
         return top_node.input
 
     def pattern_condition_checker(self, nodes_to_check):
-        top_node, _ = nodes_to_check
-        return len(top_node.input) == 2
+        top_node, base_node = nodes_to_check
+        return len(top_node.input) == 2 and self.get_init_node_input(base_node)
 
     def make_nodes(self, top_node, base_node):
         conv_node = self.make_node(

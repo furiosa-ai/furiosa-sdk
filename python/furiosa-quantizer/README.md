@@ -37,11 +37,13 @@ for root, _, files in os.walk(MODEL_ROOT):
 for path in model_paths:
     model_name = os.path.basename(path)
     print('quantize %s' % model_name)
-    quant_model = post_training_quantization_with_random_calibration(model=onnx.load_model(path),
-                                                                     per_channel=True,
-                                                                     static=True,
-                                                                     mode=QuantizationMode.dfg,
-                                                                     num_data=10)
+    quant_model = post_training_quantization_with_random_calibration(
+        model=onnx.load_model(path),
+        per_channel=True,
+        static=True,
+        mode=QuantizationMode.DFG,
+        num_data=10,
+    )
     save_path = os.path.join(SAVE_ROOT, '[dfg_importable]%s' % model_name)
     save_dir = os.path.dirname(save_path)
     if not os.path.exists(save_dir):

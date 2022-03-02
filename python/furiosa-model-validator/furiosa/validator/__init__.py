@@ -34,7 +34,7 @@ def validate(model_path: Path):
             model=onnx.load_model(model_path),
             per_channel=True,
             static=True,
-            mode=QuantizationMode.dfg,
+            mode=QuantizationMode.DFG,
             num_data=10,
         )
     except Exception as e:
