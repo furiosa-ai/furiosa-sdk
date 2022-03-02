@@ -35,7 +35,7 @@ C SDK 설치를 위한 최소 요구사항은 다음과 같다.
 
     .. code-block:: sh
 
-      apt-get update && apt-get install -y furiosa-libnpu-dev
+      apt-get update && apt-get install -y furiosa-libnux-dev
 
   .. tab:: 다운로드 센터를 이용한 설치
 

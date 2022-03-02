@@ -222,5 +222,5 @@ FuriosaAI SDK와 NPU가 제공하는 양자화 기능에 대한 자세한 내용
 
 .. code-block:: sh
 
-  pip install 'furiosa-sdk[validator]'
+  pip install 'furiosa-sdk[quantizer]'
 
