@@ -1,4 +1,4 @@
-from collections import Counter, OrderedDict, defaultdict
+from collections import ChainMap, Counter, OrderedDict, defaultdict
 from typing import List, Optional, Set
 
 import numpy as np
@@ -121,6 +121,12 @@ class ONNXTransformer:
             return _get_shape(value_info_name, self.graph_input_map)
         else:
             raise Exception('%s not found.' % value_info_name)
+
+    def get_value_info_dtype(self, tensor_name: str) -> List[int]:
+        tensor_name_to_value_info = ChainMap(
+            self.graph_input_map, self.graph_output_map, self.value_info_map
+        )
+        return tensor_name_to_value_info[tensor_name].type.tensor_type.elem_type
 
     def get_map_values(self, field):
 

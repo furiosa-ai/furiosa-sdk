@@ -172,13 +172,18 @@ class Pattern_2(Pattern_1):
         prev --> Unsqueeze --> Conv --> Squeeze --> next
     if 1. Gemm.B must be defined in initializer whereas Gemm.A must not
        2. if Gemm.C is defined, Gemm.C must be an initializer and Gemm.C.ndim <=2, especially, Gemm.C.shape[0] == 1 for Gemm.C.ndim == 2
+       3. all of Gemm.input must have onnx.TensorProto.FLOAT dtype
     """
 
     pattern_to_match = ['Gemm']
 
     def pattern_condition_checker(self, nodes_to_check):
         (gemm,) = nodes_to_check
-        return self.check_condition_1(gemm) and self.check_condition_2(gemm)
+        return (
+            self.check_condition_1(gemm)
+            and self.check_condition_2(gemm)
+            and self.check_condition_3(gemm)
+        )
 
     def check_condition_1(self, node):
         return node.input[0] not in self.initializer_map and node.input[1] in self.initializer_map
@@ -194,6 +199,11 @@ class Pattern_2(Pattern_1):
         else:
             # always returns True if Gemm.C is not defined.
             return True
+
+    def check_condition_3(self, node):
+        return all(
+            self.get_value_info_dtype(tensor) == onnx.TensorProto.FLOAT for tensor in node.input
+        )
 
     def get_new_init_args(self, matched_nodes):
         (gemm,) = matched_nodes
