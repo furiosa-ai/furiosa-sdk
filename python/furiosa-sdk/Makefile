@@ -10,7 +10,7 @@ install:
 uninstall:
 	pip uninstall -y furiosa-runtime; \
 	pip uninstall -y furiosa-quantizer; \
-	pip uninstall -y furiosa-model-validator; \
+	pip uninstall -y furiosa-litmus; \
 	pip uninstall -y furiosa-tools; \
 	pip uninstall -y furiosa-server; \
 	pip uninstall -y furiosa-registry; \

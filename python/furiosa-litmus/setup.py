@@ -8,7 +8,7 @@ from setuptools import find_namespace_packages, setup
 
 logger = logging.getLogger(__name__)
 
-version = '0.6.0.dev.0'
+version = "0.6.0.dev.0"
 
 my_dir = dirname(__file__)
 
@@ -31,26 +31,26 @@ def git_version(version_: str) -> str:
         import git
 
         try:
-            repo = git.Repo(os.path.join(*[my_dir, '..', '..', '.git']))
+            repo = git.Repo(os.path.join(*[my_dir, "..", "..", ".git"]))
         except git.NoSuchPathError:
-            logger.warning('.git directory not found: Cannot compute the git version')
-            return ''
+            logger.warning(".git directory not found: Cannot compute the git version")
+            return ""
         except git.InvalidGitRepositoryError:
-            logger.warning('Invalid .git directory not found: Cannot compute the git version')
-            return ''
+            logger.warning("Invalid .git directory not found: Cannot compute the git version")
+            return ""
     except ImportError:
-        logger.warning('gitpython not found: Cannot compute the git version.')
-        return ''
+        logger.warning("gitpython not found: Cannot compute the git version.")
+        return ""
     if repo:
         sha = repo.head.commit.hexsha
         if repo.is_dirty():
-            return f'.dev0+{sha}.dirty'
+            return f".dev0+{sha}.dirty"
         # commit is clean
-        return f'.release:{version_}+{sha}'
-    return 'no_git_version'
+        return f".release:{version_}+{sha}"
+    return "no_git_version"
 
 
-def write_version(filename: str = os.path.join(*[my_dir, "furiosa/validator", "git_version"])):
+def write_version(filename: str = os.path.join(*[my_dir, "furiosa/litmus", "git_version"])):
     """
     Write the Semver version + git hash to file, e.g. ".dev0+2f635dc265e78db6708f59f68e8009abb92c1e65".
     :param str filename: Destination file to write
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     setup(
         version=version,
-        scripts=['bin/furiosa-validate'],
         packages=find_namespace_packages(include=["furiosa.*"]),
+        entry_points={"console_scripts": ["furiosa-litmus=furiosa.litmus:main"]},
         **setup_kwargs,
     )

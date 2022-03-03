@@ -30,7 +30,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "server": ["furiosa-server~=" + version],
     "quantizer": ["furiosa-quantizer~=" + version],
-    "validator": ["furiosa-model-validator~=" + version],
+    "litmus": ["furiosa-litmus~=" + version],
     "models": ["furiosa-models~=" + version],
 }
 

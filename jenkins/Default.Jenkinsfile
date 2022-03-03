@@ -3,7 +3,7 @@ sdk_modules = [
   'furiosa-tools',
   'furiosa-runtime',
   'furiosa-quantizer',
-  'furiosa-model-validator',
+  'furiosa-litmus',
   'furiosa-registry',
   'furiosa-sdk',
   'furiosa-server',
@@ -11,7 +11,7 @@ sdk_modules = [
 ]
 
 format_applied = [
-  'furiosa-model-validator',
+  'furiosa-litmus',
   'furiosa-quantizer',
   'furiosa-registry',
   'furiosa-runtime',
