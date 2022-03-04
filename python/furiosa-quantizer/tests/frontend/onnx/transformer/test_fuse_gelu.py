@@ -1,45 +1,38 @@
-import torch
-import torch.nn as nn
+import numpy as np
 
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module):
-    def forward(self, x):
-        x = nn.functional.gelu(x)
-        return x
-
-
-class MultiTestModel(UnitTestModel):
-    def forward(self, x):
-        x = torch.sub(x, torch.ones(x.shape))
-        x = nn.functional.gelu(x)
-        x = torch.sub(x, torch.ones(x.shape))
-        return x
-
-
 class TestFuseGELU(TestTransformer):
-    def make_unit_model(self, input_shapes):
-        orig_model, trans_model = self.make_test_model(UnitTestModel(), FuseGELU(), input_shapes)
-        return orig_model, trans_model
-
-    def make_multi_model(self, input_shapes):
-        orig_model, trans_model = self.make_test_model(MultiTestModel(), FuseGELU(), input_shapes)
-        return orig_model, trans_model
-
     def test_case1(self):
         """
         Test whether the original model is well transformed for unit operator model,
         which contains only GELU operator
         """
-        input_shapes = [(1, 1, 4, 4)]
-        op_types = ['Gelu']
+        input_shape = [1, 1, 4, 4]
+        output_shape = input_shape
 
-        orig_model, trans_model = self.make_unit_model(input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "reciprocal": np.array(1.4142135381698608, dtype=np.float32),
+                "a": np.array(1, dtype=np.float32),
+                "w": np.array(0.5, dtype=np.float32),
+            },
+            "node": [
+                ("Div", ["x", "reciprocal"], ["0"]),
+                ("Erf", ["0"], ["1"]),
+                ("Add", ["1", "a"], ["2"]),
+                ("Mul", ["x", "2"], ["3"]),
+                ("Mul", ["3", "w"], ["y"]),
+            ],
+        }
 
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, FuseGELU())
+        self.check_graph_node(trans_model, op_types=["Gelu"])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case2(self):
@@ -47,9 +40,29 @@ class TestFuseGELU(TestTransformer):
         Test whether the original model is well transformed for multi operator model,
          which contains operators other than Gelu
         """
-        input_shapes = [(2, 4, 8, 8, 16)]
+        input_shape = [2, 4, 8, 8, 16]
+        output_shape = input_shape
 
-        orig_model, trans_model = self.make_multi_model(input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "reciprocal": np.array(1.4142135381698608, dtype=np.float32),
+                "a": np.array(1, dtype=np.float32),
+                "w": np.array(0.5, dtype=np.float32),
+                "s": (np.float32, input_shape),
+            },
+            "node": [
+                ("Sub", ["x", "s"], ["0"]),
+                ("Div", ["0", "reciprocal"], ["1"]),
+                ("Erf", ["1"], ["2"]),
+                ("Add", ["2", "a"], ["3"]),
+                ("Mul", ["x", "3"], ["4"]),
+                ("Mul", ["4", "w"], ["5"]),
+                ("Sub", ["5", "s"], ["y"]),
+            ],
+        }
 
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, FuseGELU())
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)

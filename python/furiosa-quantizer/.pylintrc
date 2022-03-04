@@ -64,15 +64,6 @@ disable=
     use-list-literal, # R1734
 
 
-[TYPECHECK]
-
-# List of members which are set dynamically and missed by pylint inference
-# system, and so shouldn't trigger E1101 when accessed. Python regular
-# expressions are accepted.
-generated-members=
-    ^torch\.
-
-
 [FORMAT]
 
 # Maximum number of characters on a single line.

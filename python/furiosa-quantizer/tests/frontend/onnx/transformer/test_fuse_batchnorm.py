@@ -1,11 +1,6 @@
-from pathlib import Path
-
-import onnx
-import torch
-import torch.nn as nn
+import numpy as np
 
 from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import (
-    FuseBatchNorm,
     Pattern_1,
     Pattern_2,
     Pattern_3,
@@ -14,312 +9,350 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import (
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class UnitTestModel(nn.Module):
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel, self).__init__()
-        self.conv = nn.Conv2d(in_channels=in_channel, out_channels=out_channel, kernel_size=(2, 2))
-        self.bn = nn.BatchNorm2d(num_features=out_channel)
-        self.bn.weight = nn.Parameter(torch.ones(out_channel))
-        self.bn.bias = nn.Parameter(torch.ones(out_channel))
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        return x
-
-
-class UnitTestModel1(UnitTestModel):
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel1, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = torch.nn.functional.relu(x)
-        x = self.bn(x)
-        return x
-
-
-class UnitTestModel2(UnitTestModel):
+def _bn_param_generator(num_features):
     """
-    This creates Conv graph for testing Pattern_3
+    returns scale, B, input_mean and input_var
+    as defined in https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-12
     """
-
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel2, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = torch.mul(x, torch.ones((1, x.shape[1], 1, 1)))
-        x = torch.add(x, torch.ones((1, x.shape[1], 1, 1)))
-        return x
-
-
-class UnitTestModel3(UnitTestModel):
-    """
-    This creates Conv + Mul + Add graph for testing Pattern_3
-    """
-
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel3, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = torch.mul(x, x)
-        x = torch.add(x, x)
-        return x
-
-
-class UnitTestModel3_1(UnitTestModel):
-    """
-    This creates Conv + Mul + Add graph for testing Pattern_3
-    """
-
-    def __init__(self, in_channel, out_channel):
-        super().__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = torch.mul(x, torch.ones((1, x.shape[1], 1, 1)))
-        x = torch.add(x, x)
-        return x
-
-
-class UnitTestModel4(nn.Module):
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel4, self).__init__()
-        self.convtranspose = nn.ConvTranspose2d(
-            in_channels=in_channel, out_channels=out_channel, kernel_size=(2, 2)
-        )
-        self.bn = nn.BatchNorm2d(num_features=out_channel)
-        self.bn.weight = nn.Parameter(torch.ones(out_channel) * 0.333)
-        self.bn.bias = nn.Parameter(torch.ones(out_channel) * 0.254)
-
-    def forward(self, x):
-        x = self.convtranspose(x)
-        x = self.bn(x)
-        return x
-
-
-class UnitTestModel5(UnitTestModel4):
-    def __init__(self, in_channel, out_channel):
-        super(UnitTestModel5, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = self.convtranspose(x)
-        x = torch.nn.functional.relu(x)
-        x = self.bn(x)
-        return x
-
-
-class MultiTestModel(UnitTestModel):
-    def __init__(self, in_channel, out_channel):
-        super(MultiTestModel, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = torch.mul(x, torch.ones(x.shape))
-        x = self.conv(x)
-        x = self.bn(x)
-        x = torch.add(x, torch.ones(x.shape))
-        return x
-
-
-class MultiTestModel1(UnitTestModel):
-    def __init__(self, in_channel, out_channel):
-        super(MultiTestModel1, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = torch.mul(x, torch.ones(x.shape))
-        x = self.conv(x)
-        x = torch.nn.functional.relu(x)
-        x = self.bn(x)
-        x = torch.add(x, torch.ones(x.shape))
-        return x
-
-
-class MultiTestModel2(UnitTestModel4):
-    def __init__(self, in_channel, out_channel):
-        super(MultiTestModel2, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = torch.mul(x, torch.ones(x.shape))
-        x = self.convtranspose(x)
-        x = self.bn(x)
-        x = torch.add(x, torch.ones(x.shape))
-        return x
-
-
-class MultiTestModel3(UnitTestModel4):
-    def __init__(self, in_channel, out_channel):
-        super(MultiTestModel3, self).__init__(in_channel, out_channel)
-
-    def forward(self, x):
-        x = torch.mul(x, torch.ones(x.shape))
-        x = self.convtranspose(x)
-        x = torch.nn.functional.relu(x)
-        x = self.bn(x)
-        x = torch.add(x, torch.ones(x.shape))
-        return x
+    rng = np.random.default_rng()
+    return (
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32) ** 2,
+    )
 
 
 class TestFuseBatchNorm(TestTransformer):
-    def _make_test_model(self, torch_model, input_shapes, pattern):
-        orig_model, trans_model = self.make_test_model(torch_model, pattern, input_shapes)
-        return orig_model, trans_model
-
     def test_case1(self):
-        input_shapes = [(1, 3, 4, 4)]
+        in_channel = 3
+        input_shape = [1, in_channel, 4, 4]
+        out_channel = 4
+        output_shape = [1, out_channel, 3, 3]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
 
-        op_types = ['Conv']
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+            },
+            "node": [
+                ("Conv", ["x", "w", "b"], ["0"]),
+                ("BatchNormalization", ["0", "beta", "gamma", "mu", "var"], ["y"]),
+            ],
+        }
 
-        orig_model = onnx.load(Path(__file__).resolve().parent / "conv_bn.onnx")
-        trans_model = Pattern_1(orig_model).transform()
-
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['Conv'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case2(self):
-        input_shapes = [(1, 3, 4, 4)]
         in_channel = 3
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 4
+        output_shape = [1, out_channel, 3, 3]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
 
-        op_types = ['Conv', 'Relu', 'Mul', 'Add']
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+            },
+            "node": [
+                ("Conv", ["x", "w", "b"], ["0"]),
+                ("Relu", ["0"], ["1"]),
+                ("BatchNormalization", ["1", "beta", "gamma", "mu", "var"], ["y"]),
+            ],
+        }
 
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel1(in_channel, out_channel), input_shapes, Pattern_4
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_4)
+        self.check_graph_node(trans_model, op_types=['Conv', 'Relu', 'Mul', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case3(self):
-        input_shapes = [(1, 4, 4, 4)]
         in_channel = 4
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 8
-
-        op_types = ['Mul', 'Conv', 'Add']
-
-        orig_model, trans_model = self._make_test_model(
-            MultiTestModel(in_channel, out_channel), input_shapes, FuseBatchNorm()
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        output_shape = [1, out_channel, 2, 2]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w1": (np.float32, [1, in_channel]),
+                "w": (np.float32, [out_channel, in_channel, 3, 3]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+                "a": (np.float32, output_shape),
+            },
+            "node": [
+                ("Mul", ["x", "w1"], ["0"]),
+                ("Conv", ["0", "w", "b"], ["1"]),
+                ("BatchNormalization", ["1", "beta", "gamma", "mu", "var"], ["2"]),
+                ("Add", ["2", "a"], ["y"]),
+            ],
+        }
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['Mul', 'Conv', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case4(self):
-        input_shapes = [(1, 5, 4, 4)]
         in_channel = 5
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 2
+        output_shape = [1, out_channel, 2, 2]
 
-        op_types = ['Mul', 'Conv', 'Relu', 'Mul', 'Add', 'Add']
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
 
-        orig_model, trans_model = self._make_test_model(
-            MultiTestModel1(in_channel, out_channel), input_shapes, FuseBatchNorm()
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w1": (np.float32, input_shape),
+                "w": (np.float32, [out_channel, in_channel, 3, 3]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+                "a": (np.float32, output_shape),
+            },
+            "node": [
+                ("Mul", ["x", "w1"], ["0"]),
+                ("Conv", ["0", "w", "b"], ["1"]),
+                ("Relu", ["1"], ["2"]),
+                ("BatchNormalization", ["2", "beta", "gamma", "mu", "var"], ["3"]),
+                ("Add", ["a", "3"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_4)
+        self.check_graph_node(trans_model, op_types=['Mul', 'Conv', 'Relu', 'Mul', 'Add', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case5(self):
         """
         This tests Pattern_3
         """
-        input_shapes = [(1, 3, 8, 8)]
         in_channel = 3
+        input_shape = [1, in_channel, 8, 8]
         out_channel = 4
+        output_shape = [1, out_channel, 6, 6]
 
-        op_types = ['Conv']
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 3, 3]),
+                "b": (np.float32, [out_channel]),
+                "w1": (np.float32, [1, out_channel, 1, 1]),
+                "a": (np.float32, [1, out_channel, 1, 1]),
+            },
+            "node": [
+                ("Conv", ["x", "w", "b"], ["0"]),
+                ("Mul", ["0", "w1"], ["1"]),
+                ("Add", ["1", "a"], ["y"]),
+            ],
+        }
 
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel2(in_channel, out_channel), input_shapes, Pattern_3
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Conv'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case5_1(self):
         """
         This tests Pattern_3
         """
-        input_shapes = [(1, 3, 8, 8)]
         in_channel = 3
+        input_shape = [1, in_channel, 8, 8]
         out_channel = 4
+        output_shape = [1, out_channel, 6, 6]
 
-        op_types = ['Conv', 'Mul', 'Add']
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 3, 3]),
+                "b": (np.float32, [out_channel]),
+            },
+            "node": [
+                ("Conv", ["x", "w", "b"], ["0"]),
+                ("Mul", ["0", "0"], ["1"]),
+                ("Add", ["1", "1"], ["y"]),
+            ],
+        }
 
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel3(in_channel, out_channel), input_shapes, Pattern_3
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Conv', 'Mul', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case5_2(self):
-        input_shapes = [(1, 4, 4, 4)]
         in_channel = 4
-        out_channel = 8
+        input_shape = [1, in_channel, 4, 4]
+        out_channel = 4
+        output_shape = [1, out_channel, 2, 2]
 
-        op_types = ['Conv', 'Mul', 'Add']
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 3, 3]),
+                "w1": (np.float32, [1, out_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+            },
+            "node": [
+                ("Conv", ["x", "w", "b"], ["0"]),
+                ("Mul", ["0", "w1"], ["1"]),
+                ("Add", ["1", "1"], ["y"]),
+            ],
+        }
 
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel3_1(in_channel, out_channel), input_shapes, Pattern_3
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Conv', 'Mul', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case6(self):
-        input_shapes = [(1, 3, 4, 4)]
         in_channel = 3
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 4
+        output_shape = [1, out_channel, 5, 5]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [in_channel, out_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+            },
+            "node": [
+                ("ConvTranspose", ["x", "w", "b"], ["0"]),
+                ("BatchNormalization", ["0", "beta", "gamma", "mu", "var"], ["y"]),
+            ],
+        }
 
-        op_types = ['ConvTranspose']
-
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel4(in_channel, out_channel), input_shapes, Pattern_2
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['ConvTranspose'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case7(self):
-        input_shapes = [(1, 3, 4, 4)]
         in_channel = 3
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 4
+        output_shape = [1, out_channel, 5, 5]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [in_channel, out_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+            },
+            "node": [
+                ("ConvTranspose", ["x", "w", "b"], ["0"]),
+                ("Relu", ["0"], ["1"]),
+                ("BatchNormalization", ["1", "beta", "gamma", "mu", "var"], ["y"]),
+            ],
+        }
 
-        op_types = ['ConvTranspose', 'Relu', 'BatchNormalization']
-
-        orig_model, trans_model = self._make_test_model(
-            UnitTestModel5(in_channel, out_channel), input_shapes, Pattern_2
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['ConvTranspose', 'Relu', 'BatchNormalization'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case8(self):
-        input_shapes = [(1, 4, 4, 4)]
         in_channel = 4
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 8
+        output_shape = [1, out_channel, 5, 5]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w1": (np.float32, input_shape),
+                "w": (np.float32, [in_channel, out_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+                "a": (np.float32, output_shape),
+            },
+            "node": [
+                ("Mul", ["x", "w1"], ["0"]),
+                ("ConvTranspose", ["0", "w", "b"], ["1"]),
+                ("BatchNormalization", ["1", "beta", "gamma", "mu", "var"], ["2"]),
+                ("Add", ["2", "a"], ["y"]),
+            ],
+        }
 
-        op_types = ['Mul', 'ConvTranspose', 'Add']
-
-        orig_model, trans_model = self._make_test_model(
-            MultiTestModel2(in_channel, out_channel), input_shapes, FuseBatchNorm()
-        )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['Mul', 'ConvTranspose', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
     def test_case9(self):
-        input_shapes = [(1, 5, 4, 4)]
         in_channel = 5
+        input_shape = [1, in_channel, 4, 4]
         out_channel = 2
+        output_shape = [1, out_channel, 5, 5]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w1": (np.float32, input_shape),
+                "w": (np.float32, [in_channel, out_channel, 2, 2]),
+                "b": (np.float32, [out_channel]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+                "a": (np.float32, output_shape),
+            },
+            "node": [
+                ("Mul", ["x", "w1"], ["1"]),
+                ("ConvTranspose", ["1", "w", "b"], ["2"]),
+                ("Relu", ["2"], ["3"]),
+                ("BatchNormalization", ["3", "beta", "gamma", "mu", "var"], ["4"]),
+                ("Add", ["4", "a"], ["y"]),
+            ],
+        }
 
-        op_types = ['Mul', 'ConvTranspose', 'Relu', 'Mul', 'Add', 'Add']
-
-        orig_model, trans_model = self._make_test_model(
-            MultiTestModel3(in_channel, out_channel), input_shapes, FuseBatchNorm()
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(
+            trans_model, op_types=['Mul', 'ConvTranspose', 'Relu', 'BatchNormalization', 'Add']
         )
-        self.check_graph_node(trans_model, op_types)
-        self.check_output_value(orig_model, trans_model, input_shapes)
+        self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
