@@ -9,9 +9,6 @@ from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class BertOnnxModel(OnnxModel):
-    def __init__(self, model):
-        super().__init__(model)
-
     def fuse_layer_normalization(self):
         fusion = FusionLayerNormalization(self)
         fusion.apply()

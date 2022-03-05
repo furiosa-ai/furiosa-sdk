@@ -857,9 +857,6 @@ class DFGImportable:
 
 
 class ONNXRuntimeExecutable(DFGImportable):
-    def __init__(self, model, raw_data):
-        super().__init__(model, raw_data)
-
     def transform(self):
 
         self._remove_quant_dequantlinear_operator_with_initializer()

@@ -32,7 +32,6 @@ disable=
     redefined-builtin, # W0622
     unspecified-encoding, # W1514
     unused-argument, # W0613
-    useless-super-delegation, # W0235
 
     # Convention
     bad-continuation, # C0330
