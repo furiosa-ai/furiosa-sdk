@@ -127,7 +127,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade pip setuptools wheel;
-  pip install --upgrade build twine gitpython papermill black isort pylint;
+  pip install --upgrade build twine gitpython papermill black isort pylint pylint-protobuf;
   """
 }
 
