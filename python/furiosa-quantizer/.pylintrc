@@ -1,3 +1,11 @@
+[MASTER]
+
+# List of plugins (as comma separated values of python module names) to load,
+# usually to register additional checkers.
+load-plugins=
+    pylint_protobuf
+
+
 [MESSAGES CONTROL]
 
 # Disable the message, report, category or checker with the given id(s). You
