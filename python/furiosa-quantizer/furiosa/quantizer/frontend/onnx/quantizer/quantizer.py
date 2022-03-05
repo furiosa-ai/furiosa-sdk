@@ -545,9 +545,9 @@ class FuriosaONNXQuantizer:
             elif '_'.join(init.name.split('_')[-2:]) == 'fake_quantized':
                 assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s' % init.name
             else:
-                assert (
-                    init_dtype == onnx.TensorProto.INT64 or init_dtype == onnx.TensorProto.FLOAT
-                ), ('Wrong data type for %s.' % init.name)
+                assert init_dtype in (onnx.TensorProto.INT64, onnx.TensorProto.FLOAT), (
+                    'Wrong data type for %s.' % init.name
+                )
 
         # Checks if scale/zero-point of DequantizedLienar/QuantizeLinear (OpSet < 13) are scalars.
         opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
@@ -889,7 +889,7 @@ class ONNXRuntimeExecutable(DFGImportable):
             )
 
         for node in self.model.graph.node:
-            if node.op_type == 'QuantizeLinear' or node.op_type == 'DequantizeLinear':
+            if node.op_type in ('QuantizeLinear', 'DequantizeLinear'):
                 continue
 
             for idx, node_input in enumerate(node.input):

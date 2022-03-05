@@ -50,7 +50,6 @@ disable=
 
     # Refactor
     consider-using-from-import, # R0402
-    consider-using-in, # R1714
     duplicate-code, # R0801
     inconsistent-return-statements, # R1710
     no-else-raise, # R1720

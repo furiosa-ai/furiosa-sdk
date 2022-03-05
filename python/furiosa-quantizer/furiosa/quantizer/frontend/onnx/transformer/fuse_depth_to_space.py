@@ -54,9 +54,7 @@ class Pattern_1(ONNXTransformer):
     def pattern_condition_checker(self, nodes_to_check):
         _, mid_node, _ = nodes_to_check
         perm = mid_node.attribute[0].ints
-        if perm == [0, 1, 4, 2, 5, 3] or perm == [0, 3, 4, 1, 5, 2]:
-            return True
-        return False
+        return perm in ([0, 1, 4, 2, 5, 3], [0, 3, 4, 1, 5, 2])
 
     def get_attrs(self, top_node, mid_node):
         permutation = mid_node.attribute[0].ints
