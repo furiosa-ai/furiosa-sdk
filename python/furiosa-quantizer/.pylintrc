@@ -54,7 +54,6 @@ disable=
     no-else-raise, # R1720
     no-else-return, # R1705
     no-self-use, # R0201
-    simplifiable-if-expression, # R1719
     too-few-public-methods, # R0903
     too-many-arguments, # R0913
     too-many-branches, # R0912
