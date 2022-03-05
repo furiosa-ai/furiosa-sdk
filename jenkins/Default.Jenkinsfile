@@ -183,15 +183,15 @@ def checkFormat(pythonVersion) {
 def runLint(pythonVersion) {
   lint_applied.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
-    conda activate env-${pythonVersion};
-    python --version;
+    source ${WORKSPACE}/miniconda/bin/activate
+    conda activate env-${pythonVersion}
+    python --version
 
-    echo "Runnig Pylint ...";
-    pylint --rcfile=python/${it}/.pylintrc --jobs=0 python/${it}/**/*.py;
-    if [ \$? != 0 ];then
+    echo "Runnig Pylint ..."
+    pylint --verbose --rcfile=python/${it}/.pylintrc \$(find python/${it} -type f -name '*.py')
+    if [ \$? != 0 ]; then
       echo "=========================================="
-      echo "${it} fails to pass pylint";
+      echo "${it} fails to pass pylint"
       echo "=========================================="
       exit 1
     fi
