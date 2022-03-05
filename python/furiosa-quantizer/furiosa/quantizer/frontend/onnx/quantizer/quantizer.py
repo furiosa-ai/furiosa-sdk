@@ -858,7 +858,7 @@ class DFGImportable:
 
 class ONNXRuntimeExecutable(DFGImportable):
     def __init__(self, model, raw_data):
-        super(ONNXRuntimeExecutable, self).__init__(model, raw_data)
+        super().__init__(model, raw_data)
 
     def transform(self):
 
