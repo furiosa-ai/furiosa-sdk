@@ -1,3 +1,6 @@
+from abc import ABC, abstractmethod
+from typing import List
+
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -25,10 +28,15 @@ class FuseClipper(Transformer):
         return model
 
 
-class ClipperFusion(ONNXTransformer):
+class ClipperFusion(ONNXTransformer, ABC):
     """
     This class contains methods commonly used in FuseClipper patterns
     """
+
+    @property
+    @abstractmethod
+    def pattern_to_match(self) -> List[str]:
+        pass
 
     def pattern_matching(self, base_node):
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
