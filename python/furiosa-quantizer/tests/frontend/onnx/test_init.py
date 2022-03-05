@@ -30,9 +30,6 @@ class ONNXTest(unittest.TestCase):
 
     def test__is_sandwiched(self):
         model = _make_sandwiced_model()
-        import onnx
-
-        onnx.save_model(model, "tmp.onnx")
         test_node = model.graph.node[2]
         self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
