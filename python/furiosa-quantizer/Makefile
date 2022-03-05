@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	isort --check --diff . && black --check --diff . && pylint --jobs=0 **/*.py
+	isort --check --diff . && black --check --diff . && pylint --verbose $(shell find . -type f -name '*.py')
 
 upload_test:
 	twine upload --repository testpypi dist/*
