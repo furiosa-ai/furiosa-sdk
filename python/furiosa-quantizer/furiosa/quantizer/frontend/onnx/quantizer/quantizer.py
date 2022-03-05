@@ -328,13 +328,13 @@ class FuriosaONNXQuantizer:
         s = numpy_helper.to_array(self._get_quant_param(node.input[0], '_scale'))
         zp = numpy_helper.to_array(self._get_quant_param(node.input[0], '_zero_point'))
 
-        for idx, input in enumerate(node.input):
-            if input not in self.initializer.keys():
+        for tensor_name in node.input:
+            if tensor_name not in self.initializer:
                 continue
 
             self._stack_quant_param(
-                name_zp=input + '_zero_point',
-                name_scale=input + '_scale',
+                name_zp=tensor_name + '_zero_point',
+                name_scale=tensor_name + '_scale',
                 data_type_zp=self.activation_qtype,
                 dims=zp.shape,
                 vals_zp=zp,
