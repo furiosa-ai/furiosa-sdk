@@ -274,7 +274,7 @@ class FuriosaONNXQuantizer:
             )
 
     def _quantize_weight(self):
-        disabled = True if os.environ.get('TQDM_DISABLE') else False
+        disabled = bool(os.environ.get('TQDM_DISABLE'))
         for node in tqdm.tqdm(self.model.graph.node, desc='Quantization', disable=disabled):
             if node.op_type == 'Conv':
                 self._quantize_conv_weight(node, output_channel_axis=0)
@@ -857,9 +857,6 @@ class DFGImportable:
 
 
 class ONNXRuntimeExecutable(DFGImportable):
-    def __init__(self, model, raw_data):
-        super().__init__(model, raw_data)
-
     def transform(self):
 
         self._remove_quant_dequantlinear_operator_with_initializer()
