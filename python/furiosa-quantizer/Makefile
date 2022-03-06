@@ -7,7 +7,7 @@ build:
 	python -m build
 
 lint:
-	isort --check --diff . && black --check --diff . && pylint --verbose $(shell find . -type f -name '*.py')
+	isort --check --diff . && black --check --diff . && pylint --verbose furiosa/ tests/ *.py
 
 upload_test:
 	twine upload --repository testpypi dist/*
