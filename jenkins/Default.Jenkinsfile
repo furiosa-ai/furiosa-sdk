@@ -338,7 +338,7 @@ pipeline {
     kubernetes {
     cloud "k8s-office"
     defaultContainer "default"
-    yaml officeFpgaPod("1", "4Gi")
+    yaml officeFpgaPod("2", "4Gi")
   } }
 
   parameters {
