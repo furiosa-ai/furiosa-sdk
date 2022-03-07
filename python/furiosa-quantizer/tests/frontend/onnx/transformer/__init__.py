@@ -87,7 +87,7 @@ def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> Li
     sess = ort.InferenceSession(model.SerializeToString())
     input_names = [inp.name for inp in sess.get_inputs()]
     output_names = [out.name for out in sess.get_outputs()]
-    feed_dict = {k: v for k, v in zip(input_names, input_arrays)}
+    feed_dict = dict(zip(input_names, input_arrays))
     outputs = sess.run(output_names, input_feed=feed_dict)
 
     flattened_outputs = [val.flatten().tolist() for val in outputs]
