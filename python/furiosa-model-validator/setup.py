@@ -56,7 +56,7 @@ def write_version(filename: str = os.path.join(*[my_dir, "furiosa/validator", "g
     :param str filename: Destination file to write
     """
     text = f"{git_version(version)}"
-    with open(filename, 'w') as file:
+    with open(filename, 'w', encoding='ascii') as file:
         file.write(text)
 
 

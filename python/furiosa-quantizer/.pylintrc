@@ -30,7 +30,6 @@ disable=
     logging-fstring-interpolation, # W1203
     raise-missing-from, # W0707
     redefined-builtin, # W0622
-    unspecified-encoding, # W1514
     unused-argument, # W0613
 
     # Convention
