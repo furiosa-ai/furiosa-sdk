@@ -137,8 +137,9 @@ def fix_batch_size_as_one(model):
 
         if batch_dim.dim_param:
             logger.info(
-                "Dynamic batch size is detected at input_name: {}. "
-                "Fix batch_size=1 for valid shape inference.".format(input.name)
+                "Dynamic batch size is detected at input_name: %s. "
+                "Fix batch_size=1 for valid shape inference.",
+                input.name,
             )
             input.type.tensor_type.shape.dim[0].dim_value = 1
 
