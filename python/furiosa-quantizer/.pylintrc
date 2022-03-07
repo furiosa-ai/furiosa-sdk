@@ -26,7 +26,6 @@ disable=
     cell-var-from-loop, # W0640
     expression-not-assigned, # W0106
     fixme, # W0511
-    logging-format-interpolation, # W1202
     logging-fstring-interpolation, # W1203
     raise-missing-from, # W0707
     redefined-builtin, # W0622
