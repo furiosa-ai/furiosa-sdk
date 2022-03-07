@@ -49,7 +49,6 @@ disable=
     consider-using-from-import, # R0402
     duplicate-code, # R0801
     inconsistent-return-statements, # R1710
-    no-else-raise, # R1720
     no-else-return, # R1705
     no-self-use, # R0201
     too-few-public-methods, # R0903
