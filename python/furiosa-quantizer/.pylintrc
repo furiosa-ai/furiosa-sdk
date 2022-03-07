@@ -35,7 +35,6 @@ disable=
     # Convention
     bad-continuation, # C0330
     bad-whitespace, # C0326
-    consider-iterating-dictionary, # C0201
     consider-using-f-string, # C0209
     import-outside-toplevel, # C0415
     invalid-name, # C0103
