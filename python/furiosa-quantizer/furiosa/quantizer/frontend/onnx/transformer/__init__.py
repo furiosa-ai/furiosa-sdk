@@ -17,7 +17,7 @@ class ONNXTransformer:
             node_output: node for node in model.graph.node for node_output in node.output
         }
         self.consumer_map = defaultdict(list)
-        for node in model.graph.node:
+        for node in self.model.graph.node:
             for tensor in node.input:
                 self.consumer_map[tensor].append(node)
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
@@ -295,6 +295,11 @@ class ONNXTransformer:
                 self.graph_output_map[node_output] = self.copy_value_info(new_input)
 
     def transform_to_eliminate(self, nodes_to_remove: List[onnx.NodeProto], new_input):
+        """
+        This function eliminates designated nodes and bridges the previous and next nodes of them.
+
+        For example, if [B, C] is given to be removed, then removes [B, C] in A - B - C - D and connects [A, D] to make A - D.
+        """
         self.pop_multiple_optimizer_map(nodes_to_remove)
         self.bridge_disconnected_nodes(
             nodes_to_remove[-1], self.find_next_node(nodes_to_remove[-1]), new_input
