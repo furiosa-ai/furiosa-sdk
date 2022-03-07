@@ -17,7 +17,7 @@ def check_model(model: onnx.ModelProto, check_runnable: bool = True) -> None:
     try:
         checker.check_model(model)
     except checker.ValidationError as e:
-        if str(e).split("==>")[0].rstrip() in acceptable_error_msg:
+        if str(e).split("==>", maxsplit=1)[0].rstrip() in acceptable_error_msg:
             pass
         else:
             checker.check_model(model)

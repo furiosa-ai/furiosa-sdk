@@ -43,7 +43,6 @@ disable=
     missing-class-docstring, # C0115
     missing-function-docstring, # C0116
     missing-module-docstring, # C0114
-    use-maxsplit-arg, # C0207
 
     # Refactor
     consider-using-from-import, # R0402
