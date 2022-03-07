@@ -61,7 +61,6 @@ disable=
     trailing-comma-tuple, # R1707
     unnecessary-comprehension, # R1721
     use-a-generator, # R1729
-    use-dict-literal, # R1735
     use-list-literal, # R1734
 
 

@@ -43,7 +43,9 @@ class Pattern_1(ONNXTransformer):
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_nodes(**self.get_new_node_args(matched_nodes)),
+            nodes_to_add=self.make_nodes(
+                **self.get_new_vi_args(matched_nodes), **self.get_new_init_args(matched_nodes)
+            ),
             inits_to_add=self.make_initializers(**self.get_new_init_args(matched_nodes)),
             vis_to_add=self.make_value_infos(**self.get_new_vi_args(matched_nodes)),
         )
@@ -86,12 +88,6 @@ class Pattern_1(ONNXTransformer):
             'weight_tensor_name': self.get_init_node_input(matmul),
             'bias_tensor_name': self.get_init_node_input(add),
         }
-
-    def get_new_node_args(self, matched_nodes):
-        args = dict()
-        args.update(self.get_new_vi_args(matched_nodes))
-        args.update(self.get_new_init_args(matched_nodes))
-        return args
 
     def make_nodes(
         self, input_tensor_name, output_tensor_name, weight_tensor_name, bias_tensor_name
