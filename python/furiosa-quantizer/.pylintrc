@@ -24,7 +24,6 @@ disable=
     arguments-renamed, # W0237
     attribute-defined-outside-init, # W0201
     cell-var-from-loop, # W0640
-    expression-not-assigned, # W0106
     fixme, # W0511
     logging-format-interpolation, # W1202
     logging-fstring-interpolation, # W1203

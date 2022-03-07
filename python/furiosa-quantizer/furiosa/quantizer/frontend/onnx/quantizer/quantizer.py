@@ -221,7 +221,7 @@ class FuriosaONNXQuantizer:
             op_type='QuantizeLinear',
             inputs=[node_input, node_input + '_scale', node_input + '_zero_point'],
             outputs=[node_input + '_quantized'],
-        ),
+        )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
             name_quant=node_input + '_quantized',
