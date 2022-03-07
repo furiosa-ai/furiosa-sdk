@@ -23,7 +23,7 @@ def _get_bn_params(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     scale = get_init_arr_func(node.input[1])
     if all(v == 0.0 for v in scale):
-        logger.warning(f'BatchNormalization.scale is a zero tensor: {node.input[1]}')
+        logger.warning('BatchNormalization.scale is a zero tensor: %s', node.input[1])
 
     B = get_init_arr_func(node.input[2])
     mean = get_init_arr_func(node.input[3])
