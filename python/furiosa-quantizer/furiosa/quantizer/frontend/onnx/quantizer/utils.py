@@ -26,10 +26,9 @@ def get_qrange(qtype):
     """
     if qtype == TensorProto.UINT8:
         return 255  # 2^b - 1
-    elif qtype == TensorProto.INT8:
+    if qtype == TensorProto.INT8:
         return 254  # [-(2^{b-1}-1), 2^{b-1}-1]: [-127, 127] for 8 bits.
-    else:
-        raise ValueError('unsupported quantization data type')
+    raise ValueError('unsupported quantization data type')
 
 
 def get_vi_dtype(vi):
@@ -67,12 +66,11 @@ def asymmetric_scale_zeropoint(rmin, rmax, activation_qtype):
         initial_zero_point = (0 - rmin) / scale
         zero_point = np.uint8(round(max(0, min(255, initial_zero_point))))
         return np.array(zero_point), np.array(scale)
-    elif activation_qtype == TensorProto.INT8:
+    if activation_qtype == TensorProto.INT8:
         initial_zero_point = -128 - rmin / scale
         zero_point = np.int8(round(max(-128, min(127, initial_zero_point))))
         return np.array(zero_point), np.array(scale)
-    else:
-        Exception('qType must be one of UINT8 or INT8')
+    raise Exception('qType must be one of UINT8 or INT8')
 
 
 def calculate_activation_quant_params(

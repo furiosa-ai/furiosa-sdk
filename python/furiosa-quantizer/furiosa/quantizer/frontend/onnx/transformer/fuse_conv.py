@@ -190,12 +190,10 @@ class Pattern_2(Pattern_1):
             if node.input[2] in self.initializer_map:
                 array = self.get_initializer_array(node.input[2])
                 return array.ndim == 2 and array.shape[0] == 1 or array.ndim == 1
-            else:
-                # returns False since Gemm.C has no initializer to be fused
-                return False
-        else:
-            # always returns True if Gemm.C is not defined.
-            return True
+            # returns False since Gemm.C has no initializer to be fused
+            return False
+        # always returns True if Gemm.C is not defined.
+        return True
 
     def check_condition_3(self, node):
         return all(
@@ -330,10 +328,7 @@ class Pattern_2(Pattern_1):
     def need_transpose(self, input_tensor_name, attrs):
         input_idx = self.get_node_input_idx(input_tensor_name)
         assert input_idx in [0, 1]
-        if input_idx == 0:
-            return attrs['transA']
-        else:
-            return attrs['transB']
+        return attrs['transA' if input_idx == 0 else 'transB']
 
 
 class Pattern_3(Pattern_1):
