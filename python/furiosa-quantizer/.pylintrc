@@ -24,7 +24,6 @@ disable=
     arguments-renamed, # W0237
     attribute-defined-outside-init, # W0201
     cell-var-from-loop, # W0640
-    expression-not-assigned, # W0106
     fixme, # W0511
     logging-fstring-interpolation, # W1203
     raise-missing-from, # W0707
@@ -34,7 +33,6 @@ disable=
     # Convention
     bad-continuation, # C0330
     bad-whitespace, # C0326
-    consider-iterating-dictionary, # C0201
     consider-using-f-string, # C0209
     import-outside-toplevel, # C0415
     invalid-name, # C0103

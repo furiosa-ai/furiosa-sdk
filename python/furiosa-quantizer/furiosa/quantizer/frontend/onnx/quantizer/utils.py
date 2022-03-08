@@ -97,14 +97,14 @@ def calculate_activation_quant_params(
         ]:
             if not is_float_tensor(value_info[node.input[0]]):
                 continue
-            if node.input[0] not in quantization_params.keys():
+            if node.input[0] not in quantization_params:
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]], activation_qtype
                 )
 
             quantization_params[node.output[0]] = quantization_params[node.input[0]]
         elif node.op_type in ['Softmax', 'Sigmoid']:
-            if node.input[0] not in quantization_params.keys():
+            if node.input[0] not in quantization_params:
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]], activation_qtype
                 )
@@ -117,7 +117,7 @@ def calculate_activation_quant_params(
                 raise Exception()
             quantization_params[node.output[0]] = (zero_point, np.array(np.float32(1.0 / 256.0)))
         elif node.op_type in ['LpNormalization']:
-            if node.input[0] not in quantization_params.keys():
+            if node.input[0] not in quantization_params:
                 quantization_params[node.input[0]] = activation_scale_zeropoint(
                     *dynamic_ranges[node.input[0]], activation_qtype
                 )
@@ -133,7 +133,7 @@ def calculate_activation_quant_params(
             for name in list(node.input) + list(node.output):
                 if name not in dynamic_ranges:
                     continue
-                if name in quantization_params.keys():
+                if name in quantization_params:
                     continue
                 rmin, rmax = dynamic_ranges[name]
                 zero_point, scale = activation_scale_zeropoint(rmin, rmax, activation_qtype)

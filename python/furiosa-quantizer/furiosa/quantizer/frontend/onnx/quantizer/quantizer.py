@@ -178,7 +178,7 @@ class FuriosaONNXQuantizer:
             for idx, node_input in enumerate(node.input):
                 if not is_float_tensor(self.value_info[node_input]):
                     continue
-                if node_input + '_scale' not in self._quant_param.keys():
+                if node_input + '_scale' not in self._quant_param:
                     continue
                 self.make_quant_dequant_node(node_input)
                 node.input[idx] += '_dequantized'
@@ -190,7 +190,7 @@ class FuriosaONNXQuantizer:
         for output in self.model.graph.output:
             if not is_float_tensor(self.value_info[output.name]):
                 continue
-            if output.name + '_scale' not in self._quant_param.keys():
+            if output.name + '_scale' not in self._quant_param:
                 continue
             self.make_quant_dequant_node(output.name)
 
@@ -221,7 +221,7 @@ class FuriosaONNXQuantizer:
             op_type='QuantizeLinear',
             inputs=[node_input, node_input + '_scale', node_input + '_zero_point'],
             outputs=[node_input + '_quantized'],
-        ),
+        )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
             name_quant=node_input + '_quantized',
@@ -230,7 +230,7 @@ class FuriosaONNXQuantizer:
         )
         # make dequantizelinear node
         output = node_input + '_dequantized'
-        if output in self._quant_node.keys():
+        if output in self._quant_node:
             output = node_input + '_dequantized_%d' % self.count
             self.count += 1
         self._stack_quant_node(
@@ -464,7 +464,7 @@ class FuriosaONNXQuantizer:
         self._quant_node.update({outputs[0]: quant_node})
 
     def _stack_quant_param(self, name_zp, name_scale, data_type_zp, dims, vals_zp, vals_scale):
-        if name_zp in self._quant_param.keys() or name_scale in self._quant_param.keys():
+        if name_zp in self._quant_param or name_scale in self._quant_param:
             return
         # make quantization parameters initializer proto
         if self.raw_data:
