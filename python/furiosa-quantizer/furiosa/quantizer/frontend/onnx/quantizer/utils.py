@@ -175,7 +175,7 @@ def calculate_weight_quant_params(
         if max_range > 0:
             scale = (max_range * 2.0) / quantized_range
         else:
-            logger.info(f'Both the min and the max of data are 0: {name}')
+            logger.info('Both the min and the max of data are 0: %s', name)
             scale = 1.0
         zero_point = 0
     elif weight_qtype == TensorProto.UINT8:

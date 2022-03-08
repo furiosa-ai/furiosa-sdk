@@ -35,8 +35,7 @@ class InferenceShape:
                 raise RuntimeError(
                     f'the static shape of input "{m.group(1)}" must be given'
                 ) from None
-            else:
-                raise
+            raise
 
         assert check
         check_model(self.model)

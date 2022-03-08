@@ -25,7 +25,6 @@ disable=
     attribute-defined-outside-init, # W0201
     cell-var-from-loop, # W0640
     fixme, # W0511
-    logging-fstring-interpolation, # W1203
     raise-missing-from, # W0707
     redefined-builtin, # W0622
     unused-argument, # W0613
@@ -40,13 +39,11 @@ disable=
     missing-class-docstring, # C0115
     missing-function-docstring, # C0116
     missing-module-docstring, # C0114
-    use-maxsplit-arg, # C0207
 
     # Refactor
     consider-using-from-import, # R0402
     duplicate-code, # R0801
     inconsistent-return-statements, # R1710
-    no-else-raise, # R1720
     no-else-return, # R1705
     no-self-use, # R0201
     too-few-public-methods, # R0903
@@ -57,9 +54,7 @@ disable=
     too-many-public-methods, # R0904
     too-many-return-statements, # R0911
     trailing-comma-tuple, # R1707
-    unnecessary-comprehension, # R1721
     use-a-generator, # R1729
-    use-dict-literal, # R1735
     use-list-literal, # R1734
 
 
