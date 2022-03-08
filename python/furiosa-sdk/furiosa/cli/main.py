@@ -10,7 +10,7 @@ from furiosa.common import __version__
 COMMAND_LIST = {
     "furiosa-compile": "FuriosaAI SDK Compiler for DNN models",
     "furiosa-server": "RESTful/GRPC Serving framework for DNN models",
-    "furiosa-validate": "Validator to check if DNN models work in FuriosaAI SDK",
+    "furiosa-litmus": "Validator to check if DNN models work in FuriosaAI SDK",
 }
 
 
