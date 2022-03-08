@@ -147,7 +147,7 @@ class DFGImportable:
 
     @staticmethod
     def _make_integer_arithmetic_operator(node, node_i0, node_i1, node_o0, node_i2=None):
-        quant_op_type = 'QLinear%s' % node.op_type
+        quant_op_type = f'QLinear{node.op_type}'
 
         quant_inputs = [*node_i0.input, *node_i1.input, *node_o0.input[1:]]
 

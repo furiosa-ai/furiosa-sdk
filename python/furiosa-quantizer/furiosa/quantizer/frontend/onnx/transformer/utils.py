@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 def name_nodes(model):
     for idx, node in enumerate(model.graph.node):
-        node.name = '%s_%d' % (node.op_type, idx)
+        node.name = f'{node.op_type}_{idx}'
 
     return model
 

@@ -72,9 +72,7 @@ class FuriosaONNXQuantizer:
         # raise Exception if input_tensor is not defined in model.graph.input
         for input_tensor in self.input_tensors:
             if input_tensor not in [input.name for input in self.model.graph.input]:
-                raise Exception(
-                    'input_tensor: %s is not defined in model.graph.input' % input_tensor
-                )
+                raise Exception(f'input_tensor: {input_tensor} is not defined in model.graph.input')
 
         # set quantization scheme
         self.per_channel = per_channel
@@ -110,7 +108,7 @@ class FuriosaONNXQuantizer:
 
                 if name not in self.value_info.keys():
                     raise Exception(
-                        'value_info for %s is missing. Optimize model before quantization.' % name
+                        f'value_info for {name} is missing. Optimize model before quantization.'
                     )
 
         # (Case2) raise Exception if dynamic_range is missing
@@ -122,12 +120,12 @@ class FuriosaONNXQuantizer:
                 continue
 
             if key not in dynamic_ranges.keys():
-                raise Exception('dynamic_range for %s is missing' % key)
+                raise Exception(f'dynamic_range for {key} is missing')
 
         # (Case3) raise Exception if dynamic_range is not defined in model.graph.value_info
         for key in dynamic_ranges:
             if key not in self.value_info.keys():
-                raise Exception('dynamic range: %s is not defined in model.graph.value_info' % key)
+                raise Exception(f'dynamic range: {key} is not defined in model.graph.value_info')
 
         # stack intermediate result of quantization
         self._quant_node = {}
@@ -173,7 +171,7 @@ class FuriosaONNXQuantizer:
         for node in self.model.graph.node:
             # TODO tmp assumption: Original model with QuantizeLinear and DequantizeLinear is not acceptable.
             if any(op == node.op_type for op in ['QuantizeLinear', 'DequantizeLinear']):
-                raise Exception('Original model with %s is not acceptable.' % node.op_type)
+                raise Exception(f'Original model with {node.op_type} is not acceptable.')
 
             for idx, node_input in enumerate(node.input):
                 if not is_float_tensor(self.value_info[node_input]):
@@ -231,7 +229,7 @@ class FuriosaONNXQuantizer:
         # make dequantizelinear node
         output = node_input + '_dequantized'
         if output in self._quant_node:
-            output = node_input + '_dequantized_%d' % self.count
+            output = f'{node_input}_dequantized_{self.count}'
             self.count += 1
         self._stack_quant_node(
             op_type='DequantizeLinear',
@@ -315,7 +313,7 @@ class FuriosaONNXQuantizer:
         try:
             w_init = self.initializer[node.input[2]]
         except IndexError:
-            name = '%s_constant_value' % node.input[0]
+            name = f'{node.input[0]}_constant_value'
             node.input.append(name)
 
             vi = make_tensor_value_info(name=name, elem_type=onnx.TensorProto.FLOAT, shape=[])
@@ -635,20 +633,18 @@ class FuriosaONNXQuantizer:
         # check if every node.input/output has graph.value_info
         for name in set(quant_inputs + quant_outputs):
             if name not in self._quant_value_info_key:
-                raise KeyError('%s is not defined in graph.value_info' % name)
+                raise KeyError(f'{name} is not defined in graph.value_info')
 
         # check if graph.value_info and graph.input/output are disjoint
         for vi in self.model.graph.value_info:
             for inp in self.model.graph.input:
                 if vi.name == inp.name:
-                    raise Exception(
-                        '%s in graph.value_info is also defined in graph.input' % vi.name
-                    )
+                    raise Exception(f'{vi.name} in graph.value_info is also defined in graph.input')
 
             for oup in self.model.graph.output:
                 if vi.name == oup.name:
                     raise Exception(
-                        '%s in graph.value_info is also defined in graph.output' % vi.name
+                        f'{vi.name} in graph.value_info is also defined in graph.output'
                     )
 
     def _check_quant_param(self):

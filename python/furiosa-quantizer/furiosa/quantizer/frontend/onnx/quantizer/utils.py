@@ -181,9 +181,7 @@ def calculate_weight_quant_params(
         zero_point = round((0 - rmin) / scale)  # round to nearest integer
     else:
         raise ValueError(
-            "Unexpected data type {} requested. Only INT8 and UINT8 are supported.".format(
-                weight_qtype
-            )
+            f"Unexpected data type {weight_qtype} requested. Only INT8 and UINT8 are supported."
         )
 
     # The minimum positive (subnormal) value is 2 ** -149 for IEEE 754 single-precision binary floating-point format
