@@ -1,1 +1,61 @@
-../pyproject.toml
+[build-system]
+requires = ["flit_core"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "furiosa-sdk"
+version = "0.7.0.dev0"
+authors = [{ name = "FurioaAI Inc.", email = "pkg@furiosa.ai" }]
+readme = "README.md"
+license = { text = "Apache License 2.0" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dynamic = ["description"]
+requires-python = "~=3.7"
+dependencies = [
+    "furiosa-cli == 0.7.*",
+    "furiosa-runtime == 0.7.*",
+    "furiosa-tools == 0.7.*",
+]
+
+[project.optional-dependencies]
+test = []
+
+cli = ["furiosa-cli == 0.7.*"]
+litmus = ["furiosa-litmus == 0.7.*"]
+models = ["furiosa-models == 0.7.*"]
+quantizer = ["furiosa-quantizer == 0.7.*"]
+registry = ["furiosa-registry == 0.7.*"]
+server = ["furiosa-server == 0.7.*"]
+tool = ["furiosa-tools == 0.7.*"]
+
+full = [
+    "furiosa-cli == 0.7.*",
+    "furiosa-litmus == 0.7.*",
+    "furiosa-models == 0.7.*",
+    "furiosa-quantizer == 0.7.*",
+    "furiosa-registry == 0.7.*",
+    "furiosa-server == 0.7.*",
+    "furiosa-tools == 0.7.*",
+]
+
+[project.urls]
+Home = "https://furiosa.ai"
+Documentation = "https://docs.furiosa.ai"
+"Bug Tracker" = "https://github.com/furiosa-ai/furiosa-sdk/issues"
+"Source Code" = "https://github.com/furiosa-ai/furiosa-sdk"
+
+[tool.flit.module]
+name = "furiosa.sdk"

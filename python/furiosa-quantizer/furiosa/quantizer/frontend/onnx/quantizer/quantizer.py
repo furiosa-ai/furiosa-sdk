@@ -8,11 +8,11 @@
 # NOTICE:  All information contained herein is, and remains
 # the property of FuriosaAI and its suppliers,
 # if any.  The intellectual and technical concepts contained
-# herein are proprietary to FuriosaAI Inc
+# herein are proprietary to FuriosaAI, Inc
 # and are protected by trade secret or copyright law.
 # Dissemination of this information or reproduction of this material
 # is strictly forbidden unless prior written permission is obtained
-# from FuriosaAI Inc.
+# from FuriosaAI, Inc.
 # --------------------------------------------------------------------------
 
 from collections import defaultdict

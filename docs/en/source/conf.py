@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.append(os.path.abspath('../../../python/furiosa-sdk/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-common/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-runtime/'))

@@ -1,6 +1,4 @@
-"""
-command warpper for furiosa-sdk
-"""
+"""FuriosaAI CLI"""
 
 from .main import main
 

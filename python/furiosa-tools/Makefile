@@ -3,9 +3,6 @@ default: install
 install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
-build:
-	python -m build
-
 lint:
 	isort --check --diff . && black --check --diff .
 
@@ -16,7 +13,7 @@ upload:
 	twine upload dist/*
 
 test:
-	python ./setup.py test
+	python -m unittest
 
 clean:
 	rm -rf build dist/* *.egg-info

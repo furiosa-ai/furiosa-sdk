@@ -13,8 +13,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'FuriosaAI SDK Documentation'
-copyright = '2021, FuriosaAI Inc.'
-author = 'FuriosaAI Inc.'
+copyright = '2021, FuriosaAI, Inc.'
+author = 'FuriosaAI, Inc.'
 
 
 # -- General configuration ---------------------------------------------------

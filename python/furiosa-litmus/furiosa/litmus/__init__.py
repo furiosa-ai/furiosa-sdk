@@ -1,3 +1,5 @@
+"""Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"""
+
 from __future__ import print_function
 
 import argparse
