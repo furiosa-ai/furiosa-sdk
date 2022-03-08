@@ -1,11 +1,12 @@
 sdk_modules = [
-    // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
+  // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
+  'furiosa-common',
+  'furiosa-cli',
   'furiosa-tools',
   'furiosa-runtime',
   'furiosa-quantizer',
   'furiosa-litmus',
   'furiosa-registry',
-  'furiosa-sdk',
   'furiosa-server',
   'furiosa-models'
 ]
