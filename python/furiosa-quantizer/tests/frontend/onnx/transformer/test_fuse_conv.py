@@ -169,10 +169,7 @@ class TestFuseConv(TestTransformer):
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
-    def test_case5_1(self):
-        """
-        This tests Pattern_3
-        """
+    def test_case10(self):
         in_channel = 16
         input_shape = [2, in_channel, 8, 8]
         out_channel = 4
@@ -188,6 +185,69 @@ class TestFuseConv(TestTransformer):
         }
         orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
 
+        self.check_graph_node(trans_model, op_types=['Conv', 'Add'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case11(self):
+        in_channel = 8
+        input_shape = [2, in_channel, 1, 1]
+        out_channel = 6
+        output_shape = [2, out_channel, 1, 1]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 1, 1]),
+                "b": (np.float32, [out_channel]),
+                "a": (np.float32, [1]),
+            },
+            "node": [("Conv", ["x", "w", "b"], ["0"]), ("Add", ["a", "0"], ["y"])],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Conv'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case12(self):
+        in_channel = 8
+        input_shape = [2, in_channel, 1, 1]
+        out_channel = 6
+        output_shape = [2, out_channel, 1, 1]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 1, 1]),
+                "b": (np.float32, [out_channel]),
+                "a": (np.float32, [out_channel, 1, 1]),
+            },
+            "node": [("Conv", ["x", "w", "b"], ["0"]), ("Add", ["a", "0"], ["y"])],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Conv'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case13(self):
+        in_channel = 8
+        input_shape = [2, in_channel, 1, 1]
+        out_channel = 6
+        output_shape = [2, out_channel, 1, 1]
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 1, 1]),
+                "b": (np.float32, [out_channel]),
+                "a": (np.float32, [2, out_channel, 1, 1]),
+            },
+            "node": [("Conv", ["x", "w", "b"], ["0"]), ("Add", ["a", "0"], ["y"])],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
         self.check_graph_node(trans_model, op_types=['Conv', 'Add'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
