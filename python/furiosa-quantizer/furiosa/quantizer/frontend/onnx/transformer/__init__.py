@@ -104,10 +104,9 @@ class ONNXTransformer:
     def copy_value_info(self, name):
         if name in self.graph_input_map:
             return self.graph_input_map[name]
-        elif name in self.value_info_map:
+        if name in self.value_info_map:
             return self.value_info_map[name]
-        else:
-            raise Exception('%s not found.' % name)
+        raise Exception('%s not found.' % name)
 
     def get_value_info_shape(self, value_info_name: str) -> List[int]:
         def _get_shape(name, vi_map):
@@ -115,12 +114,11 @@ class ONNXTransformer:
 
         if value_info_name in self.value_info_map:
             return _get_shape(value_info_name, self.value_info_map)
-        elif value_info_name in self.graph_output_map:
+        if value_info_name in self.graph_output_map:
             return _get_shape(value_info_name, self.graph_output_map)
-        elif value_info_name in self.graph_input_map:
+        if value_info_name in self.graph_input_map:
             return _get_shape(value_info_name, self.graph_input_map)
-        else:
-            raise Exception('%s not found.' % value_info_name)
+        raise Exception('%s not found.' % value_info_name)
 
     def get_value_info_dtype(self, tensor_name: str) -> List[int]:
         tensor_name_to_value_info = ChainMap(

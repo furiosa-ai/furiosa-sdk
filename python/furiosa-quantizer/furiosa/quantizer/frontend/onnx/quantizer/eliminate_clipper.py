@@ -72,13 +72,14 @@ class ClipperElimination(ONNXTransformer, ABC):
 
         if len(clip.input) == 1:
             return True
-        elif len(clip.input) == 2:
+        if len(clip.input) == 2:
             min_tensor = self.find_prev_node(self.find_prev_node(clip.input[1]).input[0]).input[0]
             return min_tensor in self.initializer_map
-        else:
+        if len(clip.input) == 3:
             min_tensor = self.find_prev_node(self.find_prev_node(clip.input[1]).input[0]).input[0]
             max_tensor = self.find_prev_node(self.find_prev_node(clip.input[2]).input[0]).input[0]
             return min_tensor in self.initializer_map and max_tensor in self.initializer_map
+        raise ValueError(clip)
 
     def check_condition_2(self, qlinear):
         """

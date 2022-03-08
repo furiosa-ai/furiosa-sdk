@@ -112,7 +112,7 @@ def post_training_quantize(
     """
     if _is_fully_quantized(model):
         return model
-    elif any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
+    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
         raise ValueError(
             "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
         )
@@ -134,7 +134,7 @@ def post_training_quantization_with_random_calibration(
 
     if _is_fully_quantized(model):
         return model
-    elif any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
+    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
         raise ValueError(
             "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
         )

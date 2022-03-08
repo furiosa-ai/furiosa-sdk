@@ -124,10 +124,9 @@ def _random_generator(np_dtype, shape):
     rng = np.random.default_rng()
     if np.issubdtype(np_dtype, np.floating):
         return rng.standard_normal(shape, dtype=np.dtype(np_dtype))
-    elif np.issubdtype(np_dtype, np.integer):
+    if np.issubdtype(np_dtype, np.integer):
         numeric_info = np.iinfo(np_dtype)
         return rng.integers(
             low=numeric_info.min, high=numeric_info.max, size=shape, dtype=np.dtype(np_dtype)
         )
-    else:
-        raise TypeError(repr(np_dtype))
+    raise TypeError(repr(np_dtype))
