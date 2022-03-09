@@ -37,7 +37,7 @@ class ONNXTransformer:
         outputs = list(self.graph_output_map.keys())
         # To prevent traversing cyclic connections
         visited: Set[str] = set()
-        visited_node: List[onnx.NodeProto] = list()
+        visited_node: List[onnx.NodeProto] = []
 
         while len(outputs) > 0:
             output = outputs.pop(0)
