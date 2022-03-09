@@ -537,10 +537,8 @@ class FuriosaONNXQuantizer:
                 if not self.raw_data:
                     assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
             elif any(
-                [
-                    '_'.join(init.name.split('_')[-2:]) == word
-                    for word in ['zero_point', 'quantized_min', 'quantized_max']
-                ]
+                '_'.join(init.name.split('_')[-2:]) == word
+                for word in ('zero_point', 'quantized_min', 'quantized_max')
             ):
                 assert init_dtype in [
                     self.weight_qtype,

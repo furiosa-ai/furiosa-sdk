@@ -373,6 +373,3 @@ class ONNXTransformer:
 
         matched_nodes.reverse()
         return matched_nodes
-
-    def pattern_condition_checker(self, nodes_to_check):
-        raise NotImplementedError
