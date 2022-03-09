@@ -36,7 +36,6 @@ disable=
     missing-module-docstring, # C0114
 
     # Refactor
-    consider-using-from-import, # R0402
     duplicate-code, # R0801
     inconsistent-return-statements, # R1710
     no-self-use, # R0201
@@ -46,7 +45,6 @@ disable=
     too-many-instance-attributes, # R0902
     too-many-locals, # R0914
     too-many-public-methods, # R0904
-    trailing-comma-tuple, # R1707
 
 
 [FORMAT]
