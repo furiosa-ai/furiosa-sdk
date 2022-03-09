@@ -50,7 +50,6 @@ disable=
     too-many-instance-attributes, # R0902
     too-many-locals, # R0914
     too-many-public-methods, # R0904
-    too-many-return-statements, # R0911
     trailing-comma-tuple, # R1707
     use-list-literal, # R1734
 

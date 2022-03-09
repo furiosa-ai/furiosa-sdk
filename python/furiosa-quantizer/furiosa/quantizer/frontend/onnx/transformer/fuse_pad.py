@@ -173,25 +173,14 @@ class Pattern_2(Pattern_1):
 
     def pattern_condition_checker(self, matched_nodes):
         top_node, base_node = matched_nodes
-        if not self.check_condition_1(top_node.attribute):
-            return False
-
-        if not self.check_condition_2(top_node):
-            return False
-
-        if not self.check_condition_3(top_node.input[1]):
-            return False
-
-        if not self.check_condition_4(base_node):
-            return False
-
-        if not self.check_condition_5(base_node):
-            return False
-
-        if not self.check_condition_6(self.get_attrs(base_node), top_node.input[1]):
-            return False
-
-        return True
+        return (
+            self.check_condition_1(top_node.attribute)
+            and self.check_condition_2(top_node)
+            and self.check_condition_3(top_node.input[1])
+            and self.check_condition_4(base_node)
+            and self.check_condition_5(base_node)
+            and self.check_condition_6(self.get_attrs(base_node), top_node.input[1])
+        )
 
     def get_attrs(self, node):
         rank = len(self.get_value_info_shape(node.input[0]))
