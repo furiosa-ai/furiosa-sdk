@@ -49,7 +49,6 @@ disable=
     too-many-locals, # R0914
     too-many-public-methods, # R0904
     trailing-comma-tuple, # R1707
-    use-list-literal, # R1734
 
 
 [FORMAT]

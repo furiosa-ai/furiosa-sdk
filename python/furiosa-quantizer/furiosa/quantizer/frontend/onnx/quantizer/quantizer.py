@@ -136,8 +136,8 @@ class FuriosaONNXQuantizer:
         self._quant_value_info = {}
 
         # quant model.graph field key for quantized model checker
-        self._quant_initializer_key = list()
-        self._quant_value_info_key = list()
+        self._quant_initializer_key = []
+        self._quant_value_info_key = []
 
     def quantize(self) -> onnx.ModelProto:
         # quantize weight and activation
