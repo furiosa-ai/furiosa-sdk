@@ -38,7 +38,6 @@ disable=
     # Refactor
     consider-using-from-import, # R0402
     duplicate-code, # R0801
-    inconsistent-return-statements, # R1710
     no-self-use, # R0201
     too-few-public-methods, # R0903
     too-many-arguments, # R0913

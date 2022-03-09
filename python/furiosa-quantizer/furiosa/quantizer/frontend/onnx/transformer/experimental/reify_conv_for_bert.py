@@ -45,15 +45,12 @@ class ReifyConvForBert(Transformer):
 
             # Add has no specific order of input according to spec.
             # Therefore, we need to find the input index of MatMul
-            def _is_input_op_type(node_input, op_type):
-                if node_input not in self.initializers.keys():
-                    return self.nodes_by_output_name[node_input].op_type == op_type
-
             try:
                 idx_matmul = [
                     i
                     for i, tensor_name in enumerate(node.input)
-                    if _is_input_op_type(tensor_name, 'MatMul')
+                    if tensor_name not in self.initializers
+                    and self.nodes_by_output_name[tensor_name].op_type == 'MatMul'
                 ]
             except KeyError:
                 optimized_nodes.append(node)
@@ -67,14 +64,10 @@ class ReifyConvForBert(Transformer):
             idx_matmul = idx_matmul[0]
             matmul_node = self.nodes_by_output_name[node.input[idx_matmul]]
 
-            def _get_initializer_idx(node_input):
-                if node_input in self.initializers.keys():
-                    return True
-
             idx_matmul_init = next(
                 i
                 for i, tensor_name in enumerate(matmul_node.input)
-                if _get_initializer_idx(tensor_name)
+                if tensor_name in self.initializers
             )
 
             matmul_init = self.initializers[matmul_node.input[idx_matmul_init]]
@@ -85,7 +78,7 @@ class ReifyConvForBert(Transformer):
             idx_add_init = next(
                 i
                 for i, tensor_name in enumerate(matmul_node.input)
-                if _get_initializer_idx(tensor_name)
+                if tensor_name in self.initializers
             )
 
             add_init = self.initializers[node.input[idx_add_init]]
