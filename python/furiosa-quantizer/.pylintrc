@@ -19,7 +19,6 @@ load-plugins=
 # --disable=W".
 disable=
     # Warning
-    abstract-method, # W0223
     arguments-differ, # W0221
     arguments-renamed, # W0237
     attribute-defined-outside-init, # W0201
