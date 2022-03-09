@@ -25,8 +25,8 @@ class CheckVersion(Transformer[onnx.ModelProto]):
             try:
                 model = version_converter.convert_version(model, __OPSET_VERSION__)
                 check_model(model)
-            except Exception:
-                raise Exception(
-                    f"Can't convert the model (ONNX opset {version}) to ONNX opset {__OPSET_VERSION__}"
-                )
+            except Exception as exc:
+                raise NotImplementedError(
+                    f"can't convert the model (ONNX opset {version}) to ONNX opset {__OPSET_VERSION__}"
+                ) from exc
         return model

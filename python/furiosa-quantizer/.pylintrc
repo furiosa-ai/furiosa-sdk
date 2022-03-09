@@ -23,7 +23,6 @@ disable=
     arguments-renamed, # W0237
     attribute-defined-outside-init, # W0201
     fixme, # W0511
-    raise-missing-from, # W0707
     unused-argument, # W0613
 
     # Convention
