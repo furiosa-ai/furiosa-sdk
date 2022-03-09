@@ -26,7 +26,6 @@ disable=
     cell-var-from-loop, # W0640
     fixme, # W0511
     raise-missing-from, # W0707
-    redefined-builtin, # W0622
     unused-argument, # W0613
 
     # Convention

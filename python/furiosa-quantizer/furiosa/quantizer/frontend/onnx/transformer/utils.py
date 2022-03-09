@@ -19,60 +19,45 @@ def name_nodes(model):
 
 
 def eliminate_unused_initializer(model):
-    node_input_names = [node_input for node in model.graph.node for node_input in node.input]
-
-    unused_initializer = list()
-    for init in model.graph.initializer:
-        if init.name not in node_input_names:
-            unused_initializer.append(init)
-
-    for unused in unused_initializer:
-        model.graph.initializer.remove(unused)
-
+    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    unused_initializers = (
+        tensor for tensor in model.graph.initializer if tensor.name not in node_input_names
+    )
+    for unused_initializer in unused_initializers:
+        model.graph.initializer.remove(unused_initializer)
     return model
 
 
 def eliminate_unused_input(model):
-    node_input_names = [node_input for node in model.graph.node for node_input in node.input]
-
-    unused_input = list()
-    for input in model.graph.input:
-        if input.name not in node_input_names:
-            unused_input.append(input)
-
-    for unused in unused_input:
-        model.graph.input.remove(unused)
-
+    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    unused_inputs = (
+        value_info for value_info in model.graph.input if value_info.name not in node_input_names
+    )
+    for unused_input in unused_inputs:
+        model.graph.input.remove(unused_input)
     return model
 
 
 def eliminate_unused_output(model):
-    node_output_names = [node_output for node in model.graph.node for node_output in node.output]
-
-    unused_output = list()
-    for output in model.graph.output:
-        if output.name not in node_output_names:
-            unused_output.append(output)
-
-    for unused in unused_output:
-        model.graph.output.remove(unused)
-
+    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    unused_outputs = (
+        value_info for value_info in model.graph.output if value_info.name not in node_output_names
+    )
+    for unused_output in unused_outputs:
+        model.graph.output.remove(unused_output)
     return model
 
 
 def eliminate_unused_value_info(model):
-    node_output_names = [node_output for node in model.graph.node for node_output in node.output]
-    graph_output_names = [vi.name for vi in model.graph.output]
-    unused_value_info = list()
-    for value_info in model.graph.value_info:
-        if value_info.name not in node_output_names:
-            unused_value_info.append(value_info)
-        if value_info.name in graph_output_names:
-            unused_value_info.append(value_info)
-
-    for unused in unused_value_info:
-        model.graph.value_info.remove(unused)
-
+    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    graph_output_names = set(value_info.name for value_info in model.graph.output)
+    unused_value_infos = (
+        value_info
+        for value_info in model.graph.value_info
+        if value_info.name not in node_output_names or value_info.name in graph_output_names
+    )
+    for unused_value_info in unused_value_infos:
+        model.graph.value_info.remove(unused_value_info)
     return model
 
 
@@ -129,9 +114,9 @@ def fix_batch_size_as_one(model):
     """
     fix batch_size = 1 if dim_param is given.
     """
-    for input in model.graph.input:
+    for value_info in model.graph.input:
         try:
-            batch_dim = input.type.tensor_type.shape.dim[0]
+            batch_dim = value_info.type.tensor_type.shape.dim[0]
         except IndexError:
             continue
 
@@ -139,9 +124,9 @@ def fix_batch_size_as_one(model):
             logger.info(
                 "Dynamic batch size is detected at input_name: %s. "
                 "Fix batch_size=1 for valid shape inference.",
-                input.name,
+                value_info.name,
             )
-            input.type.tensor_type.shape.dim[0].dim_value = 1
+            value_info.type.tensor_type.shape.dim[0].dim_value = 1
 
     return model
 
