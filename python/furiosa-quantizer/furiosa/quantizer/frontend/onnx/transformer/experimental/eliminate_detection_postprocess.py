@@ -1,3 +1,4 @@
+import copy
 from typing import List
 
 import onnx
@@ -51,8 +52,6 @@ class EliminateSSDDetectionPostprocess(Transformer):
 
         # backward traverse
         while True:
-            import copy
-
             prev_postprocess_nodes = copy.deepcopy(postprocess_nodes)
 
             for node in model.graph.node:

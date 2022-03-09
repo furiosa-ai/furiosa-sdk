@@ -1,3 +1,4 @@
+import numpy as np
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -81,7 +82,6 @@ class Pattern_1(ONNXTransformer):
     def make_initializers(self, top_node_init, base_node_init):
         table_arr = self.get_initializer_array(top_node_init)
         matmul_arr = self.get_initializer_array(base_node_init)
-        import numpy as np
 
         new_table_arr = np.matmul(table_arr, matmul_arr)
 

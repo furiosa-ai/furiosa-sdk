@@ -27,7 +27,7 @@ class InferenceShape:
             )
 
         except RuntimeError as e:
-            import re
+            import re  # pylint: disable=import-outside-toplevel
 
             # https://github.com/daquexian/onnx-simplifier/blob/99f544e805d952ff35e682ec276c8d3cd1a377e5/onnxsim/onnx_simplifier.py#L98-L102
             m = re.match(r'The shape of input "(\w+)" has dynamic size', e.args[0])

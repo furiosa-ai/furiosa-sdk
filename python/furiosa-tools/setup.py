@@ -28,7 +28,7 @@ def git_version(version_: str) -> str:
     :rtype: str
     """
     try:
-        import git
+        import git  # pylint: disable=import-outside-toplevel
 
         try:
             repo = git.Repo(os.path.join(*[my_dir, '..', '..', '.git']))
