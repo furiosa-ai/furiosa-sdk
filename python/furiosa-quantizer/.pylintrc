@@ -22,7 +22,6 @@ disable=
     arguments-differ, # W0221
     arguments-renamed, # W0237
     attribute-defined-outside-init, # W0201
-    cell-var-from-loop, # W0640
     fixme, # W0511
     raise-missing-from, # W0707
     redefined-builtin, # W0622

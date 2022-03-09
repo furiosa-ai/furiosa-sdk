@@ -50,9 +50,11 @@ class ReifyConvForBert(Transformer):
                     return self.nodes_by_output_name[node_input].op_type == op_type
 
             try:
-                idx_matmul = list(
-                    filter(lambda enum: _is_input_op_type(enum[1], 'MatMul'), enumerate(node.input))
-                )
+                idx_matmul = [
+                    i
+                    for i, tensor_name in enumerate(node.input)
+                    if _is_input_op_type(tensor_name, 'MatMul')
+                ]
             except KeyError:
                 optimized_nodes.append(node)
                 continue
@@ -62,25 +64,29 @@ class ReifyConvForBert(Transformer):
                 optimized_nodes.append(node)
                 continue
 
-            idx_matmul = idx_matmul[0][0]
+            idx_matmul = idx_matmul[0]
             matmul_node = self.nodes_by_output_name[node.input[idx_matmul]]
 
             def _get_initializer_idx(node_input):
                 if node_input in self.initializers.keys():
                     return True
 
-            idx_matmul_init = list(
-                filter(lambda enum: _get_initializer_idx(enum[1]), enumerate(matmul_node.input))
-            )[0][0]
+            idx_matmul_init = next(
+                i
+                for i, tensor_name in enumerate(matmul_node.input)
+                if _get_initializer_idx(tensor_name)
+            )
 
             matmul_init = self.initializers[matmul_node.input[idx_matmul_init]]
             matmul_weight = numpy_helper.to_array(matmul_init)
             c, n = matmul_weight.shape
             conv_weight = matmul_weight.transpose().reshape(n, c, 1, 1)
 
-            idx_add_init = list(
-                filter(lambda enum: _get_initializer_idx(enum[1]), enumerate(matmul_node.input))
-            )[0][0]
+            idx_add_init = next(
+                i
+                for i, tensor_name in enumerate(matmul_node.input)
+                if _get_initializer_idx(tensor_name)
+            )
 
             add_init = self.initializers[node.input[idx_add_init]]
             bias = numpy_helper.to_array(add_init)
