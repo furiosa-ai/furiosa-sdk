@@ -30,8 +30,8 @@ class ONNXTransformer:
 
         self.input_count_map = Counter()
         for node in model.graph.node:
-            for input in node.input:
-                self.input_count_map[input] += 1
+            for tensor_name in node.input:
+                self.input_count_map[tensor_name] += 1
 
     def transform(self):
         outputs = list(self.graph_output_map.keys())

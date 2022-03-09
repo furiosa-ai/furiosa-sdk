@@ -1,3 +1,4 @@
+import itertools
 from typing import Dict, List, Type, Union
 import unittest
 
@@ -55,18 +56,16 @@ class TestTransformer(unittest.TestCase):
             self.assertListAlmostEqual(act, exp, msg=f"{data}")
 
     def check_value_info(self, model):
-        value_info = {
-            vi.name: vi
-            for vi in list(model.graph.value_info)
-            + list(model.graph.input)
-            + list(model.graph.output)
-        }
+        has_value_info = set(
+            value_info.name
+            for value_info in itertools.chain(
+                model.graph.input, model.graph.output, model.graph.value_info
+            )
+        )
 
         for node in model.graph.node:
-            for input in list(node.input) + list(node.output):
-                if not input:
-                    continue
-                self.assertTrue(input in value_info.keys())
+            for tensor_name in itertools.chain(node.input, node.output):
+                self.assertTrue(tensor_name in has_value_info or not tensor_name)
 
     def check_initializer(self, actual, expected):
         self.assertListAlmostEqual(actual.flatten().tolist(), expected.flatten().tolist())

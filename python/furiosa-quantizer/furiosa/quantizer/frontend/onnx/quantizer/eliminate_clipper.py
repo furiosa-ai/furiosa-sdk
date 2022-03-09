@@ -101,8 +101,8 @@ class ClipperElimination(ONNXTransformer, ABC):
 
     def remove_clip_qdq(self, clip):
         assert clip.op_type in ("Clip", "Relu"), repr(clip)
-        for input in clip.input:
-            dqlinear = self.traverse_prev_node(input, ["DequantizeLinear"])
+        for tensor_name in clip.input:
+            dqlinear = self.traverse_prev_node(tensor_name, ["DequantizeLinear"])
             qlinear = self.traverse_prev_node(dqlinear.input[0], ["QuantizeLinear"])
             # remove dq-q nodes only if qlinear.input[0] is contant
             if qlinear.input[0] in self.initializer_map:

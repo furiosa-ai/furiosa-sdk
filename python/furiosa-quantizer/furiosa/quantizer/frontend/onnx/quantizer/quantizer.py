@@ -352,10 +352,10 @@ class FuriosaONNXQuantizer:
             )
 
     def _quantize_matmul_weight(self, node):
-        for input in node.input:
-            if input not in self.initializer.keys():
+        for tensor_name in node.input:
+            if tensor_name not in self.initializer:
                 continue
-            w_init = self.initializer[input]
+            w_init = self.initializer[tensor_name]
             self._quantize_weight_per_layer(w_init)
 
     def _quantize_conv_weight(self, node, output_channel_axis):
