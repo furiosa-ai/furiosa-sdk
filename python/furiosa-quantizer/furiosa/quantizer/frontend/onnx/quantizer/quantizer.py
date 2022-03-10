@@ -522,10 +522,20 @@ class FuriosaONNXQuantizer:
     def _check_quant_initializer(self):
         for init in self.model.graph.initializer:
             init_dtype = init.data_type
+            # check quant params' data type and field
             if init.name.split('_')[-1] == 'scale':
-                assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s.' % init.name
+                assert (
+                    init_dtype == onnx.TensorProto.FLOAT
+                ), f'Wrong data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
                 if not self.raw_data:
-                    assert init.float_data, 'Data should not be stored in bytes: %s' % init.name
+                    assert (
+                        init.float_data and not init.raw_data
+                    ), f'the scale {init.name} should be stored in float_data and not in raw_data: {init}'
+                else:
+                    assert (
+                        init.raw_data and not init.float_data
+                    ), f'the scale {init.name} should be stored in raw_data and not in float_data: {init}'
+
             elif (
                 init.name.split('_')[-1] == 'quantized'
                 and '_'.join(init.name.split('_')[-2:]) != 'fake_quantized'
@@ -534,12 +544,16 @@ class FuriosaONNXQuantizer:
                     self.weight_qtype,
                     self.activation_qtype,
                     onnx.TensorProto.INT32,
-                ], (
-                    'Wrong data type for %s.' % init.name
-                )
+                ], f'Wrong data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
 
                 if not self.raw_data:
-                    assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
+                    assert (
+                        init.int32_data and not init.raw_data
+                    ), f'the quatized weight/bias {init.name} should be stored in int32_data and not in raw_data: {init}'
+                else:
+                    assert (
+                        init.raw_data and not init.int32_data
+                    ), f'the quatized weight/bias {init.name} should be stored in raw_data and not in int32_data: {init}'
             elif any(
                 '_'.join(init.name.split('_')[-2:]) == word
                 for word in ('zero_point', 'quantized_min', 'quantized_max')
@@ -548,18 +562,25 @@ class FuriosaONNXQuantizer:
                     self.weight_qtype,
                     self.activation_qtype,
                     onnx.TensorProto.INT32,
-                ], (
-                    'Wrong data type for %s.' % init.name
-                )
+                ], f'Wrong data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
 
                 if not self.raw_data:
-                    assert init.int32_data, 'Data should not be stored in bytes: %s' % init.name
+                    assert (
+                        init.int32_data and not init.raw_data
+                    ), f'the quatized weight/bias {init.name} should be stored in int32_data and not in in raw_data: {init}'
+                else:
+                    assert (
+                        init.raw_data and not init.int32_data
+                    ), f'the quatized weight/bias {init.name} should be stored in raw_data and not in int32_data: {init}'
             elif '_'.join(init.name.split('_')[-2:]) == 'fake_quantized':
-                assert init_dtype == onnx.TensorProto.FLOAT, 'Wrong data type for %s' % init.name
+                assert (
+                    init_dtype == onnx.TensorProto.FLOAT
+                ), f'Wrong data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
             else:
-                assert init_dtype in (onnx.TensorProto.INT64, onnx.TensorProto.FLOAT), (
-                    'Wrong data type for %s.' % init.name
-                )
+                assert init_dtype in (
+                    onnx.TensorProto.INT64,
+                    onnx.TensorProto.FLOAT,
+                ), f'Unknown data type {onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[init_dtype]} for {init.name}'
 
         # Checks if scale/zero-point of DequantizedLienar/QuantizeLinear (OpSet < 13) are scalars.
         opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
