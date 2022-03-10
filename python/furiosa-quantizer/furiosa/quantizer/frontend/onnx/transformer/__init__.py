@@ -344,7 +344,7 @@ class ONNXTransformer:
         if vis_to_add:
             self.update_multiple_value_info_map(vis_to_add)
 
-    def pattern_matching(self, node):
+    def pattern_matching(self, base_node):
         raise NotImplementedError
 
     def pattern_matcher(self, node, pattern_to_match: List[str]):

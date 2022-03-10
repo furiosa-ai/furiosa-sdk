@@ -20,7 +20,7 @@ load-plugins=
 disable=
     # Warning
     arguments-differ, # W0221
-    arguments-renamed, # W0237
+
     attribute-defined-outside-init, # W0201
     fixme, # W0511
     unused-argument, # W0613

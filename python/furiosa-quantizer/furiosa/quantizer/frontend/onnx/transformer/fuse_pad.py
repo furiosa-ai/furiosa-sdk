@@ -171,8 +171,8 @@ class Pattern_2(Pattern_1):
 
     pattern_to_match = ['Pad', 'AveragePool']
 
-    def pattern_condition_checker(self, matched_nodes):
-        top_node, base_node = matched_nodes
+    def pattern_condition_checker(self, nodes_to_check):
+        top_node, base_node = nodes_to_check
         return (
             self.check_condition_1(top_node.attribute)
             and self.check_condition_2(top_node)
