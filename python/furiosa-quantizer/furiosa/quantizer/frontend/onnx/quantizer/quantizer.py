@@ -631,10 +631,13 @@ class FuriosaONNXQuantizer:
                     )
 
     def _check_quant_param(self):
+        # ensure that all scales are non-zero.
         for init in self.model.graph.initializer:
             if init.name.split('_')[-1] == 'scale':
-                if all(v == 0.0 for v in init.float_data):
-                    assert 'quantization scale parameter should not be zero: %s' % init.name
+                init_array = onnx.numpy_helper.to_array(init)
+                assert all(
+                    v != 0.0 for v in np.nditer(init_array)
+                ), f"the scale '{init.name}' should be non-zero: {init_array}"
 
         # check if conv bias scale is correct
         for node in self.model.graph.node:
