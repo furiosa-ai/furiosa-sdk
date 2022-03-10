@@ -479,6 +479,10 @@ class FuriosaONNXQuantizer:
                 raw=True,
             )
         else:
+            # Converts numpy 0d array to list of it,
+            # for onnx.helper.make_tensor requires vals to be a list.
+            vals_zp = np.atleast_1d(vals_zp)
+            vals_scale = np.atleast_1d(vals_scale)
             init_zp = make_tensor(name=name_zp, data_type=data_type_zp, dims=dims, vals=vals_zp)
             init_scale = make_tensor(
                 name=name_scale, data_type=onnx.TensorProto.FLOAT, dims=dims, vals=vals_scale
