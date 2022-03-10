@@ -41,9 +41,7 @@ def _get_bn_params(
     return scale, B, mean, var, eps
 
 
-def _fuse_bn_weight(
-    weight: np.ndarray, multiplier: np.ndarray, shifter: np.ndarray, axis: int = 0
-) -> np.ndarray:
+def _fuse_bn_weight(weight: np.ndarray, multiplier: np.ndarray, axis: int = 0) -> np.ndarray:
     idx = [1, 1, 1]
     idx.insert(axis, -1)
     return weight * multiplier.reshape(idx)
@@ -105,7 +103,7 @@ class Pattern_1(ONNXTransformer):
 
         inits_to_add = []
         weight = self.get_initializer_array(conv.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier, shifter)
+        fused_weight = _fuse_bn_weight(weight, multiplier)
         inits_to_add.append(
             self.make_initializer_from_array(fused_weight, conv.input[1] + '_bn_fused')
         )
@@ -174,7 +172,7 @@ class Pattern_2(ONNXTransformer):
 
         inits_to_add = []
         weight = self.get_initializer_array(conv_trans.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier, shifter, axis=1)
+        fused_weight = _fuse_bn_weight(weight, multiplier, axis=1)
         inits_to_add.append(
             self.make_initializer_from_array(fused_weight, conv_trans.input[1] + '_bn_fused')
         )
@@ -253,7 +251,7 @@ class Pattern_3(ONNXTransformer):
         multiplier, shifter = self.get_multiplier_and_shifter(mul, add)
 
         weight = self.get_initializer_array(conv.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier, shifter)
+        fused_weight = _fuse_bn_weight(weight, multiplier)
         fused_weight_name = conv.input[1] + '_bn_fused'
 
         if len(conv.input) == 3:
