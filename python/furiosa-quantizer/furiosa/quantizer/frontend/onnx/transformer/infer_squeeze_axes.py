@@ -64,7 +64,7 @@ class Pattern_1(ONNXTransformer):
         input_shape = self.get_value_info_shape(squeeze.input[0])
         axes = [i for (i, dim_value) in enumerate(input_shape) if dim_value == 1]
 
-        new_squeeze = self.make_node(
+        new_squeeze = onnx.helper.make_node(
             'Squeeze',
             inputs=squeeze.input,
             outputs=squeeze.output,

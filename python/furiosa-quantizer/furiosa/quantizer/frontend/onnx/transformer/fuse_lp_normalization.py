@@ -1,3 +1,5 @@
+from typing import Dict, Iterable
+
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -26,7 +28,7 @@ class Pattern_1(ONNXTransformer):
     # TODO Check if Div has no initialzier
     """
 
-    def pattern_matching(self, base_node):
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         inputs = base_node.input
 
         pattern_to_match = ['ReduceL2/ReduceL1', 'Clip', 'Expand', 'Div']
@@ -34,34 +36,21 @@ class Pattern_1(ONNXTransformer):
         if not matched_nodes:
             return inputs
 
-        top_node = matched_nodes[0]
-
+        reduce_lp, *_ = matched_nodes
         self.transform_to_fuse(
             matched_nodes,
             nodes_to_add=[
-                self.make_node(
+                onnx.helper.make_node(
                     'LpNormalization',
-                    [top_node.input[0]],
+                    [reduce_lp.input[0]],
                     [base_node.output[0]],
-                    top_node.name,
-                    **self.get_attrs(top_node),
+                    reduce_lp.name,
+                    **_get_attrs(reduce_lp),
                 )
             ],
         )
 
-        return top_node.input
-
-    def get_attrs(self, node):
-        axes = get_attribute(node.attribute, "axes")
-
-        if node.op_type == 'ReduceL1':
-            p = 1
-        elif node.op_type == 'ReduceL2':
-            p = 2
-        else:
-            raise Exception()
-
-        return {"axis": int(axes[0]), "p": int(p)}
+        return reduce_lp.input
 
 
 # TODO Implement Pattern_2 in case of unsimplified graph, containing Shape operator:
@@ -73,3 +62,13 @@ class Pattern_1(ONNXTransformer):
 #        -------------------------------------------->
 # to
 #   prev --> LpNormalization --> next
+
+
+def _get_attrs(node: onnx.NodeProto) -> Dict:
+    assert node.op_type in ("ReduceL1", "ReduceL2")
+    axes = get_attribute(node.attribute, "axes")
+    if node.op_type == 'ReduceL1':
+        p = 1
+    elif node.op_type == 'ReduceL2':
+        p = 2
+    return {"axis": int(axes[0]), "p": p}

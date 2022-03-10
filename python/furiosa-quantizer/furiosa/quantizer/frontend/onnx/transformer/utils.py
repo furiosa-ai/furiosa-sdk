@@ -171,3 +171,16 @@ def get_attribute(
     return next(
         (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
     )
+
+
+def make_unhashables_unique(values):
+    seen = []
+    for v in values:
+        if v not in seen:
+            seen.append(v)
+
+    return seen
+
+
+def is_op_type(op_type: str, target_op_types: Iterable[str]) -> bool:
+    return op_type in target_op_types

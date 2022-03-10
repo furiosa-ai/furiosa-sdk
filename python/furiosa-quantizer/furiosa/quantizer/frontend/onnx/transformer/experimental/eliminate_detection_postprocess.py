@@ -22,7 +22,7 @@ class EliminateSSDDetectionPostprocess(Transformer):
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         vi_by_names = {vi.name: vi for vi in model.graph.value_info}
 
-        removed_nodes = self.get_postprocess_nodes(model, self.ssd_outputs)
+        removed_nodes = _get_postprocess_nodes(model, self.ssd_outputs)
 
         new_nodes = list(filter(lambda node: node not in removed_nodes, model.graph.node))
         model = utils.rebuild_model(model, new_nodes)
@@ -32,41 +32,42 @@ class EliminateSSDDetectionPostprocess(Transformer):
 
         return model
 
-    def get_postprocess_nodes(self, model, ssd_output_tensors):
-        inputs = set()
-        inputs.update(ssd_output_tensors)
 
-        postprocess_nodes = []
+def _get_postprocess_nodes(model, ssd_output_tensors):
+    inputs = set()
+    inputs.update(ssd_output_tensors)
 
-        # forward traverse
+    postprocess_nodes = []
+
+    # forward traverse
+    for node in model.graph.node:
+        is_append = False
+        for node_input in node.input:
+            if node_input in inputs:
+                is_append = True
+                for node_output in node.output:
+                    inputs.add(node_output)
+
+        if is_append:
+            postprocess_nodes.append(node)
+
+    # backward traverse
+    while True:
+        prev_postprocess_nodes = copy.deepcopy(postprocess_nodes)
+
         for node in model.graph.node:
             is_append = False
-            for node_input in node.input:
-                if node_input in inputs:
-                    is_append = True
-                    for node_output in node.output:
-                        inputs.add(node_output)
-
-            if is_append:
+            for postprocess_node in postprocess_nodes:
+                for node_output in node.output:
+                    if (
+                        node_output in postprocess_node.input
+                        and node_output not in ssd_output_tensors
+                    ):
+                        is_append = True
+            if is_append and node not in postprocess_nodes:
                 postprocess_nodes.append(node)
 
-        # backward traverse
-        while True:
-            prev_postprocess_nodes = copy.deepcopy(postprocess_nodes)
+        if len(prev_postprocess_nodes) == len(postprocess_nodes):
+            break
 
-            for node in model.graph.node:
-                is_append = False
-                for postprocess_node in postprocess_nodes:
-                    for node_output in node.output:
-                        if (
-                            node_output in postprocess_node.input
-                            and node_output not in ssd_output_tensors
-                        ):
-                            is_append = True
-                if is_append and node not in postprocess_nodes:
-                    postprocess_nodes.append(node)
-
-            if len(prev_postprocess_nodes) == len(postprocess_nodes):
-                break
-
-        return postprocess_nodes
+    return postprocess_nodes

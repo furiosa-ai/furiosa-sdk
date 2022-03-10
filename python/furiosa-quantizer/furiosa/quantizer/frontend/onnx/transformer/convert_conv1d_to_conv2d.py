@@ -51,24 +51,24 @@ class Pattern_1(ONNXTransformer):
 
     def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         (conv1d,) = matched_nodes
-        reshape_0 = self.make_node(
+        reshape_0 = onnx.helper.make_node(
             'Reshape',
             [conv1d.input[0], conv1d.input[0] + '_reshape'],
             [conv1d.input[0] + '_reshaped'],
             conv1d.name + '_0',
         )
-        conv2d = self.make_node(
+        conv2d = onnx.helper.make_node(
             'Conv',
             [
                 reshape_0.output[0],
                 conv1d.input[1] + '_expanded',
-                conv1d.input[2] if len(conv1d.input) == 3 else None,
+                conv1d.input[2] if len(conv1d.input) == 3 else "",
             ],
             [conv1d.output[0] + '_expanded'],
             conv1d.name + '_1',
             **_get_conv2d_attrs(conv1d, kernel_size=self.get_value_info_shape(conv1d.input[1])[-1]),
         )
-        reshape_1 = self.make_node(
+        reshape_1 = onnx.helper.make_node(
             'Reshape',
             [conv2d.output[0], conv1d.output[0] + '_reshape'],
             [conv1d.output[0]],
@@ -82,15 +82,15 @@ class Pattern_1(ONNXTransformer):
         new_reshape_0 = self._get_expanded_shape(conv1d.input[0])
         new_reshape_1 = self.get_value_info_shape(conv1d.output[0])
         return [
-            self.make_initializer_from_array(
+            onnx.numpy_helper.from_array(
                 np.array(new_reshape_0), name=conv1d.input[0] + '_reshape'
             ),
-            self.make_initializer_from_array(
+            onnx.numpy_helper.from_array(
                 self.get_initializer_array(conv1d.input[1]).reshape(conv2d_weight_shape),
                 name=conv1d.input[1] + '_expanded',
             ),
             self.initializer_map.get(conv1d.input[2]) if len(conv1d.input) == 3 else None,
-            self.make_initializer_from_array(
+            onnx.numpy_helper.from_array(
                 np.array(new_reshape_1), name=conv1d.output[0] + '_reshape'
             ),
         ]
@@ -100,10 +100,10 @@ class Pattern_1(ONNXTransformer):
         conv2d_input_shape = self._get_expanded_shape(conv1d.input[0])
         conv2d_output_shape = self._get_expanded_shape(conv1d.output[0])
         return [
-            self.make_tensor_value_info(
+            onnx.helper.make_tensor_value_info(
                 conv1d.input[0] + '_reshaped', onnx.TensorProto.FLOAT, conv2d_input_shape
             ),
-            self.make_tensor_value_info(
+            onnx.helper.make_tensor_value_info(
                 conv1d.output[0] + '_expanded', onnx.TensorProto.FLOAT, conv2d_output_shape
             ),
         ]

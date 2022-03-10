@@ -43,7 +43,7 @@ class Pattern_1(ONNXTransformer):
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[self.make_nodes(matched_nodes)],
+            nodes_to_add=[_make_nodes(matched_nodes)],
             inits_to_add=[self.make_initializers(*self.get_new_init_args(matched_nodes))],
         )
         return top_node.input
@@ -67,24 +67,25 @@ class Pattern_1(ONNXTransformer):
 
         return table_input, matmul_input
 
-    def make_nodes(self, matched_nodes):
-        top_node, base_node = matched_nodes
-
-        fused_gather_node = self.make_node(
-            'Gather',
-            inputs=[top_node.input[0] + '_fused', top_node.input[1]],
-            outputs=[base_node.output[0]],
-            name=base_node.output[0] + '_1',
-        )
-
-        return fused_gather_node
-
     def make_initializers(self, top_node_init, base_node_init):
         table_arr = self.get_initializer_array(top_node_init)
         matmul_arr = self.get_initializer_array(base_node_init)
 
         new_table_arr = np.matmul(table_arr, matmul_arr)
 
-        new_init = self.make_initializer_from_array(new_table_arr, top_node_init + '_fused')
+        new_init = onnx.numpy_helper.from_array(new_table_arr, top_node_init + '_fused')
 
         return new_init
+
+
+def _make_nodes(matched_nodes):
+    top_node, base_node = matched_nodes
+
+    fused_gather_node = onnx.helper.make_node(
+        'Gather',
+        inputs=[top_node.input[0] + '_fused', top_node.input[1]],
+        outputs=[base_node.output[0]],
+        name=base_node.output[0] + '_1',
+    )
+
+    return fused_gather_node
