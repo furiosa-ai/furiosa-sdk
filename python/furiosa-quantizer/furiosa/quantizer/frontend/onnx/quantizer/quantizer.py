@@ -15,6 +15,8 @@
 # from FuriosaAI Inc.
 # --------------------------------------------------------------------------
 
+from collections import defaultdict
+import copy
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -89,6 +91,10 @@ class FuriosaONNXQuantizer:
 
         # set model a proto to use
         self.initializer = {init.name: init for init in self.model.graph.initializer}
+        self.consumer_map = defaultdict(list)
+        for node in model.graph.node:
+            for tensor in node.input:
+                self.consumer_map[tensor].append(node)
         self.value_info = {
             vi.name: vi
             for vi in list(self.model.graph.value_info)
@@ -167,22 +173,29 @@ class FuriosaONNXQuantizer:
         return self.model
 
     def make_intermediate_representation(self):
-        self.count = 0
         for node in self.model.graph.node:
             # TODO tmp assumption: Original model with QuantizeLinear and DequantizeLinear is not acceptable.
             if any(op == node.op_type for op in ['QuantizeLinear', 'DequantizeLinear']):
                 raise Exception(f'Original model with {node.op_type} is not acceptable.')
 
+            # uses orig_node as an index getter
+            # to avoid updating every consumer_map that contains the mutated node
+            orig_node = copy.deepcopy(node)
             for idx, node_input in enumerate(node.input):
                 if not is_float_tensor(self.value_info[node_input]):
                     continue
                 if node_input + '_scale' not in self._quant_param:
                     continue
-                self.make_quant_dequant_node(node_input)
-                node.input[idx] += '_dequantized'
 
-                if node.input[idx] + '_' + str(self.count - 1) in self._quant_node:
-                    node.input[idx] += '_' + str(self.count - 1)
+                suffix = (
+                    self.consumer_map.get(node_input).index(orig_node)
+                    if len(self.consumer_map.get(node_input)) > 1
+                    else None
+                )
+                self.make_quant_dequant_node(node_input, suffix)
+                node.input[idx] += '_dequantized' + (
+                    f'_{str(suffix)}' if suffix is not None else ''
+                )
 
             self._quant_node.update({node.output[0]: node})
         for output in self.model.graph.output:
@@ -194,8 +207,6 @@ class FuriosaONNXQuantizer:
 
             self.model.graph.value_info.append(output)
             output.name += '_dequantized'
-            if output.name + '_' + str(self.count - 1) in self._quant_node:
-                output.name += '_' + str(self.count - 1)
             self._quant_value_info.pop(output.name)
 
         self.model = utils.rebuild_model(
@@ -213,32 +224,36 @@ class FuriosaONNXQuantizer:
 
         return self.model
 
-    def make_quant_dequant_node(self, node_input):
+    def make_quant_dequant_node(self, node_input, idx=None):
+        scale = node_input + '_scale'
+        zero_point = node_input + '_zero_point'
+        qlinear_output = node_input + '_quantized'
+        dqlinear_output = node_input + '_dequantized'
+        if idx is not None:
+            dqlinear_output += f'_{str(idx)}'
+
         # make quantizelinear node
         self._stack_quant_node(
             op_type='QuantizeLinear',
-            inputs=[node_input, node_input + '_scale', node_input + '_zero_point'],
-            outputs=[node_input + '_quantized'],
+            inputs=[node_input, scale, zero_point],
+            outputs=[qlinear_output],
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
-            name_quant=node_input + '_quantized',
-            elem_type=self._quant_param[node_input + '_zero_point'].data_type,
+            name_quant=qlinear_output,
+            elem_type=self._quant_param[zero_point].data_type,
             quant_vi_dict=self._quant_value_info,
         )
+
         # make dequantizelinear node
-        output = node_input + '_dequantized'
-        if output in self._quant_node:
-            output = f'{node_input}_dequantized_{self.count}'
-            self.count += 1
         self._stack_quant_node(
             op_type='DequantizeLinear',
-            inputs=[node_input + '_quantized', node_input + '_scale', node_input + '_zero_point'],
-            outputs=[output],
+            inputs=[qlinear_output, scale, zero_point],
+            outputs=[dqlinear_output],
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
-            name_quant=output,
+            name_quant=dqlinear_output,
             elem_type=onnx.TensorProto.FLOAT,
             quant_vi_dict=self._quant_value_info,
         )

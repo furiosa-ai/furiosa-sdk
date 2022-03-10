@@ -19,7 +19,6 @@ load-plugins=
 # --disable=W".
 disable=
     # Warning
-    attribute-defined-outside-init, # W0201
     fixme, # W0511
 
     # Convention
