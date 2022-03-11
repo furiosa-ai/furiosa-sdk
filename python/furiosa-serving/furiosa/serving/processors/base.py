@@ -21,13 +21,9 @@ class Processor(ABC):
         """
 
         @wraps(
-            func,
-            assigned=(
-                "__module__",
-                "__name__",
-                "__qualname__",
-                # Note that we don't assign __doc__, __annotations__ here. See below
-            ),
+            self.preprocess,
+            # Note that we don't have any assigned value. See below
+            assigned=(),
         )
         async def decorator(*args: Any, **kwargs: Any) -> Any:
             # Preprocess
@@ -49,6 +45,10 @@ class Processor(ABC):
         # Replace original function's annotation with new signature
         decorator.__annotations__ = dict(params, **returns)
 
+        # Assign original attribute to decorator. Do not use wrap() as FastAPI will unwrap it
+        for attr in ("__module__", "__name__", "__qualname__"):
+            setattr(decorator, attr, getattr(func, attr))
+
         # Integrate docstring
         decorator.__doc__ = "".join(
             (
@@ -62,6 +62,4 @@ class Processor(ABC):
             )
         )
 
-        # NOTE(ileixe): Hide we are decorator as FastAPI validation unwrap it
-        delattr(decorator, "__wrapped__")
         return decorator
