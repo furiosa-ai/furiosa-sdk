@@ -226,6 +226,54 @@ class TestEliminateClipper(TestTransformer):
             "output": {"y": (np.float32, output_shape)},
             "initializer": {
                 "w": (np.float32, [out_channel, in_channel, 1, 1]),
+                "axes": np.array([2, 3], dtype=np.int64),
+            },
+            "node": [
+                ("Unsqueeze", ["x", "axes"], ["0"]),
+                ("Conv", ["0", "w"], ["1"]),
+                ("Squeeze", ["1", "axes"], ["2"]),
+                ("Relu", ["2"], ["y"]),
+            ],
+        }
+
+        onnx_model = make_onnx_model(model_desc)
+        orig_model, trans_model = _make_test_model(onnx_model, Pattern_5)
+        self.check_graph_node(
+            trans_model,
+            op_types=[
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Unsqueeze',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Conv',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Squeeze',
+                'QuantizeLinear',
+                'DequantizeLinear',
+            ],
+        )
+        graph = trans_model.graph
+        qlinear1 = graph.node[-2]
+        dqlinear1 = graph.node[-1]
+        self.check_quant_params(qlinear1, dqlinear1, graph)
+        self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+        self.check_value_info(trans_model)
+
+    def test_case5_a(self):
+        in_channel = out_channel = 32
+        input_shape = output_shape = [1, in_channel]
+        opsetid = ("", 12)
+
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 1, 1]),
             },
             "node": [
                 ("Unsqueeze", ["x"], ["0"], {"axes": [2, 3]}),
@@ -233,6 +281,7 @@ class TestEliminateClipper(TestTransformer):
                 ("Squeeze", ["1"], ["2"], {"axes": [2, 3]}),
                 ("Relu", ["2"], ["y"]),
             ],
+            "opsetid": [opsetid],
         }
 
         onnx_model = make_onnx_model(model_desc)
@@ -271,6 +320,56 @@ class TestEliminateClipper(TestTransformer):
             "output": {"y": (np.float32, output_shape)},
             "initializer": {
                 "w": (np.float32, [out_channel, in_channel, 1, 1]),
+                "axes": np.array([2, 3], dtype=np.int64),
+                "min": np.array(0.0, dtype=np.float32),
+                "max": np.array(1.0, dtype=np.float32),
+            },
+            "node": [
+                ("Unsqueeze", ["x", "axes"], ["0"]),
+                ("Conv", ["0", "w"], ["1"]),
+                ("Squeeze", ["1", "axes"], ["2"]),
+                ("Clip", ["2", "min", "max"], ["y"]),
+            ],
+        }
+
+        onnx_model = make_onnx_model(model_desc)
+        orig_model, trans_model = _make_test_model(onnx_model, Pattern_6)
+        self.check_graph_node(
+            trans_model,
+            op_types=[
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Unsqueeze',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Conv',
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Squeeze',
+                'QuantizeLinear',
+                'DequantizeLinear',
+            ],
+        )
+        graph = trans_model.graph
+        qlinear1 = graph.node[-2]
+        dqlinear1 = graph.node[-1]
+        self.check_quant_params(qlinear1, dqlinear1, graph)
+        self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+        self.check_value_info(trans_model)
+
+    def test_case6_a(self):
+        in_channel = out_channel = 32
+        input_shape = output_shape = [1, in_channel]
+        opsetid = ("", 12)
+
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [out_channel, in_channel, 1, 1]),
                 "min": np.array(0.0, dtype=np.float32),
                 "max": np.array(1.0, dtype=np.float32),
             },
@@ -280,6 +379,7 @@ class TestEliminateClipper(TestTransformer):
                 ("Squeeze", ["1"], ["2"], {"axes": [2, 3]}),
                 ("Clip", ["2", "min", "max"], ["y"]),
             ],
+            "opsetid": [opsetid],
         }
 
         onnx_model = make_onnx_model(model_desc)
