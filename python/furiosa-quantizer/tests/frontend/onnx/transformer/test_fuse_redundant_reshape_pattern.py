@@ -86,10 +86,34 @@ class TestFuseRedundantReshapePattern(TestTransformer):
         model_desc = {
             "input": {"x": (np.float32, input_shape)},
             "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "axes": np.array([1], dtype=np.int64),
+                "axes1": np.array([0], dtype=np.int64),
+            },
+            "node": [
+                ("Squeeze", ["x", "axes"], ["0"]),
+                ("Unsqueeze", ["0", "axes1"], ["y"]),
+            ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
+        self.check_graph_node(trans_model, op_types=['Reshape'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case4_a(self):
+        input_shape = [16, 1, 8]
+        output_shape = [1, 16, 8]
+        opsetid = ("", 12)
+
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
             "node": [
                 ("Squeeze", ["x"], ["0"], {"axes": [1]}),
                 ("Unsqueeze", ["0"], ["y"], {"axes": [0]}),
             ],
+            "opsetid": [opsetid],
         }
 
         orig_model, trans_model = self.make_test_model(model_desc, Pattern_3)
