@@ -11,22 +11,42 @@ from furiosa.quantizer.frontend.onnx import (
     _is_fully_quantized_in_dfg_mode,
     _is_fully_quantized_in_fake_quant_mode,
     _is_sandwiched,
+    calibrate,
+    optimize_model,
     parse_onnx_graph,
     post_training_quantize,
+    quantizer,
 )
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 
 
 class ONNXTest(unittest.TestCase):
-    def test_post_training_quantize(self):
-        model = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
+    @classmethod
+    def setUpClass(cls):
         # val2017-10.pickle contains a calibration dataset that consists
         # of 10 images in the COCO validation dataset [val2017.zip][].
         #
         # [val2017.zip]: http://images.cocodataset.org/zips/val2017.zip
         with open(Path(__file__).resolve().parent / "val2017-10.pickle", "rb") as f:
-            dataset = pickle.load(f)
-        model = post_training_quantize(model, dataset)
+            cls.dataset = pickle.load(f)
+
+        # load efficientdet_d0
+        cls.effdet = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
+
+    def test_post_training_quantize_with_raw_data_True(self):
+        post_training_quantize(ONNXTest.effdet, self.dataset, False)
+
+    def test_post_training_quantize_with_raw_data_False(self):
+        model = optimize_model(ONNXTest.effdet)
+        ranges = calibrate.calibrate(model, ONNXTest.dataset)
+        quantizer.FuriosaONNXQuantizer(
+            model=model,
+            per_channel=False,
+            static=True,
+            mode=quantizer.QuantizationMode.DFG,
+            dynamic_ranges=ranges,
+            raw_data=False,
+        ).quantize()
 
     def test__is_sandwiched(self):
         model = _make_sandwiced_model()

@@ -5,6 +5,7 @@ import onnx
 import onnxruntime as ort
 
 from furiosa.quantizer.frontend.onnx import calibrate, quantizer
+from furiosa.quantizer.frontend.onnx.quantizer import quantizer_mode
 from furiosa.quantizer.frontend.onnx.quantizer.eliminate_clipper import (
     Pattern_1,
     Pattern_2,
@@ -83,10 +84,10 @@ class TestEliminateClipper(TestTransformer):
         data = [rng.standard_normal(shape, dtype=np.float32) for shape in input_shapes]
 
         orig_output = _run_onnx_model(
-            quantizer.ONNXRuntimeExecutable(orig_model, raw_data=True).transform(), data
+            quantizer_mode.ONNXRuntimeExecutable(orig_model, raw_data=True).transform(), data
         )
         trans_output = _run_onnx_model(
-            quantizer.ONNXRuntimeExecutable(trans_model, raw_data=True).transform(), data
+            quantizer_mode.ONNXRuntimeExecutable(trans_model, raw_data=True).transform(), data
         )
 
         # For all outputs produced, max_diff / scale should be "very"(<5e-06) close to round(max_diff / scale).
