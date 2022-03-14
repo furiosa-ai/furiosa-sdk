@@ -8,7 +8,8 @@ sdk_modules = [
   'furiosa-litmus',
   'furiosa-registry',
   'furiosa-server',
-  'furiosa-models'
+  'furiosa-models',
+  'furiosa-serving'
 ]
 
 format_applied = [
@@ -18,7 +19,8 @@ format_applied = [
   'furiosa-runtime',
   'furiosa-server',
   'furiosa-tools',
-  'furiosa-models'
+  'furiosa-models',
+  'furiosa-serving'
 ]
 
 lint_applied = [

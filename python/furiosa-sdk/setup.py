@@ -10,6 +10,7 @@ EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "quantizer": ["furiosa-quantizer~=" + version],
     "litmus": ["furiosa-litmus~=" + version],
     "models": ["furiosa-models~=" + version],
+    "serving": ["furiosa-serving~=" + version],
 }
 
 EXTRAS_REQUIREMENTS["full"] = [

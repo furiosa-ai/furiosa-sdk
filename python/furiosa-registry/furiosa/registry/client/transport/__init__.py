@@ -64,6 +64,23 @@ async def read(uri: str, path: str) -> bytes:
         return await transport.read(uri, path)
 
 
+@dispatch(str)
+async def read(location: str) -> bytes:  # noqa: F811
+    """Read a file binary data from the specified location with a transport which supports the URI.
+
+    Args:
+        location (str): Location(URL) to read the file. This should be valid URL to download.
+
+    Returns:
+        bytes: Downloaded binary data.
+
+    Raises:
+        TransportNotFound: If all of the available transports are not supporing the URI.
+    """
+    with supported(location) as transport:
+        return await transport.read(location)
+
+
 async def download(uri: str) -> str:
     """Download a registry directory into local destination with a transport which supports the URI.
 
