@@ -1,3 +1,5 @@
+from typing import Iterable, List
+
 import numpy as np
 import onnx
 
@@ -28,64 +30,53 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Gather', 'MatMul']
 
-    def pattern_matching(self, base_node):
-        inputs = base_node.input
-
+    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
 
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
-        top_node = matched_nodes[0]
+            return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[_make_nodes(matched_nodes)],
-            inits_to_add=[self.make_initializers(*self.get_new_init_args(matched_nodes))],
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
         )
-        return top_node.input
 
-    def pattern_condition_checker(self, nodes_to_check):
-        _, base_node = nodes_to_check
+        gather, _ = matched_nodes
+        return gather.input
 
-        return self.check_condition_1(base_node.output[0]) and self.check_condition_2(base_node)
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+        _, matmul = nodes_to_check
+        cond1 = len(self.get_value_info_shape(matmul.output[0])) == 2
+        cond2 = (matmul.input[0] in self.initializer_map) != (
+            matmul.input[1] in self.initializer_map
+        )
+        return cond1 and cond2
 
-    def check_condition_1(self, tensor_name):
-        return len(self.get_value_info_shape(tensor_name)) == 2
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+        gather, matmul = matched_nodes
 
-    def check_condition_2(self, node):
-        return sum(node_input in self.initializer_map for node_input in node.input) == 1
+        return [
+            onnx.helper.make_node(
+                'Gather',
+                inputs=[gather.input[0] + '_fused', gather.input[1]],
+                outputs=[matmul.output[0]],
+                name=matmul.output[0] + '_1',
+            )
+        ]
 
-    def get_new_init_args(self, matched_nodes):
-        top_node, base_node = matched_nodes
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        gather, matmul = matched_nodes
 
-        table_input = self.get_init_node_input(top_node)
-        matmul_input = self.get_init_node_input(base_node)
+        table_tensor = gather.input[0]
+        weight_tensor = self.get_init_node_input(matmul)
 
-        return table_input, matmul_input
+        table_arr = self.get_initializer_array(table_tensor)
+        weight_arr = self.get_initializer_array(weight_tensor)
 
-    def make_initializers(self, top_node_init, base_node_init):
-        table_arr = self.get_initializer_array(top_node_init)
-        matmul_arr = self.get_initializer_array(base_node_init)
-
-        new_table_arr = np.matmul(table_arr, matmul_arr)
-
-        new_init = onnx.numpy_helper.from_array(new_table_arr, top_node_init + '_fused')
-
-        return new_init
-
-
-def _make_nodes(matched_nodes):
-    top_node, base_node = matched_nodes
-
-    fused_gather_node = onnx.helper.make_node(
-        'Gather',
-        inputs=[top_node.input[0] + '_fused', top_node.input[1]],
-        outputs=[base_node.output[0]],
-        name=base_node.output[0] + '_1',
-    )
-
-    return fused_gather_node
+        fused_table_arr = np.matmul(table_arr, weight_arr)
+        return [onnx.numpy_helper.from_array(fused_table_arr, table_tensor + '_fused')]
