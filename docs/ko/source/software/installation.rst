@@ -160,4 +160,4 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.5.0-2
+  sudo apt-get install -y furiosa-libnux=0.6.0-2

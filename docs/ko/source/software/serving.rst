@@ -8,7 +8,7 @@
 이런 유스케이스를 위해 FuriosaAI SDK는 `KServe Predict Protocol Version 2 <https://github.com/kserve/kserve/blob/master/docs/predict-api/v2/required_api.md>`_ 를 지원하는
 모델 서버를 제공한다.
 
-모델 서버는 FuriosaAI SDK 0.5.0 부터 포함되며 다음 주요 기능을 제공한다.
+모델 서버는 다음 주요 기능을 제공한다.
 
  * REST API 지원
  * 다수의 NPU 디바이스 및 다수의 모델를 하나의 서버로 서빙 지원
@@ -89,6 +89,7 @@ Python 실행환경 준비가 필요하다면 :ref:`SetupPython` 를 참고한�
 
 .. code-block:: sh
 
+    $ cd furiosa-sdk
     $ furiosa server \
     --model-path examples/assets/quantized_models/MNISTnet_uint8_quant_without_softmax.tflite \
     --model-name mnist
@@ -130,7 +131,8 @@ Python 실행환경 준비가 필요하다면 :ref:`SetupPython` 를 참고한�
 
 .. code-block:: sh
 
-    furiosa server --model-config samples/model_config_example.yaml
+    $ cd furiosa-sdk/python/furiosa-server
+    $ furiosa server --model-config samples/model_config_example.yaml
 
     Saving the compilation log into /Users/hyunsik/.local/state/furiosa/logs/compile-20211126143917-2731kz.log
     Using furiosa-compiler 0.5.0 (rev: 407c0c51f built at 2021-11-26 12:05:30)

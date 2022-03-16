@@ -25,8 +25,8 @@ Kubernetes 클러스터가 NPU를 인식하도록 장치 플러그인과 노드 
 
 .. code-block:: sh
 
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.5.0/kubernetes/deployments/node-labeller.yaml
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.5.0/kubernetes/deployments/device-plugin.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/node-labeller.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/device-plugin.yaml
 
 
 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 데몬셋이 정상 동작하는지 확인할 수 있다.

@@ -142,18 +142,18 @@ Python SDK 패키지 설치
 
       pip install furiosa-sdk
 
-    ``furiosa-sdk`` 패키지는 컴파일러 명령행 도구 및 추론 API를 포함하고 있다.
-    각각의 자세한 사용법은 :ref:`CliCompiler` 와 `Tutorial 2: Inference APIs <https:///>`_ 를
-    참고하라.
+
+    패키지는 컴파일러 명령행 도구 및 추론 API를 포함하고 있다.
+    각각의 자세한 사용법은 :ref:`CompilerCli` 와 :ref:`Tutorial` 를 참고하라.
 
 
     추가적인 기능은 Python Extra 패키지 형태로 제공하고 있으며 :ref:`PythonExtraPackages` 에서
-    필요한 패키지를 골라 설치할 수 있다. 예를 들어, 모델 서빙을 위해 ``server`` 와 모델의 동작여부를 확인하기
-    위해 ``validator`` 해야 한다면 아래와 같이 확장 패키지를 지정한다.
+    필요한 패키지를 골라 설치할 수 있다. 예를 들어, 모델 서빙을 위해 ``server`` 와 모델과 SDK 간에 호환여부를 확인하기
+    위해 ``litmus``를 설치해야 해야 한다면 아래와 같이 확장 패키지를 지정한다.
 
     .. code-block:: sh
 
-      pip install 'furiosa-sdk[server, validator]'
+      pip install 'furiosa-sdk[server, litmus]'
 
   .. tab:: 소스 코드를 이용한 설치
 
@@ -204,14 +204,14 @@ DNN 모델을 NPU로 가속하여 GRPC나 Restful API로 서빙하는 기능을 
   pip install 'furiosa-sdk[server]'
 
 
-Model Validator
+Litmus
 --------------------------------
 지정한 모델이 FuriosaAI SDK와 호환되는지 여부를 검사하는 도구이다.
 이 과정에서 모델 양자화, 컴파일 등의 과정을 모의로 실행한다.
 
 .. code-block:: sh
 
-  pip install 'furiosa-sdk[validator]'
+  pip install 'furiosa-sdk[litmus]'
 
 Quantizer
 --------------------------------
