@@ -1,6 +1,6 @@
 import itertools
 import logging
-from typing import Any, Callable, Iterable, List, Optional, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 
 import onnx
 from onnx.helper import make_model, make_opsetid, make_tensor_value_info
@@ -187,14 +187,6 @@ def fixed_point(x: T, functions: Iterable[Callable[[T], T]]) -> T:
             return x
 
 
-def get_attribute(
-    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
-) -> Any:
-    return next(
-        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
-    )
-
-
 def make_unhashables_unique(values):
     seen = []
     for v in values:
@@ -298,3 +290,15 @@ def get_node_output_names(model):
             for subgraph_node in graph.node:
                 tensor_names.update(tensor_name for tensor_name in subgraph_node.output)
     return tensor_names
+
+
+def get_attribute(
+    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
+) -> Any:
+    return next(
+        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
+    )
+
+
+def get_node_attributes(node: onnx.NodeProto) -> Dict[str, Any]:
+    return {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
