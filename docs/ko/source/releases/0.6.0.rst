@@ -71,6 +71,9 @@ furiosa-serving은 FastAPI 기반으로 모델 추론 API의 실행 전후에 Py
     $ pip install 'furiosa-sdk[serving]'
 
 
+사용 예제는 아래와 같으며 더 자세한 사용법은 `furiosa-serving Github <https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-serving>`_ 에서
+살펴볼 수 있다.
+
   .. code-block:: python
 
     from typing import Dict
@@ -101,7 +104,3 @@ furiosa-serving은 FastAPI 기반으로 모델 추론 API의 실행 전후에 Py
         response: Dict = postprocess(result)
 
         return response
-
-
-더 자세한 설명은 `furiosa-serving Github <https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-serving>`_ 에서
-살펴볼 수 있다.
