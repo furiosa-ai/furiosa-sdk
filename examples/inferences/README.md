@@ -3,13 +3,13 @@
 This contains examples of FuriosaAI NPU Python SDK
 
 ## Preliminaries
-* [FuriosaAI NPU SDK insatllation](https://furiosa-ai.github.io/renegade-manual/sdk/latest/ko/installation/index.html)
-* Input model must be quantized via FuriosaAI Quantizer. See [FuriosaAI NPU Python SDK Quantizer Examples](../furiosa-sdk-quantizer)
+* [Furiosa Python SDK Installation](https://furiosa-ai.github.io/docs/latest/en/installation/python-sdk.html) ([Korean](https://furiosa-ai.github.io/docs/latest/ko/software/python-sdk.html))
+* The model is already quantized through FuriosaAI Quantizer. See [Furiosa Quantizer Examples](../quantizers)
 
 ## Setup
 ```
 git clone https://github.com/furiosa-ai/furiosa-sdk
-cd furiosa-sdk/examples/furiosa-sdk-runtime
+cd furiosa-sdk/examples/inferences
 pip install -r requirements.txt
 ```
 
