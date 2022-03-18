@@ -2,7 +2,7 @@
 
 Let's install the required packages as follows:
 ```
-$ pip install -r requirements
+$ pip install -r requirements.txt
 ```
 
 Generate HTML documents and copy the output to a specific furiosa-doc path:

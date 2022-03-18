@@ -41,7 +41,7 @@ extensions = [
   'sphinx.ext.autosectionlabel',
   'sphinx.ext.autodoc',  # Core library for html generation from docstrings
   'sphinx.ext.autosummary',  # Create neat summary tables
-  'sphinxcontrib.napoleon',  # Create neat summary tables
+  'sphinxcontrib.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
