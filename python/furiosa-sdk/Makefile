@@ -48,4 +48,4 @@ update_version:
 ifndef SDK_VERSION
 	$(error "SDK_VERSION is not set")
 endif
-	find ../ -name setup.py -exec sed -i "s/version = '[^']*'/version = '${SDK_VERSION}'/" '{}' \;
+	find ../ -name setup.py -exec sed -i "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" '{}' \;
