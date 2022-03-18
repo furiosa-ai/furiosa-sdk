@@ -1,8 +1,41 @@
 # FuriosaAI SDK
 
-FuriosaAI SDK is a software development kit (SDK) for running deep-neural network inference using FuriosaAI NPU chips. It is a collection of libraries and command line tools including compiler, and profiler. It also provides Python bindings allow users to develop their application easily with abundant Python eco-systems, such as Numpy, Jupyter notebooks and scientific Python pacakges.
+Furiosa™ SDK is a software development kit (SDK) for running deep-neural network inference using FuriosaAI NPU chips. It is a collection of libraries and command line tools including compiler, and profiler. It also provides Python bindings allow users to develop their application easily with abundant Python eco-systems, such as Numpy, Jupyter notebooks and scientific Python pacakges.
 
+## Documentation
+* [Furiosa SDK Document (English)](https://furiosa-ai.github.io/docs/latest/en)
+* [Furiosa SDK Document (Korean)](https://furiosa-ai.github.io/docs/latest/ko)
 
-This repository contains FuriosaAI SDK components.
-* [FuriosaAI Python SDK](./python/furiosa-sdk)
-* [FuriosaAI SDK documents](./docs)
+## Installation
+
+You can install Furiosa SDK with pip.
+
+```
+pip install furiosa-sdk
+```
+
+## Releases
+* [Furiosa SDK 0.6.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.6.0) (Latest)
+* [Furiosa SDK 0.5.2](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.2)
+* [Furiosa SDK 0.5.1](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.1)
+* [Furiosa SDK 0.5.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.0)
+* [Furiosa SDK 0.4.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.4.0)
+* [Furiosa SDK 0.2.1](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.2.1)
+
+## License
+
+```
+Copyright [2022] FuriosaAI Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
