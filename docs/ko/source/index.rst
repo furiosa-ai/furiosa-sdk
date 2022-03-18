@@ -108,5 +108,5 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: 기존 버전 문서
 
-   0.5.0 문서 <https://furiosa-ai.github.io/docs/v0.5.0/ko/#>
-   0.2.0 문서 <https://furiosa-ai.github.io/docs/v0.2.0/ko/#>
+   0.5.0 문서 <https://furiosa-ai.github.io/docs/v0.5.0/ko/>
+   0.2.0 문서 <https://furiosa-ai.github.io/docs/v0.2.0/ko/>
