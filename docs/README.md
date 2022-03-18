@@ -1,6 +1,6 @@
 # Building Sphinx Documents
 
-Let's install the required packages as the following:
+Let's install the required packages as follows:
 ```
 $ pip install -r requirements
 ```
