@@ -24,4 +24,4 @@ Calibration: 100%|████████████████████�
 Quantization: 100%|███████████████████████████| 100/100 [00:01<00:00, 98.63it/s]
 ```
 
-Please checkout [inference examples](../inferences/) to learn how to inference through this quantized model.
+Please check out [inference examples](../inferences/) to learn how to inference through this quantized model.
