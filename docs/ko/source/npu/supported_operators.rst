@@ -32,7 +32,7 @@ FuriosaAI NPU와 SDK 에서는
    * - `Concat <https://github.com/onnx/onnx/blob/master/docs/Operators.md#concat>`_
      - height 축에 대해서만 지원
    * - `Conv <https://github.com/onnx/onnx/blob/master/docs/Operators.md#conv>`_
-     - `group` <= 에 대해서 지원
+     - `group` <= 128 에 대해서 지원
    * - `ConvTranspose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#convtranspose>`_
      -
    * - `DepthToSpace <https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace>`_
