@@ -10,15 +10,22 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.append(os.path.abspath('../../../python/furiosa-sdk/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-common/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-runtime/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-quantizer/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-models/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-registry/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-server/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-serving/'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'Furiosa SDK Documentation'
-copyright = '2021, FuriosaAI Inc.'
+copyright = '2022, FuriosaAI Inc.'
 author = 'FuriosaAI Inc.'
 
 # The full version, including alpha/beta/rc tags
@@ -34,6 +41,7 @@ extensions = [
   'sphinx.ext.autosectionlabel',
   'sphinx.ext.autodoc',  # Core library for html generation from docstrings
   'sphinx.ext.autosummary',  # Create neat summary tables
+  'sphinxcontrib.napoleon',  # Create neat summary tables
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -61,10 +61,18 @@ Advanced Topics
 * :doc:`NPU Acceleration Operators List </advanced/supported_operators>`
 
 
+Tutorials
+-----------------------------------
+* `Getting Started with Python SDK <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
+* `Advanced Inference API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb>`_
+
 Code Examples
--------------------
-* `Python SDK Quantization <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-sdk-quantizer>`_
-* `Python SDK Inference <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/furiosa-runtime>`_
+------------------------------------
+* `Basic Inference <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/inferences>`_
+* `Quantization <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_
+* `Comparing the accuracy between NPU and CPU inferences <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
+* `Image Classification Inference Example <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
+* `SSD Object Detection Infrence Example <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
 
 References
 -------------------

@@ -1,5 +1,9 @@
 #!/bin/bash
 
-sphinx-apidoc --implicit-namespaces -o python ../../../../python/furiosa-runtime/furiosa
-sphinx-apidoc --implicit-namespaces -o python ../../../../python/furiosa-quantizer/furiosa
-sphinx-apidoc --implicit-namespaces -o python ../../../../python/furiosa-models/furiosa
+mkdir -p python
+
+for MODULE in "sdk" "common" "runtime" "quantizer" "models" "registry" "serving" "server"; do
+  sphinx-apidoc --implicit-namespaces --extensions 'sphinxcontrib.napoleon' -o python ../../../../python/furiosa-${MODULE}/furiosa
+done
+
+cp modules.rst python
