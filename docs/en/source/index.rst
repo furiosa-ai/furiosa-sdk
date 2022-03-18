@@ -72,7 +72,7 @@ Code Examples
 * `Quantization <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_
 * `Comparing the accuracy between NPU and CPU inferences <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
 * `Image Classification Inference Example <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
-* `SSD Object Detection Infrence Example <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
+* `SSD Object Detection Inference Example <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
 
 References
 -------------------
