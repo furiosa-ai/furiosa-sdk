@@ -47,9 +47,9 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
-      - image: ghcr.io/furiosa-ai/k8s-node-labeller:latest
+      - image: ghcr.io/furiosa-ai/k8s-node-labeller:0.3.0
         name: furiosa-node-labeller
-        imagePullPolicy: Always        
+        imagePullPolicy: Always
         workingDir: /opt/bin
         command: ["./k8s-node-labeller"]
         args: [

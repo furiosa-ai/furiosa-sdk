@@ -13,12 +13,12 @@ spec:
         k8s-app: furiosa-device-plugin
     spec:
       containers:
-      - image: ghcr.io/furiosa-ai/k8s-device-plugin:latest
+      - image: ghcr.io/furiosa-ai/k8s-device-plugin:0.9.1
         name: furiosa-device-plugin
         imagePullPolicy: Always
         workingDir: /opt/bin
         command: ["./k8s-device-plugin"]
-        args: ["--interval", "10"]
+        args: ["--interval", "10", "--default-pe", "pe0-1"]
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -30,8 +30,6 @@ spec:
             mountPath: /dev
           - name: dp
             mountPath: /var/lib/kubelet/device-plugins
-          - name: furiosactl
-            mountPath: /usr/bin/furiosactl
       volumes:
         - name: sys
           hostPath:
@@ -42,9 +40,6 @@ spec:
         - name: dp
           hostPath:
             path: /var/lib/kubelet/device-plugins
-        - name: furiosactl
-          hostPath:
-            path: /usr/bin/furiosactl
       nodeSelector:
         kubernetes.io/os: linux
         alpha.furiosa.ai/npu.family: warboy
