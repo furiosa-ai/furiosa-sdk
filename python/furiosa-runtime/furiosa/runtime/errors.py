@@ -181,45 +181,52 @@ class InvalidSessionOption(NativeException):
 
 
 class QueueWaitTimeout(NativeException):
-    """when api client fails to initialize due to api keys or others"""
+    """Timed out in Completion queue"""
 
     def __init__(self):
         super().__init__("queue waiting timed out", NativeError.QUEUE_WAIT_TIMEOUT)
 
 
 class SessionTerminated(NativeException):
-    """when api client fails to initialize due to api keys or others"""
+    """Session is already terminated"""
 
     def __init__(self):
         super().__init__("Session or AsyncSession terminated", NativeError.SESSION_TERMINATED)
 
 
 class DeviceBusy(NativeException):
-    """when api client fails to initialize due to api keys or others"""
+    """The device is already occupied"""
 
     def __init__(self):
         super().__init__("NPU device busy", NativeError.DEVICE_BUSY)
 
 
 class InvalidInput(FuriosaError):
-    """when input tensors are invalid with any reason"""
+    """When input tensors are invalid with any reason"""
 
     def __init__(self, message: str = "Invalid input tensors"):
         super().__init__(message)
 
 
 class TensorNameNotFound(NativeException):
-    """when api client fails to initialize due to api keys or others"""
+    """When a given tensor name is not found in this model"""
 
     def __init__(self):
         super().__init__("Tensor name not found", NativeError.TENSOR_NAME_NOT_FOUND)
 
 
 class UnsupportedFeature(NativeException):
-    """when api client fails to initialize due to api keys or others"""
+    """Feature is not supported"""
 
     def __init__(self):
         super().__init__("Unsupported feature", NativeError.UNSUPPORTED_FEATURE)
+
+
+class SessionClosed(FuriosaError):
+    """Session is already terminated"""
+
+    def __init__(self):
+        super().__init__("Session or AsyncSession is already closed. Please create a new session.")
 
 
 _errors_to_exceptions = {
