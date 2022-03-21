@@ -292,7 +292,7 @@ def publishPackages(pythonVersion, repo) {
 }
 
 def extractSdkVersion() {
-    return sh(script: """grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
+    return sh(script: """grep -Po "version = \\"(\\K[^\\"]+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
 }
 
 def getNightlyVersion() {
