@@ -12,7 +12,7 @@ def is_compile_log_enabled() -> bool:
     Returns
         True if the compile log is enabled, or False.
     """
-    return 'unittest' not in sys.modules.keys()
+    return not os.environ.get('FURIOSA_TEST_IS_RUNNING')
 
 
 def xdg_state_home() -> str:
