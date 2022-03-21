@@ -52,9 +52,5 @@ C SDK를 이용한 컴파일
 ===================================
 
 .. warning::
-  TODO: 추가
-
-.. code-block:: sh
-
-  cc c_sdk_example.c -lnux
+  TODO
 

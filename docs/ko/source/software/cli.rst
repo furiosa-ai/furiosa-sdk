@@ -5,6 +5,7 @@
 FuriosaAI SDK는 NPU 디바이스 정보를 출력 하거나 모델 컴파일, 모델과 SDK 간의 호환성 확인
 등의 기능을 명령행 도구로 제공한다. 이 섹션에서는 각 명령형 도구 별 설치 방법과 사용 방법에 대해 설명한다.
 
+.. _Toolkit:
 
 furiosa-toolkit
 ===================================
@@ -77,8 +78,6 @@ furiosa
   0.5.0 (rev: 49b97492a built at 2021-12-07 04:07:08) (wrapper: None)
 
 
-.. _CompilerCli:
-
 furiosa compile
 --------------------
 
@@ -86,15 +85,17 @@ furiosa compile
 형식의 모델을 컴파일하여 FuriosaAI NPU를 사용하는 프로그램을 생성한다.
 자세한 설명과 옵션은 :ref:`CompilerCli` 페이지에서 찾을 수 있다.
 
-모델 적합 여부 검사
---------------------
+.. _Litmus:
 
-``validate`` 명령은 `TFLite`_, `ONNX`_ 모델을 인자로 받아,
+furiosa litmus (모델 적합 여부 검사)
+--------------------------------------------
+
+``litmus`` 명령은 `TFLite`_, `ONNX`_ 모델을 인자로 받아,
 자동으로 양자화한 후 최종 바이너리까지 컴파일을 시도하여 주어진 모델이 SDK와 호환되는지 검사한다.
 
 .. code-block:: sh
 
-  $ furiosa validate yolov4.onxx
+  $ furiosa litmus yolov4.onxx
   [Step 1] Checking if the model can be transformed into a quantized model ...
   Quantization: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 67/67 [00:00<00:00, 85.33it/s]
   [Step 1] Passed
@@ -108,7 +109,7 @@ furiosa compile
 
 .. code-block:: sh
 
-  $ furiosa validate efficientnet-lite4-11.onnx
+  $ furiosa litmus efficientnet-lite4-11.onnx
 
     Stdout:
     [Step 1] Checking if the model can be transformed into a quantized model ...

@@ -4,7 +4,7 @@
 NPU 가속 지원 연산자 목록
 ******************************************
 
-FuriosaAI NPU와 SDK 0.5.0 에서는
+FuriosaAI NPU와 SDK 에서는
 `Tensorflow Lite <https://www.tensorflow.org/lite>`_ 모델과 `ONNX <https://onnx.ai/>`_ 가 지원하는
 아래 연산자들을 가속할 수 있다. 연산자 이름은 `ONNX`_ 를 기준으로 한다.
 
@@ -30,9 +30,9 @@ FuriosaAI NPU와 SDK 0.5.0 에서는
    * - `Clip <https://github.com/onnx/onnx/blob/master/docs/Operators.md#clip>`_
      -
    * - `Concat <https://github.com/onnx/onnx/blob/master/docs/Operators.md#concat>`_
-     -
+     - height 축에 대해서만 지원
    * - `Conv <https://github.com/onnx/onnx/blob/master/docs/Operators.md#conv>`_
-     -
+     - `group` <= 128 에 대해서 지원
    * - `ConvTranspose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#convtranspose>`_
      -
    * - `DepthToSpace <https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace>`_
@@ -48,7 +48,7 @@ FuriosaAI NPU와 SDK 0.5.0 에서는
    * - `LeakyRelu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#leakyrelu>`_
      -
    * - `LpNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#lpnormalization>`_
-     - p = 2 인 경우에 한하여 가속 지원
+     - p = 2 인 경우에 한하여 지원
    * - `MatMul <https://github.com/onnx/onnx/blob/master/docs/Operators.md#matmul>`_
      -
    * - `MaxPool <https://github.com/onnx/onnx/blob/master/docs/Operators.md#maxpool>`_
@@ -69,10 +69,12 @@ FuriosaAI NPU와 SDK 0.5.0 에서는
      -
    * - `Pow <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Pow>`_
      -
+   * - `SpaceToDepth <https://github.com/onnx/onnx/blob/main/docs/Operators.md#SpaceToDepth>`_
+     - 0.6.0 이상 버전에서 mode="CRD" 인 경우에 지원
    * - `Sigmoid <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Sigmoid>`_
      -
    * - `Slice <https://github.com/onnx/onnx/blob/master/docs/Operators.md#slice>`_
-     -
+     - height 축에 대해서만 지원
    * - `Softmax <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softmax>`_
      -
    * - `Softplus <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softplus>`_

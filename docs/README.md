@@ -1,16 +1,13 @@
 # Building Sphinx Documents
 
-First of all, get Sphinx from the Python as follows:
+Let's install the required packages as follows:
 ```
-$ pip install sphinx
+$ pip install -r requirements.txt
 ```
 
-Generate HTML docs via Makefile:
+Generate HTML documents and copy the output to a specific furiosa-doc path:
 ```sh
-  $ cd ko  
-  $ make html
-  $ ls -l build/html
-  index.html
-  ....
-  ....
+
+  DOCS_PATH=../../furiosa-docs/ DOCS_VERSION=v0.6.0 make en deploy-en
+  DOCS_PATH=../../furiosa-docs/ DOCS_VERSION=v0.6.0 make ko deploy-ko
 ```
