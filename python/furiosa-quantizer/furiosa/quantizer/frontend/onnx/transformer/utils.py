@@ -134,21 +134,18 @@ def fix_batch_size_as_one(model):
 def make_initializer_name_unique(model):
     # Renames Operators' initializers, if necessary, to make their names unique
     initializer = {init.name: init for init in model.graph.initializer}
-    seen = set()
+    model.graph.ClearField('initializer')
     for node in model.graph.node:
         for idx, node_input in enumerate(node.input):
             if node_input not in initializer:
                 continue
 
-            if node_input not in seen:
-                seen.add(node_input)
-                continue
             tensor = onnx.TensorProto()
             tensor.CopyFrom(initializer[node_input])
             # HACK: This attempts to give the initializer a new unique name.
             # Although it is unlikely, there is a possibility that the new
             # name is already occupied by a tensor in the model.
-            tensor.name = f"{node_input}_{node.output[0]}"
+            tensor.name = f"{node_input}_{node.output[0]}_{idx}"
             node.input[idx] = tensor.name
             model.graph.initializer.append(tensor)
 
