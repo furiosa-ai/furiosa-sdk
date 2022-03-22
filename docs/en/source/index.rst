@@ -65,6 +65,7 @@ Tutorials
 -----------------------------------
 * `Getting Started with Python SDK <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
 * `Advanced Inference API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb>`_
+* `How to Use Furiosa SDK from Start to Finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 
 Code Examples
 ------------------------------------
