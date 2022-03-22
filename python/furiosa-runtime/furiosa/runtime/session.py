@@ -14,7 +14,14 @@ from ._api import LIBNUX
 from ._api.v1 import convert_to_cchar_array, decref, increase_ref_count, runtime_version
 from ._util import dump_info
 from .compiler import _model_image, generate_compiler_log_path
-from .errors import InvalidInput, UnsupportedTensorType, into_exception, is_err, is_ok
+from .errors import (
+    InvalidInput,
+    SessionClosed,
+    UnsupportedTensorType,
+    into_exception,
+    is_err,
+    is_ok,
+)
 from .model import Model, TensorArray
 from .tensor import Tensor, TensorDesc
 
@@ -113,7 +120,10 @@ class Session(Model):
         super().__init__()
 
     def _get_model_ref(self) -> c_void_p:
-        return LIBNUX.nux_session_get_model(self)
+        if self.ref:
+            return LIBNUX.nux_session_get_model(self)
+        else:
+            raise SessionClosed()
 
     def run(
         self,
@@ -130,6 +140,9 @@ class Session(Model):
         Returns:
             Inference output
         """
+        if not self.ref:
+            raise SessionClosed
+
         _inputs = self.allocate_inputs()
         outputs = self.create_outputs()
         _inputs = _fill_all_tensors(inputs, _inputs)
@@ -155,6 +168,9 @@ class Session(Model):
         Returns:
             Inference output
         """
+        if not self.ref:
+            raise SessionClosed
+
         # FIXME: outputs=None should be supported in the future
         if outputs is None:
             raise InvalidInput(message="outputs must be given")
@@ -229,6 +245,9 @@ class CompletionQueue:
             when you submit an inference task and the second value \
             is inference output.
         """
+        if not self.ref:
+            raise SessionClosed()
+
         err = c_int(0)
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
@@ -290,7 +309,10 @@ class AsyncSession(Model):
         self._tensor_buffers = self.allocate_inputs()
 
     def _get_model_ref(self) -> c_void_p:
-        return LIBNUX.nux_async_session_get_model(self)
+        if self._ref:
+            return LIBNUX.nux_async_session_get_model(self)
+        else:
+            raise SessionClosed()
 
     def submit(
         self, values: Union[np.ndarray, np.generic, TensorArray], context: object = None
