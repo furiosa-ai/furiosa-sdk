@@ -243,7 +243,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install -r ./requirements.txt && \
     pip install nbmake && \
-    pytest --nbmake .
+    pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' \\))
     """
 }
 
