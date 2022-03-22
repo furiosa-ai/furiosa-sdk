@@ -97,6 +97,7 @@ def post_training_quantize(
     model: onnx.ModelProto,
     dataset: List[Dict[str, np.ndarray]],
     per_channel: bool = True,
+    check_idempotency: bool = False,
 ) -> onnx.ModelProto:
     """Post-training-quantizes an ONNX model with a calibration dataset.
 
@@ -110,12 +111,13 @@ def post_training_quantize(
         An ONNX model post-training-quantized with the calibration
         dataset.
     """
-    if _is_fully_quantized(model):
-        return model
-    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-        raise ValueError(
-            "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-        )
+    if check_idempotency:
+        if _is_fully_quantized(model):
+            return model
+        if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
+            raise ValueError(
+                "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
+            )
 
     model = optimize_model(model)
     ranges = calibrate.calibrate(model, dataset)
@@ -128,16 +130,18 @@ def post_training_quantization_with_random_calibration(
     static: bool,
     mode: quantizer.QuantizationMode,
     num_data: int = 8,
+    check_idempotency: bool = False,
 ) -> onnx.ModelProto:
     if not static:
         raise Exception("Currently only supports static quantization.")
 
-    if _is_fully_quantized(model):
-        return model
-    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-        raise ValueError(
-            "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-        )
+    if check_idempotency:
+        if _is_fully_quantized(model):
+            return model
+        if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
+            raise ValueError(
+                "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
+            )
 
     model = optimize_model(model)
     dynamic_ranges = calibrate.calibrate_with_random_data(model, num_data)
