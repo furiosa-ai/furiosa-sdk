@@ -243,7 +243,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install -r ./requirements.txt && \
     pip install nbmake && \
-    pytest --nbmake .
+    pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' \\))
     """
 }
 
@@ -292,7 +292,7 @@ def publishPackages(pythonVersion, repo) {
 }
 
 def extractSdkVersion() {
-    return sh(script: """grep -Po "version = '(\\K[^']+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
+    return sh(script: """grep -Po "version = \\"(\\K[^\\"]+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
 }
 
 def getNightlyVersion() {

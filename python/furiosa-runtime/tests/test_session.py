@@ -78,6 +78,34 @@ class TestDeviceBusy(unittest.TestCase):
             pass
 
 
+class TestSessionClosed(unittest.TestCase):
+    def test_session_closed(self):
+        sess = session.create(MNIST_ONNX)
+        sess.close()
+        self.assertRaises(errors.SessionClosed, lambda: sess.inputs())
+        self.assertRaises(errors.SessionClosed, lambda: sess.input_num())
+        self.assertRaises(errors.SessionClosed, lambda: sess.outputs())
+        self.assertRaises(errors.SessionClosed, lambda: sess.output_num())
+        self.assertRaises(errors.SessionClosed, lambda: sess.summary())
+        self.assertRaises(errors.SessionClosed, lambda: sess.run(None))
+
+    def test_async_session_closed(self):
+        submitter, queue = session.create_async(MNIST_ONNX)
+        submitter.close()
+        self.assertRaises(errors.SessionClosed, lambda: submitter.inputs())
+        self.assertRaises(errors.SessionClosed, lambda: submitter.input_num())
+        self.assertRaises(errors.SessionClosed, lambda: submitter.outputs())
+        self.assertRaises(errors.SessionClosed, lambda: submitter.output_num())
+        self.assertRaises(errors.SessionClosed, lambda: submitter.summary())
+        queue.close()
+
+    def test_queue_when_session_closed(self):
+        submitter, queue = session.create_async(MNIST_ONNX)
+        queue.close()
+        self.assertRaises(errors.SessionClosed, lambda: queue.recv())
+        submitter.close()
+
+
 class TestSessionOptions(unittest.TestCase):
     def test_create(self):
         with session.create(
