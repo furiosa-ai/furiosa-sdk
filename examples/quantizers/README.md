@@ -14,14 +14,10 @@ pip install -r requirements.txt
 
 ## Quantization examples
 
-FuriosaAI NPU supports int8|uint8 per-channel|per-layer quantized models. The current version
-of FuriosaAI Quantizer only provides functionalities for performance evaluations.
-Proper accuracy will be achieved via further releases.
+FuriosaAI NPU supports int8|uint8 per-channel|per-layer quantized models.
 
-```
-$ ./quantize.py
-Calibration: 100%|██████████████████████████████| 50/50 [00:02<00:00, 19.33it/s]
-Quantization: 100%|███████████████████████████| 100/100 [00:01<00:00, 98.63it/s]
+```console
+$ python3 quantize.py
 ```
 
 Please check out [inference examples](../inferences/) to learn how to inference through this quantized model.
