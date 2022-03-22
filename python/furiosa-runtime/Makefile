@@ -16,7 +16,7 @@ upload:
 	twine upload dist/*
 
 test:
-	python -m unittest discover -v -s ./tests
+	FURIOSA_TEST_IS_RUNNING=1 python -m unittest discover -v -s ./tests
 
 doc:
 	pdoc3 --html --force --output-dir html_output furiosa	
