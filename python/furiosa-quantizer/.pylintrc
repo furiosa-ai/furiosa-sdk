@@ -23,7 +23,6 @@ disable=
 
     attribute-defined-outside-init, # W0201
     fixme, # W0511
-    unused-argument, # W0613
 
     # Convention
     bad-continuation, # C0330

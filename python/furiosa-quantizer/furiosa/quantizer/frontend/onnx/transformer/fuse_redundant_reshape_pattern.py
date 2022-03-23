@@ -45,9 +45,6 @@ class Pattern_1(ONNXTransformer):
             matched_nodes,
             nodes_to_add=[self.make_new_node(matched_nodes)],
             inits_to_add=[self.make_new_init(matched_nodes)],
-            vis_to_add=[self.make_new_vi(matched_nodes)]
-            if self.make_new_vi(matched_nodes)
-            else None,
         )
         return top_node.input
 
@@ -72,9 +69,6 @@ class Pattern_1(ONNXTransformer):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
         return self.make_int64_initializer(top_node.input[1] + self.postfix, base_node.output[0])
-
-    def make_new_vi(self, matched_nodes):
-        return None
 
 
 class Pattern_2(Pattern_1):
