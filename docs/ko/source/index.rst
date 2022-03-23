@@ -22,8 +22,8 @@ FuriosaAI Software
 -------------------------------------------------
 * :doc:`FuriosaAI 소프트웨어 스택 소개</software/intro>`
 * :doc:`드라이버, 펌웨어, 런타임 설치 가이드 </software/installation>`
-* :doc:`Python SDK 사용 가이드 </software/installation>`
-* :doc:`C SDK 사용 가이드 </software/c-sdk>`
+* :doc:`Python SDK 설치 및 사용 가이드 </software/python-sdk>`
+* :doc:`C SDK 설치 및 사용 가이드 </software/c-sdk>`
 * :doc:`SDK 명령행 도구 </software/cli>`
 * :doc:`컴파일러 </software/compiler>`
 * :doc:`모델 양자화 (Model quantization) </software/quantization>`
