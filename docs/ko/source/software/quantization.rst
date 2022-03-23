@@ -75,11 +75,8 @@ FuriosaAI SDK가 지원하는 양자화 방식은  *post-training 8-bit quantiza
 ========================================
 
 SDK가 제공하는 API와 명령행 도구를 사용하여 ONNX 모델을 8bit 양자화 모델로 변환할 수 있다.
-사용 방법은 아래 링크에서 확인할 수 있다.
+사용 방법은 아래에서 찾아볼 수 있다.
 
-.. warning::
-
-  WIP: 링크 업데이트 필요
-
+* `Python SDK 예제: 모델 생성 부터 인퍼런스 까지 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 * `Python SDK Quantization 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_
 * `Python 레퍼런스 - furiosa.quantizer <https://furiosa-ai.github.io/docs/v0.6.0/en/api/python/furiosa.quantizer.html>`_
