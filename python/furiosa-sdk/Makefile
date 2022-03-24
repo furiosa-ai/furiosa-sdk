@@ -12,9 +12,12 @@ uninstall:
 	pip uninstall -y furiosa-quantizer; \
 	pip uninstall -y furiosa-litmus; \
 	pip uninstall -y furiosa-tools; \
+	pip uninstall -y furiosa-serving; \
 	pip uninstall -y furiosa-server; \
 	pip uninstall -y furiosa-registry; \
-	pip uninstall -y furiosa-sdk
+	pip uninstall -y furiosa-sdk; \
+	pip uninstall -y furiosa-cli; \
+	pip uninstall -y furiosa-common
 
 install_full:
 	pip install --use-feature=in-tree-build .[full]

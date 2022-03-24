@@ -7,11 +7,12 @@ import tempfile
 import onnx
 
 from furiosa.common.utils import eprint, get_sdk_version
+from furiosa.quantizer import __version__ as quantizer_version
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.runtime import session
 
-__version__ = get_sdk_version("furiosa.litmus")
+__version__ = get_sdk_version(__name__)
 
 
 def validate(model_path: Path):
@@ -21,6 +22,7 @@ def validate(model_path: Path):
     :param model_path: Model path
     :return: None
     """
+    print(f"Using quantizer {quantizer_version}")
     tmpfile = tempfile.NamedTemporaryFile()
 
     if not model_path.exists():
@@ -59,7 +61,9 @@ def validate(model_path: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate the model")
+    parser = argparse.ArgumentParser(
+        description="Checking if a model is compatible with furiosa-sdk"
+    )
     parser.add_argument(
         "model_path",
         type=str,
