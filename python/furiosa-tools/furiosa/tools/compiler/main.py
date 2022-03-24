@@ -107,7 +107,7 @@ class CommandCompile:
         self.args = self.parser.parse_args()
 
     def setup_arguments(self):
-        full_version = f"""compiler cli: {__version__}\nlibcompiler: {version_string()}"""
+        full_version = f"""cli: {__version__}\nlibcompiler: {version_string()}"""
         self.parser.add_argument(
             'source',
             type=str,

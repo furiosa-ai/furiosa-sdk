@@ -13,7 +13,7 @@ class FuriosaVersionInfo:
         self.hash = parts[2]
 
     def __str__(self):
-        return f"{self.version} ({self.stage}: {self.hash})"
+        return f"{self.version} (rev: {self.hash[0:9]})"
 
     def __repr__(self):
         return f"FuriosaVersionInfo({self.stage}, {self.version}, {self.hash})"

@@ -22,7 +22,7 @@ def validate(model_path: Path):
     :param model_path: Model path
     :return: None
     """
-    print(f"Using quantizer {quantizer_version}")
+    print(f"Using furiosa-quantizer {quantizer_version}")
     tmpfile = tempfile.NamedTemporaryFile()
 
     if not model_path.exists():

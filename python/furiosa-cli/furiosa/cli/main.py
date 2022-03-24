@@ -72,6 +72,7 @@ def _parse_arguments(registry: CommandRegistry):
         epilog="",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+
     parser.add_argument("--version", action="version", version=f"{__version__}")
     _register_subcommands(parser, registry)
 
