@@ -14,9 +14,11 @@ from furiosa.quantizer.frontend.onnx import (
     calibrate,
     optimize_model,
     parse_onnx_graph,
+    post_training_quantization_with_random_calibration,
     post_training_quantize,
     quantizer,
 )
+from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 
 
@@ -100,6 +102,12 @@ class ONNXTest(unittest.TestCase):
     def test__is_fully_quantized(self):
         model = _make_dfg_quantized_model()
         self.assertTrue(_is_fully_quantized(model))
+
+    def test_zero_bias_scale(self):
+        model = _make_zero_bias_scale_model()
+        model = post_training_quantization_with_random_calibration(
+            model, per_channel=True, static=True, mode=QuantizationMode.DFG
+        )
 
 
 def _make_dfg_quantized_model():
@@ -230,6 +238,45 @@ def _make_sandwiced_i64_model():
             "node": [
                 ("Add", ["x", "a"], ["y"]),
             ],
+        }
+    )
+
+
+def _make_zero_bias_scale_model():
+    input_shape = [1, 1, 3, 3]
+    output_shape = [1, 1, 1, 1]
+    return make_onnx_model(
+        model_desc={
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": np.array(
+                    [
+                        [
+                            [
+                                [
+                                    -2.802596928649634e-43,
+                                    -6.165713243029195e-44,
+                                    -3.825544807606751e-43,
+                                ],
+                                [
+                                    8.828180325246348e-44,
+                                    2.059908742557481e-43,
+                                    4.624284932271896e-44,
+                                ],
+                                [
+                                    6.866362475191604e-44,
+                                    2.382207389352189e-44,
+                                    6.726232628759122e-44,
+                                ],
+                            ]
+                        ]
+                    ],
+                    dtype=np.float32,
+                ),
+                "b": np.array([-4.312656879425049], dtype=np.float32),
+            },
+            "node": [("Conv", ["x", "w", "b"], "y")],
         }
     )
 

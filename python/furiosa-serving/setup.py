@@ -36,9 +36,7 @@ def git_version(version_: str) -> str:
             logger.warning(".git directory not found: Cannot compute the git version")
             return ""
         except git.InvalidGitRepositoryError:
-            logger.warning(
-                "Invalid .git directory not found: Cannot compute the git version"
-            )
+            logger.warning("Invalid .git directory not found: Cannot compute the git version")
             return ""
     except ImportError:
         logger.warning("gitpython not found: Cannot compute the git version.")
@@ -58,8 +56,9 @@ def write_version(filename: str = os.path.join(*[my_dir, "furiosa", "git_version
     :param str filename: Destination file to write
     """
     text = f"{git_version(version)}"
-    with open(filename, "w") as file:
-        file.write(text)
+    if text:  # workaround for wheel: don't overwrite if git revision is not found
+        with open(filename, 'w', encoding='ascii') as file:
+            file.write(text)
 
 
 if __name__ == "__main__":

@@ -32,14 +32,7 @@ upload:
 	twine upload dist/*
 
 test:
-	python -m unittest discover -v -s ./tests
-
-doc:
-	mkdir -p build/docs/src/furiosa
-	cp -a ../furiosa-runtime/furiosa/runtime build/docs/src/furiosa/runtime
-	cp -a ../furiosa-quantizer/furiosa/quantizer build/docs/src/furiosa/quantizer
-	cp -a furiosa build/docs/src
-	pdoc3 --html --force --output-dir build/docs/html build/docs/src/furiosa
+	if [ -d ./tests ]; then python -m unittest discover -v -s ./tests; fi;
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs

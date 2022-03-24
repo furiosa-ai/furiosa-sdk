@@ -9,7 +9,8 @@ sdk_modules = [
   'furiosa-registry',
   'furiosa-server',
   'furiosa-models',
-  'furiosa-serving'
+  'furiosa-serving',
+  'furiosa-sdk',
 ]
 
 format_applied = [
@@ -47,12 +48,6 @@ metadata:
     app: jenkins-worker
     jenkins: npu-tools
 spec:
-  hostAliases:
-  - ip: "52.69.186.44"
-    hostnames:
-    - "github.com"
-  imagePullSecrets:
-  - name: ecr-docker-login
   nodeSelector:
     alpha.furiosa.ai/npu.family: warboy
     alpha.furiosa.ai/npu.hwtype: u250
@@ -117,15 +112,15 @@ def ubuntuDistribName(full_name) {
 
 def installConda() {
   sh "wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
-  sh "sh /tmp/Miniconda3.sh -b -p ${WORKSPACE}/miniconda"
-  sh "${WORKSPACE}/miniconda/bin/conda update --yes conda"
+  sh "sh /tmp/Miniconda3.sh -b -p ${MINICONDA_DIR}"
+  sh "${MINICONDA_DIR}/bin/conda update --yes conda"
 }
 
 def setupPythonEnv(pythonVersion) {
   sh """#!/bin/bash
-  source ${WORKSPACE}/miniconda/bin/activate;
+  source ${MINICONDA_DIR}/bin/activate;
   conda create --name env-${pythonVersion} python=${pythonVersion};
-  source ${WORKSPACE}/miniconda/bin/activate;
+  source ${MINICONDA_DIR}/bin/activate;
   conda activate env-${pythonVersion};
 
   python --version;
@@ -137,17 +132,17 @@ def setupPythonEnv(pythonVersion) {
 def buildPackages(pythonVersion) {
   sdk_modules.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
-
+    git clean -d -f && git reset --hard && \
     cd python/${it} && make clean build && \
     pip install dist/${it}-*.tar.gz
     """
   }
 
   sh """#!/bin/bash
-  source ${WORKSPACE}/miniconda/bin/activate;
+  source ${MINICONDA_DIR}/bin/activate;
   conda activate env-${pythonVersion};
 
   pip list | grep furiosa;
@@ -158,7 +153,7 @@ def buildPackages(pythonVersion) {
 def checkFormat(pythonVersion) {
   format_applied.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
 
@@ -186,7 +181,7 @@ def checkFormat(pythonVersion) {
 def runLint(pythonVersion) {
   lint_applied.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate
+    source ${MINICONDA_DIR}/bin/activate
     conda activate env-${pythonVersion}
     python --version
 
@@ -205,7 +200,7 @@ def runLint(pythonVersion) {
 def testModules(pythonVersion) {
   test_modules.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
 
@@ -225,7 +220,7 @@ def testModules(pythonVersion) {
 
 def testExamples(pythonVersion) {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
 
@@ -236,7 +231,7 @@ def testExamples(pythonVersion) {
 
 def testNotebooks(pythonVersion) {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
 
@@ -282,7 +277,7 @@ def pypiIndexUrlOption(repo) {
 def publishPackages(pythonVersion, repo) {
   sdk_modules.each() {
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version
 
@@ -302,7 +297,7 @@ def getNightlyVersion() {
 def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
   sdk_modules.each { module ->
     sh """#!/bin/bash
-    source ${WORKSPACE}/miniconda/bin/activate;
+    source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version
 
@@ -314,7 +309,7 @@ def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
 
   // Checking full dependency
   sh """#!/bin/bash
-  source ${WORKSPACE}/miniconda/bin/activate;
+  source ${MINICONDA_DIR}/bin/activate;
   conda activate env-${pythonVersion};
   python --version
 
@@ -363,6 +358,7 @@ pipeline {
     NIGHTLY_BUILD_ID = "${DATE}"
 
     REPO_URL = 'https://internal-archive.furiosa.dev'
+    MINICONDA_DIR = "/tmp/miniconda"
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
@@ -376,7 +372,7 @@ pipeline {
         container('default') {
           sh "env"
 
-          sh "apt-get update && apt-get install -qq -y ca-certificates apt-transport-https gnupg wget python3-opencv"
+          sh "apt-get update && apt-get install -qq -y git ca-certificates apt-transport-https gnupg wget python3-opencv"
           installConda()
 
           sh "apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E"
@@ -447,10 +443,12 @@ pipeline {
             nightlyVersion = getNightlyVersion()
             sh """
             cd python/furiosa-sdk;
-            SDK_VERSION=${nightlyVersion} make update_version
+            git config user.name "FuriosaAI Package Manager" && \
+            git config user.email "pkg@furiosa.ai" && \
+            SDK_VERSION=${nightlyVersion} make update_version && \
+            git commit -a -m "Set the nightly version to ${nightlyVersion}"
             """
 
-            setupPythonEnv(getPythonVersion())
             buildPackages(getPythonVersion())
             publishPackages(getPythonVersion(), "furiosa")
             validatePypiPackage(getPythonVersion(), pypiIndexUrlOption("furiosa"), nightlyVersion)
