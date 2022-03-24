@@ -427,6 +427,7 @@ class FuriosaONNXQuantizer:
         weight_scale: onnx.TensorProto,
     ) -> None:
         b_scale = numpy_helper.to_array(input_scale) * numpy_helper.to_array(weight_scale)
+        b_scale = np.where(b_scale == 0.0, np.float32(2**-149), b_scale)
 
         qtype = onnx.TensorProto.INT32
         b_zero_point = np.zeros_like(b_scale).astype(TENSOR_TYPE_TO_NP_TYPE[qtype])
