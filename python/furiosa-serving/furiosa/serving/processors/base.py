@@ -35,9 +35,7 @@ class Processor(ABC):
 
         # # Extract parameter annotation from preprocess
         params = {
-            key: value
-            for key, value in self.preprocess.__annotations__.items()
-            if key != "return"
+            key: value for key, value in self.preprocess.__annotations__.items() if key != "return"
         }
         # Extract return annotation from postprocess
         returns = {"return": self.postprocess.__annotations__["return"]}

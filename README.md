@@ -10,12 +10,26 @@ Furiosa™ SDK is a software development kit (SDK) for running deep-neural netwo
 
 You can install Furiosa SDK with pip.
 
-```
+```sh
 pip install furiosa-sdk
 ```
 
+You can install also furiosa-sdk with extra packages (e.g., litmus, quantizer):
+
+```sh
+pip install 'furiosa-sdk[litmus,quantizer]'
+```
+
+The following are the extra packages:
+* models: Library which provides pre-tained models for Furiosa NPU
+* litmus: Command line tool to check if a model is compatible with furiosa-sdk
+* server: Serving framework enabling a DNN model to provide HTTP/GRPC endpoints  
+* serving: FastAPI-based Serving Library
+* quantizer: Library which allows to quantize DNN models
+
 ## Releases
-* [Furiosa SDK 0.6.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.6.0) (Latest)
+* [Furiosa SDK 0.6.1](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.6.1) (Latest)
+* [Furiosa SDK 0.6.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.6.0)
 * [Furiosa SDK 0.5.2](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.2)
 * [Furiosa SDK 0.5.1](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.1)
 * [Furiosa SDK 0.5.0](https://github.com/furiosa-ai/furiosa-sdk/releases/tag/v0.5.0)
