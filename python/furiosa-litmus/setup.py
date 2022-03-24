@@ -44,9 +44,9 @@ def git_version(version_: str) -> str:
     if repo:
         sha = repo.head.commit.hexsha
         if repo.is_dirty():
-            return f".dev0+{sha}.dirty"
+            return f"dev:{version_}:{sha}"
         # commit is clean
-        return f".release:{version_}+{sha}"
+        return f"release:{version_}:{sha}"
     return "no_git_version"
 
 
