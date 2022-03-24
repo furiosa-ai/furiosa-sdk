@@ -118,7 +118,7 @@ class ONNXTransformer:
             return _get_shape(value_info_name, self.graph_output_map)
         if value_info_name in self.graph_input_map:
             return _get_shape(value_info_name, self.graph_input_map)
-        raise Exception(f'{value_info_name} not found.')
+        raise ValueError(f'{value_info_name} not found.')
 
     def get_value_info_dtype(self, tensor_name: str) -> List[int]:
         tensor_name_to_value_info = ChainMap(
