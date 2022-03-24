@@ -56,8 +56,9 @@ def write_version(filename: str = os.path.join(*[my_dir, "furiosa/cli", "git_ver
     :param str filename: Destination file to write
     """
     text = f"{git_version(version)}"
-    with open(filename, "w") as file:
-        file.write(text)
+    if text:  # workaround for wheel: don't overwrite if git revision is not found
+        with open(filename, 'w', encoding='ascii') as file:
+            file.write(text)
 
 
 if __name__ == "__main__":

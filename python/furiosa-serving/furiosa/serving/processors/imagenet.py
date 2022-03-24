@@ -37,15 +37,10 @@ class ImageNet(Processor):
         classified = np.squeeze(output)
 
         # Load pre-defined labels
-        labels = {
-            index: line.strip()
-            for index, line in enumerate(open(self.label).readlines())
-        }
+        labels = {index: line.strip() for index, line in enumerate(open(self.label).readlines())}
 
         # Find objects with index which mostly fits
-        objects = sorted(
-            (score, index[0]) for index, score in np.ndenumerate(classified)
-        )[::-1]
+        objects = sorted((score, index[0]) for index, score in np.ndenumerate(classified))[::-1]
 
         # Return fifth best fit image labels with scores. Note that we are casting int here to
         # convert numpy uin8 type into Python native int type to allow FastAPI serialize result JSON
