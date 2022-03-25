@@ -11,7 +11,7 @@ from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa.tools.compiler.api import compile, VersionInfo
+from furiosa.tools.compiler.api import VersionInfo, compile
 
 __version__ = get_sdk_version("furiosa.litmus")
 
@@ -56,7 +56,9 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             eprint("[ERROR] Fail to save the model\n")
             raise e
 
-        print(f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...")
+        print(
+            f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ..."
+        )
         try:
             compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
         except Exception as e:
@@ -73,7 +75,12 @@ def main():
         help="Path to Model file (tflite, onnx, and other model formats are supported)",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
-    parser.add_argument('--target-npu', type=str, default='warboy-2pe', help='Target NPU: warboy, warboy-2pe (default)')
+    parser.add_argument(
+        '--target-npu',
+        type=str,
+        default='warboy-2pe',
+        help='Target NPU: warboy, warboy-2pe (default)',
+    )
     args = parser.parse_args()
     validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
 
