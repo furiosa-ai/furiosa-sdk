@@ -1,4 +1,5 @@
 import logging
+from typing import Callable, Iterable, TypeVar
 
 import onnx
 from onnx import numpy_helper
@@ -150,3 +151,15 @@ def make_initializer_name_unique(model):
             model.graph.initializer.append(tensor)
 
     return model
+
+
+T = TypeVar('T')
+
+
+def fixed_point(x: T, functions: Iterable[Callable[[T], T]]) -> T:
+    while True:
+        init = x
+        for func in functions:
+            x = func(x)
+        if x == init:
+            return x

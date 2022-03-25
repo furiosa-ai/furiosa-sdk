@@ -2,75 +2,80 @@ from __future__ import print_function
 
 import argparse
 from pathlib import Path
+import sys
 import tempfile
 
 import onnx
 
 from furiosa.common.utils import eprint, get_sdk_version
-from furiosa.quantizer import __version__ as quantizer_version
+from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa.runtime import session
+from furiosa.tools.compiler.api import compile, VersionInfo
 
-__version__ = get_sdk_version(__name__)
+__version__ = get_sdk_version("furiosa.litmus")
 
 
-def validate(model_path: Path):
+def validate(model_path: Path, verbose: bool, target_npu: str):
     """
     Validate a given model
 
     :param model_path: Model path
     :return: None
     """
-    print(f"Using furiosa-quantizer {quantizer_version}")
-    tmpfile = tempfile.NamedTemporaryFile()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        if not model_path.exists():
+            eprint(f"ERROR: {model_path} does not exist")
 
-    if not model_path.exists():
-        eprint(f"ERROR: {model_path} does not exist")
-
-    # Try quantization on input models
-    print("[Step 1] Checking if the model can be transformed into a quantized model ...")
-    try:
-        quantized_model = post_training_quantization_with_random_calibration(
-            model=onnx.load_model(model_path),
-            per_channel=True,
-            static=True,
-            mode=QuantizationMode.DFG,
-            num_data=10,
+        print(
+            f"furiosa-quantizer {quantizer_ver.version} (rev. {quantizer_ver.hash[0:9]})",
+            f"furiosa-litmus {__version__.version} (rev. {__version__.hash[0:9]})",
+            file=sys.stderr,
         )
-    except Exception as e:
-        eprint("[Step 1] Failed\n")
-        raise e
-    print("[Step 1] Passed")
+        # Try quantization on input models
+        print("[Step 1] Checking if the model can be transformed into a quantized model ...")
+        try:
+            quantized_model = post_training_quantization_with_random_calibration(
+                model=onnx.load_model(model_path),
+                per_channel=True,
+                static=True,
+                mode=QuantizationMode.DFG,
+                num_data=10,
+            )
+        except Exception as e:
+            eprint("[Step 1] Failed\n")
+            raise e
+        print("[Step 1] Passed")
 
-    try:
-        onnx.save_model(quantized_model, tmpfile.name)
-    except Exception as e:
-        eprint("[ERROR] Fail to save the model\n")
-        raise e
+        step1_output = f"{tmpdir}/step1.onnx"
+        step2_output = f"{tmpdir}/step2.enf"
 
-    print("[Step 2] Checking the model can be compiled to a NPU program ...")
-    try:
-        with open(tmpfile.name, "rb") as model_file:
-            model = model_file.read()
-            session.create(model=model)
-    except Exception as e:
-        eprint("[Step 2] Failed\n")
-        raise e
-    print("[Step 2] Passed")
+        try:
+            onnx.save_model(quantized_model, step1_output)
+        except Exception as e:
+            eprint("[ERROR] Fail to save the model\n")
+            raise e
+
+        print(f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...")
+        try:
+            compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
+        except Exception as e:
+            eprint("[Step 2] Failed\n")
+            raise e
+        print("[Step 2] Passed")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Checking if a model is compatible with furiosa-sdk"
-    )
+    parser = argparse.ArgumentParser(description="Validate the model")
     parser.add_argument(
         "model_path",
         type=str,
         help="Path to Model file (tflite, onnx, and other model formats are supported)",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
+    parser.add_argument('--target-npu', type=str, default='warboy-2pe', help='Target NPU: warboy, warboy-2pe (default)')
     args = parser.parse_args()
-    validate(Path(args.model_path))
+    validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
 
 
 if __name__ == "__main__":
