@@ -11,7 +11,7 @@ from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa.tools.compiler.api import VersionInfo, compile
+from furiosa.tools.compiler.api import compile
 
 __version__ = get_sdk_version("furiosa.litmus")
 
