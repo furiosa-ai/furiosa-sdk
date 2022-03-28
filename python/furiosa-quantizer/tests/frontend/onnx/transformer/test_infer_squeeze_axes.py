@@ -10,21 +10,6 @@ from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_mod
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-def _make_test_model(
-    model_desc: Dict, input_shapes: List[Sequence[int]]
-) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
-    orig_model = make_onnx_model(model_desc)
-    trans_model = utils.fixed_point(
-        orig_model,
-        [
-            lambda model: InferenceShape(model).inference_shape(input_shapes),
-            InferSqueezeAxes().transform,
-        ],
-    )
-
-    return orig_model, trans_model
-
-
 class TestInferSqueezeAxes(TestTransformer):
     def test_case1(self):
         input_shape = [1, 4, 1, 1]
@@ -68,3 +53,18 @@ class TestInferSqueezeAxes(TestTransformer):
         self.check_attribute([0, 2, 3], trans_model.graph.node[0].attribute[0].ints)
         self.check_attribute([0, 2, 3], trans_model.graph.node[2].attribute[0].ints)
         self.check_attribute([0, 2, 3], trans_model.graph.node[4].attribute[0].ints)
+
+
+def _make_test_model(
+    model_desc: Dict, input_shapes: List[Sequence[int]]
+) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
+    orig_model = make_onnx_model(model_desc)
+    trans_model = utils.fixed_point(
+        orig_model,
+        [
+            lambda model: InferenceShape(model).inference_shape(input_shapes),
+            InferSqueezeAxes().transform,
+        ],
+    )
+
+    return orig_model, trans_model
