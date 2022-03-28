@@ -7,10 +7,8 @@ import typing
 
 
 class FuriosaVersionInfo:
-    def __init__(self, parts: typing.List[str]):
-        self.stage = parts[0]
-        self.version = parts[1]
-        self.hash = parts[2]
+    def __init__(self, parts: typing.Iterable[str]):
+        self.stage, self.version, self.hash = parts
 
     def __str__(self):
         return f"{self.version} (rev: {self.hash[0:9]})"
