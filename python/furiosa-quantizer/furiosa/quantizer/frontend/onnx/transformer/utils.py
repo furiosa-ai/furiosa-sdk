@@ -19,22 +19,23 @@ def name_nodes(model):
     return model
 
 
-def eliminate_unused_initializer(model: onnx.ModelProto) -> onnx.ModelProto:
+def eliminate_unused_initializer(model):
     """
     This function eliminates every initializers not used by node input,
     regardless of any graph fields they are defined in.
     """
-    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    node_input_names = get_tensor_names(model, 'node_input')
     used_initializers = [
         tensor for tensor in model.graph.initializer if tensor.name in node_input_names
     ]
     del model.graph.initializer[:]
     model.graph.initializer.extend(used_initializers)
+
     return model
 
 
 def eliminate_unused_input(model):
-    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    node_input_names = get_tensor_names(model, 'node_input')
     graph_output_names = set(value_info.name for value_info in model.graph.output)
     used_inputs = [
         value_info
@@ -47,7 +48,7 @@ def eliminate_unused_input(model):
 
 
 def eliminate_unused_output(model):
-    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    node_output_names = get_tensor_names(model, 'node_output')
     graph_input_names = set(value_info.name for value_info in model.graph.input)
     used_outputs = [
         value_info
@@ -60,7 +61,7 @@ def eliminate_unused_output(model):
 
 
 def eliminate_unused_value_info(model):
-    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    node_output_names = get_tensor_names(model, 'node_output')
     graph_output_names = set(value_info.name for value_info in model.graph.output)
     used_value_infos = [
         value_info
@@ -249,3 +250,36 @@ def check_value_info(model: onnx.ModelProto) -> None:
             raise AttributeError(
                 f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'
             ) from None
+
+
+def get_tensor_names(model, tensor_type):
+    assert tensor_type in ['node_input', 'node_output']
+    if tensor_type == 'node_input':
+        tensor_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    elif tensor_type == 'node_output':
+        tensor_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    # get tensor names in the graph attribute
+    for node in model.graph.node:
+        if node.op_type == 'If':
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['else_branch', 'then_branch']
+            )
+        elif node.op_type in ['Loop', 'Scan']:
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['body']
+            )
+        else:
+            continue
+        for graph in graphs:
+            for subgraph_node in graph.node:
+                if tensor_type == 'node_input':
+                    for tensor_name in subgraph_node.input:
+                        tensor_names.add(tensor_name)
+                elif tensor_type == 'node_output':
+                    for tensor_name in subgraph_node.output:
+                        tensor_names.add(tensor_name)
+    return tensor_names
