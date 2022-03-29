@@ -68,11 +68,12 @@ def execute(registry: CommandRegistry, args, remainings) -> int:
 
 def _parse_arguments(registry: CommandRegistry):
     parser = argparse.ArgumentParser(
-        description="FuriosaAI SDK CLI",
+        description=f"FuriosaAI SDK CLI (ver. {__version__.version})",
         epilog="",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--version", action="version", version=f"FuriosaAI SDK CLI v{__version__}")
+
+    parser.add_argument("--version", action="version", version=f"{__version__}")
     _register_subcommands(parser, registry)
 
     return parser

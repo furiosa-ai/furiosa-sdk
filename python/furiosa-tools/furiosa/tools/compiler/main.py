@@ -3,9 +3,15 @@ import sys
 from typing import Dict
 
 from furiosa.tools import __version__
-from furiosa.tools.compiler.api import LIBCOMPILER, CompilerApiError, compile, version_string
+from furiosa.tools.compiler.api import (
+    LIBCOMPILER,
+    CompilerApiError,
+    VersionInfo,
+    compile,
+    version_string,
+)
 
-DESCRIPTION: str = "FuriosaAI SDK Compiler for DNN models"
+DESCRIPTION: str = f"FuriosaAI SDK Compiler (ver. {__version__.version})"
 
 EXAMPLE: str = """example:
     # Compile foo.tflite into output.enf
@@ -107,14 +113,13 @@ class CommandCompile:
         self.args = self.parser.parse_args()
 
     def setup_arguments(self):
+        full_version = f"""furiosa-compiler: {version_string()}\nfuriosa-tools: {__version__}\n"""
         self.parser.add_argument(
             'source',
             type=str,
             help='Path to source file (tflite, onnx, and other IR formats, such as dfg, cdfg, gir, lir)',
         )
-        self.parser.add_argument(
-            "--version", action="version", version=f"{version_string()} (wrapper: {__version__})"
-        )
+        self.parser.add_argument("--version", action="version", version=full_version)
         self.parser.add_argument(
             '-o',
             dest='output',
@@ -171,6 +176,13 @@ class CommandCompile:
         )
 
     def run(self) -> int:
+        compiler_version = VersionInfo()
+        print(
+            f"furiosa-compiler {compiler_version.version} (rev. {compiler_version.git_hash}),"
+            f"furiosa-tools {__version__.version} (rev. {__version__.hash[0:9]})",
+            file=sys.stderr,
+        )
+
         ga_params = None
         if self.args.genetic_optimization:
             ga_params = ga_options(self.args.genetic_optimization)
