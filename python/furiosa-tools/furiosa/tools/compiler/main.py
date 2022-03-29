@@ -1,9 +1,13 @@
 import argparse
+import logging
+import os
 import sys
 from typing import Dict
 
 from furiosa.tools import __version__
-from furiosa.tools.compiler.api import LIBCOMPILER, CompilerApiError, compile, version_string
+from furiosa.tools.compiler.api import CompilerApiError, compile, version_string
+
+LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
 
 DESCRIPTION: str = "FuriosaAI SDK Compiler for DNN models"
 
@@ -177,7 +181,7 @@ class CommandCompile:
 
         return compile(
             self.args.source,
-            output=self.args.output,
+            output_path=self.args.output,
             target_ir=self.args.target_ir,
             dot_graph=self.args.dot_graph,
             analyze_memory=self.args.analyze_memory,
@@ -198,4 +202,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=LOGLEVEL)
     main()
