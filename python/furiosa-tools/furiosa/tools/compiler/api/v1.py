@@ -1,12 +1,13 @@
 """C Native library binding"""
 import ctypes
 from ctypes import CDLL, Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
-import logging
 from enum import IntEnum
+import logging
 from pathlib import Path
 import sys
 from typing import Dict, Optional, Union
 
+from furiosa.common.error import FuriosaError, is_err
 from furiosa.common.native import LogLevel, find_native_lib_path
 
 LOG = logging.getLogger(__name__)
@@ -121,6 +122,9 @@ LIBCOMPILER.fc_options_ga_pin_tensors.restype = None
 LIBCOMPILER.fc_options_ga_init_tactic.argtypes = [c_void_p, c_char_p]
 LIBCOMPILER.fc_options_ga_init_tactic.restype = None
 
+LIBCOMPILER.fc_options_enable_cache.argtypes = [c_void_p, c_bool]
+LIBCOMPILER.fc_options_enable_cache.restype = None
+
 # Register Ctrl-C signal handler to interrupt native side for long running job
 LIBCOMPILER.register_signal_handler()
 
@@ -144,10 +148,15 @@ class NativeError(IntEnum):
     OTHER = 13
 
 
-class CompilerApiError(Exception):
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__()
+class CompilerApiError(FuriosaError):
+    def __init__(self, message: str, err_code: Optional[NativeError] = None):
+        self.native_err = err_code
+        super().__init__(message)
+
+
+class InvalidTargetIrException(CompilerApiError):
+    def __init__(self, format: str = None):
+        super().__init__(f"invalid target ir '{format}'", NativeError.INVALID_FORMAT)
 
 
 def __set_ga_param(options, key: str, value: object):
@@ -209,6 +218,11 @@ def __read_model(input) -> bytes:
         return contents
 
 
+def __check_target_ir(target_ir: str):
+    if not target_ir.lower().strip() in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
+        raise InvalidTargetIrException(target_ir)
+
+
 def compile(
     input_path: Union[str, Path],
     output_path: Union[str, Path] = None,
@@ -220,6 +234,7 @@ def compile(
     auto_batch_size: Optional[bool] = None,
     ga_params: Optional[Dict[str, str]] = None,
     target_npu: str = DEFAULT_TARGET_NPU,
+    cache_enabled: bool = True,
     verbose: bool = False,
 ) -> int:
     if verbose:
@@ -230,10 +245,13 @@ def compile(
     if not output_path:
         output_path = "output.enf"
 
+    __check_target_ir(target_ir)
+
     options = LIBCOMPILER.fc_create_options()
 
     LIBCOMPILER.fc_options_target_ir(options, target_ir.encode(DEFAULT_ENCODING))
     LIBCOMPILER.fc_options_target_npu(options, target_npu.encode(DEFAULT_ENCODING))
+    LIBCOMPILER.fc_options_enable_cache(options, cache_enabled)
 
     if analyze_memory:
         LIBCOMPILER.fc_options_memory_analysis(
@@ -256,8 +274,8 @@ def compile(
     output_buf = FcBuffer()
     errno = LIBCOMPILER.fc_compile(options, None, None, byref(input_buf), byref(output_buf))
 
-    if errno != 0:
-        print("fail!")
+    if is_err(errno):
+        return errno  # it's ok because furiosa-compiler will print out the error message to stderr
 
     try:
         with open(output_path, "wb") as output:
