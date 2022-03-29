@@ -175,9 +175,7 @@ class ONNXTransformer:
         return self.producer_map[node_input]
 
     def is_same_shape(self, input_1, input_2):
-        if self.get_value_info_shape(input_1) != self.get_value_info_shape(input_2):
-            return False
-        return True
+        return self.get_value_info_shape(input_1) == self.get_value_info_shape(input_2)
 
     def traverse_prev_node(self, producer_map_key: str, target_op_types: List[str]):
         prev_node = self.find_prev_node(producer_map_key)
