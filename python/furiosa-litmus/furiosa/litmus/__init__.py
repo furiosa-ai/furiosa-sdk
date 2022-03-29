@@ -68,8 +68,9 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate the model",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="Validate the model", formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "model_path",
         type=str,
