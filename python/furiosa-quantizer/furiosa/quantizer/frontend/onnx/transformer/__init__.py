@@ -303,15 +303,6 @@ class ONNXTransformer:
             nodes_to_remove[-1], self.find_next_node(nodes_to_remove[-1]), new_input
         )
 
-    def transform_to_convert(
-        self,
-        nodes_to_remove: List[onnx.NodeProto],
-        nodes_to_add: Optional[List[onnx.NodeProto]] = None,
-        inits_to_add: Optional[List[onnx.TensorProto]] = None,
-        vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
-    ):
-        self.transform_to_fuse(nodes_to_remove, nodes_to_add, inits_to_add, vis_to_add)
-
     def transform_to_fuse(
         self,
         nodes_to_remove: List[onnx.NodeProto],
