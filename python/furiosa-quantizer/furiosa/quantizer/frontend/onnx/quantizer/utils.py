@@ -198,7 +198,6 @@ def append_suffix(name: str, suffix: List[str]) -> List[str]:
 
 
 def get_input_tensors(model: onnx.ModelProto) -> List[Tuple[str, List[int], str]]:
-    ort.set_default_logger_severity(3)
     sess = ort.InferenceSession(model.SerializeToString())
     input_tensors = [(inp.name, inp.shape, inp.type) for inp in sess.get_inputs()]
     return input_tensors

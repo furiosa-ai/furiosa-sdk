@@ -23,5 +23,4 @@ def check_model(model: onnx.ModelProto, check_runnable: bool = True) -> None:
             checker.check_model(model)
 
     if check_runnable:
-        ort.set_default_logger_severity(3)
         ort.InferenceSession(model.SerializeToString())
