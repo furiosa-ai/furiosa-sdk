@@ -363,7 +363,7 @@ pipeline {
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
     FIRMWARE_VERSION = "0.5.2-2"
-    NUX_VERSION = "0.6.1-2"
+    NUX_VERSION = "0.7.0-2+nightly-220330"
   }
 
   stages {

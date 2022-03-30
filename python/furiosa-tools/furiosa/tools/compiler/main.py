@@ -133,8 +133,8 @@ class CommandCompile:
         self.parser.add_argument(
             '--target-npu',
             type=str,
-            default='warboy',
-            help='Target NPU: warboy (default), warboy-2pe',
+            default='warboy-2pe',
+            help='Target NPU: warboy, warboy-2pe (default)',
         )
         self.parser.add_argument(
             '--analyze-memory',
