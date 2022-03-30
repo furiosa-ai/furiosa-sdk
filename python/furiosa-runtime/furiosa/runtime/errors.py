@@ -4,7 +4,7 @@ from enum import IntEnum
 import typing
 from typing import Optional
 
-from furiosa.common.error import FuriosaError
+from furiosa.common.error import FuriosaError, is_err, is_ok
 
 
 class NativeError(IntEnum):
