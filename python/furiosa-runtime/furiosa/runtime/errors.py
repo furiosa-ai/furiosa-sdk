@@ -3,6 +3,7 @@ import ctypes
 from enum import IntEnum
 import typing
 from typing import Optional
+
 from furiosa.common.error import FuriosaError
 
 
