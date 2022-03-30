@@ -392,8 +392,8 @@ class FuriosaONNXQuantizer:
         )
 
     def _quantize_weight_per_axis(self, weight_init: onnx.TensorProto, axis: int) -> None:
+        assert len(weight_init.dims) == 4, f'weight should have rank 4: {repr(weight_init)}'
         weight = numpy_helper.to_array(weight_init)
-        assert weight.ndim == 4
 
         num_output_channels = weight.shape[axis]
         s_list = []
