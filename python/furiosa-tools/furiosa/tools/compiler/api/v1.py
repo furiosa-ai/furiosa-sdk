@@ -212,12 +212,6 @@ def version_string() -> str:
     return f"{info.version} " f"(rev: {info.git_hash} " f"built at {info.build_timestamp})"
 
 
-def __read_model(input) -> bytes:
-    with open(str(input), "rb") as input:
-        contents = input.read()
-        return contents
-
-
 def __check_target_ir(target_ir: str):
     if not target_ir.lower().strip() in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
         raise InvalidTargetIrException(target_ir)
@@ -240,10 +234,8 @@ def compile(
     if verbose:
         LIBCOMPILER.fc_enable_logging(LogLevel.INFO)
 
-    input_bytes = __read_model(input_path)
+    input_bytes = Path(input_path).read_bytes()
     input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))
-    if not output_path:
-        output_path = "output.enf"
 
     __check_target_ir(target_ir)
 

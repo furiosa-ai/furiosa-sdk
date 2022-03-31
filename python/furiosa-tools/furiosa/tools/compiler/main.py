@@ -7,7 +7,7 @@ from typing import Dict
 from furiosa.tools import __version__
 from furiosa.tools.compiler.api import CompilerApiError, VersionInfo, compile, version_string
 
-LOGLEVEL = os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper())
 
 DESCRIPTION: str = f"FuriosaAI SDK Compiler (ver. {__version__.version})"
 
@@ -122,6 +122,7 @@ class CommandCompile:
             '-o',
             dest='output',
             type=str,
+            default='output.enf',
             help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)',
         )
         self.parser.add_argument(
@@ -208,5 +209,4 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=LOGLEVEL)
     main()

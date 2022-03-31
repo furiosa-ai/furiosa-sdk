@@ -21,7 +21,7 @@ def _model_image(model: Union[bytes, str, Path]) -> bytes:
     if isinstance(model, bytes):
         model_image = model
     elif isinstance(model, (str, Path)):
-        model_image = _read_file(model)
+        model_image = Path(model).read_bytes()
     else:
         raise TypeError("'model' must be str or bytes, but it was " + repr(type(model)))
 

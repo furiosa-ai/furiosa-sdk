@@ -53,9 +53,9 @@ class NativeException(FuriosaError):
 
     def __repr__(self):
         if self._native_err is None:
-            return self.message
+            return self._message
 
-        return f'{self.message} (native error code: {self._native_err})'
+        return f'{self._message} (native error code: {self._native_err})'
 
     def __str__(self):
         return self.__repr__()
