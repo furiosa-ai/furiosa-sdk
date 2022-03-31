@@ -62,6 +62,7 @@ class ONNXTest(unittest.TestCase):
             raw_data=True,
         ).quantize()
         self._ensure_no_initializer_in_graph_input(quant_model)
+        self._ensure_no_unused_initializer(quant_model)
 
     def test__is_sandwiched(self):
         model = _make_sandwiced_model()
@@ -124,8 +125,20 @@ class ONNXTest(unittest.TestCase):
         self._ensure_no_initializer_in_graph_input(model)
 
     def _ensure_no_initializer_in_graph_input(self, model: onnx.ModelProto) -> None:
-        graph_inputs = set(_input.name for _input in model.graph.input)
-        self.assertTrue(all(init.name not in graph_inputs for init in model.graph.initializer))
+        graph_inputs = set(value_info.name for value_info in model.graph.input)
+        self.assertTrue(all(tensor.name not in graph_inputs for tensor in model.graph.initializer))
+
+    def _ensure_no_unused_initializer(self, model: onnx.ModelProto) -> None:
+        node_input_names = set(
+            tensor_name for node in model.graph.node for tensor_name in node.input
+        )
+        self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
+
+    def _ensure_no_unused_initializer(self, model: onnx.ModelProto) -> None:
+        node_input_names = set(
+            tensor_name for node in model.graph.node for tensor_name in node.input
+        )
+        self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
 
 
 def _make_dfg_quantized_model():

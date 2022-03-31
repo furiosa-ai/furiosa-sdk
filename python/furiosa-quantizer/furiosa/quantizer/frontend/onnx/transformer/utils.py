@@ -18,11 +18,11 @@ def name_nodes(model):
     return model
 
 
-def eliminate_unused_initializer(model):
+def eliminate_unused_initializer(model: onnx.ModelProto) -> onnx.ModelProto:
     node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
-    unused_initializers = (
+    unused_initializers = [
         tensor for tensor in model.graph.initializer if tensor.name not in node_input_names
-    )
+    ]
     for unused_initializer in unused_initializers:
         model.graph.initializer.remove(unused_initializer)
     return model
