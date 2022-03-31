@@ -284,11 +284,15 @@ class Pattern_2(ONNXTransformer):
                 self.get_value_info_shape(input_tensor)[::-1],
             )
             new_vis.append(transpose_output_vi)
+            # input shape also should be transposed
+            input_shape = self.get_value_info_shape(input_tensor)[::-1] + [1, 1]
+        else:
+            input_shape = self.get_value_info_shape(input_tensor) + [1, 1]
 
         conv_input_vi = onnx.helper.make_tensor_value_info(
             gemm.output[0] + '_unsqueezed',
             onnx.TensorProto.FLOAT,
-            self.get_value_info_shape(input_tensor) + [1, 1],
+            input_shape,
         )
 
         conv_output_vi = onnx.helper.make_tensor_value_info(
