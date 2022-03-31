@@ -214,7 +214,7 @@ class FuriosaONNXQuantizer:
             self._quant_value_info.pop(output.name)
 
         self.model = utils.rebuild_model(
-            model=self.model, new_nodes=self._quant_node.values(), eliminate=False
+            model=self.model, new_nodes=list(self._quant_node.values()), eliminate=False
         )
 
         self._update_graph_field(

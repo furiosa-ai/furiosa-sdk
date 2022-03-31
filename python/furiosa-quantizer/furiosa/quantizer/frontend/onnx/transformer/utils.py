@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Iterable, Optional, TypeVar
+from typing import Any, Callable, Iterable, List, Optional, TypeVar
 
 import onnx
 from onnx.helper import make_model, make_opsetid, make_tensor_value_info
@@ -19,45 +19,55 @@ def name_nodes(model):
 
 
 def eliminate_unused_initializer(model: onnx.ModelProto) -> onnx.ModelProto:
+    """
+    This function eliminates every initializers not used by node input,
+    regardless of any graph fields they are defined in.
+    """
     node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
-    unused_initializers = [
-        tensor for tensor in model.graph.initializer if tensor.name not in node_input_names
+    used_initializers = [
+        tensor for tensor in model.graph.initializer if tensor.name in node_input_names
     ]
-    for unused_initializer in unused_initializers:
-        model.graph.initializer.remove(unused_initializer)
+    del model.graph.initializer[:]
+    model.graph.initializer.extend(used_initializers)
     return model
 
 
 def eliminate_unused_input(model):
     node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
-    unused_inputs = (
-        value_info for value_info in model.graph.input if value_info.name not in node_input_names
-    )
-    for unused_input in unused_inputs:
-        model.graph.input.remove(unused_input)
+    graph_output_names = set(value_info.name for value_info in model.graph.output)
+    used_inputs = [
+        value_info
+        for value_info in model.graph.input
+        if value_info.name in node_input_names or value_info.name in graph_output_names
+    ]
+    del model.graph.input[:]
+    model.graph.input.extend(used_inputs)
     return model
 
 
 def eliminate_unused_output(model):
     node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
-    unused_outputs = (
-        value_info for value_info in model.graph.output if value_info.name not in node_output_names
-    )
-    for unused_output in unused_outputs:
-        model.graph.output.remove(unused_output)
+    graph_input_names = set(value_info.name for value_info in model.graph.input)
+    used_outputs = [
+        value_info
+        for value_info in model.graph.output
+        if value_info.name in node_output_names or value_info.name in graph_input_names
+    ]
+    del model.graph.output[:]
+    model.graph.output.extend(used_outputs)
     return model
 
 
 def eliminate_unused_value_info(model):
     node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
     graph_output_names = set(value_info.name for value_info in model.graph.output)
-    unused_value_infos = (
+    used_value_infos = [
         value_info
         for value_info in model.graph.value_info
-        if value_info.name not in node_output_names or value_info.name in graph_output_names
-    )
-    for unused_value_info in unused_value_infos:
-        model.graph.value_info.remove(unused_value_info)
+        if value_info.name in node_output_names and value_info.name not in graph_output_names
+    ]
+    del model.graph.value_info[:]
+    model.graph.value_info.extend(used_value_infos)
     return model
 
 
@@ -76,12 +86,13 @@ def eliminate_unused_protos(model):
 
 
 def eliminate_initializer_from_graph_input(model: onnx.ModelProto) -> onnx.ModelProto:
-    initializer = [init.name for init in model.graph.initializer]
-    initializer_in_graph_input = [
-        _input for _input in model.graph.input if _input.name in initializer
+    initializer = set(init.name for init in model.graph.initializer)
+    graph_input = [
+        value_info for value_info in model.graph.input if value_info.name not in initializer
     ]
-    for init in initializer_in_graph_input:
-        model.graph.input.remove(init)
+    del model.graph.input[:]
+    model.graph.input.extend(graph_input)
+
     return model
 
 
@@ -96,9 +107,14 @@ def include_initializer_to_graph_input(model: onnx.ModelProto) -> onnx.ModelProt
     return model
 
 
-def rebuild_model(model, new_nodes, eliminate=True, renaming=True):
+def rebuild_model(
+    model: onnx.ModelProto,
+    new_nodes: List[onnx.NodeProto],
+    eliminate: bool = True,
+    renaming: bool = True,
+):
     # remove all nodes and re-make model.graph based on newly given nodes.
-    model.graph.ClearField('node')
+    del model.graph.node[:]
     model.graph.node.extend(new_nodes)
     default_opset = make_opsetid(__DOMAIN__, __OPSET_VERSION__)
     model = make_model(model.graph, opset_imports=[default_opset])
@@ -139,7 +155,7 @@ def fix_batch_size_as_one(model):
 def make_initializer_name_unique(model):
     # Renames Operators' initializers, if necessary, to make their names unique
     initializer = {init.name: init for init in model.graph.initializer}
-    model.graph.ClearField('initializer')
+    del model.graph.initializer[:]
     for node in model.graph.node:
         for idx, node_input in enumerate(node.input):
             if node_input not in initializer:

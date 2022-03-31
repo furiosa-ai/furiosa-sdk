@@ -32,7 +32,7 @@ def make_onnx_model_from_model_desc(
     input_desc = model_desc["input"]
     output_desc = model_desc["output"]
     init_desc = model_desc.get("initializer", {})
-    node_desc = model_desc["node"]
+    node_desc = model_desc.get("node", [])
     opsetid_desc = model_desc.get("opsetid", [(__DOMAIN__, __OPSET_VERSION__)])
 
     inputs = _make_value_info_list(input_desc)
