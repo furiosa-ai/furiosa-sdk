@@ -1,5 +1,5 @@
 from collections import ChainMap, Counter, OrderedDict, defaultdict
-from typing import List, Optional, Set
+from typing import List, Optional, Sequence, Set
 
 import numpy as np
 import onnx
@@ -21,11 +21,23 @@ class ONNXTransformer:
             for tensor in node.input:
                 self.consumer_map[tensor].append(node)
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
-        self.initializer_map = {init.name: init for init in model.graph.initializer}
         self.node_input_map = {node.name: node.input for node in model.graph.node}
+        self.initializer_map = {init.name: init for init in model.graph.initializer}
+
+        self.initializer_vi_map = {
+            init.name: make_tensor_value_info(init.name, init.data_type, init.dims)
+            for init in model.graph.initializer
+        }
+
         self.value_info_map = {vi.name: vi for vi in model.graph.value_info}
         self.graph_input_map = {inp.name: inp for inp in model.graph.input}
         self.graph_output_map = {out.name: out for out in model.graph.output}
+        self.value_info_all = {
+            **self.initializer_vi_map,
+            **self.value_info_map,
+            **self.graph_input_map,
+            **self.graph_output_map,
+        }
         self.check_runnable = True
 
         self.input_count_map = Counter()
@@ -96,23 +108,13 @@ class ONNXTransformer:
             return self.value_info_map[name]
         raise Exception(f'{name} not found.')
 
-    def get_value_info_shape(self, value_info_name: str) -> List[int]:
-        def _get_shape(name, vi_map):
-            return [dim.dim_value for dim in vi_map[name].type.tensor_type.shape.dim]
+    def get_value_info_shape(self, tensor_name: str) -> List[int]:
+        return [
+            dim.dim_value for dim in self.value_info_all[tensor_name].type.tensor_type.shape.dim
+        ]
 
-        if value_info_name in self.value_info_map:
-            return _get_shape(value_info_name, self.value_info_map)
-        if value_info_name in self.graph_output_map:
-            return _get_shape(value_info_name, self.graph_output_map)
-        if value_info_name in self.graph_input_map:
-            return _get_shape(value_info_name, self.graph_input_map)
-        raise ValueError(f'{value_info_name} not found.')
-
-    def get_value_info_dtype(self, tensor_name: str) -> List[int]:
-        tensor_name_to_value_info = ChainMap(
-            self.graph_input_map, self.graph_output_map, self.value_info_map
-        )
-        return tensor_name_to_value_info[tensor_name].type.tensor_type.elem_type
+    def get_value_info_dtype(self, tensor_name: str) -> int:
+        return self.value_info_all[tensor_name].type.tensor_type.elem_type
 
     def get_map_values(self, field):
 
@@ -205,9 +207,6 @@ class ONNXTransformer:
 
     def update_single_initializer_map(self, initializer: onnx.TensorProto):
         self.initializer_map[initializer.name] = initializer
-        self.graph_input_map[initializer.name] = make_tensor_value_info(
-            initializer.name, initializer.data_type, numpy_helper.to_array(initializer).shape
-        )
 
     def update_multiple_initializer_map(self, initializers: List[onnx.TensorProto]):
         for init in initializers:
@@ -235,7 +234,6 @@ class ONNXTransformer:
 
     def pop_single_initializer_map(self, init: onnx.TensorProto):
         self.initializer_map.pop(init.name)
-        self.graph_input_map.pop(init.name)
 
     def pop_multiple_initializer_map(self, nodes: List[onnx.TensorProto]):
         for node in nodes:

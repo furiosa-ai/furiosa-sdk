@@ -17,6 +17,7 @@
 
 from collections import defaultdict
 import copy
+import itertools
 import os
 from typing import Dict, List, Optional, Tuple
 
@@ -95,16 +96,19 @@ class FuriosaONNXQuantizer:
         for node in model.graph.node:
             for tensor in node.input:
                 self.consumer_map[tensor].append(node)
-        self.value_info = {
+        self.init_vi = [
+            make_tensor_value_info(init.name, init.data_type, init.dims)
+            for init in self.model.graph.initializer
+        ]
+        self.value_info_all = {
             vi.name: vi
-            for vi in list(self.model.graph.value_info)
-            + list(self.model.graph.input)
-            + list(self.model.graph.output)
+            for vi in itertools.chain(
+                self.model.graph.value_info,
+                self.model.graph.input,
+                self.model.graph.output,
+                self.init_vi,
+            )
         }
-
-        assert len(self.value_info) == len(list(self.model.graph.value_info)) + len(
-            list(self.model.graph.input)
-        ) + len(list(self.model.graph.output))
 
         # (Case1) check if model is optimized: all value_infos are given.
         for node in self.model.graph.node:
@@ -112,13 +116,13 @@ class FuriosaONNXQuantizer:
                 if name in self.initializer.keys():
                     continue
 
-                if name not in self.value_info.keys():
+                if name not in self.value_info_all:
                     raise Exception(
                         f'value_info for {name} is missing. Optimize model before quantization.'
                     )
 
         # (Case2) raise Exception if dynamic_range is missing
-        for key, vi in self.value_info.items():
+        for key, vi in self.value_info_all.items():
             if not is_float_tensor(vi):
                 continue
 
@@ -130,7 +134,7 @@ class FuriosaONNXQuantizer:
 
         # (Case3) raise Exception if dynamic_range is not defined in model.graph.value_info
         for key in dynamic_ranges:
-            if key not in self.value_info.keys():
+            if key not in self.value_info_all:
                 raise Exception(f'dynamic range: {key} is not defined in model.graph.value_info')
 
         # stack intermediate result of quantization
@@ -182,14 +186,14 @@ class FuriosaONNXQuantizer:
             # to avoid updating every consumer_map that contains the mutated node
             orig_node = copy.deepcopy(node)
             for idx, node_input in enumerate(node.input):
-                if not is_float_tensor(self.value_info[node_input]):
+                if not is_float_tensor(self.value_info_all[node_input]):
                     continue
                 if node_input + '_scale' not in self._quant_param:
                     continue
 
                 suffix = (
-                    self.consumer_map.get(node_input).index(orig_node)
-                    if len(self.consumer_map.get(node_input)) > 1
+                    self.consumer_map[node_input].index(orig_node)
+                    if len(self.consumer_map[node_input]) > 1
                     else None
                 )
                 self.make_quant_dequant_node(node_input, suffix)
@@ -199,7 +203,7 @@ class FuriosaONNXQuantizer:
 
             self._quant_node.update({node.output[0]: node})
         for output in self.model.graph.output:
-            if not is_float_tensor(self.value_info[output.name]):
+            if not is_float_tensor(self.value_info_all[output.name]):
                 continue
             if output.name + '_scale' not in self._quant_param:
                 continue
@@ -281,7 +285,7 @@ class FuriosaONNXQuantizer:
 
     def _quantize_activation(self):
         act_quant_param = calculate_activation_quant_params(
-            self.dynamic_ranges, self.model.graph.node, self.activation_qtype, self.value_info
+            self.dynamic_ranges, self.model.graph.node, self.activation_qtype, self.value_info_all
         )
         suffix = ['_zero_point', '_scale']
         for name, (zp, s) in act_quant_param.items():
@@ -330,7 +334,7 @@ class FuriosaONNXQuantizer:
 
             vi = make_tensor_value_info(name=name, elem_type=onnx.TensorProto.FLOAT, shape=[])
             self.model.graph.input.append(vi)
-            self.value_info.update({name: vi})
+            self.value_info_all.update({name: vi})
 
             if not self.raw_data:
                 w_init = make_tensor(
@@ -514,7 +518,7 @@ class FuriosaONNXQuantizer:
         if name_quant in quant_vi_dict.keys():
             return
 
-        vi = self.value_info[name]
+        vi = self.value_info_all[name]
 
         # make quantized value info proto
         quant_vi = make_tensor_value_info(

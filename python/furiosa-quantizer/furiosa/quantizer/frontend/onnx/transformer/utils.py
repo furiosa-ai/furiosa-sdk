@@ -2,7 +2,6 @@ import logging
 from typing import Any, Callable, Iterable, Optional, TypeVar
 
 import onnx
-from onnx import numpy_helper
 from onnx.helper import make_model, make_opsetid, make_tensor_value_info
 
 from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
@@ -76,17 +75,24 @@ def eliminate_unused_protos(model):
     return model
 
 
-def include_initializer_to_graph_input(model):
+def eliminate_initializer_from_graph_input(model: onnx.ModelProto) -> onnx.ModelProto:
+    initializer = [init.name for init in model.graph.initializer]
+    initializer_in_graph_input = [
+        _input for _input in model.graph.input if _input.name in initializer
+    ]
+    for init in initializer_in_graph_input:
+        model.graph.input.remove(init)
+    return model
+
+
+def include_initializer_to_graph_input(model: onnx.ModelProto) -> onnx.ModelProto:
     input_value_names = [inp.name for inp in model.graph.input]
     for init in model.graph.initializer:
         if init.name not in input_value_names:
-            dims = numpy_helper.to_array(init).shape
-            value_info = make_tensor_value_info(init.name, init.data_type, dims)
+            value_info = make_tensor_value_info(init.name, init.data_type, init.dims)
             model.graph.input.append(value_info)
-
             # do not append duplicated initializer to graph input
             input_value_names.append(init.name)
-
     return model
 
 
@@ -99,10 +105,8 @@ def rebuild_model(model, new_nodes, eliminate=True, renaming=True):
 
     # eliminate all unused protos such as initializer, input, output, and value_info.
     if eliminate:
+        model = eliminate_initializer_from_graph_input(model)
         model = eliminate_unused_protos(model)
-
-    # include initializer to graph input
-    model = include_initializer_to_graph_input(model)
 
     # rename node.name
     if renaming:

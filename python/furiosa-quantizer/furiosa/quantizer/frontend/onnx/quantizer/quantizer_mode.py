@@ -42,9 +42,6 @@ class DFGImportable:
                 new_nodes.append(node)
                 continue
 
-            # node.input[0] to be removed from model.graph.input
-            self.graph_input.pop(node.input[0])
-
             # node.input[0] to be removed from model.graph.initializer
             init = self.initializer.pop(node.input[0])
 
@@ -83,10 +80,7 @@ class DFGImportable:
             )
 
             # node.output[0] to be removed from model.graph.value_info
-            vi = self.value_info.pop(node.output[0])
-
-            # node.output[0] to be updated to model.graph.input instead
-            self.graph_input.update({node.output[0]: vi})
+            self.value_info.pop(node.output[0])
 
             rm_nodes.append(node)
 
@@ -239,9 +233,9 @@ class ONNXRuntimeExecutable(DFGImportable):
 
                 node.input[idx] = init_name + '_fake_quantized'
 
-                init = self.initializer[init_name]
-                s = self.initializer[init_name + '_scale']
-                zp = self.initializer[init_name + '_zero_point']
+                init = self.initializer.pop(init_name)
+                s = self.initializer.pop(init_name + '_scale')
+                zp = self.initializer.pop(init_name + '_zero_point')
 
                 # gives output_channel_axis for per-channel quantized Conv/ConvTranspose weight/bias
                 rank = len(init.dims)

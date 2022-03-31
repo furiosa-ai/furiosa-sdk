@@ -34,21 +34,34 @@ class ONNXTest(unittest.TestCase):
 
         # load efficientdet_d0
         cls.effdet = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
+        cls.opt_effdet = optimize_model(cls.effdet)
+        cls.ranges = calibrate.calibrate(cls.opt_effdet, cls.dataset)
 
     def test_post_training_quantize_with_raw_data_True(self):
-        post_training_quantize(self.effdet, self.dataset, False)
+        quant_model = post_training_quantize(self.effdet, self.dataset, False)
+        self._ensure_no_initializer_in_graph_input(quant_model)
 
     def test_post_training_quantize_with_raw_data_False(self):
-        model = optimize_model(self.effdet)
-        ranges = calibrate.calibrate(model, self.dataset)
-        quantizer.FuriosaONNXQuantizer(
-            model=model,
+        quant_model = quantizer.FuriosaONNXQuantizer(
+            model=self.opt_effdet,
             per_channel=False,
             static=True,
             mode=quantizer.QuantizationMode.DFG,
-            dynamic_ranges=ranges,
+            dynamic_ranges=self.ranges,
             raw_data=False,
         ).quantize()
+        self._ensure_no_initializer_in_graph_input(quant_model)
+
+    def test_post_training_quantize_with_FAKE_mode(self):
+        quant_model = quantizer.FuriosaONNXQuantizer(
+            model=self.opt_effdet,
+            per_channel=True,
+            static=True,
+            mode=quantizer.QuantizationMode.FAKE,
+            dynamic_ranges=self.ranges,
+            raw_data=True,
+        ).quantize()
+        self._ensure_no_initializer_in_graph_input(quant_model)
 
     def test__is_sandwiched(self):
         model = _make_sandwiced_model()
@@ -108,6 +121,11 @@ class ONNXTest(unittest.TestCase):
         model = post_training_quantization_with_random_calibration(
             model, per_channel=True, static=True, mode=QuantizationMode.DFG
         )
+        self._ensure_no_initializer_in_graph_input(model)
+
+    def _ensure_no_initializer_in_graph_input(self, model: onnx.ModelProto) -> None:
+        graph_inputs = set(_input.name for _input in model.graph.input)
+        self.assertTrue(all(init.name not in graph_inputs for init in model.graph.initializer))
 
 
 def _make_dfg_quantized_model():
