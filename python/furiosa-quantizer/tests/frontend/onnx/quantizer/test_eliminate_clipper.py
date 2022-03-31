@@ -7,6 +7,7 @@ import onnxruntime as ort
 from furiosa.quantizer.frontend.onnx import calibrate, quantizer
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer_mode
 from furiosa.quantizer.frontend.onnx.quantizer.eliminate_clipper import (
+    ClipperElimination,
     Pattern_1,
     Pattern_2,
     Pattern_3,
@@ -15,7 +16,6 @@ from furiosa.quantizer.frontend.onnx.quantizer.eliminate_clipper import (
     Pattern_6,
 )
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from tests.frontend.onnx.transformer import TestTransformer, make_onnx_model
 
 
@@ -443,7 +443,7 @@ def _get_intermedidate_representation(
 
 def _make_test_model(
     model: onnx.ModelProto,
-    pattern: ONNXTransformer,
+    pattern: ClipperElimination,
     dynamic_ranges: Optional[Dict[str, Tuple[float, float]]] = None,
 ) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
     if dynamic_ranges is None:

@@ -11,6 +11,8 @@ from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 
 
 class ONNXTransformer:
+    check_runnable = True
+
     def __init__(self, model):
         self.model = utils.name_nodes(model)
         self.producer_map = {
@@ -38,7 +40,6 @@ class ONNXTransformer:
             **self.graph_input_map,
             **self.graph_output_map,
         }
-        self.check_runnable = True
 
         self.input_count_map = Counter()
         for node in model.graph.node:
