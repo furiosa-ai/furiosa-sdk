@@ -5,6 +5,7 @@ import numpy as np
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 logger = logging.getLogger(__name__)
@@ -29,14 +30,7 @@ def _get_bn_params(
     mean = get_init_arr_func(node.input[3])
     var = get_init_arr_func(node.input[4])
 
-    eps = next(
-        (
-            onnx.helper.get_attribute_value(attr)
-            for attr in node.attribute
-            if attr.name == "epsilon"
-        ),
-        1e-05,
-    )
+    eps = get_attribute(node.attribute, "epsilon", 1e-05)
 
     return scale, B, mean, var, eps
 

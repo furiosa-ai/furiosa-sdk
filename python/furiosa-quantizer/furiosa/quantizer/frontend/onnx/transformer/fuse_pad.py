@@ -1,6 +1,7 @@
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 
@@ -59,9 +60,7 @@ class Pattern_1(ONNXTransformer):
         return True
 
     def check_condition_1(self, node_attr):
-        if self.get_pad_mode(node_attr) == 'constant':
-            return True
-        return False
+        return self.get_pad_mode(node_attr) == b'constant'
 
     def check_condition_2(self, node):
         try:
@@ -101,10 +100,7 @@ class Pattern_1(ONNXTransformer):
         return False
 
     def get_pad_mode(self, node_attr):
-        return next(
-            (onnx.helper.get_attribute_value(attr) for attr in node_attr if attr.name == "mode"),
-            b"constant",
-        ).decode("utf-8")
+        return get_attribute(node_attr, "mode", b"constant")
 
     def update_attrs(self, attrs, pad_input):
         pads = [sum(x) for x in zip(attrs['pads'], self.make_maxpool_pad(pad_input))]

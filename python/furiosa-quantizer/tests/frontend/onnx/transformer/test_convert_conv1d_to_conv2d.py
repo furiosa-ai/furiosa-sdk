@@ -1,9 +1,7 @@
-from typing import Any, Iterable, Optional
-
 import numpy as np
-import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import Pattern_1
+from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -43,13 +41,13 @@ class TestConvertConv1dToConv2d(TestTransformer):
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
         conv = next(node for node in trans_model.graph.node if node.name == 'Conv_1')
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="pads"), [0, 2, 0, 3])
+        self.check_attribute(get_attribute(conv.attribute, attr_name="pads"), [0, 2, 0, 3])
         self.check_attribute(
-            _get_attribute(conv.attribute, attr_name="kernel_shape"), [1, kernel_size]
+            get_attribute(conv.attribute, attr_name="kernel_shape"), [1, kernel_size]
         )
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="group"), group)
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="dilations"), [1, 1])
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="strides"), [1, 1])
+        self.check_attribute(get_attribute(conv.attribute, attr_name="group"), group)
+        self.check_attribute(get_attribute(conv.attribute, attr_name="dilations"), [1, 1])
+        self.check_attribute(get_attribute(conv.attribute, attr_name="strides"), [1, 1])
 
     def test_case2(self):
         in_channel = 3
@@ -82,13 +80,5 @@ class TestConvertConv1dToConv2d(TestTransformer):
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
         conv = next(node for node in trans_model.graph.node if node.name == 'Conv_1')
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="dilations"), [1, 2])
-        self.check_attribute(_get_attribute(conv.attribute, attr_name="strides"), [1, 3])
-
-
-def _get_attribute(
-    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
-) -> Any:
-    return next(
-        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
-    )
+        self.check_attribute(get_attribute(conv.attribute, attr_name="dilations"), [1, 2])
+        self.check_attribute(get_attribute(conv.attribute, attr_name="strides"), [1, 3])
