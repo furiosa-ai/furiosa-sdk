@@ -1,0 +1,106 @@
+*********************************************************
+Release Notes - 0.6.0
+*********************************************************
+
+FuriosaAI SDK 0.6.0은 메이저 릴리즈로 성능 개선, 기능 추가, 버그픽스에 대한
+234개의 PR과 약 900여개의 커밋을 포함하고 있다.
+
+업그레이드 방법
+--------------------------------------------------------
+APT 저장소를 사용하고 있다면 다음과 간단히 업그레이드할 수 있다.
+더 자세한 설치 방법은 :ref:`RequiredPackages` 에서 찾을 수 있다.
+
+  .. code-block:: sh
+
+    apt-get update && \
+    apt-get install furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux
+
+    pip uninstall furiosa-sdk-quantizer furiosa-sdk-runtime furiosa-sdk-validator && \
+    pip install --upgrade furiosa-sdk
+
+
+주요 변경 사항
+--------------------------------------------------------
+커널 드라이버 (furiosa-driver-pdma)가 1.2.2로 유저레벨 드라이버 (furiosa-libnpu-warboy)는 0.5.2로
+업그레이드 되어 더 안정적이고 높은 NPU의 성능을 제공한다. 그 외에 주요 변경사항은 다음과 같다.
+
+컴파일러
+================================================================
+* NPU 가속 연산자 추가 (가속 연산자의 전체 리스트는 :ref:`SupportedOperators` 를 참고)
+
+    * Space-to-depth (CRD 모드)
+    * Transpose
+    * Slice (height 축 한정)
+    * Concat (height 축 한정)
+    * Grouped Convolution (groups <= 128 인 경우)
+
+* 큰 메모리 사용량을 요구하는 연산자가 포함된 모델에서 CPU 테스크 빈도를 크게 줄이는 개선 (실행 시간 감소)
+
+Quantizer
+================================================================
+
+* 모델 양자화 과정이 멱등성 (idempotent) 을 보장하도록 개선
+* PyTorch 의존성 제거
+* 다수의 Pylint 경고를 제거하여 코드 품질 향상
+* 다수의 라이브러리 의존성 업그레이드 (Numpy -> 1.21.5, Pyyaml -> 6.0.0 등)
+
+Python SDK
+================================================================
+
+* Python SDK 프로젝트 구조 변경
+
+  * furiosa-sdk-runtime -> furiosa-sdk
+  * furiosa-sdk-quantizer -> furiosa-quantizer
+  * furiosa-sdk-validator -> furiosa-litmus
+
+* 모델이 Furiosa SDK와 호환되는지 검사하는 패키지인 validator가 litmus로 이름이 변경되어 설치 방법이 아래와 같이 변경되었다. 더 자세한 사용 방법은 :ref:`Litmus` 를 참조
+
+  .. code-block:: sh
+
+    $ pip install 'furiosa-sdk[litmus]'
+
+Furiosa Serving: FastAPI 기반의 고급 서빙 라이브러리 추가
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+furiosa-serving은 FastAPI 기반으로 모델 추론 API의 실행 전후에 Python 기반의
+비지니스 로직이나 이미지 전후 처리 코드 등을 쉽게 추가할 수 있게 한다.
+
+설치는 아래와 같이 할 수 있다.
+
+  .. code-block:: sh
+
+    $ pip install 'furiosa-sdk[serving]'
+
+
+사용 예제는 아래와 같으며 더 자세한 사용법은 `furiosa-serving Github <https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-serving>`_ 에서
+살펴볼 수 있다.
+
+  .. code-block:: python
+
+    from typing import Dict
+
+    from fastapi import File, UploadFile
+    from furiosa.server.utils.thread import synchronous
+    from furiosa.serving import ServeAPI, ServeModel
+    import numpy as np
+
+
+    serve = ServeAPI()
+
+
+    model: ServeModel = synchronous(serve.model)(
+        'imagenet',
+        location='./examples/assets/models/image_classification.onnx'
+    )
+
+    @model.post("/models/imagenet/infer")
+    async def infer(image: UploadFile = File(...)) -> Dict:
+        # Convert image to Numpy array with your preprocess() function
+        tensors: List[np.ndarray] = preprocess(image)
+
+        # Infer from ServeModel
+        result: List[np.ndarray] = await model.predict(tensors)
+
+        # Classify model from numpy array with your postprocess() function
+        response: Dict = postprocess(result)
+
+        return response

@@ -1,0 +1,161 @@
+*********************************************************
+Release Notes - 0.5.0
+*********************************************************
+
+FuriosaAI SDK 0.5.0 릴리즈에는 약 87개의 버그픽스, 기능 추가, 개선을 포함하고 있다.
+그 중 중요한 변경사항은 다음과 같다.
+
+
+.. _CompilerImprovement:
+
+컴파일러 개선
+--------------------------------------------------------
+0.5.0 릴리즈에서 부터 다음 연산자에 대한 NPU 가속 지원을 추가한다. 가속이 지원되는 연산자 목록 전체는
+:ref:`SupportedOperators` 에서 찾아볼 수 있다.
+
+* BatchNormalization
+* ConvTranspose
+* LeakyRelu
+* Pow
+* Sqrt
+* Sub
+
+또한 0.5.0 릴리즈 부터 컴파일러는 Onnx의 `Opset 13 <https://github.com/onnx/onnx/releases/tag/v1.8.0>`_
+연산자까지 지원하도록 개선되었다.
+
+Session API 개선
+------------------------------------
+첫번째 API 개선 (`commit b1d2b74 <https://github.com/furiosa-ai/furiosa-sdk/commit/b1d2b742f9f1ed43dbe7aa5f2ed822ae38d636e4>`_) 은
+Session API에서 NPU 장치를 지정할 수 있다.
+기존에는 ``NPU_DEVNAME`` 이라는 환경변수를 통해서만 사용할 장치를 지정 할 수 있었지만 0.5.0 부터는
+Session을 생성할 때 NPU 장치를 지정할 수 있다.
+명시적으로 지정하지 않으면 기존과 같이 ``NPU_DEVNAME`` 환경변수에 지정한 장치를 사용한다.
+
+.. code-block:: python3
+
+  from furiosa.runtime import session
+
+  sess1 = session.create(“model1.onnx”, device=”npu0pe0”)
+  sess2 = session.create(“model2.onnx”, device=”npu0pe1”)
+
+  # Asynchronous API
+  async_sess, queue = session.create_async(“model2.onnx”, device=”npu1pe2”)
+
+
+두번째 API 개선 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_)
+은 텐서 이름 (tensor name) 지원이다. 기존 API는 모델에 내장된 텐서 순서를 파악하여 `session.run()` 에
+입력 파라메터로 전달하는 방법만 했다. 0.5.0 부터는 아래 처럼 명시적으로 입력, 출력 텐서를 위해 이름을 지정할 수 있다.
+
+.. code-block:: python3
+
+  np1 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
+  np2 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
+  sess1.run_with(outputs=[“output1”], inputs={
+    “input2”: np2,
+    “input1”: np1,
+  }
+
+
+에러 진단 메시지 및 에러 핸들링 개선
+----------------------------------------
+
+에러가 발생하면 디버깅을 위한 버전 정보와 컴파일러 로그가 독립적으로 출력 되어 간편한
+버그 신고를 가능하게 한다. :ref:`BugReport` 에서 문제 보고와 고객 지원의 더 많은 정보를 찾을 수 있다.
+
+.. code-block:: python
+
+  >>> from furiosa.runtime import session
+  >>> session.create("mnist-8.onnx)
+  Saving the compilation log into /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log
+  ...
+  2021-11-22T06:30:28.423371Z ERROR fail to compile the model: the static shape of tensor 'input' contains an unsupported dimension value: Some(DimParam("batch_size"))
+  ================================================================================
+  Information Dump
+  ================================================================================
+  - Python version: 3.8.10 (default, Sep 28 2021, 16:10:42)  [GCC 9.3.0]
+  - furiosa-libnux path: libnux.so.0.5.0
+  - furiosa-libnux version: 0.5.0 (rev: 407c0c51f built at 2021-11-18 22:32:34)
+  - furiosa-compiler version: 0.5.0 (rev: 407c0c51f built at 2021-11-18 22:32:34)
+  - furiosa-sdk-runtime version: Furiosa SDK Runtime  (libnux 0.5.0 407c0c51f 2021-11-18 22:32:34)
+
+  Please check the compiler log at /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log.
+  If you have a problem, please report the log file to https://furiosa-ai.atlassian.net/servicedesk/customer/portals with the information dumped above.
+  ================================================================================
+
+
+이 외에도 아래 문제에 대한 에러 핸들링 문제등이 개선이 포함되어 있다.
+
+* Device 중복 사용에 대한 에러 개선 (`commit 01aaa40 <https://github.com/furiosa-ai/furiosa-sdk/commit/01aaa40fd31573dc578fa1c805e1ed36decc9088>`_)
+* CompletionQueue의 timeout 추가 및 Session 연결 종료 에러 핸들링 개선(`commit 21cba85 <https://github.com/furiosa-ai/furiosa-sdk/commit/21cba85737840546357f2dd709d33d9bc2b00390>`_)
+* 컴파일 중 인터럽트에 대한 hanging 문제 해결 `(commit a0f4bd7 <https://github.com/furiosa-ai/furiosa-sdk/commit/a0f4bd7ab8d199e3e46f9820fe4dc75bfa845e61>`_)
+
+
+Furiosa Server (서빙 프레임워크) 패키지 도입
+--------------------------------------------------
+0.5.0 부터 GRPC와 REST API를 지원하는 서빙 프레임워크인 `Furiosa Server` 가 추가되었다.
+``pip install furiosa-sdk[server]`` 를 실행해 간단히 설치 할 수 있으며 아래 커맨드과 같이
+모델 경로와 함께 실행하면 모델을 NPU를 이용해 바로 서빙할 수 있다.
+더 자세한 사용법과 기능은 :ref:`ModelServing` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  furiosa server \
+  --model-path MNISTnet_uint8_quant_without_softmax.tflite \
+  --model-name mnist
+
+
+Furiosa Model 패키지 도입
+----------------------------------------------------
+0.5.0 부터 FuriosaAI NPU에 최적화된 모델을 Python 패키지로 바로 사용할 수 있다.
+설치는 ``pip install furiosa-sdk[models]`` 명령으로 간단히 할 수 있으며
+설치 후에는 예제와 같이 바로 Session API에서 사용 가능하다.
+
+.. code-block:: python
+
+  import asyncio
+
+  from furiosa.registry import Model
+  from furiosa.models.vision import MLCommonsResNet50
+  from furiosa.runtime import session
+
+  resnet50: Model = asyncio.run(MLCommonsResNet50())
+  sess = session.create(resnet50.model, device='npu0pe0')
+
+
+명령형 NPU 관리 도구: furiosactl 도입
+----------------------------------------------------
+0.5.0 부터 명령형 NPU 관리 도구인 furiosactl 이 포함된다.
+설치는 ``apt install furiosa-toolkit`` 로 할 수 있으면 NPU 장치의 상태를 확인하거나 유휴 NPU를 확인할 수 있다.
+``apt`` 서버 설정 방법은 :ref:`SetupAptRepository` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  $ furiosactl info
+
+  +------+------------------+-------+---------+--------------+---------+
+  | NPU  | Name             | Temp. | Power   | PCI-BDF      | PCI-DEV |
+  +------+------------------+-------+---------+--------------+---------+
+  | npu0 | FuriosaAI Warboy |  34°C | 12.92 W | 0000:01:00.0 | 510:0   |
+  +------+------------------+-------+---------+--------------+---------+
+
+  $ furiosactl list
+  +------+-----------+-----------+--------+
+  | NPU  | DEVNAME   | Type      | Status |
+  +------+-----------+-----------+--------+
+  | npu0 | npu0      | All PE(s) | Ready  |
+  |      | npu0pe0   | Single PE | Ready  |
+  |      | npu0pe1   | Single PE | Ready  |
+  |      | npu0pe0-1 | PE Fusion | Ready  |
+  +------+-----------+-----------+--------+
+
+
+Kubernetes 지원
+--------------------------------------------------------
+0.5.0 부터 NPU의 Kubernetes 지원이 포함된다.
+아래 커맨드로 간단히 NPU 장치 플러그인과 노드 레이블러를 설치하고 Pod을 배포할 때 NPU가 함께 스케쥴 되도록 할 수 있다.
+자세한 설명은 :ref:`KubernetesIntegration` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/main/kubernetes/deployments/device-plugin.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/main/kubernetes/deployments/node-labeller.yaml

@@ -42,6 +42,7 @@ extensions = [
   'sphinx.ext.autodoc',  # Core library for html generation from docstrings
   'sphinx.ext.autosummary',  # Create neat summary tables
   'sphinxcontrib.napoleon',
+  'sphinx_tabs.tabs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,7 +53,7 @@ templates_path = ['_templates']
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = 'ko'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -77,3 +78,6 @@ autosectionlabel_prefix_document = True
 html_theme_options = {
     'navigation_depth': 3,
 }
+
+sphinx_tabs_valid_builders = ['linkcheck']
+sphinx_tabs_disable_tab_closing = True
