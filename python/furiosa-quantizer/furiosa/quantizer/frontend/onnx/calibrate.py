@@ -47,7 +47,7 @@ def calibrate(
     if os.environ.get("TQDM_DISABLE"):
         dataset = iter(dataset)
     else:
-        dataset = tqdm.tqdm(dataset, desc="Calibration")
+        dataset = tqdm.tqdm(dataset, desc="Calibration", unit="sample")
     calibrator.collect_data(CalibrationDataReaderForIterator(iter(dataset)))
     return calibrator.compute_range()
 
