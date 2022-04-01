@@ -87,6 +87,8 @@ class Pattern_1(ONNXTransformer):
             node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
             for node_input in conv.input
         ]
+        if len(conv.input) == 2:
+            input_names.append(conv.output[0] + '_bias_bn_fused')
 
         return [self.make_node('Conv', input_names, [batch_norm.output[0]], conv.name)]
 
@@ -102,12 +104,20 @@ class Pattern_1(ONNXTransformer):
             self.make_initializer_from_array(fused_weight, conv.input[1] + '_bn_fused')
         )
 
-        if len(conv.input) == 3:
-            bias = self.get_initializer_array(conv.input[2])
-            fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
-            inits_to_add.append(
-                self.make_initializer_from_array(fused_bias, conv.input[2] + '_bn_fused')
+        bias = (
+            self.get_initializer_array(conv.input[2])
+            if len(conv.input) == 3
+            else np.zeros_like(shifter)
+        )
+        fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
+        inits_to_add.append(
+            self.make_initializer_from_array(
+                fused_bias,
+                conv.input[2] + '_bn_fused'
+                if len(conv.input) == 3
+                else conv.output[0] + '_bias_bn_fused',
             )
+        )
 
         return inits_to_add
 
@@ -145,6 +155,8 @@ class Pattern_2(ONNXTransformer):
             node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
             for node_input in conv_trans.input
         ]
+        if len(conv_trans.input) == 2:
+            input_names.append(conv_trans.output[0] + '_bias_bn_fused')
 
         return [
             self.make_node(
@@ -171,12 +183,20 @@ class Pattern_2(ONNXTransformer):
             self.make_initializer_from_array(fused_weight, conv_trans.input[1] + '_bn_fused')
         )
 
-        if len(conv_trans.input) == 3:
-            bias = self.get_initializer_array(conv_trans.input[2])
-            fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
-            inits_to_add.append(
-                self.make_initializer_from_array(fused_bias, conv_trans.input[2] + '_bn_fused')
+        bias = (
+            self.get_initializer_array(conv_trans.input[2])
+            if len(conv_trans.input) == 3
+            else np.zeros_like(shifter)
+        )
+        fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
+        inits_to_add.append(
+            self.make_initializer_from_array(
+                fused_bias,
+                conv_trans.input[2] + '_bn_fused'
+                if len(conv_trans.input) == 3
+                else conv_trans.output[0] + '_bias_bn_fused',
             )
+        )
 
         return inits_to_add
 

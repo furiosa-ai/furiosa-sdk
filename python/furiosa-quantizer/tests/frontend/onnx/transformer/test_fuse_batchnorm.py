@@ -356,3 +356,40 @@ class TestFuseBatchNorm(TestTransformer):
         )
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
+
+    def test_case10(self):
+        in_channel = 16
+        input_shape = [1, in_channel, 4, 4]
+        out_channel = 2
+        output_shape = [1, out_channel, 8, 8]
+        scale, B, input_mean, input_var = _bn_param_generator(num_features=out_channel)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [in_channel, out_channel, 4, 4]),
+                "beta": scale,
+                "gamma": B,
+                "mu": input_mean,
+                "var": input_var,
+            },
+            "node": [
+                (
+                    "ConvTranspose",
+                    ["x", "w"],
+                    ["1"],
+                    {
+                        "dilations": [1, 1],
+                        "group": 1,
+                        "kernel_shape": [4, 4],
+                        "pads": [1, 1, 1, 1],
+                        "strides": [2, 2],
+                    },
+                ),
+                ("BatchNormalization", ["1", "beta", "gamma", "mu", "var"], ["y"]),
+            ],
+        }
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['ConvTranspose'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
