@@ -27,7 +27,7 @@ NPU 가속이 지원되는 연산자 목록은 :ref:`SupportedOperators` 에서 
   furiosa compile MODEL_PATH [-o OUTPUT] [--target-npu TARGET_NPU] [--batch BATCH_SIZE]
 
 `-o OUTPUT` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
-생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다.
+생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. 여기서 enf는 Executable NPU Format의 약어이다.
 따라서, 예를 들면 아래와 같이 실행하면 기본으로 ``output.enf`` 파일을 생성한다.
 
 .. code-block:: sh
