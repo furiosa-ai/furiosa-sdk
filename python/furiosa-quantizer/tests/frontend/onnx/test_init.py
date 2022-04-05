@@ -65,12 +65,12 @@ class ONNXTest(unittest.TestCase):
         self._ensure_no_unused_initializer(quant_model)
 
     def test__is_sandwiched(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         test_node = model.graph.node[2]
         self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched2(self):
-        model = _make_sandwiced_i64_model()
+        model = _make_sandwiched_i64_model()
         test_node = model.graph.node[0]
         self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
@@ -80,17 +80,17 @@ class ONNXTest(unittest.TestCase):
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched4(self):
-        model = _make_partially_sandwiced_model()
+        model = _make_partially_sandwiched_model()
         test_node = model.graph.node[1]
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched5(self):
-        model = _make_partially_sandwiced_bot_model()
+        model = _make_partially_sandwiched_bot_model()
         test_node = model.graph.node[0]
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         self.assertTrue(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode2(self):
@@ -102,13 +102,13 @@ class ONNXTest(unittest.TestCase):
         self.assertFalse(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_fake_quant_mode(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         self.assertTrue(
             _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
         )
 
     def test__is_fully_quantized_in_fake_quant_mode2(self):
-        model = _make_partially_sandwiced_bot_model()
+        model = _make_partially_sandwiched_bot_model()
         self.assertFalse(
             _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
         )
@@ -172,7 +172,7 @@ def _make_dfg_quantized_model():
     )
 
 
-def _make_sandwiced_model():
+def _make_sandwiched_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -194,7 +194,7 @@ def _make_sandwiced_model():
     )
 
 
-def _make_partially_sandwiced_model():
+def _make_partially_sandwiched_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -236,7 +236,7 @@ def _make_partially_sandwiched_top_model():
     )
 
 
-def _make_partially_sandwiced_bot_model():
+def _make_partially_sandwiched_bot_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -256,7 +256,7 @@ def _make_partially_sandwiced_bot_model():
     )
 
 
-def _make_sandwiced_i64_model():
+def _make_sandwiched_i64_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
