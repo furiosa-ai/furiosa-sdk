@@ -130,7 +130,7 @@ Installation of Python SDK Package
       pip install furiosa-sdk
 
 
-    Package contains compiler command line interface tools and inference API.
+    Package contains compiler command line tools and inference API.
     Please refer to :ref:`CompilerCli` and :ref:`Tutorial` for details.
 
     Extra Python packages contains other extra functions, please refer to :ref:`PythonExtraPackages`.
