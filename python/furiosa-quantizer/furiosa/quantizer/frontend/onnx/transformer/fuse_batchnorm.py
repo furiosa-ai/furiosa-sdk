@@ -4,8 +4,7 @@ from typing import Callable, Iterable, List, Tuple
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
-from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
+from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer, utils
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 logger = logging.getLogger(__name__)
@@ -34,26 +33,19 @@ class Pattern_1(ONNXTransformer):
         if not matched_nodes:
             return base_node.input
 
-        conv = matched_nodes[0]
+        conv, batch_norm = matched_nodes
+        multiplier, shifter = _get_multiplier_and_shifter(
+            *_get_bn_params(batch_norm, self.get_initializer_array)
+        )
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_new_node(matched_nodes),
-            inits_to_add=self.make_new_init(matched_nodes),
+            nodes_to_add=_make_bn_fused_node(conv, batch_norm.output[0]),
+            inits_to_add=_make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array),
             vis_to_add=[],
         )
 
         return conv.input
-
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
-        conv, batch_norm = matched_nodes
-        return _make_bn_fused_node(conv, batch_norm.output[0])
-
-    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
-        conv, batch_norm = matched_nodes
-        bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
-        multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
-        return _make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array)
 
 
 class Pattern_2(ONNXTransformer):
@@ -71,26 +63,21 @@ class Pattern_2(ONNXTransformer):
         if not matched_nodes:
             return base_node.input
 
-        conv_trans = matched_nodes[0]
+        conv_trans, batch_norm = matched_nodes
+        multiplier, shifter = _get_multiplier_and_shifter(
+            *_get_bn_params(batch_norm, self.get_initializer_array)
+        )
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_new_node(matched_nodes),
-            inits_to_add=self.make_new_init(matched_nodes),
+            nodes_to_add=_make_bn_fused_node(conv_trans, batch_norm.output[0]),
+            inits_to_add=_make_bn_fused_init(
+                conv_trans, multiplier, shifter, self.get_initializer_array
+            ),
             vis_to_add=[],
         )
 
         return conv_trans.input
-
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
-        conv_trans, batch_norm = matched_nodes
-        return _make_bn_fused_node(conv_trans, batch_norm.output[0])
-
-    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
-        conv_trans, batch_norm = matched_nodes
-        bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
-        multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
-        return _make_bn_fused_init(conv_trans, multiplier, shifter, self.get_initializer_array)
 
 
 class Pattern_3(ONNXTransformer):
@@ -107,19 +94,21 @@ class Pattern_3(ONNXTransformer):
     pattern_to_match = ['Conv', 'Mul', 'Add']
 
     def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
-        inputs = base_node.input
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
+            return base_node.input
 
-        conv = matched_nodes[0]
+        conv, mul, add = matched_nodes
+        multiplier = self.get_initializer_array(self.get_init_node_input(mul)).flatten()
+        shifter = self.get_initializer_array(self.get_init_node_input(add)).flatten()
+
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_new_node(matched_nodes),
-            inits_to_add=self.make_new_init(matched_nodes),
+            nodes_to_add=_make_bn_fused_node(conv, add.output[0]),
+            inits_to_add=_make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array),
             vis_to_add=[],
         )
 
@@ -132,20 +121,6 @@ class Pattern_3(ONNXTransformer):
         # assuming a node has exactly one initializer if it has one. \
         # That is, there is no node with two initialzier.
         return self.get_init_node_input(mul) and self.get_init_node_input(add)
-
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
-        conv, _, add = matched_nodes
-        return _make_bn_fused_node(conv, add.output[0])
-
-    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
-        conv, mul, add = matched_nodes
-        multiplier, shifter = self.get_multiplier_and_shifter(mul, add)
-        return _make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array)
-
-    def get_multiplier_and_shifter(self, mul_node, add_node):
-        multiplier = self.get_initializer_array(self.get_init_node_input(mul_node))
-        shifter = self.get_initializer_array(self.get_init_node_input(add_node))
-        return multiplier.flatten(), shifter.flatten()
 
 
 class Pattern_4(ONNXTransformer):
@@ -166,37 +141,17 @@ class Pattern_4(ONNXTransformer):
             return base_node.input
 
         batch_norm = matched_nodes[0]
-        if not self.pattern_condition_checker(self.find_prev_node(batch_norm.input[0])):
+        if utils.is_op_type(self.find_prev_node(batch_norm.input[0]), ['Conv']):
             return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=self.make_new_node(matched_nodes),
+            nodes_to_add=_make_new_node_pattern_4(matched_nodes),
             inits_to_add=self.make_new_init(matched_nodes),
             vis_to_add=self.make_new_vi(matched_nodes),
         )
 
         return batch_norm.input
-
-    def pattern_condition_checker(self, prev_node: onnx.NodeProto) -> bool:
-        return not self.is_op_type(prev_node.op_type, ['Conv'])
-
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
-        (batch_norm,) = matched_nodes
-        return [
-            self.make_node(
-                'Mul',
-                [batch_norm.input[0], batch_norm.output[0] + '_bn_multiplier'],
-                [batch_norm.output[0] + '_bn_multiplied'],
-                batch_norm.name,
-            ),
-            self.make_node(
-                'Add',
-                [batch_norm.output[0] + '_bn_multiplied', batch_norm.output[0] + '_bn_shifter'],
-                [batch_norm.output[0]],
-                batch_norm.name,
-            ),
-        ]
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         (batch_norm,) = matched_nodes
@@ -204,11 +159,11 @@ class Pattern_4(ONNXTransformer):
         multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
         num_features = self.get_value_info_shape(batch_norm.output[0])[0]
         return [
-            self.make_initializer_from_array(
+            onnx.numpy_helper.from_array(
                 multiplier.reshape(num_features, -1, 1, 1),
                 name=batch_norm.output[0] + '_bn_multiplier',
             ),
-            self.make_initializer_from_array(
+            onnx.numpy_helper.from_array(
                 shifter.reshape(num_features, -1, 1, 1), name=batch_norm.output[0] + '_bn_shifter'
             ),
         ]
@@ -216,7 +171,7 @@ class Pattern_4(ONNXTransformer):
     def make_new_vi(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
         (batch_norm,) = matched_nodes
         return [
-            self.make_tensor_value_info(
+            onnx.helper.make_tensor_value_info(
                 batch_norm.output[0] + '_bn_multiplied',
                 onnx.TensorProto.FLOAT,
                 shape=self.get_value_info_shape(batch_norm.output[0]),
@@ -235,7 +190,7 @@ def _get_bn_params(
     mean = get_init_arr_func(node.input[3])
     var = get_init_arr_func(node.input[4])
 
-    eps = get_attribute(node.attribute, "epsilon", 1e-05)
+    eps = utils.get_attribute(node.attribute, "epsilon", 1e-05)
 
     return scale, B, mean, var, eps
 
@@ -300,4 +255,22 @@ def _make_bn_fused_init(
     return [
         onnx.numpy_helper.from_array(fused_weight, name=fused_weight_name),
         onnx.numpy_helper.from_array(fused_bias, name=fused_bias_name),
+    ]
+
+
+def _make_new_node_pattern_4(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+    (batch_norm,) = matched_nodes
+    return [
+        onnx.helper.make_node(
+            'Mul',
+            [batch_norm.input[0], batch_norm.output[0] + '_bn_multiplier'],
+            [batch_norm.output[0] + '_bn_multiplied'],
+            batch_norm.name,
+        ),
+        onnx.helper.make_node(
+            'Add',
+            [batch_norm.output[0] + '_bn_multiplied', batch_norm.output[0] + '_bn_shifter'],
+            [batch_norm.output[0]],
+            batch_norm.name,
+        ),
     ]

@@ -58,7 +58,7 @@ class Pattern_1(ONNXTransformer):
     def make_new_node(self, matched_nodes):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
-        return self.make_node(
+        return onnx.helper.make_node(
             'Reshape',
             [top_node.input[0], top_node.input[1] + self.postfix],
             [base_node.output[0]],
@@ -69,6 +69,10 @@ class Pattern_1(ONNXTransformer):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
         return self.make_int64_initializer(top_node.input[1] + self.postfix, base_node.output[0])
+
+    def make_new_vi(self, matched_nodes):
+        top_node = matched_nodes[0]
+        return self.copy_value_info(top_node.input[0])
 
 
 class Pattern_2(Pattern_1):
@@ -98,7 +102,7 @@ class Pattern_3(Pattern_1):
     def make_new_node(self, matched_nodes):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
-        return self.make_node(
+        return onnx.helper.make_node(
             'Reshape',
             [top_node.input[0], top_node.input[0] + self.postfix],
             [base_node.output[0]],
@@ -109,7 +113,3 @@ class Pattern_3(Pattern_1):
         top_node = matched_nodes[0]
         base_node = matched_nodes[-1]
         return self.make_int64_initializer(top_node.input[0] + self.postfix, base_node.output[0])
-
-    def make_new_vi(self, matched_nodes):
-        top_node = matched_nodes[0]
-        return self.copy_value_info(top_node.input[0])

@@ -33,7 +33,6 @@ disable=
 
     # Refactor
     duplicate-code, # R0801
-    no-self-use, # R0201
     too-few-public-methods, # R0903
     too-many-arguments, # R0913
     too-many-branches, # R0912

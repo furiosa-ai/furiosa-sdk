@@ -4,7 +4,7 @@ from typing import List, Optional, Set
 import numpy as np
 import onnx
 from onnx import numpy_helper
-from onnx.helper import make_node, make_tensor, make_tensor_value_info
+from onnx.helper import make_tensor, make_tensor_value_info
 
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
@@ -81,18 +81,6 @@ class ONNXTransformer:
 
         return model
 
-    def make_node(self, op_type, inputs, outputs, name=None, **attrs):
-        inputs = [x for x in inputs if x is not None]
-        return make_node(op_type, inputs, outputs, name, **attrs)
-
-    def make_tensor_value_info(self, name, elem_type, shape):
-        return make_tensor_value_info(name, elem_type, shape)
-
-    def make_initializer_from_array(
-        self, array: np.ndarray, name: Optional[str] = None
-    ) -> onnx.TensorProto:
-        return numpy_helper.from_array(array, name)
-
     def make_int64_initializer(self, name, target_name):
         return make_tensor(
             name,
@@ -135,7 +123,7 @@ class ONNXTransformer:
         else:
             field_map = field + '_map'
 
-        return self.make_field_unique(getattr(self, field_map).values())
+        return utils.make_unhashables_unique(getattr(self, field_map).values())
 
     def get_initializer_array(self, node_input):
         if node_input not in self.initializer_map:
@@ -164,14 +152,6 @@ class ONNXTransformer:
         assert len(self.consumer_map[node_input]) == 1
         return list(self.consumer_map[node_input][0].input).index(node_input)
 
-    def make_field_unique(self, values):
-        seen = []
-        for v in values:
-            if v not in seen:
-                seen.append(v)
-
-        return seen
-
     def find_next_node(self, node: onnx.NodeProto) -> List[onnx.NodeProto]:
         next_nodes = []
         for v in self.optimizer_map.values():
@@ -191,11 +171,6 @@ class ONNXTransformer:
 
         return self.producer_map[node_input]
 
-    def is_op_type(self, op_type: str, target_op_types: List[str]):
-        if any(op_type == target for target in target_op_types):
-            return True
-        return False
-
     def is_same_shape(self, input_1, input_2):
         if self.get_value_info_shape(input_1) != self.get_value_info_shape(input_2):
             return False
@@ -207,7 +182,7 @@ class ONNXTransformer:
         if not prev_node:
             return None
 
-        if not self.is_op_type(prev_node.op_type, target_op_types):
+        if not utils.is_op_type(prev_node.op_type, target_op_types):
             return False
 
         return prev_node
@@ -343,7 +318,7 @@ class ONNXTransformer:
         decoded_pattern.reverse()
 
         op_type_0 = decoded_pattern.pop(0)
-        if not self.is_op_type(node.op_type, op_type_0):
+        if not utils.is_op_type(node.op_type, op_type_0):
             return None
 
         matched_nodes = [node]

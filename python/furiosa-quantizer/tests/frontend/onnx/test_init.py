@@ -36,11 +36,11 @@ class ONNXTest(unittest.TestCase):
         cls.effdet = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
 
     def test_post_training_quantize_with_raw_data_True(self):
-        post_training_quantize(ONNXTest.effdet, self.dataset, False)
+        post_training_quantize(self.effdet, self.dataset, False)
 
     def test_post_training_quantize_with_raw_data_False(self):
-        model = optimize_model(ONNXTest.effdet)
-        ranges = calibrate.calibrate(model, ONNXTest.dataset)
+        model = optimize_model(self.effdet)
+        ranges = calibrate.calibrate(model, self.dataset)
         quantizer.FuriosaONNXQuantizer(
             model=model,
             per_channel=False,
@@ -103,7 +103,7 @@ class ONNXTest(unittest.TestCase):
         model = _make_dfg_quantized_model()
         self.assertTrue(_is_fully_quantized(model))
 
-    def test_zero_bias_scale(self):
+    def test_zero_bias_scale(self):  # pylint: disable=no-self-use
         model = _make_zero_bias_scale_model()
         model = post_training_quantization_with_random_calibration(
             model, per_channel=True, static=True, mode=QuantizationMode.DFG

@@ -45,22 +45,12 @@ class Pattern_1(ONNXTransformer):
     def pattern_condition_checker(self, nodes_to_check):
         top_node, base_node = nodes_to_check
 
-        if not self.check_condition_1(top_node.attribute):
-            return False
-
-        if not self.check_condition_2(top_node):
-            return False
-
-        if not self.check_condition_3(top_node.input[1]):
-            return False
-
-        if not self.check_condition_6(self.get_attrs(base_node), top_node.input[1]):
-            return False
-
-        return True
-
-    def check_condition_1(self, node_attr):
-        return self.get_pad_mode(node_attr) == b'constant'
+        return (
+            _get_pad_mode(top_node) == b'constant'
+            and self.check_condition_2(top_node)
+            and self.check_condition_3(top_node.input[1])
+            and self.check_condition_6(self.get_attrs(base_node), top_node.input[1])
+        )
 
     def check_condition_2(self, node):
         try:
@@ -68,19 +58,13 @@ class Pattern_1(ONNXTransformer):
             constant_value = self.get_initializer_array(const_input)
         except IndexError:
             constant_value = 0.0
-
-        if constant_value == float('-inf'):
-            return True
-        return False
+        return constant_value == float('-inf')
 
     def check_condition_3(self, pads_input):
         pads = self.get_initializer_array(pads_input)
         rank = len(pads) // 2
         pads_on_nc_dim = [*pads[:2], *pads[rank : rank + 2]]
-
-        if all(pad == 0 for pad in pads_on_nc_dim):
-            return True
-        return False
+        return all(pad == 0 for pad in pads_on_nc_dim)
 
     def check_condition_6(self, node_attrs, pad_input):
         attrs = self.update_attrs(node_attrs, pad_input)
@@ -92,15 +76,10 @@ class Pattern_1(ONNXTransformer):
         ]
 
         assert len(kernel_shape) == len(fused_pad_shape)
-        if all(
+        return all(
             fused_pads[dim] < k and fused_pads[dim + kernel_rank] < k
             for dim, k in enumerate(kernel_shape)
-        ):
-            return True
-        return False
-
-    def get_pad_mode(self, node_attr):
-        return get_attribute(node_attr, "mode", b"constant")
+        )
 
     def update_attrs(self, attrs, pad_input):
         pads = [sum(x) for x in zip(attrs['pads'], self.make_maxpool_pad(pad_input))]
@@ -145,7 +124,7 @@ class Pattern_1(ONNXTransformer):
         top_node, base_node = matched_nodes
         attrs = self.update_attrs(self.get_attrs(base_node), top_node.input[1])
 
-        return self.make_node(
+        return onnx.helper.make_node(
             'MaxPool', [top_node.input[0]], [base_node.output[0]], name=top_node.name, **attrs
         )
 
@@ -170,7 +149,7 @@ class Pattern_2(Pattern_1):
     def pattern_condition_checker(self, nodes_to_check):
         top_node, base_node = nodes_to_check
         return (
-            self.check_condition_1(top_node.attribute)
+            _get_pad_mode(top_node) == b'constant'
             and self.check_condition_2(top_node)
             and self.check_condition_3(top_node.input[1])
             and self.check_condition_4(base_node)
@@ -234,6 +213,10 @@ class Pattern_2(Pattern_1):
         top_node, base_node = matched_nodes
         attrs = self.update_attrs(self.get_attrs(base_node), top_node.input[1])
 
-        return self.make_node(
+        return onnx.helper.make_node(
             'AveragePool', [top_node.input[0]], [base_node.output[0]], name=top_node.name, **attrs
         )
+
+
+def _get_pad_mode(node: onnx.NodeProto):
+    return get_attribute(node.attribute, "mode", b"constant")
