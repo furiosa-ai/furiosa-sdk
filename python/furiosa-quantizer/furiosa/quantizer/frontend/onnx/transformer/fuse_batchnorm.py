@@ -90,7 +90,15 @@ class Pattern_1(ONNXTransformer):
         if len(conv.input) == 2:
             input_names.append(conv.output[0] + '_bias_bn_fused')
 
-        return [self.make_node('Conv', input_names, [batch_norm.output[0]], conv.name)]
+        return [
+            self.make_node(
+                'Conv',
+                input_names,
+                [batch_norm.output[0]],
+                conv.name,
+                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in conv.attribute},
+            )
+        ]
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         conv, batch_norm = matched_nodes
