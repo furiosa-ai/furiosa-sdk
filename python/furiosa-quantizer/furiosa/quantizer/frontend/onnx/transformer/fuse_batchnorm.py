@@ -19,41 +19,6 @@ class FuseBatchNorm(Transformer):
         return model
 
 
-def _get_bn_params(
-    node: onnx.NodeProto, get_init_arr_func: Callable[[str], np.ndarray]
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
-    scale = get_init_arr_func(node.input[1])
-    if all(v == 0.0 for v in scale):
-        logger.warning('BatchNormalization.scale is a zero tensor: %s', node.input[1])
-
-    B = get_init_arr_func(node.input[2])
-    mean = get_init_arr_func(node.input[3])
-    var = get_init_arr_func(node.input[4])
-
-    eps = get_attribute(node.attribute, "epsilon", 1e-05)
-
-    return scale, B, mean, var, eps
-
-
-def _fuse_bn_weight(weight: np.ndarray, multiplier: np.ndarray, axis: int = 0) -> np.ndarray:
-    idx = [1, 1, 1]
-    idx.insert(axis, -1)
-    return weight * multiplier.reshape(idx)
-
-
-def _fuse_bn_bias(bias: np.ndarray, multiplier: np.ndarray, shifter: np.ndarray):
-    return bias * multiplier + shifter
-
-
-def _get_multiplier_and_shifter(
-    scale: np.ndarray, B: np.ndarray, mean: np.ndarray, var: np.ndarray, eps: float
-) -> Tuple[np.ndarray, np.ndarray]:
-    reciprocal = 1 / np.sqrt(var + eps)
-    multiplier = scale * reciprocal
-    shifter = -mean * scale * reciprocal + B
-    return multiplier, shifter
-
-
 class Pattern_1(ONNXTransformer):
     """
     transform
@@ -82,52 +47,13 @@ class Pattern_1(ONNXTransformer):
 
     def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         conv, batch_norm = matched_nodes
-
-        input_names = [
-            node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
-            for node_input in conv.input
-        ]
-        if len(conv.input) == 2:
-            input_names.append(conv.output[0] + '_bias_bn_fused')
-
-        return [
-            self.make_node(
-                'Conv',
-                input_names,
-                [batch_norm.output[0]],
-                conv.name,
-                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in conv.attribute},
-            )
-        ]
+        return _make_bn_fused_node(conv, batch_norm.output[0])
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         conv, batch_norm = matched_nodes
         bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
         multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
-
-        inits_to_add = []
-        weight = self.get_initializer_array(conv.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier)
-        inits_to_add.append(
-            self.make_initializer_from_array(fused_weight, conv.input[1] + '_bn_fused')
-        )
-
-        bias = (
-            self.get_initializer_array(conv.input[2])
-            if len(conv.input) == 3
-            else np.zeros_like(shifter)
-        )
-        fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
-        inits_to_add.append(
-            self.make_initializer_from_array(
-                fused_bias,
-                conv.input[2] + '_bn_fused'
-                if len(conv.input) == 3
-                else conv.output[0] + '_bias_bn_fused',
-            )
-        )
-
-        return inits_to_add
+        return _make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array)
 
 
 class Pattern_2(ONNXTransformer):
@@ -158,55 +84,13 @@ class Pattern_2(ONNXTransformer):
 
     def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         conv_trans, batch_norm = matched_nodes
-
-        input_names = [
-            node_input if node_input not in self.initializer_map else node_input + '_bn_fused'
-            for node_input in conv_trans.input
-        ]
-        if len(conv_trans.input) == 2:
-            input_names.append(conv_trans.output[0] + '_bias_bn_fused')
-
-        return [
-            self.make_node(
-                'ConvTranspose',
-                input_names,
-                [batch_norm.output[0]],
-                conv_trans.name,
-                **{
-                    attr.name: onnx.helper.get_attribute_value(attr)
-                    for attr in conv_trans.attribute
-                },
-            )
-        ]
+        return _make_bn_fused_node(conv_trans, batch_norm.output[0])
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         conv_trans, batch_norm = matched_nodes
         bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
         multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
-
-        inits_to_add = []
-        weight = self.get_initializer_array(conv_trans.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier, axis=1)
-        inits_to_add.append(
-            self.make_initializer_from_array(fused_weight, conv_trans.input[1] + '_bn_fused')
-        )
-
-        bias = (
-            self.get_initializer_array(conv_trans.input[2])
-            if len(conv_trans.input) == 3
-            else np.zeros_like(shifter)
-        )
-        fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
-        inits_to_add.append(
-            self.make_initializer_from_array(
-                fused_bias,
-                conv_trans.input[2] + '_bn_fused'
-                if len(conv_trans.input) == 3
-                else conv_trans.output[0] + '_bias_bn_fused',
-            )
-        )
-
-        return inits_to_add
+        return _make_bn_fused_init(conv_trans, multiplier, shifter, self.get_initializer_array)
 
 
 class Pattern_3(ONNXTransformer):
@@ -251,43 +135,12 @@ class Pattern_3(ONNXTransformer):
 
     def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         conv, _, add = matched_nodes
-
-        input_names = [conv.input[0], conv.input[1] + '_bn_fused']
-        if len(conv.input) == 3:
-            input_names.append(conv.input[2] + '_bn_fused')
-        else:
-            input_names.append(conv.output[0] + '_bias_bn_fused')
-
-        return [
-            self.make_node(
-                'Conv',
-                input_names,
-                [add.output[0]],
-                conv.name,
-                **{attr.name: onnx.helper.get_attribute_value(attr) for attr in conv.attribute},
-            )
-        ]
+        return _make_bn_fused_node(conv, add.output[0])
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         conv, mul, add = matched_nodes
         multiplier, shifter = self.get_multiplier_and_shifter(mul, add)
-
-        weight = self.get_initializer_array(conv.input[1])
-        fused_weight = _fuse_bn_weight(weight, multiplier)
-        fused_weight_name = conv.input[1] + '_bn_fused'
-
-        if len(conv.input) == 3:
-            bias = self.get_initializer_array(conv.input[2])
-            fused_bias_name = conv.input[2] + '_bn_fused'
-        else:
-            bias = np.zeros(weight.shape[0]).astype(np.float32)
-            fused_bias_name = conv.output[0] + '_bias_bn_fused'
-        fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
-
-        return [
-            self.make_initializer_from_array(fused_weight, name=fused_weight_name),
-            self.make_initializer_from_array(fused_bias, name=fused_bias_name),
-        ]
+        return _make_bn_fused_init(conv, multiplier, shifter, self.get_initializer_array)
 
     def get_multiplier_and_shifter(self, mul_node, add_node):
         multiplier = self.get_initializer_array(self.get_init_node_input(mul_node))
@@ -369,3 +222,82 @@ class Pattern_4(ONNXTransformer):
                 shape=self.get_value_info_shape(batch_norm.output[0]),
             )
         ]
+
+
+def _get_bn_params(
+    node: onnx.NodeProto, get_init_arr_func: Callable[[str], np.ndarray]
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    scale = get_init_arr_func(node.input[1])
+    if all(v == 0.0 for v in scale):
+        logger.warning('BatchNormalization.scale is a zero tensor: %s', node.input[1])
+
+    B = get_init_arr_func(node.input[2])
+    mean = get_init_arr_func(node.input[3])
+    var = get_init_arr_func(node.input[4])
+
+    eps = get_attribute(node.attribute, "epsilon", 1e-05)
+
+    return scale, B, mean, var, eps
+
+
+def _fuse_bn_weight(weight: np.ndarray, multiplier: np.ndarray, axis: int = 0) -> np.ndarray:
+    idx = [1, 1, 1]
+    idx.insert(axis, -1)
+    return weight * multiplier.reshape(idx)
+
+
+def _fuse_bn_bias(bias: np.ndarray, multiplier: np.ndarray, shifter: np.ndarray):
+    return bias * multiplier + shifter
+
+
+def _get_multiplier_and_shifter(
+    scale: np.ndarray, B: np.ndarray, mean: np.ndarray, var: np.ndarray, eps: float
+) -> Tuple[np.ndarray, np.ndarray]:
+    reciprocal = 1 / np.sqrt(var + eps)
+    multiplier = scale * reciprocal
+    shifter = -mean * scale * reciprocal + B
+    return multiplier, shifter
+
+
+def _make_bn_fused_node(node: onnx.NodeProto, output_tensor: str) -> List[onnx.NodeProto]:
+    assert node.op_type in ['Conv', 'ConvTranspose'], repr(node)
+    input_names = [node.input[0], node.input[1] + '_bn_fused']
+    if len(node.input) == 3:
+        input_names.append(node.input[2] + '_bn_fused')
+    else:
+        input_names.append(node.output[0] + '_bias_bn_fused')
+
+    return [
+        onnx.helper.make_node(
+            node.op_type,
+            input_names,
+            [output_tensor],
+            node.name,
+            **{attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute},
+        )
+    ]
+
+
+def _make_bn_fused_init(
+    node: onnx.NodeProto,
+    multiplier: np.ndarray,
+    shifter: np.ndarray,
+    get_init_arr_func: Callable[[str], np.ndarray],
+) -> List[onnx.TensorProto]:
+    assert node.op_type in ['Conv', 'ConvTranspose'], repr(node)
+    weight = get_init_arr_func(node.input[1])
+    fused_weight = _fuse_bn_weight(weight, multiplier, axis=0 if node.op_type == 'Conv' else 1)
+    fused_weight_name = node.input[1] + '_bn_fused'
+
+    if len(node.input) == 3:
+        bias = get_init_arr_func(node.input[2])
+        fused_bias_name = node.input[2] + '_bn_fused'
+    else:
+        bias = np.zeros_like(shifter)
+        fused_bias_name = node.output[0] + '_bias_bn_fused'
+    fused_bias = _fuse_bn_bias(bias, multiplier, shifter)
+
+    return [
+        onnx.numpy_helper.from_array(fused_weight, name=fused_weight_name),
+        onnx.numpy_helper.from_array(fused_bias, name=fused_bias_name),
+    ]
