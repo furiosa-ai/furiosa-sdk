@@ -1,6 +1,7 @@
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
 from furiosa.quantizer.interfaces.transformer import Transformer
 
 
@@ -51,9 +52,7 @@ class Pattern_1(ONNXTransformer):
         return top_node.input
 
     def get_attrs(self, node):
-        axes = next(
-            onnx.helper.get_attribute_value(attr) for attr in node.attribute if attr.name == "axes"
-        )
+        axes = get_attribute(node.attribute, "axes")
 
         if node.op_type == 'ReduceL1':
             p = 1
