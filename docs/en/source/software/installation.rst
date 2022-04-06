@@ -5,7 +5,7 @@ Driver, Firmware, and Runtime Installation
 ************************************************************
 
 Here, we explain how to install the packages necessary to use
-the various SW components are provided by FuriosaAI.
+the various SW components provided by FuriosaAI. 
 
 These required packages are kernel drivers, firmware, and runtime library,
 and can be downloaded either directly through the download center,

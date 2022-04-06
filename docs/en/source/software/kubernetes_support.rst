@@ -1,40 +1,41 @@
 .. _KubernetesIntegration:
 
 **********************************
-Kubernetes 지원
+Kubernetes support 
 **********************************
 
-`Kuberentes <https://kubernetes.io/>`_ 는 컨테이너화된 워크로드와 서비스를
-관리하는 오픈소스 플랫폼이다. FuriosaAI SDK는 Kubernetes 환경 지원을 위해 다음 컴포넌트를 제공한다.
+`Kuberentes <https://kubernetes.io/>`_ is an open source platform for managing containerized workloads and services.
+Furiosa SDK provides the following components to support the Kubernetes environment.
 
-* `Kubernetes 장치 플러그인 (Device Plugin) <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_
-* Kubernetes 노드 레이블러 (Node Labeller)
+* `Kubernetes Device Plugin <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_
+* Kubernetes Node Labeller
 
-위 두 컴포넌트는 다음 기능을 제공한다.
+The two components above provide the following functions.
 
-* 노드에 가용한 NPU를 Kubernetes 클러스터가 인식하게 한다.
-* Kubernetes의 ``spec.containers[].resources.limits`` 를 통해 Pod 워크로드 배포 시 NPU를 함께 스케쥴링 하게 한다.
-* NPU가 장착된 머신의 NPU의 정보를 파악하여 노드의 레이블로 등록한다 (이 정보와 `nodeSelector` 등을 사용하면 Pod을 선택적으로 스케쥴링할 수 있다).
+* Make the Kubernetes cluster aware of the NPUs available to the node.
+* Through Kubernetes ``spec.containers[].resources.limits`` , schedule the NPU simultaneously when distributing Pod workload.
+* Identify NPU information of NPU-equipped machine, and register it as node label (you can selectively schedule Pods with this information and `nodeSelector`)
 
-Kubernetes 지원을 위한 셋업 과정은 다음 순서를 따라 진행하면 된다.
+The setup process for Kubernetes support is as follows. 
 
-1. NPU 노드 준비
+1. Preparing NPU nodes 
 ========================================
-Kubernetes 노드의 요구 사항은 다음과 같다.
+Requirements for Kubernetes nodes are as follows. 
 
-* Ubuntu 18.04, 20.04 또는 상위 버전
-* Intel 호환 CPU
+* Ubuntu 18.04, 20.04 or higher 
+* Intel compatible CPU
 
-또한, NPU가 장착된 Kubernetes의 각 Node에 NPU 드라이버와 toolkit을 설치해야 한다.
-APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음과 같이 간단히 설치할 수 있다.
+You also need to install NPU driver and toolkit on each node of NPU-equipped Kubernetes. 
+If the APT server is set up (see :ref:`SetupAptRepository`), you can easily install as follows. 
 
 .. code-block:: sh
 
   apt-get update && apt install -y furiosa-driver-pdma furiosa-toolkit
 
 
-위 필수 패키지가 설치되면 furiosa-toolkit에 포함된 furiosactl 커맨드로 아래와 같이 NPU 인식을 확인 해볼 수 있다.
-만약 아래 커맨드로 NPU가 인식되지 않는다면 환경에 따라 재부팅 후에 다시 시도해본다.
+Once the required package is installed as above, you can check for NPU recognition as follows, with the 
+furiosactl command included in furiosa-toolkit. 
+If the NPU is not recognized with the command below, try again after rebooting - depending on the environment. 
 
 .. code-block:: sh
 
@@ -45,19 +46,19 @@ APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음�
   | npu1 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
   +------+------------------+-------+--------+--------------+---------+
 
-2. Device Plugin, Node Labeller 설치
-=========================================
+2. Installing Device Plugin, Node Labeller 
+===========================================
 
-NPU 노드 준비가 완료되면, 장치 플러그인과 노드 레이블러 데몬셋 (daemonset)을 다음과 같이 설치한다.
+Once NPU node preparation is complete, install the device plugin and node labeller (daemonset) as follows. 
 
 .. code-block:: sh
 
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/node-labeller.yaml
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/device-plugin.yaml
 
-위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 데몬셋이 정상 동작하는지 확인할 수 있다.
-참고로 장치 플러그인 (``furiosa-npu-plugin``)은 NPU가 장착된 노드에만 배포되며 이를 위해
-노드 레이블러 (``furiosa-npu-labeller``) 가 각 node에 붙여주는 ``alpha.furiosa.ai/npu.family=warboy`` 정보를 사용한다.
+After executing the above command, you can check whether the installed daemonset is functioning normally with the ``kubectl get daemonset -n kube-system`` command.
+For reference, the device plugin (``furiosa-npu-plugin``) is only distributed to nodes equipped with NPUs, and uses 
+``alpha.furiosa.ai/npu.family=warboy`` information that the node labeller (``furiosa-npu-labeller``) attaches to each node. 
 
 .. code-block:: sh
 
@@ -66,7 +67,7 @@ NPU 노드 준비가 완료되면, 장치 플러그인과 노드 레이블러 �
   furiosa-npu-labeller     6         6         6       6            6           kubernetes.io/os=linux                                      321d
   furiosa-npu-plugin       2         2         2       2            2           alpha.furiosa.ai/npu.family=warboy,kubernetes.io/os=linux   159d
 
-노드 레이블러 (``furiosa-npu-labeller``)가 붙이는 메타데이터는 다음 표와 같다.
+The metadata attached by the node labeller (``furiosa-npu-labeller``) is shown in the following table.
 
 .. _K8sNodeLabels:
 
@@ -74,9 +75,9 @@ NPU 노드 준비가 완료되면, 장치 플러그인과 노드 레이블러 �
    :widths: 50 50 50
    :header-rows: 1
 
-   * - 레이블(Label)
-     - 값(Value)
-     - 설명(Description)
+   * - Label
+     - Value
+     - Description
    * - alpha.furiosa.ai/npu.family
      - warboy, renegade
      - Chip family
@@ -85,8 +86,8 @@ NPU 노드 준비가 완료되면, 장치 플러그인과 노드 레이블러 �
      - HW type
 
 
-노드의 레이블을 확인하기 위해 ``kubectl get nodes --show-labels`` 명령을 실행하면
-다음과 같이 ``alpha.furiosa.ai`` 로 시작하는 레이블이 보이면 정상적으로 설치된 것이다.
+If you execute the ``kubectl get nodes --show-labels`` command to check node labels, and you see labels starting with ``alpha.furiosa.ai`` 
+as follows, you have successfully installed the node labeller. 
 
 .. code-block:: sh
 
@@ -96,10 +97,10 @@ NPU 노드 준비가 완료되면, 장치 플러그인과 노드 레이블러 �
   warboy-node02     Ready   <none>  12d   v1.20.10   alpha.furiosa.ai/npu.family=warboy,alpha.furiosa.ai/npu.hwtype=haps...,kubernetes.io/os=linux
 
 
-3. NPU와 함께 Pod 배포
+3. Distribute Pod with NPU
 ====================================
 
-NPU를 Pod에 할당하기 위해서는 ``spec.containers[].resources.limits`` 에 아래와 같이 추가한다.
+To allocate NPU to a Pod, add as shown below to ``spec.containers[].resources.limits``.
 
 .. code-block:: yaml
 
@@ -108,7 +109,7 @@ NPU를 Pod에 할당하기 위해서는 ``spec.containers[].resources.limits`` �
       alpha.furiosa.ai/npu: "1" # requesting 1 NPU
 
 
-Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.6.0/kubernetes/deployments/pod-example.yaml>`_ 는 다음과 같다.
+`Full example <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.6.0/kubernetes/deployments/pod-example.yaml>`_ for Pod creation is as follows.
 
 .. code-block:: sh
 
@@ -134,7 +135,7 @@ Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/b
 
   $ kubectl apply -f npu-pod.yaml
 
-Pod 생성 뒤에는 다음과 같이 NPU 할당을 확인해볼 수 있다.
+After Pod creation, you can check NPU allocation as follows. 
 
 .. code-block:: sh
 
@@ -143,8 +144,8 @@ Pod 생성 뒤에는 다음과 같이 NPU 할당을 확인해볼 수 있다.
       alpha.furiosa.ai/npu: "1"
 
 
-다수의 NPU 장치가 있을 경우 어떤 장치가 할당되었는지 아래와 같이 확인할 수 있다.
-SDK의 어플리케이션은 자동으로 할당된 NPU 장치를 인식한다.
+If there are multiple NPU devices, you can check which devices are allocated as follows. 
+The SDK application automatically recognizes the allocated NPU device. 
 
 .. code-block:: sh
 
@@ -153,8 +154,10 @@ SDK의 어플리케이션은 자동으로 할당된 NPU 장치를 인식한다.
   npu0pe0-1
 
 
-Pod 안에 furiosa-toolkit을 설치하면 아래 처럼 furiosactl 커맨드를 이용하여 더 자세한 장치 정보를
-확인할 수 있다. APT를 이용한 설치 방법은 :ref:`SetupAptRepository` 찾을 수 있다.
+If furiosa-toolkit is installed in the Pod, you can check for more detailed device information using the 
+furiosactl command as shown below. 
+
+See :ref:`SetupAptRepository` for installation guide using APT. 
 
 .. code-block:: sh
 

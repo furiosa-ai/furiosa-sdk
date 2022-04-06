@@ -4,17 +4,19 @@
 Bug Report
 **********************************
 
-사용 중 해결되지 않는 문제를 겪을 경우 `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ 에서
-버그 신고를 할 수 있다. 버그 신고에는 기본적으로 다음 정보가 포함되어야 한다.
+If you encounter an unresolvable issue, you can file a bug report at `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_. 
+The following information should be included in a bug report.
 
-#. 문제 재현 방법
-#. 문제 발생 당시 로그 또는 스크린샷
-#. SDK 버전 정보
-#. 모델 컴파일 실패 시 컴파일러 로그
+#. How to reproduce the bug  
+#. Log or screenshot of the bug  
+#. SDK version information 
+#. Compilation log, if model compilation failed 
 
-기본적으로 furiosa-sdk는 에러가 발생하는 경우 아래와 같은 정보를 출력한다.
-아래와 같은 화면을 본다면, ``Information Dump`` 이하의 정보와 메시지에 출력되는 컴파일러 로그파일 (아래 예에서는 ``/home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log``)
-을 `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ 의 `Bug Report` 섹션에 신고하라.
+By default, when an error happens furiosa-sdk outputs the following message. 
+If you see the following message, file a report with 
+1) the information given below the ``Information Dump``, and 
+2) the compilation log file (this would be ``/home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log``in the following example) outputted in the message,
+in the `Bug Report` section of `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_
 
 .. code-block::
 
@@ -39,16 +41,17 @@ Bug Report
     ================================================================================
 
 
-위와 같은 정보가 출력되지 않는 경우 다음 방법으로 필요 정보를 직접 수집하여 `FuriosaAI 고객지원 센터`_ 에 버그 신고를 할 수 있다.
+If you do not see a message as shown above, refer to the instructions below to collect the necessary information yourself 
+to file a bug report at `FuriosaAI customer service center`_
 
-파이썬 런타임의 버전 정보는 다음과 같이 파악할 수 있다.
+You can find the Python runtime version information as shown. 
 
 .. code-block::
 
     $ python --version
     Python 3.8.6
 
-SDK 버전 정보는 다음과 같이 파악할 수 있다.
+You can find the SDK version information as shown. 
 
 .. code-block::
 

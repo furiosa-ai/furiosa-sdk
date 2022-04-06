@@ -2,16 +2,16 @@
 Release Notes - 0.5.0
 *********************************************************
 
-FuriosaAI SDK 0.5.0 릴리즈에는 약 87개의 버그픽스, 기능 추가, 개선을 포함하고 있다.
-그 중 중요한 변경사항은 다음과 같다.
+FuriosaAI SDK 0.5.0 release includes approximately 87 bug fixes, added functionalities, and improvements. 
+The following are some of the key changes:
 
 
 .. _CompilerImprovement:
 
-컴파일러 개선
+Compiler improvement 
 --------------------------------------------------------
-0.5.0 릴리즈에서 부터 다음 연산자에 대한 NPU 가속 지원을 추가한다. 가속이 지원되는 연산자 목록 전체는
-:ref:`SupportedOperators` 에서 찾아볼 수 있다.
+0.5.0 release adds NPU acceleration support for the following operators. 
+You can find the entire list of acceleration-supported operators at :ref:`SupportedOperators`.
 
 * BatchNormalization
 * ConvTranspose
@@ -20,16 +20,16 @@ FuriosaAI SDK 0.5.0 릴리즈에는 약 87개의 버그픽스, 기능 추가, �
 * Sqrt
 * Sub
 
-또한 0.5.0 릴리즈 부터 컴파일러는 Onnx의 `Opset 13 <https://github.com/onnx/onnx/releases/tag/v1.8.0>`_
-연산자까지 지원하도록 개선되었다.
+Additionally, we have improved the compiler with this release by adding support for 
+`Opset 13 <https://github.com/onnx/onnx/releases/tag/v1.8.0>`_ operator of Onnx.
 
-Session API 개선
+Session API improvement 
 ------------------------------------
-첫번째 API 개선 (`commit b1d2b74 <https://github.com/furiosa-ai/furiosa-sdk/commit/b1d2b742f9f1ed43dbe7aa5f2ed822ae38d636e4>`_) 은
-Session API에서 NPU 장치를 지정할 수 있다.
-기존에는 ``NPU_DEVNAME`` 이라는 환경변수를 통해서만 사용할 장치를 지정 할 수 있었지만 0.5.0 부터는
-Session을 생성할 때 NPU 장치를 지정할 수 있다.
-명시적으로 지정하지 않으면 기존과 같이 ``NPU_DEVNAME`` 환경변수에 지정한 장치를 사용한다.
+API Improvement 1 (`commit b1d2b74 <https://github.com/furiosa-ai/furiosa-sdk/commit/b1d2b742f9f1ed43dbe7aa5f2ed822ae38d636e4>`_): you can now designate NPU device
+in Session API.
+With 0.5.0, you can designate NPU device when generating a session, whereas previously you could only designate 
+device to be used through the environment variable ``NPU_DEVNAME``.
+If not explicitly stated, designated device in the environment variable ``NPU_DEVNAME`` will be used, as was done before. 
 
 .. code-block:: python3
 
@@ -42,9 +42,9 @@ Session을 생성할 때 NPU 장치를 지정할 수 있다.
   async_sess, queue = session.create_async(“model2.onnx”, device=”npu1pe2”)
 
 
-두번째 API 개선 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_)
-은 텐서 이름 (tensor name) 지원이다. 기존 API는 모델에 내장된 텐서 순서를 파악하여 `session.run()` 에
-입력 파라메터로 전달하는 방법만 했다. 0.5.0 부터는 아래 처럼 명시적으로 입력, 출력 텐서를 위해 이름을 지정할 수 있다.
+API Improvement 2 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_) is support for tensor name. 
+The existing API was limited in that it could only identify the order of the tensor built into the model, and pass it as an input parameter to `session.run()`.
+From 0.5.0, you can explicitly designate name of input and output tensors as shown below. 
 
 .. code-block:: python3
 
@@ -56,11 +56,11 @@ Session을 생성할 때 NPU 장치를 지정할 수 있다.
   }
 
 
-에러 진단 메시지 및 에러 핸들링 개선
-----------------------------------------
+Error diagnosis message & Improvement of error handling 
+----------------------------------------------------------
 
-에러가 발생하면 디버깅을 위한 버전 정보와 컴파일러 로그가 독립적으로 출력 되어 간편한
-버그 신고를 가능하게 한다. :ref:`BugReport` 에서 문제 보고와 고객 지원의 더 많은 정보를 찾을 수 있다.
+In case of an error, version information for debugging and compiler log are output independently. This enables easier bug reporting.
+You can find more information about reporting issues and customer service at :ref:`BugReport`.
 
 .. code-block:: python
 
@@ -83,19 +83,19 @@ Session을 생성할 때 NPU 장치를 지정할 수 있다.
   ================================================================================
 
 
-이 외에도 아래 문제에 대한 에러 핸들링 문제등이 개선이 포함되어 있다.
+Improvements such as error handling for the following issues are also included. 
 
-* Device 중복 사용에 대한 에러 개선 (`commit 01aaa40 <https://github.com/furiosa-ai/furiosa-sdk/commit/01aaa40fd31573dc578fa1c805e1ed36decc9088>`_)
-* CompletionQueue의 timeout 추가 및 Session 연결 종료 에러 핸들링 개선(`commit 21cba85 <https://github.com/furiosa-ai/furiosa-sdk/commit/21cba85737840546357f2dd709d33d9bc2b00390>`_)
-* 컴파일 중 인터럽트에 대한 hanging 문제 해결 `(commit a0f4bd7 <https://github.com/furiosa-ai/furiosa-sdk/commit/a0f4bd7ab8d199e3e46f9820fe4dc75bfa845e61>`_)
+* Error fix when using duplicate devices (`commit 01aaa40 <https://github.com/furiosa-ai/furiosa-sdk/commit/01aaa40fd31573dc578fa1c805e1ed36decc9088>`_)
+* Added timeout of CompletionQueue & error handling fix for session connection termination (`commit 21cba85 <https://github.com/furiosa-ai/furiosa-sdk/commit/21cba85737840546357f2dd709d33d9bc2b00390>`_)
+* Hanging issue fix for interruption during compiling `(commit a0f4bd7 <https://github.com/furiosa-ai/furiosa-sdk/commit/a0f4bd7ab8d199e3e46f9820fe4dc75bfa845e61>`_)
 
 
-Furiosa Server (서빙 프레임워크) 패키지 도입
+Introducing Furiosa Server (serving framework) package
 --------------------------------------------------
-0.5.0 부터 GRPC와 REST API를 지원하는 서빙 프레임워크인 `Furiosa Server` 가 추가되었다.
-``pip install furiosa-sdk[server]`` 를 실행해 간단히 설치 할 수 있으며 아래 커맨드과 같이
-모델 경로와 함께 실행하면 모델을 NPU를 이용해 바로 서빙할 수 있다.
-더 자세한 사용법과 기능은 :ref:`ModelServing` 에서 찾을 수 있다.
+0.5.0 includes `Furiosa Server`, a serving framework that supports GRPC and REST API. 
+You can easily install it by running ``pip install furiosa-sdk[server]``. By running it with the 
+command below, the model can be served immediately with the NPU. 
+You can find more detailed instructions and functions at :ref:`ModelServing`.
 
 .. code-block:: sh
 
@@ -104,11 +104,11 @@ Furiosa Server (서빙 프레임워크) 패키지 도입
   --model-name mnist
 
 
-Furiosa Model 패키지 도입
+Introducing Furiosa Model package 
 ----------------------------------------------------
-0.5.0 부터 FuriosaAI NPU에 최적화된 모델을 Python 패키지로 바로 사용할 수 있다.
-설치는 ``pip install furiosa-sdk[models]`` 명령으로 간단히 할 수 있으며
-설치 후에는 예제와 같이 바로 Session API에서 사용 가능하다.
+From 0.5.0, the optimized model for the FuriosaAI NPU can be used directly as a Python package.
+You can easily install it with the command ``pip install furiosa-sdk[models]``, 
+and can immediately be used in Session API as shown in the following example. 
 
 .. code-block:: python
 
@@ -122,11 +122,12 @@ Furiosa Model 패키지 도입
   sess = session.create(resnet50.model, device='npu0pe0')
 
 
-명령형 NPU 관리 도구: furiosactl 도입
-----------------------------------------------------
-0.5.0 부터 명령형 NPU 관리 도구인 furiosactl 이 포함된다.
-설치는 ``apt install furiosa-toolkit`` 로 할 수 있으면 NPU 장치의 상태를 확인하거나 유휴 NPU를 확인할 수 있다.
-``apt`` 서버 설정 방법은 :ref:`SetupAptRepository` 에서 찾을 수 있다.
+Command line NPU management tool: Introducing furiosactl 
+--------------------------------------------------------
+0.5.0 includes furiosactl, a command line NPU management tool.  
+You can install it with ``apt install furiosa-toolkit``. You can use this tool to check 
+NPU device status, as well as identify idle NPUs.  
+You can find ``apt`` server configuration instructions at :ref:`SetupAptRepository`.
 
 .. code-block:: sh
 
@@ -149,11 +150,12 @@ Furiosa Model 패키지 도입
   +------+-----------+-----------+--------+
 
 
-Kubernetes 지원
+Kubernetes support 
 --------------------------------------------------------
-0.5.0 부터 NPU의 Kubernetes 지원이 포함된다.
-아래 커맨드로 간단히 NPU 장치 플러그인과 노드 레이블러를 설치하고 Pod을 배포할 때 NPU가 함께 스케쥴 되도록 할 수 있다.
-자세한 설명은 :ref:`KubernetesIntegration` 에서 찾을 수 있다.
+0.5.0 includes NPU support for Kubernetes. 
+You can install the NPU device plugin and node labeller with the command below, 
+and have the NPU be scheduled together when deploying pods.
+More details can be found at :ref:`KubernetesIntegration`.
 
 .. code-block:: sh
 
