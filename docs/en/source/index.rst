@@ -67,7 +67,7 @@ Other Links
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: FuriosaAI 소프트웨어
+   :caption: FuriosaAI Software
 
    /software/intro
    /software/installation

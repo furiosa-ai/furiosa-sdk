@@ -11,7 +11,7 @@ furiosa-toolkit
 ``furiosa-toolkit`` provides a command line tool that enables users to manage and check the information of NPU devices.
 
 
-furiosa-toolkit installation 
+furiosa-toolkit installation
 --------------------------------------
 To use this command line tool, you first need to install the kernel driver as shown in :ref:`RequiredPackages`.
 Subsequently, follow the instructions below to install furiosa-toolkit.
@@ -26,7 +26,7 @@ Subsequently, follow the instructions below to install furiosa-toolkit.
 
   .. tab:: Installation using download center
 
-    Select and download the latest versions of the packages listed below. Install them in order as written in the command. 
+    Select and download the latest versions of the packages listed below. Install them in order as written in the command.
 
     * furiosactl
 
@@ -35,7 +35,7 @@ Subsequently, follow the instructions below to install furiosa-toolkit.
       sudo apt-get install -y ./furiosa-toolkit-x.y.z-?.deb
 
 
-furiosactl instructions 
+furiosactl instructions
 ----------------------------------------
 
 After installing the kernel driver, you can use the ``furiosactl`` command to check whether the NPU device is recognized.
@@ -61,14 +61,14 @@ Additional subcommands are also added when the extension package is installed.
 If the Python execution environment is not prepared, refer to :any:`SetupPython`.
 
 
-Installing command line tool. 
+Installing command line tool.
 
 .. code-block:: sh
 
   $ pip install furiosa-sdk
 
 
-Verifying installation. 
+Verifying installation.
 
 .. code-block:: sh
 
@@ -87,9 +87,9 @@ Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 .. _Litmus:
 
 furiosa litmus (Checking for model compatibility)
---------------------------------------------
+----------------------------------------------------------------------
 
-The ``litmus`` command takes the `TFLite`_ and `ONNX`_ models as arguments, 
+The ``litmus`` command takes the `TFLite`_ and `ONNX`_ models as arguments,
 quantizes them automatically, and attempts to compile up to the final binary, in order to check whether the given model is compatible with the SDK.
 
 .. code-block:: sh
