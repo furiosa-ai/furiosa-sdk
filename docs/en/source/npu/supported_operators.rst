@@ -1,36 +1,39 @@
 .. _SupportedOperators:
 
-******************************************
-List of Operators Accelerated on NPU
-******************************************
+*************************************************
+List of Supported Operators for NPU Acceleration
+*************************************************
 
-FuriosaAI NPU & SDK accelerates
-`Tensorflow Lite <https://www.tensorflow.org/lite>`_ models and `ONNX <https://onnx.ai/>`_ operators shown on the below:
-The names of operators come from `ONNX`_
+FuriosaAI NPU and SDK can accelerate the following operators, as supported by 
+`Tensorflow Lite <https://www.tensorflow.org/lite>`_ model and `ONNX <https://onnx.ai/>`_. 
+
+The names of the operators use `ONNX`_ as a reference.
 
 .. note::
 
-    The other ONNX operators unsupported on NPU will be run on CPU.
-    Even some supported operators might be run on CPU due to HW constraints.
+    If NPU acceleration is not supported, it will run on the CPU.
+    For some operators, even if NPU acceleration is supported, if certain conditions are not met, they may be split into several operators 
+    or may run on the CPU. Some examples of this would be when the weight of the model is larger than NPU memory, or if the NPU memory 
+    is not sufficient to process a certain computation. 
 
 .. list-table:: Operators Accelerated on NPU
    :widths: 50 200
    :header-rows: 1
 
-   * - Opeartor Name
-     - Explanation
+   * - Name of operator 
+     - Additional details 
    * - `Add <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Add>`_
      -
    * - `AveragePool <https://github.com/onnx/onnx/blob/master/docs/Operators.md#AveragePool>`_
      -
    * - `BatchNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#batchnormalization>`_
-     - Only when this operator comes right after Conv operator
+     - Acceleration supported, only if after Conv 
    * - `Clip <https://github.com/onnx/onnx/blob/master/docs/Operators.md#clip>`_
      -
    * - `Concat <https://github.com/onnx/onnx/blob/master/docs/Operators.md#concat>`_
-     - Only for height axis
+     - Acceleration supported, only for height axis
    * - `Conv <https://github.com/onnx/onnx/blob/master/docs/Operators.md#conv>`_
-     - Only when `group` <= 128 and dilation <= 12
+     - Acceleration supported, only for `group` <= 128 and dilation <= 12
    * - `ConvTranspose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#convtranspose>`_
      -
    * - `DepthToSpace <https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace>`_
@@ -46,7 +49,7 @@ The names of operators come from `ONNX`_
    * - `LeakyRelu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#leakyrelu>`_
      -
    * - `LpNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#lpnormalization>`_
-     - Only when p = 2
+     -  Acceleration supported, only for p = 2
    * - `MatMul <https://github.com/onnx/onnx/blob/master/docs/Operators.md#matmul>`_
      -
    * - `MaxPool <https://github.com/onnx/onnx/blob/master/docs/Operators.md#maxpool>`_
@@ -68,11 +71,12 @@ The names of operators come from `ONNX`_
    * - `Pow <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Pow>`_
      -
    * - `SpaceToDepth <https://github.com/onnx/onnx/blob/main/docs/Operators.md#SpaceToDepth>`_
-     - Only for mode="CRD" and Furiosa SDK version 0.6.0 or higher
+     - Acceleration supported, only for mode="CRD" and Furiosa SDK version 0.6.0 or higher
+
    * - `Sigmoid <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Sigmoid>`_
      -
    * - `Slice <https://github.com/onnx/onnx/blob/master/docs/Operators.md#slice>`_
-     - Only for height axis
+     - Acceleration supported, only for height axis
    * - `Softmax <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softmax>`_
      -
    * - `Softplus <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softplus>`_
