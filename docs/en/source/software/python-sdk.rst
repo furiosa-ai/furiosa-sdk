@@ -1,8 +1,8 @@
 .. _PythonSDK:
 
-**********************************
+*********************************************
 Python SDK Installation & User Guide
-**********************************
+*********************************************
 
 Using the Furiosa Python SDK library, you can easily write Python application programs that facilitate the NPU.
 Python SDK makes application programmers to exploit various toolkits, libraries, and frameworks widely used in Python ecosystem.
@@ -12,14 +12,14 @@ Requirements for installation
 =======================================================================
 * Ubuntu 18.04 LTS (Debian buster) or higher version
 * :ref:`FuriosaAI SDK Required Packages <RequiredPackages>`
-* Python 3.7 or higher version (please refer to :any:`SetupPython` for setting Python environment)
+* Python 3.7 or higher version (please refer to :any:`SetupPython` for setting up Python environment)
 * pip latest version
 
 In order to use Python SDK, kernel driver, firmware, and runtime library must be installed (refer to :ref:`FuriosaAI SDK Required Packages <RequiredPackages>` for installation)
 
 .. _SetupPython:
 
-Setting Python Environment
+Setting up Python Environment
 ================================================================
 
 Python SDK requires Python 3.7 or higher version. This section introduces how to set up Python environment.
@@ -34,18 +34,17 @@ You may check the version of Python on system by the following command:
   python --version
   Python 3.8.10
 
-If Python command is not installed yet or Python version is lower than 3.8, Python environment can be set by choosing one of options below:
+If Python command is not installed yet or Python version is lower than 3.8, Python environment can be setup by choosing one of options below:
 
 * :ref:`CondaInstall` (recommended):
   `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ provides an isolated Python environment for certain applications.
   Conda resolves some problems such as package dependency conflicts and version conflicts when installing Python applications.
-
-* :ref:`SetupPythonOnLinux` - setting Python environment directly on Linux:
-    Recommended only when there are no conflicts with other Python applications.
+* :ref:`SetupPythonOnLinux` - setting up Python environment directly on Linux:
+  Recommended only when there are no conflicts with other Python applications.
 
 .. _CondaInstall:
 
-Setting Python Environment with Conda
+Setting up Python Environment with Conda
 -------------------------------------------------------
 
 Conda provides an isolated Python environment for certain applications.
@@ -63,7 +62,7 @@ Installation requires download of Conda program.
 
 
 Creating and Activating Isolated Python Environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 An isolated Python environment can be created and activated after installing Anaconda.
 
 1. Create an isolated Python environment named ``furiosa-3.8`` which uses Python version 3.8.
@@ -97,7 +96,7 @@ The installed Python SDK remains on the Python environment hence the Python SDK 
 
 .. _SetupPythonOnLinux:
 
-Setting Python environment directly on Linux
+Setting up Python Environment on Linux
 -------------------------------------------------------
 1. Install the required packages for Python environment.
 
@@ -148,11 +147,12 @@ Installation of Python SDK Package
 
       git clone https://github.com/furiosa-ai/furiosa-sdk
       cd furiosa-sdk/python
-      pip install furiosa-runtime
+      pip install furiosa-common
       pip install furiosa-tools
+      pip install furiosa-runtime
       pip install furiosa-sdk
 
-    In order to install Furiosa extra packages, please install the modules on the sub directories of furiosa-sdk/python.
+    In order to install extra packages, please install the modules on the sub directories of furiosa-sdk/python.
     For example, model server can be installed on the following dependency.
 
     .. code-block:: sh
