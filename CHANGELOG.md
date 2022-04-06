@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Simplify checking if a model is partially quantized #349
 - NUX_PROFILER_PATH environment deprecated via new FURIOSA_PROFILER_OUTPUT_PATH #363
 - Furiosa Model exposes blocking API over non-blocking API #414
+- Upgrade ONNX OperatorSet version to 13 #131
 
 ## [0.6.1]
 ### Fixed
