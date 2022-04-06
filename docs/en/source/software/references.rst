@@ -1,6 +1,6 @@
 ************************************************
-레퍼런스 문서
+References
 ************************************************
 
-* `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
-* `Python SDK 레퍼런스 <https://furiosa-ai.github.io/docs/v0.5.0/en/api/python/modules.html>`_
+* `C Language SDK Reference <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
+* `Python SDK Reference <https://furiosa-ai.github.io/docs/v0.5.0/en/api/python/modules.html>`_

@@ -4,9 +4,9 @@
 Python SDK Installation & User Guide
 **********************************
 
-Using the Furiosa Python SDK library, you can easily write Python application programs that leverage the NPU.
+Using the Furiosa Python SDK library, you can easily write Python application programs that facilitate the NPU.
 Python SDK makes application programmers to exploit various toolkits, libraries, and frameworks widely used in Python ecosystem.
-Pythoon SDK consists of serveral modules and provides inference API, quantization API, command line interface tools, and inference serving.
+Pythoon SDK consists of several modules and provides inference API, quantization API, command line interface tools, and inference serving.
 
 Requirements for installation
 =======================================================================
@@ -15,7 +15,7 @@ Requirements for installation
 * Python 3.7 or higher version (please refer to :any:`SetupPython` for setting Python environment)
 * pip latest version
 
-In order to use Python SDK, kernel driver, firmware, and runtime library must be installed (please refer to :ref:`FuriosaAI SDK Required Packages <RequiredPackages>`)
+In order to use Python SDK, kernel driver, firmware, and runtime library must be installed (refer to :ref:`FuriosaAI SDK Required Packages <RequiredPackages>` for installation)
 
 .. _SetupPython:
 
