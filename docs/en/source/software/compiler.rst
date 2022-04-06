@@ -3,8 +3,16 @@
 ****************************************
 Compiler
 ****************************************
-Furiosa compiler takes `TFLite <https://www.tensorflow.org/lite>`_ or `Onnx <https://onnx.ai/>`_ format models as input arguments and compiles the input models to program binary executable on Furiosa NPU. During this compilation, the input model is analyzed on operator-level and the-state-of-the-art optimizations are done for efficient inference which exploiting Furiosa NPU and resources (CPU and memory) of host machine.
- If a model contains only operators on :ref:`SupportedOperators`, then the model is most likely to be accelerated effectively on Furiosa NPU.
+
+Furiosa compiler takes `TFLite <https://www.tensorflow.org/lite>`_ or
+`Onnx <https://onnx.ai/>`_ format models as input arguments and compiles
+the input models to program binary executable on Furiosa NPU.
+During this compilation, the input model is analyzed on operator-level
+and the-state-of-the-art optimizations are done for efficient inference
+which exploiting Furiosa NPU and resources (CPU and memory) of host machine.
+If a model contains only operators on :ref:`SupportedOperators`, then
+the model is most likely to be accelerated effectively on Furiosa NPU.
+
 
 .. _CompilerCli:
 

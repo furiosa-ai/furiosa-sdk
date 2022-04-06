@@ -1,7 +1,7 @@
 .. _BugReport:
 
 **********************************
-버그 신고
+Bug Report
 **********************************
 
 사용 중 해결되지 않는 문제를 겪을 경우 `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ 에서

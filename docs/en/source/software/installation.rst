@@ -1,40 +1,40 @@
 .. _RequiredPackages:
 
-***********************************************
-Driver, firmware, and runtime installation guide 
-***********************************************
+************************************************************
+Driver, Firmware, and Runtime Installation Guide
+************************************************************
 
-Here, we explain how to install the packages necessary to use 
-the various SW components are provided by FuriosaAI. 
+Here, we explain how to install the packages necessary to use
+the various SW components are provided by FuriosaAI.
 
-These required packages are kernel drivers, firmware, and runtime library, 
-and can be downloaded either directly through the download center, 
-or through the APT/PIP servers as issued on the developer site. 
+These required packages are kernel drivers, firmware, and runtime library,
+and can be downloaded either directly through the download center,
+or through the APT/PIP servers as issued on the developer site.
 
 .. note::
 
-  The download center and developer site will be provided upon registration 
+  The download center and developer site will be provided upon registration
   to the FuriosaAI evaluation program. Currently, the request for registration
-  can be done through contact@furiosa.ai. 
+  can be done through contact@furiosa.ai.
 
 .. _MinimumRequirements:
 
 Minimum requirements for SDK installation
 =====================================================================
 * Ubuntu 18.04 LTS (Bionic Beaver)/Debian buster
-  or higher 
+  or higher
 * Administrator privileges on system (root)
-* Internet-accessible network 
+* Internet-accessible network
 
 
 .. _SetupAptRepository:
 
-APT server configuration 
+APT server configuration
 =====================================================================
 
-In order to use the APT server as provided by FuriosaAI, the APT server must be configured 
-on Ubuntu or Debian Linux as delineated below. 
-This section may be skipped if you are using the download center, and not the APT. 
+In order to use the APT server as provided by FuriosaAI, the APT server must be configured
+on Ubuntu or Debian Linux as delineated below.
+This section may be skipped if you are using the download center, and not the APT.
 
 
 1. Install the necessary packages to access HTTPS-based APT server.
@@ -64,8 +64,8 @@ This section may be skipped if you are using the download center, and not the AP
   chmod 400 /etc/apt/auth.conf.d/furiosa.conf
 
 
-4. Configure the APT server according to the explanation given 
-  in the Linux distribution version tab.  
+4. Configure the APT server according to the explanation given
+  in the Linux distribution version tab.
 
 
 .. tabs::
@@ -82,7 +82,7 @@ This section may be skipped if you are using the download center, and not the AP
 
   .. tab:: Ubuntu 20.04 (Debian Bullseye)
 
-      Register the APT server through the command below. 
+      Register the APT server through the command below.
 
       .. code-block:: sh
 
@@ -94,15 +94,15 @@ This section may be skipped if you are using the download center, and not the AP
 
 .. _InstallLinuxPackages:
 
-Installing required packages. 
+Installing required packages.
 =====================================================================
 
-If you have registered the APT server as above, or registered on the download site, 
-you will be able to install the required packages - NPU kernel driver, firmware, and runtime. 
+If you have registered the APT server as above, or registered on the download site,
+you will be able to install the required packages - NPU kernel driver, firmware, and runtime.
 
 .. tabs::
 
-  .. tab:: Installation using APT server  
+  .. tab:: Installation using APT server
 
     .. code-block:: sh
 
@@ -111,8 +111,8 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
   .. tab:: Installation using download center
 
-    Select the latest version of the packages below, download them, 
-    and install them in order as written in the command.  
+    Select the latest version of the packages below, download them,
+    and install them in order as written in the command.
 
     * NPU Driver (furiosa-driver-pdma)
     * Firmware (furiosa-libnpu)
@@ -127,22 +127,22 @@ you will be able to install the required packages - NPU kernel driver, firmware,
       sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
 
-Holding/unholding installed version 
+Holding/unholding installed version
 ------------------------------------
 
-Following package installation, in order to maintain a stable operating environment, 
-there may be a need to hold the installed packages versions. By using the command below, 
-you will be able to hold the currently installed versions.  
+Following package installation, in order to maintain a stable operating environment,
+there may be a need to hold the installed packages versions. By using the command below,
+you will be able to hold the currently installed versions.
 
 .. code-block:: sh
 
   sudo apt-mark hold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
 
 
-In order to unhold and update the current package versions, designate the package 
+In order to unhold and update the current package versions, designate the package
 that you wish to unhold with the command ``apt-mark unhold``.
-Here, you can state the name of the package, thereby unholding selectively 
-a specific package. In order to show the properties of an already held package, 
+Here, you can state the name of the package, thereby unholding selectively
+a specific package. In order to show the properties of an already held package,
 use the command ``apt-mark showhold``.
 
 .. code-block:: sh
@@ -150,10 +150,10 @@ use the command ``apt-mark showhold``.
   sudo apt-mark unhold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
 
 
-Installing a specific version 
+Installing a specific version
 ------------------------------
 
-If you need to install a specific version, 
+If you need to install a specific version,
 you may designate the version that you want and install as follows.
 
 1. Check available versions through ``apt list``.
@@ -163,7 +163,7 @@ you may designate the version that you want and install as follows.
   sudo apt list -a furiosa-libnux
 
 
-2. State the package name and version as options in the command ``apt-get install`` 
+2. State the package name and version as options in the command ``apt-get install``
 
 .. code-block:: sh
 
