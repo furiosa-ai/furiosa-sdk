@@ -1,22 +1,22 @@
 .. _ModelQuantization:
 
 *************************************
-Model quantization 
+Model Quantization
 *************************************
 
 Furiosa SDK and first generation Warboy support INT8 models.
-To support floating point models, Furiosa SDK provides quantization tools to convert 
-FP16 or FP32 floating point data type models into INT8 data type models. 
-Quantization is a common technique used to increase model processing performance or accelerate hardware. 
-Using the quantization tool provied by Furiosa SDK, a greater variety of models can be accelerated by deploying the NPU. 
+To support floating point models, Furiosa SDK provides quantization tools to convert
+FP16 or FP32 floating point data type models into INT8 data type models.
+Quantization is a common technique used to increase model processing performance or accelerate hardware.
+Using the quantization tool provied by Furiosa SDK, a greater variety of models can be accelerated by deploying the NPU.
 
-Quantization method supported by Furiosa SDK is based on *post-training 8-bit quantization*, and follows 
+Quantization method supported by Furiosa SDK is based on *post-training 8-bit quantization*, and follows
 `Tensorflow Lite 8-bit quantization specification <https://www.tensorflow.org/lite/performance/quantization_spec>`_.
 
-How it works
+How It Works
 ======================================
 
-As shown in the diagram below, the quantization tool receives the ONNX model as input, 
+As shown in the diagram below, the quantization tool receives the ONNX model as input,
 performs quantization through the following three steps, and outputs the quantized ONNX model.
 
 #. Graph Optimization
@@ -28,14 +28,14 @@ performs quantization through the following three steps, and outputs the quantiz
   :class: with-shadow
   :align: center
 
-In the graph optimization process, the topological structure of the graph is changed by adding or replacing 
-operators in the model through analysis of the original model network structure, 
-so that the model can process quantized data with a minimal drop in accuracy. 
+In the graph optimization process, the topological structure of the graph is changed by adding or replacing
+operators in the model through analysis of the original model network structure,
+so that the model can process quantized data with a minimal drop in accuracy.
 
-In the calibration process, the data used to train the model is required in order to calibrate the weights of the model. 
+In the calibration process, the data used to train the model is required in order to calibrate the weights of the model.
 
 
-Accuracy of quantized models
+Accuracy of Quantized Models
 ========================================
 
 .. warning::
@@ -43,8 +43,8 @@ Accuracy of quantized models
   WIP: 양자화가 보편적이고 많은 실제 상황에서 정확도가 많이 떨어지지 않는다는 것을 뒷받침할
   논문이나 문헌이 추가되면 좋을 듯
 
-Models - with their respective validation datasets - were quantized using min-max calibration with the Furiosa SDK quantizer. 
-The table below compares accuracies. 
+Models - with their respective validation datasets - were quantized using min-max calibration with the Furiosa SDK quantizer.
+The table below compares accuracies.
 
 .. _QuantizationAccuracyTable:
 
@@ -70,12 +70,12 @@ The table below compares accuracies.
      - 1.071
 
 
-Model quantization APIs
+Model Quantization APIs
 ========================================
 
 You can use the APU and command line tool provided in this SDK to convert an ONNX model into an 8bit quantized model.
 
-Refer to the links below for further instructions.  
+Refer to the links below for further instructions.
 
 * `Python SDK example: How to use Furiosa SDK from start to finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 * `Python SDK Quantization example <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_

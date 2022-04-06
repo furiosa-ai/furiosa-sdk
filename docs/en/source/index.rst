@@ -6,10 +6,10 @@ This document explains FuriosaAI NPU and its SDKs.
 
 .. note::
 
-   FuriosaAI software components include kernel driver, firmware, runtime, and C SDK, Python SDK,
-   and command lines tools. Currently, we offer them for only users who register 'Early
-   Access Program (EAP)' and agree with 'End User Licence Agreement'. Please contact contact@furiosa.ai
-   to learn how to start the EAP.
+   FuriosaAI software components include kernel driver, firmware, runtime, C SDK, Python SDK,
+   and command lines tools. Currently, we offer them for only users who register *Early
+   Access Program (EAP)* and agree to *End User Licence Agreement (EULA)*.
+   Please contact contact@furiosa.ai to learn how to start the EAP.
 
 
 FuriosaAI NPU
@@ -31,11 +31,12 @@ FuriosaAI Software
 
 FuriosaAI SDK Tutorial and Examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* `Tutorial: Getting Started with Python SDK <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
+* `Tutorial: How to use Furiosa SDK from Start to Finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
+* `Tutorial: Basic Inference API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
 * `Tutorial: Advanced Inference API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb>`_
-* `Example: Comparing Accuracy with CPU-based Inferences <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
-* `Example: Image Classification <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
-* `Example: SSD Object Detection <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
+* `Example: Comparing Accuracy with CPU-based Inference <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
+* `Example: Image Classification Inference <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
+* `Example: SSD Object Detection Inference <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
 * `Other Python SDK Examples <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/inferences>`_
 
 Serving, Model Deployment, MLOps
@@ -45,7 +46,7 @@ Serving, Model Deployment, MLOps
 
 References
 -------------------------------------------------
-* `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
+* `C SDK Reference <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
 * :doc:`Python API Reference </api/python/modules>`
 
 Other Links
