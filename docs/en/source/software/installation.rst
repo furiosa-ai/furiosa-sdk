@@ -1,7 +1,7 @@
 .. _RequiredPackages:
 
 ************************************************************
-Driver, Firmware, and Runtime Installation Guide
+Driver, Firmware, and Runtime Installation
 ************************************************************
 
 Here, we explain how to install the packages necessary to use
