@@ -1,7 +1,7 @@
 .. _BugReport:
 
 **********************************
-Bug Report 
+Bug Report
 **********************************
 
 If you encounter an unresolvable issue, you can file a bug report at `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_. 

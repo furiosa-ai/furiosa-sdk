@@ -1,57 +1,57 @@
 ****************************************************
-FuriosaAI NPU 및 Software 0.6.0 문서
+FuriosaAI NPU & SDK 0.6.0 Documents
 ****************************************************
 
-이 문서는 FuriosaAI NPU 소개와 NPU 활용에 필요한 Software 설치 및 사용 방법을 제공한다.
+This document explains FuriosaAI NPU and its SDKs.
 
 .. note::
 
-   FuriosaAI의 소프트웨어는 커널 드라이버, 펌웨어 및 런타임 및 C SDK, Python SDK 및 명령행 도구를 포함한다.
-   FuriosaAI의 소프트웨어는 평가 프로그램(Early Access Program) 등록 후 최종 사용자
-   라이센스 동의(End User License Agreement)에 따라 배포되며, 현재는 contact@furiosa.ai 로 문의하여
-   평가 프로그램을 시작할 수 있다.
+   FuriosaAI software components include kernel driver, firmware, runtime, and C SDK, Python SDK,
+   and command lines tools. Currently, we offer them for only users who register 'Early
+   Access Program (EAP)' and agree with 'End User Licence Agreement'. Please contact contact@furiosa.ai
+   to learn how to start the EAP.
 
 
 FuriosaAI NPU
 -------------------------------------------------
-* :doc:`FurisaAI NPU 소개</npu/intro>`
-* :ref:`FuriosaAI Warboy 소개 <IntroToWarboy>`: Warboy 하드웨어 사양, 성능 등 자세한 소개
+* :doc:`/npu/intro`
+* :ref:`Introduction to FuriosaAI Warboy <IntroToWarboy>`: Warboy HW specification and its performance
 * :doc:`/npu/supported_operators`
 
 FuriosaAI Software
 -------------------------------------------------
-* :doc:`FuriosaAI 소프트웨어 스택 소개</software/intro>`
-* :doc:`드라이버, 펌웨어, 런타임 설치 가이드 </software/installation>`
-* :doc:`Python SDK 설치 및 사용 가이드 </software/python-sdk>`
-* :doc:`C SDK 설치 및 사용 가이드 </software/c-sdk>`
-* :doc:`SDK 명령행 도구 </software/cli>`
-* :doc:`컴파일러 </software/compiler>`
-* :doc:`모델 양자화 (Model quantization) </software/quantization>`
-* :doc:`Kubernetes 지원 </software/kubernetes_support>`
+* :doc:`/software/intro`
+* :doc:`/software/installation`
+* :doc:`/software/python-sdk`
+* :doc:`/software/c-sdk`
+* :doc:`/software/cli`
+* :doc:`/software/compiler`
+* :doc:`/software/quantization`
+* :doc:`/software/kubernetes_support`
 
-FuriosaAI SDK 튜토리얼 및 코드 예제
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* `Python SDK 시작하기 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
-* `고급 추론 API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb>`_
-* `CPU 기반 추론과 정확도 비교하기 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
-* `이미지 분류(Image Classification) 모델 추론 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
-* `객체 탐지 (SSD Object Detection) 모델 추론 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
-* `기타 Python 코드 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/inferences>`_
+FuriosaAI SDK Tutorial and Examples
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* `Tutorial: Getting Started with Python SDK <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/GettingStartedWithPythonSDK.ipynb>`_
+* `Tutorial: Advanced Inference API <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb>`_
+* `Example: Comparing Accuracy with CPU-based Inferences <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
+* `Example: Image Classification <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
+* `Example: SSD Object Detection <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
+* `Other Python SDK Examples <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/inferences>`_
 
-서빙, 배포, MLOps
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* :doc:`모델 서버 (서빙 프레임워크) </software/serving>`
-* :doc:`Kubernetes 지원 </software/kubernetes_support>`
+Serving, Model Deployment, MLOps
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* :doc:`/software/serving`
+* :doc:`/software/kubernetes_support`
 
-레퍼런스 문서
+References
 -------------------------------------------------
 * `C Language SDK 레퍼런스 <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
 * :doc:`Python API Reference </api/python/modules>`
 
-기타 링크
+Other Links
 --------------------------------------------------
-* `FuriosaAI 홈페이지 <https://furiosa.ai>`_
-* `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>`_
+* `FuriosaAI Home <https://furiosa.ai>`_
+* `FuriosaAI Customer Support Center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>`_
 * :ref:`BugReport`
 
 
@@ -85,7 +85,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: SDK 릴리즈 노트
+   :caption: Release Notes
 
    /releases/0.6.0.rst
    /releases/0.5.0.rst
@@ -94,9 +94,9 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
 .. toctree::
    :maxdepth: 1
    :hidden:
-   :caption: 고객 지원
+   :caption: Customer Support
 
-   FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>
+   FuriosaAI Customer Center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>
    /customer-support/bugs
 
 ..
@@ -106,7 +106,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: 기존 버전 문서
+   :caption: Previous Documents
 
-   0.5.0 문서 <https://furiosa-ai.github.io/docs/v0.5.0/ko/>
-   0.2.0 문서 <https://furiosa-ai.github.io/docs/v0.2.0/ko/>
+   v0.5.0 <https://furiosa-ai.github.io/docs/v0.5.0/en/>
+   v0.2.0 <https://furiosa-ai.github.io/docs/v0.2.0/en/>
