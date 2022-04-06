@@ -2,14 +2,19 @@
 FuriosaAI NPU
 **********************************
 
-The FuriosaAI NPU is dedicated to DNN inference tasks. Warboy employs a domain-specific design and a custom compiler
-specialized for inference processing of deep neural network models. Even on relatively small batch sizes, FuriosaAI
-NPU achieves a small latency of inference tasks by high utilization of HW resources. With retaining DNN models on the
-on-chip SRAM, memory I/O bottleneck can be removed and high energy efficiency can be achieved. Especially
-Depthwise/Group Convolution can be remarkably accelerated on FuriosaAI NPU, which enables high accuracy and
-computational efficiency of state-of-the-art CNN models. The first generation FuriosaAI NPU, Warboy accelerates
-vision intelligence including super resolution, optical character recognition, traffic management, intelligent video
-analytics, industrial safety, metaverse, and autonomous driving.
+FuriosaAI NPU is a chip with an architecture optimized for deep learning inference. 
+It demonstrates high deep learning inference performance while remaining cost-efficient. 
+FuriosaAI NPU is optimized for inferences with low batch sizes; for inference requests with low batch sizes, 
+all of the chip's resources are maximally utilized to achieve low latency. 
+
+The large on-chip memory is also able to retain most major CNN models, thereby eliminating memory bottlenecks, 
+and achieving high energy efficiency. 
+
+FuriosaAI NPU supports key CNN models used in various vision tasks, including 
+Image Classification, Object Detection, OCR, and Super Resolution. 
+In particular, the chip demonstrates superior performance in computations such as depthwise/group convolution, 
+that drive high accuracy and computational efficiency in state-of-the-art CNN models. 
+
 
 .. _IntroToWarboy:
 
@@ -17,29 +22,32 @@ analytics, industrial safety, metaverse, and autonomous driving.
 FuriosaAI Warboy
 **********************************
 
-The first generation FuriosaAI NPU, Warboy shows 64 TOPS (INT8) peak performance and has 32MB on-chip SRAM.
-Warboy consists of two processing elements (PE). Each PE can be used independent AI chip of 32 TOPS for higher throughput.
-The two PEs can be fused as a whole AI chip of 64 TOPS.
-The PE fusion can be determined according to either the given model size or latency requirements.
+FuriosaAI's first generation NPU Warboy, delivers 64 TOPS performance and includes 32MB of SRAM. 
+Warboy consists of two processing elements (PE), which each delivers 32 TOPS performance and can be deployed independently. 
+With a total performance of 64 TOPS, should there be a need to maximize response speed to models, the two PEs may undergo fusion, 
+to aggregate as a larger, single PE. Depending on the users' model size or performnace requirements the PEs may be 1) fused 
+so as to optimize reponse time, or 2) utilized independently to optimize for throughput. 
 
-FuriosaAI SDK provides NPU compiler, runtime, and profiling tools.
-Furiosa quantizer supports the INT8 Quantization Scheme used commonly in TensorFlow and PyTorch.
-Floating point models can be quantized by Furiosa quantizer with post training quantization (PTQ).
-FuriosaAI SDK makes TensorFlowLite and ONNX format models be accelerated on FuriosaAI NPU.
+FuriosaAI SDK provides the compiler, runtime software, and profiling tools for the FuriosaAI NPU.
+It also supports the INT8 quantization scheme, used as a standard in TensorFLow and PyTorch, while providing tools to convert 
+Floating Point models using Post Training Quantization. 
+With the FuriosaAI SDK, users can compile trained or exported models in formats commonly used for inference (TensorFlowLite or ONNX), and accelerate them on FuriosaAI NPU. 
 
-FuriosaAI Warboy Hardware Specification
+FuriosaAI Warboy HW Specifications 
 ----------------------------------
+The chip is built with 5 billion transistors, dimensions of 180mm^2, clock speed of 2GHz, and delivers peak performance of 64 TOPS of INT8.
+It also supports a maximum of 4266 for LPDDR4x. Warboy has a DRAM bandwidth of 66GB/s, and supports PCIe Gen4 8x.
 
 .. figure:: ../../../imgs/warboy_spec.png
   :alt: Warboy Hardware Specification
   :class: with-shadow
   :align: center
 
-FuriosaAI Warboy Performance
+FuriosaAI Warboy Performance 
 ------------------------------
-The FuriosaAI Warboy MLPerf performance results can be shown on the below:
-`MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_
+Results submitted to MLCommons can be found at 
+`MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_ 
 
-References
+See also 
 =================================
 * `MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_

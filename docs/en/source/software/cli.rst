@@ -1,33 +1,33 @@
 *********************************************************
-Command Line Tools
+Command Line Toolkit 
 *********************************************************
 
-Furiosa SDK provides command line tools for printing information of NPU devices, compiling models, and checking compatibility between models and SDK.
-This section explains how to install and use the command line tools.
+Through the Command Line Toolkit, Furiosa SDK provides functions such as outputting NPU device information, compiling models, 
+and checking compatibility between models and SDKs. This section explains how to install and use each command line tool.
 
 .. _Toolkit:
 
 furiosa-toolkit
 ===================================
-``furiosa-toolkit`` provides command line tools for monitoring and controlling NPU devices.
+``furiosa-toolkit`` provides a command line tool that enables users to manage and check the information of NPU devices.
 
 
-Installing furiosa-toolkit
+furiosa-toolkit installation 
 --------------------------------------
-
-Kernel driver must be installed by following :ref:`RequiredPackages` before using command line tools.
+To use this command line tool, you first need to install the kernel driver as shown in :ref:`RequiredPackages`.
+Subsequently, follow the instructions below to install furiosa-toolkit.
 
 .. tabs::
 
-  .. tab:: Installation with APT server
+  .. tab:: Installation using APT server
 
     .. code-block:: sh
 
       sudo apt-get install -y furiosa-toolkit
 
-  .. tab:: Installation with download center
+  .. tab:: Installation using download center
 
-    Download the latest version of the following package.
+    Select and download the latest versions of the packages listed below. Install them in order as written in the command. 
 
     * furiosactl
 
@@ -36,11 +36,12 @@ Kernel driver must be installed by following :ref:`RequiredPackages` before usin
       sudo apt-get install -y ./furiosa-toolkit-x.y.z-?.deb
 
 
-How to use furiosactl
+furiosactl instructions 
 ----------------------------------------
 
-Command ``furiosactl`` can be used for checking NPU is recognized well after installing kernel driver.
-Currently command ``furiosactl info`` shows NPU device ID, temperature, power, and PCI information.
+After installing the kernel driver, you can use the ``furiosactl`` command to check whether the NPU device is recognized.
+Currently, this command provides the ``furiosactl info`` command to output the Device ID, temperature, and PCI information of the NPU device.
+
 
 .. code-block:: sh
 
@@ -55,18 +56,20 @@ Currently command ``furiosactl info`` shows NPU device ID, temperature, power, a
 furiosa
 ===================================
 
-Command ``furiosa`` is meta command line tool in `Python SDK <PythonSDK>`.
-Extra subcommands are added after installing extra packages.
-If Python environment is required, then please follow :any:`SetupPython`.
+The ``furiosa`` command is a meta-command line tool that can be used by installing the `Python SDK <PythonSDK>`.
+Additional subcommands are also added when the extension package is installed.
 
-Installing command line tools
+If the Python execution environment is not prepared, refer to :any:`SetupPython`.
+
+
+Installing command line tool. 
 
 .. code-block:: sh
 
   $ pip install furiosa-sdk
 
 
-Check installation
+Verifying installation. 
 
 .. code-block:: sh
 
@@ -78,15 +81,18 @@ Check installation
 furiosa compile
 --------------------
 
-Command ``compile`` compiles `TFLite <https://www.tensorflow.org/lite>`_ or `ONNX <https://onnx.ai/>`_ format models into binary executable on Furiosa NPU. Please refer to :ref:`CompilerCli` for details.
+The ``compile`` command compiles models such as `TFLite <https://www.tensorflow.org/lite>`_, `ONNX <https://onnx.ai/>`_, 
+generating programs that utilize FuriosaAI NPU. 
+
+Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 
 .. _Litmus:
 
-furiosa litmus (checking compatibility of models with Furiosa SDK)
+furiosa litmus (Checking for model compatibility)
 --------------------------------------------
 
-Command ``litmus`` takes `TFLite`_ or `ONNX`_ format models as arguments, and then automatically quantize the models and generate executable binary.
-The compatibility of input model with Furiosa SDK is checked through this process.
+The ``litmus`` command takes the `TFLite`_ and `ONNX`_ models as arguments, 
+quantizes them automatically, and attempts to compile up to the final binary, in order to check whether the given model is compatible with the SDK.
 
 .. code-block:: sh
 
@@ -98,9 +104,8 @@ The compatibility of input model with Furiosa SDK is checked through this proces
   [Step 2] Passed
 
 
-If the process fails then error message appears. Please report the error message to
-`FuriosaAI Customer Center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ on
-`Bug Report` section for engineering support.
+Should it fail, you will see an error message like the one below. You can seek help by filing a Bug Report to
+`FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_.
 
 .. code-block:: sh
 
