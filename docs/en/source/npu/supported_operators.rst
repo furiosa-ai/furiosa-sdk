@@ -5,7 +5,7 @@ List of Operators Accelerated on NPU
 ******************************************
 
 FuriosaAI NPU & SDK accelerates
-`Tensorflow Lite <https://www.tensorflow.org/lite>`_ models and `ONNX <https://onnx.ai/>`_ operators show on the below:
+`Tensorflow Lite <https://www.tensorflow.org/lite>`_ models and `ONNX <https://onnx.ai/>`_ operators shown on the below:
 The names of operators come from `ONNX`_
 
 .. note::

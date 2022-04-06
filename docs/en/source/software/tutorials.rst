@@ -1,7 +1,7 @@
 .. _Tutorial:
 
 ************************************************
-Tutorial and Code Exmaples 
+Tutorial and Code Examples
 ************************************************
 
 Tutorial 

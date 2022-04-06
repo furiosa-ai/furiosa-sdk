@@ -37,7 +37,7 @@ You may check the version of Python on system by the following command:
 If Python command is not installed yet or Python version is lower than 3.8, Python environment can be set by choosing one of options below:
 
 * :ref:`CondaInstall` (recommended):
-  `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ provides an independent Python environment for certain applications.
+  `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ provides an isolated Python environment for certain applications.
   Conda resolves some problems such as package dependency conflicts and version conflicts when installing Python applications.
 
 * :ref:`SetupPythonOnLinux` - setting Python environment directly on Linux:
@@ -48,7 +48,7 @@ If Python command is not installed yet or Python version is lower than 3.8, Pyth
 Setting Python Environment with Conda
 -------------------------------------------------------
 
-Conda provides an independent Python environment for certain applications.
+Conda provides an isolated Python environment for certain applications.
 Please refer to `Conda`_ for details.
 
 Installation requires download of Conda program.
@@ -62,11 +62,11 @@ Installation requires download of Conda program.
   conda --version
 
 
-Creating and Activating Independent Python Environment
+Creating and Activating Isolated Python Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Independent Python environment can be created and activated after installing Anaconda.
+An isolated Python environment can be created and activated after installing Anaconda.
 
-1. Create an independent Python environment named ``furiosa-3.8`` which uses Python version 3.8.
+1. Create an isolated Python environment named ``furiosa-3.8`` which uses Python version 3.8.
 
 .. code-block::
 

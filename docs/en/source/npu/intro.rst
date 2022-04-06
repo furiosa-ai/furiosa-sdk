@@ -25,12 +25,11 @@ FuriosaAI Warboy
 FuriosaAI's first generation NPU Warboy, delivers 64 TOPS performance and includes 32MB of SRAM. 
 Warboy consists of two processing elements (PE), which each delivers 32 TOPS performance and can be deployed independently. 
 With a total performance of 64 TOPS, should there be a need to maximize response speed to models, the two PEs may undergo fusion, 
-to aggregate as a larger, single PE. Depending on the users' model size or performnace requirements the PEs may be 1) fused 
-so as to optimize reponse time, or 2) utilized independently to optimize for throughput. 
+to aggregate as a larger, single PE. Depending on the users' model size or performance requirements the PEs may be 1) fused
+so as to optimize response time, or 2) utilized independently to optimize for throughput.
 
 FuriosaAI SDK provides the compiler, runtime software, and profiling tools for the FuriosaAI NPU.
-It also supports the INT8 quantization scheme, used as a standard in TensorFLow and PyTorch, while providing tools to convert 
-Floating Point models using Post Training Quantization. 
+It also supports the INT8 quantization scheme, used as a standard in TensorFLow and PyTorch, while providing tools to convert Floating Point models using Post Training Quantization.
 With the FuriosaAI SDK, users can compile trained or exported models in formats commonly used for inference (TensorFlowLite or ONNX), and accelerate them on FuriosaAI NPU. 
 
 FuriosaAI Warboy HW Specifications 

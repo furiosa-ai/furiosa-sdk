@@ -1,9 +1,8 @@
 *********************************************************
-Command Line Toolkit 
+Command Line Tools
 *********************************************************
 
-Through the Command Line Toolkit, Furiosa SDK provides functions such as outputting NPU device information, compiling models, 
-and checking compatibility between models and SDKs. This section explains how to install and use each command line tool.
+Through the command line tools, Furiosa SDK provides functions such as monitoring NPU device information, compiling models, and checking compatibility between models and SDKs. This section explains how to install and use each command line tool.
 
 .. _Toolkit:
 
@@ -40,7 +39,7 @@ furiosactl instructions
 ----------------------------------------
 
 After installing the kernel driver, you can use the ``furiosactl`` command to check whether the NPU device is recognized.
-Currently, this command provides the ``furiosactl info`` command to output the Device ID, temperature, and PCI information of the NPU device.
+Currently, this command provides the ``furiosactl info`` command to output the Device ID, temperature, power consumption and PCI information of the NPU device.
 
 
 .. code-block:: sh
@@ -81,8 +80,7 @@ Verifying installation.
 furiosa compile
 --------------------
 
-The ``compile`` command compiles models such as `TFLite <https://www.tensorflow.org/lite>`_, `ONNX <https://onnx.ai/>`_, 
-generating programs that utilize FuriosaAI NPU. 
+The ``compile`` command compiles models such as `TFLite <https://www.tensorflow.org/lite>`_ and `ONNX <https://onnx.ai/>`_, generating programs that utilize FuriosaAI NPU.
 
 Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 
@@ -104,7 +102,7 @@ quantizes them automatically, and attempts to compile up to the final binary, in
   [Step 2] Passed
 
 
-Should it fail, you will see an error message like the one below. You can seek help by filing a Bug Report to
+Should it fail, you will see an error message like the one below. You can seek help by filing a bug report to
 `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_.
 
 .. code-block:: sh
