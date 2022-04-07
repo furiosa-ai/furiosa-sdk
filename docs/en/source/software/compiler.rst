@@ -74,7 +74,7 @@ If the generated executable binary is run on fused two PEs of Warboy then follow
 Option ``--batch-size`` determines the batch size of input data.
 Generally the larger batch size is, the better throughput of inference is obtained.
 However, more memory I/O operations are needed when required memory size is over than the size of NPU DRAM. More I/O operations deteriorate overall performance. The default value of ``--batch-size`` is one and the optimal batch can be found by experiments.
-For reference, the optimal batch sizes for `MLPerf™ Inference Edge v1.1 <https://mlcommons.org/en/inference-edge-11/>`_ models are like the following:
+For reference, the optimal batch sizes for `MLPerf™ Inference Edge v2.0 <https://mlcommons.org/en/inference-edge-20/>`_ models are like the following:
 
 .. list-table:: Optimal Batch Size for Well-known Models
    :widths: 50 50

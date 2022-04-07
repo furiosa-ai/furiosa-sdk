@@ -101,7 +101,7 @@ Other Links
    /customer-support/bugs
 
 ..
-   다운로드 센터 <https://developer.furiosa.ai/downloads/>
+   Download Center <https://developer.furiosa.ai/downloads/>
 
 
 .. toctree::

@@ -48,8 +48,9 @@ It also supports a maximum of 4266 for LPDDR4x. Warboy has a DRAM bandwidth of 6
 FuriosaAI Warboy Performance
 ------------------------------
 Results submitted to MLCommons can be found at
-`MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_
+`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 
 See Also
 =================================
+* `MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 * `MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_
