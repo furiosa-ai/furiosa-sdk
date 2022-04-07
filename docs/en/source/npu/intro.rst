@@ -3,7 +3,7 @@ FuriosaAI NPU
 **********************************
 
 FuriosaAI NPU is a chip with an architecture optimized for deep learning inference.
-It demonstrates high deep learning inference performance while remaining cost-efficient.
+It demonstrates high performance for deep learning inference while maintaining cost-efficiency.
 FuriosaAI NPU is optimized for inferences with low batch sizes; for inference requests with low batch sizes,
 all of the chip's resources are maximally utilized to achieve low latency.
 
