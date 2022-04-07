@@ -1,57 +1,63 @@
 .. _PythonSDK:
 
-*********************************************
-Python SDK Installation & User Guide
-*********************************************
+****************************************
+Python SDK installation and user guide
+****************************************
 
-Using the Furiosa Python SDK library, you can easily write Python application programs that facilitate the NPU.
-Python SDK makes application programmers to exploit various toolkits, libraries, and frameworks widely used in Python ecosystem.
-Pythoon SDK consists of several modules and provides inference API, quantization API, command line interface tools, and inference serving.
+FuriosaAI Python SDK is a software development kit for writing Python applications that use the NPU. 
+With the Python SDK, you can utilize various tools, libraries, and frameworks of the Python ecosystem that are most widely used in the AI/ML field for developing NPU applications.
+Python SDK consists of various modules and provides an inference API, a quantization API, a command line tool, and a server program for serving.
 
-Requirements for installation
+Requirements 
 =======================================================================
-* Ubuntu 18.04 LTS (Debian buster) or higher version
-* :ref:`FuriosaAI SDK Required Packages <RequiredPackages>`
-* Python 3.7 or higher version (please refer to :any:`SetupPython` for setting up Python environment)
-* pip latest version
+* Ubuntu 18.04 LTS (Debian buster) or higher
+* :ref:`FuriosaAI SDK required packages <RequiredPackages>`
+* Python 3.7 or higher (See :any:`SetupPython` for setup Python environment)
+* Latest version of pip 
 
-In order to use Python SDK, kernel driver, firmware, and runtime library must be installed (refer to :ref:`FuriosaAI SDK Required Packages <RequiredPackages>` for installation)
+To install and use Python SDK, follow the :ref:`Installing required packages <RequiredPackages>` guide. 
+You need to install the required kernel driver, firmware, and runtime library. 
 
 .. _SetupPython:
 
-Setting up Python Environment
+Python execution environment setup
 ================================================================
 
-Python SDK requires Python 3.7 or higher version. This section introduces how to set up Python environment.
+Python SDK requires Python 3.7 or above. Here, we describe Python execution environment configuration. 
 
 .. note::
-    Please skip this chapter either FuriosaAI Python SDK is not required or you are used to Python environment.
 
-You may check the version of Python on system by the following command:
+  If you are not using the FuriosaAI Python SDK, or if you are familiar with configuring a Python execution environment, you can skip this section.
+
+You can check the Python version currently installed in your system with the command below.
 
 .. code-block::
 
   python --version
   Python 3.8.10
 
-If Python command is not installed yet or Python version is lower than 3.8, Python environment can be setup by choosing one of options below:
+
+If the Python command does not exist, or if your Python version is below 3.7, configure the Python environment 
+by selecting one of the methods below. 
 
 * :ref:`CondaInstall` (recommended):
-  `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ provides an isolated Python environment for certain applications.
-  Conda resolves some problems such as package dependency conflicts and version conflicts when installing Python applications.
-* :ref:`SetupPythonOnLinux` - setting up Python environment directly on Linux:
-  Recommended only when there are no conflicts with other Python applications.
+  `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ allows you to 
+  configure a separate, isolated Python environment for specific Python applications.
+  Conda therefore prevents the package dependency issues or Python version issues that users 
+  often encounter when installing Python applications. 
+* Configure the Python execution environment directly on the :ref:`SetupPythonOnLinux`: Linux system.
+  You can select this option if you are not concerned about conflicts with other Python execution environments. 
 
 .. _CondaInstall:
 
-Setting up Python Environment with Conda
+Python environment configuration with Conda
 -------------------------------------------------------
 
-Conda provides an isolated Python environment for certain applications.
-Please refer to `Conda`_ for details.
+Conda makes it easy to configure a isolated Python environment for a specific Python application.
+To find out more about Conda, refer to readings available in `Conda`_.
 
-Installation requires download of Conda program.
-``sh ./Miniconda3-latest-Linux-x86_64.sh`` choose `yes` for all questions.
+You can get started by downloading the installer as shown below. 
+Select `yes` to all questions when running ``sh ./Miniconda3-latest-Linux-x86_64.sh``.
 
 .. code-block::
 
@@ -61,51 +67,51 @@ Installation requires download of Conda program.
   conda --version
 
 
-Creating and Activating Isolated Python Environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-An isolated Python environment can be created and activated after installing Anaconda.
+Creating and activating isolated Python execution environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+After installing Anaconda, you can create an isolated Python execution environment and activate it as needed.
 
-1. Create an isolated Python environment named ``furiosa-3.8`` which uses Python version 3.8.
+1. If you want to use Python 3.8, create an execution environment with the name ``furiosa-3.8``, by using the following command.
 
 .. code-block::
 
   conda create -n furiosa-3.8 python=3.8
 
 
-2. Activate the created Python 3.8 environment with command ``activate``.
+2. The created Python 3.8 environment is activated with the ``activate`` command.
 
 .. code-block::
 
   conda activate furiosa-3.8
-  # check the version of Python
+  # version check 
   python --version
 
 
-3. Install Python SDK with instructions on :ref:`InstallPipPackages`.
+3. Once the Python execution environment is activated, install the Python SDK as explained in :ref:`InstallPipPackages`.
 
 
-4. Deactivate the Python environment with command ``deactivate``.
+4. If you wish to terminate the Python execution environment, use the ``deactivate`` command.
 
 .. code-block::
 
   $ conda deactivate
 
-The created Python environment can be activated again with command ``activate``.
-The installed Python SDK remains on the Python environment hence the Python SDK does not need to be installed again.
+An environment created once can be used again at any time with the ``activate`` command. 
+Packages that have been installed do not need to be reinstalled after activation. 
 
 
 .. _SetupPythonOnLinux:
 
-Setting up Python Environment on Linux
+Configuring Python environment using Linux packages 
 -------------------------------------------------------
-1. Install the required packages for Python environment.
+1. If you can configure the Python environment directly on the system, install the necessary packages as shown below. 
 
 .. code-block::
 
   sudo apt install -y python3 python3-pip python-is-python3
 
 
-2. Check the version of Python.
+2. Check the Python version to ensure proper installation. 
 
 .. code-block::
 
@@ -115,45 +121,47 @@ Setting up Python Environment on Linux
 
 .. _InstallPipPackages:
 
-Installation of Python SDK Package
+Installing Python SDK package 
 =======================================
 
 .. tabs::
 
-  .. tab:: installation with PIP
+  .. tab:: Installing with PIP
 
-    FuriosaAI Python SDK package is uploaded on PyPi storage `pypi <https://pypi.org/>`_, hence it can be easily installed with command ``pip``.
+    FuriosaAI Python SDK package is uploaded on the `pypi <https://pypi.org/>`_ repository, 
+    so you can easily install it as shown by using the ``pip`` command.
 
     .. code-block:: sh
 
       pip install furiosa-sdk
 
+    The package contains a compiler command line interface and an inference API.
+    Refer to :ref:`CompilerCli` and :ref:`Tutorial` for detailed usage guides.
 
-    Package contains compiler command line tools and inference API.
-    Please refer to :ref:`CompilerCli` and :ref:`Tutorial` for details.
-
-    Extra Python packages contains other extra functions, please refer to :ref:`PythonExtraPackages`.
-    Furiosa ``litmus`` can check whether user provided models are compatible with Furiosa NPU.
+    Additional functions are provided in the form of Python extra packages, and you can select and
+    install packages as you require from :ref:`PythonExtraPackages`.
+    For example, if you need to install `server`` for model serving and 
+    ``litmus`` to check the compatibility between model and SDK, specify the extension package as follows.
 
     .. code-block:: sh
 
-      pip install 'furiosa-sdk[litmus]'
+      pip install 'furiosa-sdk[server, litmus]'
 
-  .. tab:: installation with source code
+  .. tab:: Installing with the source code 
 
-    Download `FuriosaAI Github Repository <https://github.com/furiosa-ai/furiosa-sdk>`_ and install Furiosa SDK with the following instructions.
+    Download the source code from `FuriosaAI Github repository <https://github.com/furiosa-ai/furiosa-sdk>`_ 
+    and install the packages in the following order.
 
     .. code-block:: sh
 
       git clone https://github.com/furiosa-ai/furiosa-sdk
       cd furiosa-sdk/python
-      pip install furiosa-common
-      pip install furiosa-tools
       pip install furiosa-runtime
+      pip install furiosa-tools
       pip install furiosa-sdk
 
-    In order to install extra packages, please install the modules on the sub directories of furiosa-sdk/python.
-    For example, model server can be installed on the following dependency.
+    If you wish to install extra packages, install the Python module in the subdirectory of furiosa-sdk/python. 
+    For example, if you want to install a model server, install it according to the order of dependencies as follows. 
 
     .. code-block:: sh
 
@@ -164,31 +172,32 @@ Installation of Python SDK Package
 
 .. _PythonExtraPackages:
 
-Extra Packages
+Extra packages 
 ======================================================
 
 FuriosaAI Models
 --------------------------------
-FuriosaAI Models contain pre-trained DNN models which are optimized on Furiosa NPU.
+It can be executed directly on the NPU and provides optimized DNN model architecture, pre-trained 
+model image, among others, in the form of a Python module. 
+You can install them with the following command. 
 
 .. code-block:: sh
 
   pip install 'furiosa-sdk[models]'
 
+
 Model Server
 --------------------------------
-Model Server provides GRPC and Restful API of model inference accelerated on Furiosa NPU.
-Please refer to :ref:`ModelServing` for details.
+Provides the function of accelerating DNN model with the NPU, and serving it with GRPC or Restful API.
 
 .. code-block:: sh
 
   pip install 'furiosa-sdk[server]'
 
-
 Litmus
 --------------------------------
-Litmus checks that the user-provided model is compatible with FuriosaAI SDK.
-The user-provided models are quickly quantized and compiled to binary for checking compatibility.
+A tool to check whether the specified model is compatible with the Furiosa SDK. 
+Here, we simulate execution of processes such as model quantization and compilation. 
 
 .. code-block:: sh
 
@@ -197,7 +206,9 @@ The user-provided models are quickly quantized and compiled to binary for checki
 Quantizer
 --------------------------------
 
-Quantizer package provides quantization API. Please refer to :ref:`ModelQuantization` for details.
+The quantizer package provides a set of APIs for converting a model into a quantized model. 
+You can find more information about the quantization function provided by the Furiosa SDK and the NPU
+at :ref:`ModelQuantization`.
 
 .. code-block:: sh
 
