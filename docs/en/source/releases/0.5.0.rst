@@ -1,0 +1,163 @@
+*********************************************************
+Release Notes - 0.5.0
+*********************************************************
+
+FuriosaAI SDK 0.5.0 release includes approximately 87 bug fixes, added functionalities, and improvements.
+The following are some of the key changes:
+
+
+.. _CompilerImprovement:
+
+Compiler Improvement
+--------------------------------------------------------
+0.5.0 release adds NPU acceleration support for the following operators.
+You can find the entire list of acceleration-supported operators at :ref:`SupportedOperators`.
+
+* BatchNormalization
+* ConvTranspose
+* LeakyRelu
+* Pow
+* Sqrt
+* Sub
+
+Additionally, we have improved the compiler with this release by adding support for
+`Opset 13 <https://github.com/onnx/onnx/releases/tag/v1.8.0>`_ operator of Onnx.
+
+Session API Improvement
+------------------------------------
+API Improvement 1 (`commit b1d2b74 <https://github.com/furiosa-ai/furiosa-sdk/commit/b1d2b742f9f1ed43dbe7aa5f2ed822ae38d636e4>`_): you can now designate NPU device
+in Session API.
+With 0.5.0, you can designate NPU device when generating a session, whereas previously you could only designate
+device to be used through the environment variable ``NPU_DEVNAME``.
+If not explicitly stated, designated device in the environment variable ``NPU_DEVNAME`` will be used, as was done before.
+
+.. code-block:: python3
+
+  from furiosa.runtime import session
+
+  sess1 = session.create(“model1.onnx”, device=”npu0pe0”)
+  sess2 = session.create(“model2.onnx”, device=”npu0pe1”)
+
+  # Asynchronous API
+  async_sess, queue = session.create_async(“model2.onnx”, device=”npu1pe2”)
+
+
+API Improvement 2 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_) is support for tensor name.
+The existing API was limited in that it could only identify the order of the tensor built into the model, and pass it as an input parameter to `session.run()`.
+From 0.5.0, you can explicitly designate name of input and output tensors as shown below.
+
+.. code-block:: python3
+
+  np1 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
+  np2 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
+  sess1.run_with(outputs=[“output1”], inputs={
+    “input2”: np2,
+    “input1”: np1,
+  }
+
+
+Error Diagnosis Message & Error Handling Improvements
+------------------------------------------------------------------
+
+In case of an error, version information for debugging and compiler log are output independently. This enables easier bug reporting.
+You can find more information about reporting issues and customer service at :ref:`BugReport`.
+
+.. code-block:: python
+
+  >>> from furiosa.runtime import session
+  >>> session.create("mnist-8.onnx)
+  Saving the compilation log into /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log
+  ...
+  2021-11-22T06:30:28.423371Z ERROR fail to compile the model: the static shape of tensor 'input' contains an unsupported dimension value: Some(DimParam("batch_size"))
+  ================================================================================
+  Information Dump
+  ================================================================================
+  - Python version: 3.8.10 (default, Sep 28 2021, 16:10:42)  [GCC 9.3.0]
+  - furiosa-libnux path: libnux.so.0.5.0
+  - furiosa-libnux version: 0.5.0 (rev: 407c0c51f built at 2021-11-18 22:32:34)
+  - furiosa-compiler version: 0.5.0 (rev: 407c0c51f built at 2021-11-18 22:32:34)
+  - furiosa-sdk-runtime version: Furiosa SDK Runtime  (libnux 0.5.0 407c0c51f 2021-11-18 22:32:34)
+
+  Please check the compiler log at /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log.
+  If you have a problem, please report the log file to https://furiosa-ai.atlassian.net/servicedesk/customer/portals with the information dumped above.
+  ================================================================================
+
+
+Improvements such as error handling for the following issues are also included.
+
+* Error fix when using duplicate devices (`commit 01aaa40 <https://github.com/furiosa-ai/furiosa-sdk/commit/01aaa40fd31573dc578fa1c805e1ed36decc9088>`_)
+* Added timeout of CompletionQueue & error handling fix for session connection termination (`commit 21cba85 <https://github.com/furiosa-ai/furiosa-sdk/commit/21cba85737840546357f2dd709d33d9bc2b00390>`_)
+* Hanging issue fix for interruption during compiling `(commit a0f4bd7 <https://github.com/furiosa-ai/furiosa-sdk/commit/a0f4bd7ab8d199e3e46f9820fe4dc75bfa845e61>`_)
+
+
+Introducing Furiosa Server (serving framework)
+-----------------------------------------------------------------
+0.5.0 includes `Furiosa Server`, a serving framework that supports GRPC and REST API.
+You can easily install it by running ``pip install furiosa-sdk[server]``. By running it with the
+command below, the model can be served immediately with the NPU.
+You can find more detailed instructions and functions at :ref:`ModelServing`.
+
+.. code-block:: sh
+
+  furiosa server \
+  --model-path MNISTnet_uint8_quant_without_softmax.tflite \
+  --model-name mnist
+
+
+Introducing Furiosa Model package
+----------------------------------------------------
+From 0.5.0, the optimized model for the FuriosaAI NPU can be used directly as a Python package.
+You can easily install it with the command ``pip install furiosa-sdk[models]``,
+and can immediately be used in Session API as shown in the following example.
+
+.. code-block:: python
+
+  import asyncio
+
+  from furiosa.registry import Model
+  from furiosa.models.vision import MLCommonsResNet50
+  from furiosa.runtime import session
+
+  resnet50: Model = asyncio.run(MLCommonsResNet50())
+  sess = session.create(resnet50.model, device='npu0pe0')
+
+
+Command line NPU management tool: furiosactl
+-----------------------------------------------------------------
+0.5.0 includes furiosactl, a command line NPU management tool.
+You can install it with ``apt install furiosa-toolkit``. You can use this tool to check
+NPU device status, as well as identify idle NPUs.
+You can find ``apt`` server configuration instructions at :ref:`SetupAptRepository`.
+
+.. code-block:: sh
+
+  $ furiosactl info
+
+  +------+------------------+-------+---------+--------------+---------+
+  | NPU  | Name             | Temp. | Power   | PCI-BDF      | PCI-DEV |
+  +------+------------------+-------+---------+--------------+---------+
+  | npu0 | FuriosaAI Warboy |  34°C | 12.92 W | 0000:01:00.0 | 510:0   |
+  +------+------------------+-------+---------+--------------+---------+
+
+  $ furiosactl list
+  +------+-----------+-----------+--------+
+  | NPU  | DEVNAME   | Type      | Status |
+  +------+-----------+-----------+--------+
+  | npu0 | npu0      | All PE(s) | Ready  |
+  |      | npu0pe0   | Single PE | Ready  |
+  |      | npu0pe1   | Single PE | Ready  |
+  |      | npu0pe0-1 | PE Fusion | Ready  |
+  +------+-----------+-----------+--------+
+
+
+Kubernetes support
+--------------------------------------------------------
+0.5.0 includes NPU support for Kubernetes.
+You can install the NPU device plugin and node labeller with the command below,
+and have the NPU be scheduled together when deploying pods.
+More details can be found at :ref:`KubernetesIntegration`.
+
+.. code-block:: sh
+
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/main/kubernetes/deployments/device-plugin.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/main/kubernetes/deployments/node-labeller.yaml

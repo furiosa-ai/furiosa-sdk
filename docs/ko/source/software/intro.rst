@@ -55,7 +55,7 @@ Python/C SDK를 통해 세션(session)을 생성하는 과정에서 자동으로
 런타임은 이 테스크를 머신의 자원을 균형있게 사용하고 워크로드에 맞도록 스케쥴링하고 NPU에서 실행되는 작업을 위해
 펌웨어를 통해 NPU를 제어하는 역할을 수행한다.
 
-런타임은 기능은 아래 섹션에서 설명할 Python/C SDK를 통해 API로 제공되며
+런타임 기능은 아래 섹션에서 설명할 Python/C SDK를 통해 API로 제공되며
 설치 방법은 :ref:`RequiredPackages` 에서 찾을 수 있다.
 
 Python SDK와 C SDK

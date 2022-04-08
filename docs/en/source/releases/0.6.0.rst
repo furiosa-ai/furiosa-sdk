@@ -1,0 +1,110 @@
+*********************************************************
+Release Notes - 0.6.0
+*********************************************************
+
+FuriosaAI SDK 0.6.0 is a major release. 
+It includes 234 PRs on performance improvements, added functionalities, and bug fixes, 
+as well as approximately 900 commits. 
+
+How to upgrade
+--------------------------------------------------------
+If you are using the APT repositories, you easily upgrade with the instructions below:
+More detailed instructions can be found at :ref:`RequiredPackages`.
+
+  .. code-block:: sh
+
+    apt-get update && \
+    apt-get install furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux
+
+    pip uninstall furiosa-sdk-quantizer furiosa-sdk-runtime furiosa-sdk-validator && \
+    pip install --upgrade furiosa-sdk
+
+
+Major changes 
+--------------------------------------------------------
+The kernel driver (furiosa-driver-pdma) has been upgraded to 1.2.2, and the user-level driver (furiosa-libnpu-warboy) 
+has been upgraded to 0.5.2, thereby providing more stable and higher NPU performance. Other major changes include the following: 
+
+Compiler 
+================================================================
+* Addition of NPU accelerated operators (see :ref:`SupportedOperators` for full list of accelerated operators)
+
+    * Space-to-depth (CRD mode)
+    * Transpose
+    * Slice (height axis only)
+    * Concat (height axis only)
+    * Grouped Convolution (if groups <= 128)
+
+* Improvements to significantly reduce frequency of CPU tasks in models with 
+  operators that require large memory usage (reduced execution time)
+
+Quantizer
+================================================================
+
+* Improve model quantization process to ensure idempotency 
+* Remove PyTorch reliance 
+* Improve code quality by removing multiple Pylint warnings
+* Upgrade multiple library dependencies (e.g. Numpy -> 1.21.5, Pyyaml -> 6.0.0)
+
+Python SDK
+================================================================
+
+* Python SDK project structure change 
+
+  * furiosa-sdk-runtime -> furiosa-sdk
+  * furiosa-sdk-quantizer -> furiosa-quantizer
+  * furiosa-sdk-validator -> furiosa-litmus
+
+* Validator, a package that checks for model compatibility with Furiosa SDK, is renamed to litmus. Installation instruction has also been updated accordingly. 
+
+See :ref:`Litmus` for more detailed usage instructions.
+
+  .. code-block:: sh
+
+    $ pip install 'furiosa-sdk[litmus]'
+
+Furiosa Serving: Addition of FastAPI-based advanced serving library 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+furiosa-serving is based on FastAPI. It allows you to easily add Python-based business logic or image pre/postprocessing code, 
+before or after executing model inference API.  
+
+You can install using the following instructions. 
+
+  .. code-block:: sh
+
+    $ pip install 'furiosa-sdk[serving]'
+
+
+The usage example is shown below. You can find more detailed instructions at  
+`furiosa-serving Github <https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-serving>`_.
+
+  .. code-block:: python
+
+    from typing import Dict
+
+    from fastapi import File, UploadFile
+    from furiosa.server.utils.thread import synchronous
+    from furiosa.serving import ServeAPI, ServeModel
+    import numpy as np
+
+
+    serve = ServeAPI()
+
+
+    model: ServeModel = synchronous(serve.model)(
+        'imagenet',
+        location='./examples/assets/models/image_classification.onnx'
+    )
+
+    @model.post("/models/imagenet/infer")
+    async def infer(image: UploadFile = File(...)) -> Dict:
+        # Convert image to Numpy array with your preprocess() function
+        tensors: List[np.ndarray] = preprocess(image)
+
+        # Infer from ServeModel
+        result: List[np.ndarray] = await model.predict(tensors)
+
+        # Classify model from numpy array with your postprocess() function
+        response: Dict = postprocess(result)
+
+        return response

@@ -158,7 +158,7 @@ Python SDK 패키지 설치
   .. tab:: 소스 코드를 이용한 설치
 
     `FuriosaAI Github 저장소 <https://github.com/furiosa-ai/furiosa-sdk>`_ 에서
-    소스코르를 다운 받아 아래와 같은 순서로 설치한다.
+    소스코드를 다운 받아 아래와 같은 순서로 설치한다.
 
     .. code-block:: sh
 
