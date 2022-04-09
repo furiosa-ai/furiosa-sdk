@@ -27,7 +27,7 @@ NPU 가속이 지원되는 연산자 목록은 :ref:`SupportedOperators` 에서 
   furiosa compile MODEL_PATH [-o OUTPUT] [--target-npu TARGET_NPU] [--batch BATCH_SIZE]
 
 `-o OUTPUT` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
-생략했을 대 기본 출력 파일 이름은 ``output.enf`` 이다.
+생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. 여기서 enf는 Executable NPU Format의 약어이다.
 따라서, 예를 들면 아래와 같이 실행하면 기본으로 ``output.enf`` 파일을 생성한다.
 
 .. code-block:: sh
@@ -75,7 +75,7 @@ NPU의 활용도를 높일 수 있고 추론을 실행하는 과정을 공유하
 그러나 NPU에 더 많은 메모리가 필요하게 되어 필요한 메모리 사이즈가 NPU의 DRAM 크기를 초과하면
 오히려 호스트(Host)와 NPU간에 메모리 I/O 비용이 커져 큰 성능 저하가 일어날 수 있다.
 기본 값은 1이며 적절한 설정은 일반적으로 실험을 통해 찾을 수 있다.
-참고로, `MLPerf™ Inference Edge v1.1 <https://mlcommons.org/en/inference-edge-11/>`_
+참고로, `MLPerf™ Inference Edge v2.0 <https://mlcommons.org/en/inference-edge-20/>`_
 벤치마크에 포함된 일부 모델들의 최적 배치 크기는 다음과 같다.
 
 .. list-table:: Optimal Batch Size for Well-known Models

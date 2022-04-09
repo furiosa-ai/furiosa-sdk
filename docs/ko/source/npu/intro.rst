@@ -39,12 +39,18 @@ FuriosaAI Warboy의 하드웨어 스펙
 5 billion transistor로 구성되어 있고, 180mm^2에 2GHz로 동작하고 INT8 기준 64 TOPS의 Peak Performance를 갖는다.
 또한 LPDDR4x에 대해 최대 4266을 지원하며 66GB/s의 DRAM Bandwidth를 갖으며, PCIe Gen4 8x을 지원한다.
 
+.. figure:: ../../../imgs/warboy_spec.png
+  :alt: Warboy Hardware Specification
+  :class: with-shadow
+  :align: center
+
 FuriosaAI Warboy의 성능
 ------------------------------
 MLCommons 에 제출된 결과는
-`MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_ 에서
+`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_ 에서
 확인할 수 있다.
 
 관련 문서
 =================================
+* `MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 * `MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_

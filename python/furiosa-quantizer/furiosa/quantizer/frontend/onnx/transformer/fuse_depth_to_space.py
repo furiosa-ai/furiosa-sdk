@@ -1,3 +1,5 @@
+from typing import Dict, Iterable
+
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -24,48 +26,53 @@ class Pattern_1(ONNXTransformer):
     if Transpose.perm == [0, 1, 4, 2, 5, 3] or == [0, 3, 4, 1, 5, 2]
     """
 
-    def pattern_matching(self, base_node):
-        inputs = base_node.input
-
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         pattern_to_match = ['Reshape', 'Transpose', 'Reshape']
         matched_nodes = self.pattern_matcher(base_node, pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
-        if not self.pattern_condition_checker(matched_nodes):
-            return inputs
+        if not _pattern_condition_checker(matched_nodes):
+            return base_node.input
 
-        top_node, mid_node, _ = matched_nodes
+        reshape, *_ = matched_nodes
         self.transform_to_fuse(
             matched_nodes,
             nodes_to_add=[
-                self.make_node(
+                onnx.helper.make_node(
                     'DepthToSpace',
-                    [top_node.input[0]],
+                    [reshape.input[0]],
                     [base_node.output[0]],
-                    top_node.name,
-                    **self.get_attrs(top_node, mid_node),
+                    reshape.name,
+                    **self.get_attrs(matched_nodes),
                 )
             ],
         )
 
-        return top_node.input
+        return reshape.input
 
-    def pattern_condition_checker(self, nodes_to_check):
-        _, mid_node, _ = nodes_to_check
-        perm = mid_node.attribute[0].ints
-        return perm in ([0, 1, 4, 2, 5, 3], [0, 3, 4, 1, 5, 2])
-
-    def get_attrs(self, top_node, mid_node):
-        permutation = mid_node.attribute[0].ints
-        reshaped_shape = self.get_value_info_shape(top_node.output[0])
-        if all(x == y for (x, y) in zip(permutation, [0, 1, 4, 2, 5, 3])):
+    def get_attrs(self, matched_nodes: Iterable[onnx.NodeProto]) -> Dict:
+        reshape, transpose, _ = matched_nodes
+        permutation = next(
+            onnx.helper.get_attribute_value(attr)
+            for attr in transpose.attribute
+            if attr.name == "perm"
+        )
+        shape_to_reshape = self.get_value_info_shape(reshape.output[0])
+        if permutation == [0, 1, 4, 2, 5, 3]:
             mode = 'CRD'
-            blocksize = reshaped_shape[2]
-        elif all(x == y for (x, y) in zip(permutation, [0, 3, 4, 1, 5, 2])):
+            blocksize = shape_to_reshape[2]
+        elif permutation == [0, 3, 4, 1, 5, 2]:
             mode = 'DCR'
-            blocksize = reshaped_shape[1]
+            blocksize = shape_to_reshape[1]
         else:
-            raise Exception()
-
+            assert False, repr(permutation)
         return {'blocksize': blocksize, 'mode': mode}
+
+
+def _pattern_condition_checker(nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+    _, transpose, _ = nodes_to_check
+    perm = next(
+        onnx.helper.get_attribute_value(attr) for attr in transpose.attribute if attr.name == "perm"
+    )
+    return perm in ([0, 1, 4, 2, 5, 3], [0, 3, 4, 1, 5, 2])

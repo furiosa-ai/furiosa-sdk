@@ -19,7 +19,6 @@ load-plugins=
 # --disable=W".
 disable=
     # Warning
-    attribute-defined-outside-init, # W0201
     fixme, # W0511
 
     # Convention
@@ -33,7 +32,6 @@ disable=
 
     # Refactor
     duplicate-code, # R0801
-    no-self-use, # R0201
     too-few-public-methods, # R0903
     too-many-arguments, # R0913
     too-many-branches, # R0912

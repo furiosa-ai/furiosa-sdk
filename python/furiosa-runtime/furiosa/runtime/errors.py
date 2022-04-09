@@ -4,6 +4,8 @@ from enum import IntEnum
 import typing
 from typing import Optional
 
+from furiosa.common.error import FuriosaError, is_err, is_ok
+
 
 class NativeError(IntEnum):
     """Python object correspondnig to nux_error_t in Nux C API"""
@@ -36,48 +38,6 @@ class NativeError(IntEnum):
     UNSUPPORTED_FEATURE = 25
 
 
-def is_ok(err: typing.Union[ctypes.c_int, int]) -> bool:
-    """True if NuxErr is SUCCESS, or False"""
-    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
-    #   There's no way to make the behavior deterministic.
-    if isinstance(err, ctypes.c_int):
-        err = err.value
-    elif isinstance(err, int):
-        pass
-
-    return err == NativeError.SUCCESS
-
-
-def is_err(err: typing.Union[ctypes.c_int, int]) -> bool:
-    """True if NuxErr is not SUCCESS, or False"""
-    # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
-    #   There's no way to make the behavior deterministic.
-    if isinstance(err, ctypes.c_int):
-        err = err.value
-    elif isinstance(err, int):
-        pass
-
-    return err != NativeError.SUCCESS
-
-
-class FuriosaError(Exception):
-    """general exception caused by Furiosa Runtime"""
-
-    def __init__(self, message: str):
-        self._message = message
-
-    @property
-    def message(self) -> str:
-        """Error message"""
-        return self._message
-
-    def __repr__(self):
-        return '{}'.format(self._message)
-
-    def __str__(self):
-        return self.__repr__()
-
-
 class NativeException(FuriosaError):
     """general exception caused by Nuxpy"""
 
@@ -93,9 +53,9 @@ class NativeException(FuriosaError):
 
     def __repr__(self):
         if self._native_err is None:
-            return self.message
+            return self._message
 
-        return f'{self.message} (native error code: {self._native_err})'
+        return f'{self._message} (native error code: {self._native_err})'
 
     def __str__(self):
         return self.__repr__()

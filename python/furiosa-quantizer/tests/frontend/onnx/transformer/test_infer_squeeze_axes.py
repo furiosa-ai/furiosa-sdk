@@ -1,4 +1,7 @@
+from typing import Dict, List, Sequence, Tuple
+
 import numpy as np
+import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from furiosa.quantizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
@@ -7,19 +10,22 @@ from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_mod
 from tests.frontend.onnx.transformer import TestTransformer
 
 
+def _make_test_model(
+    model_desc: Dict, input_shapes: List[Sequence[int]]
+) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
+    orig_model = make_onnx_model(model_desc)
+    trans_model = utils.fixed_point(
+        orig_model,
+        [
+            lambda model: InferenceShape(model).inference_shape(input_shapes),
+            InferSqueezeAxes().transform,
+        ],
+    )
+
+    return orig_model, trans_model
+
+
 class TestInferSqueezeAxes(TestTransformer):
-    def _make_test_model(self, model_desc, input_shapes):
-        orig_model = make_onnx_model(model_desc)
-        trans_model = utils.fixed_point(
-            orig_model,
-            [
-                lambda model: InferenceShape(model).inference_shape(input_shapes),
-                InferSqueezeAxes().transform,
-            ],
-        )
-
-        return orig_model, trans_model
-
     def test_case1(self):
         input_shape = [1, 4, 1, 1]
         output_shape = [8]
@@ -37,7 +43,7 @@ class TestInferSqueezeAxes(TestTransformer):
             ],
         }
 
-        orig_model, trans_model = self._make_test_model(model_desc, {"x": input_shape})
+        orig_model, trans_model = _make_test_model(model_desc, {"x": input_shape})
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_attribute([0, 2, 3], trans_model.graph.node[0].attribute[0].ints)
 
@@ -57,7 +63,7 @@ class TestInferSqueezeAxes(TestTransformer):
             ],
         }
 
-        orig_model, trans_model = self._make_test_model(model_desc, {"x": input_shape})
+        orig_model, trans_model = _make_test_model(model_desc, {"x": input_shape})
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_attribute([0, 2, 3], trans_model.graph.node[0].attribute[0].ints)
         self.check_attribute([0, 2, 3], trans_model.graph.node[2].attribute[0].ints)

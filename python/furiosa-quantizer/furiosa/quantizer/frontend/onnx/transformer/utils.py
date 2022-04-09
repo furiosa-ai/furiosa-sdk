@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Iterable, TypeVar
+from typing import Any, Callable, Iterable, Optional, TypeVar
 
 import onnx
 from onnx import numpy_helper
@@ -163,3 +163,24 @@ def fixed_point(x: T, functions: Iterable[Callable[[T], T]]) -> T:
             x = func(x)
         if x == init:
             return x
+
+
+def get_attribute(
+    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
+) -> Any:
+    return next(
+        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
+    )
+
+
+def make_unhashables_unique(values):
+    seen = []
+    for v in values:
+        if v not in seen:
+            seen.append(v)
+
+    return seen
+
+
+def is_op_type(op_type: str, target_op_types: Iterable[str]) -> bool:
+    return op_type in target_op_types

@@ -11,7 +11,7 @@ C 헤더 (C header) 파일을 제공하며 이를 이용하여 C, C++ 응용 또
 
 :ref:`Python SDK <PythonSDK>` 에 비해 저수준 API를 제공하여
 더 낮은 지연 시간과 더 높은 성능을 요구하는 경우나 Python 런타임을 사용할 수 없는 경우 사용할 수 있다.
-또한, C SDK는 Python SDK와 유사한 블럭킹(blocking) 및 비동기(asynchnous) API를 제공한다.
+또한, C SDK는 Python SDK와 유사한 블럭킹(blocking) 및 비동기(asynchronous) API를 제공한다.
 
 C SDK 설치
 ===================================
@@ -39,7 +39,7 @@ C SDK 설치를 위한 최소 요구사항은 다음과 같다.
 
   .. tab:: 다운로드 센터를 이용한 설치
 
-    다운로드 센터에 로그인하여 아래 패키지들으 최신 버전을 선택하여 다운 받는다.
+    다운로드 센터에 로그인하여 아래 패키지들의 최신 버전을 선택하여 다운 받는다.
 
     * NPU C SDK 다운로드 (furiosa-libnux-dev-x.y.z-?.deb)
 

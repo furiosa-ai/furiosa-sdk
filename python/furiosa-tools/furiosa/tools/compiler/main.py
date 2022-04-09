@@ -1,15 +1,13 @@
 import argparse
+import logging
+import os
 import sys
 from typing import Dict
 
 from furiosa.tools import __version__
-from furiosa.tools.compiler.api import (
-    LIBCOMPILER,
-    CompilerApiError,
-    VersionInfo,
-    compile,
-    version_string,
-)
+from furiosa.tools.compiler.api import CompilerApiError, VersionInfo, compile, version_string
+
+logging.basicConfig(level=os.environ.get('FURIOSA_LOG_LEVEL', 'INFO').upper())
 
 DESCRIPTION: str = f"FuriosaAI SDK Compiler (ver. {__version__.version})"
 
@@ -124,6 +122,7 @@ class CommandCompile:
             '-o',
             dest='output',
             type=str,
+            default='output.enf',
             help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)',
         )
         self.parser.add_argument(
@@ -135,8 +134,8 @@ class CommandCompile:
         self.parser.add_argument(
             '--target-npu',
             type=str,
-            default='warboy',
-            help='Target NPU: warboy (default), warboy-2pe',
+            default='warboy-2pe',
+            help='Target NPU: warboy, warboy-2pe (default)',
         )
         self.parser.add_argument(
             '--analyze-memory',
@@ -178,7 +177,7 @@ class CommandCompile:
     def run(self) -> int:
         compiler_version = VersionInfo()
         print(
-            f"furiosa-compiler {compiler_version.version} (rev. {compiler_version.git_hash}),"
+            f"furiosa-compiler {compiler_version.version} (rev. {compiler_version.git_hash}), "
             f"furiosa-tools {__version__.version} (rev. {__version__.hash[0:9]})",
             file=sys.stderr,
         )
@@ -189,7 +188,7 @@ class CommandCompile:
 
         return compile(
             self.args.source,
-            output=self.args.output,
+            output_path=self.args.output,
             target_ir=self.args.target_ir,
             dot_graph=self.args.dot_graph,
             analyze_memory=self.args.analyze_memory,
