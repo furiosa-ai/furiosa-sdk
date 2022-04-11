@@ -7,18 +7,6 @@ default: install
 install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
-uninstall:
-	pip uninstall -y furiosa-runtime; \
-	pip uninstall -y furiosa-quantizer; \
-	pip uninstall -y furiosa-litmus; \
-	pip uninstall -y furiosa-tools; \
-	pip uninstall -y furiosa-serving; \
-	pip uninstall -y furiosa-server; \
-	pip uninstall -y furiosa-registry; \
-	pip uninstall -y furiosa-sdk; \
-	pip uninstall -y furiosa-cli; \
-	pip uninstall -y furiosa-common
-
 install_full:
 	pip install --use-feature=in-tree-build .[full]
 
@@ -39,9 +27,3 @@ test:
 
 clean:
 	rm -rf build dist *.egg-info doc_srcs
-
-update_version:
-ifndef SDK_VERSION
-	$(error "SDK_VERSION is not set")
-endif
-	find ../ -name setup.py -exec sed -i "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" '{}' \;
