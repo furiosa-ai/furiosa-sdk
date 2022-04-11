@@ -38,7 +38,7 @@ class DFGImportable:
             if node.op_type != 'QuantizeLinear':
                 new_nodes.append(node)
                 continue
-            if node.input[0] not in self.initializer.keys():
+            if node.input[0] not in self.initializer:
                 new_nodes.append(node)
                 continue
 
@@ -205,7 +205,7 @@ class ONNXRuntimeExecutable(DFGImportable):
                 new_nodes.append(node)
                 continue
 
-            if node.input[0] not in self.initializer.keys():
+            if node.input[0] not in self.initializer:
                 new_nodes.append(node)
                 continue
 
@@ -228,7 +228,7 @@ class ONNXRuntimeExecutable(DFGImportable):
                     continue
 
                 init_name = node_input.split('_dequantized')[0]
-                if init_name not in self.initializer.keys():
+                if init_name not in self.initializer:
                     continue
 
                 node.input[idx] = init_name + '_fake_quantized'
