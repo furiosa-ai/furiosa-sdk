@@ -17,6 +17,7 @@ from furiosa.quantizer.frontend.onnx import (
 )
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
+from tests.frontend.onnx.transformer import TestTransformer
 
 
 class ONNXTest(unittest.TestCase):
@@ -63,10 +64,11 @@ class ONNXTest(unittest.TestCase):
 
     def test_zero_bias_scale(self):  # pylint: disable=no-self-use
         model = _make_zero_bias_scale_model()
-        model = post_training_quantization_with_random_calibration(
-            model, per_channel=True, static=True, mode=QuantizationMode.DFG
+        quantized_model = post_training_quantization_with_random_calibration(
+            _make_zero_bias_scale_model(), per_channel=True, static=True, mode=QuantizationMode.FAKE
         )
-        self._ensure_no_initializer_in_graph_input(model)
+        self._ensure_no_initializer_in_graph_input(quantized_model)
+        TestTransformer().check_output_value(model, quantized_model, [input_shape])
 
     def test__verify_not_quantized(self) -> None:
         model = _make_partially_sandwiched_model()
