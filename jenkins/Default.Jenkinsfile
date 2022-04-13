@@ -363,7 +363,7 @@ pipeline {
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
     FIRMWARE_VERSION = "0.5.2-2"
-    NUX_VERSION = "0.7.0-2+nightly-220330"
+    NUX_VERSION = "0.7.0-2+nightly-220413"
   }
 
   stages {
@@ -372,7 +372,8 @@ pipeline {
         container('default') {
           sh "env"
 
-          sh "apt-get update && apt-get install -qq -y git ca-certificates apt-transport-https gnupg wget python3-opencv"
+          sh "apt-get update && apt-get install -qq -y git ca-certificates apt-transport-https gnupg wget python3-opencv gcc-aarch64-linux-gnu"
+          sh "git config --global --add safe.directory ${WORKSPACE}"
           installConda()
 
           sh "apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E"
@@ -442,10 +443,10 @@ pipeline {
           script {
             nightlyVersion = getNightlyVersion()
             sh """
-            cd python/furiosa-sdk;
+            cd python;
             git config user.name "FuriosaAI Package Manager" && \
             git config user.email "pkg@furiosa.ai" && \
-            SDK_VERSION=${nightlyVersion} make update_version && \
+            SDK_VERSION=${nightlyVersion} make set-version && \
             git commit -a -m "Set the nightly version to ${nightlyVersion}"
             """
 
