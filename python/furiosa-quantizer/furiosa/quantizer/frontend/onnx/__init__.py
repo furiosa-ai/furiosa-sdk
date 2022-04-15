@@ -1,6 +1,6 @@
 from collections import defaultdict
 import itertools
-from typing import IO, Callable, Dict, List, Optional, Text, Tuple
+from typing import IO, Callable, Dict, Iterable, List, Optional, Text, Tuple
 
 import numpy as np
 import onnx
@@ -95,7 +95,7 @@ def quantize(
 
 def post_training_quantize(
     model: onnx.ModelProto,
-    dataset: List[Dict[str, np.ndarray]],
+    dataset: Iterable[Dict[str, np.ndarray]],
     per_channel: bool = True,
     check_idempotency: bool = False,
 ) -> onnx.ModelProto:
