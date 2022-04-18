@@ -31,6 +31,7 @@ class TestInferSqueezeAxes(TestTransformer):
         orig_model, trans_model = _make_test_model(model_desc, {"x": input_shape})
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_attribute([0, 2, 3], trans_model.graph.node[0].attribute[0].ints)
+        self.check_value_info(trans_model)
 
     def test_case2(self):
         input_shape = [1, 4, 1, 1]
@@ -53,6 +54,7 @@ class TestInferSqueezeAxes(TestTransformer):
         self.check_attribute([0, 2, 3], trans_model.graph.node[0].attribute[0].ints)
         self.check_attribute([0, 2, 3], trans_model.graph.node[2].attribute[0].ints)
         self.check_attribute([0, 2, 3], trans_model.graph.node[4].attribute[0].ints)
+        self.check_value_info(trans_model)
 
 
 def _make_test_model(

@@ -6,7 +6,7 @@ import numpy as np
 import onnx
 import onnxruntime as ort
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer, utils
 from furiosa.quantizer.interfaces.transformer import Transformer
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 
@@ -55,20 +55,9 @@ class TestTransformer(unittest.TestCase):
         for act, exp in zip(actual, expected):
             self.assertListAlmostEqual(act, exp, msg=f"{data}")
 
-    def check_value_info(self, model):
-        initializer = set(init.name for init in model.graph.initializer)
-        has_value_info = set(
-            value_info.name
-            for value_info in itertools.chain(
-                model.graph.input, model.graph.output, model.graph.value_info
-            )
-        )
-
-        for node in model.graph.node:
-            for tensor_name in itertools.chain(node.input, node.output):
-                if tensor_name in initializer:
-                    continue
-                self.assertTrue(tensor_name in has_value_info or not tensor_name)
+    @staticmethod
+    def check_value_info(model):
+        utils.check_value_info(model)
 
     def check_initializer(self, actual, expected):
         self.assertListAlmostEqual(actual.flatten().tolist(), expected.flatten().tolist())

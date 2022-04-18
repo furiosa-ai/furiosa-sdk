@@ -110,24 +110,8 @@ class FuriosaONNXQuantizer:
             )
         }
 
-        # (Case1) check if model is optimized: all value_infos are given.
-        for node in self.model.graph.node:
-            for name in list(node.input) + list(node.output):
-                if name in self.initializer:
-                    continue
-
-<<<<<<< HEAD
-                if name not in self.value_info_all:
-=======
-                if name not in self.value_info:
->>>>>>> 7517a66... check if shape.dim exists in value_info
-                    raise Exception(
-                        f'value_info for {name} is missing. Optimize model before quantization.'
-                    )
-                if not self.value_info[name].type.tensor_type.shape.dim:
-                    raise Exception(
-                        f'shape of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
-                    )
+        # (Case1) check if model is optimized: all value_infos are given with valid dimension/type info.
+        utils.check_value_info(self.model)
 
         # (Case2) raise Exception if dynamic_range is missing
         for key, vi in self.value_info_all.items():
@@ -142,11 +126,7 @@ class FuriosaONNXQuantizer:
 
         # (Case3) raise Exception if dynamic_range is not defined in model.graph.value_info
         for key in dynamic_ranges:
-<<<<<<< HEAD
             if key not in self.value_info_all:
-=======
-            if key not in self.value_info:
->>>>>>> 7517a66... check if shape.dim exists in value_info
                 raise Exception(f'dynamic range: {key} is not defined in model.graph.value_info')
 
         # stack intermediate result of quantization

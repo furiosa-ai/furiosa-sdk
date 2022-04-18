@@ -260,7 +260,6 @@ class TestEliminateClipper(TestTransformer):
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
-        self.check_value_info(trans_model)
 
     def test_case6(self):
         in_channel = out_channel = 32
@@ -307,7 +306,6 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
         self.check_value_info(trans_model)
 
     def test_case7(self):
