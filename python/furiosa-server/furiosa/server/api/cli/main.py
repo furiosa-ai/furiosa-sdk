@@ -7,13 +7,13 @@ import logging
 from typing import Any, Dict
 
 from pydantic import ValidationError
-from pydantic.error_wrappers import display_errors
 import typer
+
+from furiosa.common.thread import synchronous
 
 from ...server import ModelServer
 from ...settings import ModelConfig, RESTServerConfig, ServerConfig
 from ...utils.loader import load_model_config, load_server_config
-from ...utils.thread import synchronous
 
 
 class LogLevel(str, enum.Enum):

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import numpy as np
 
-from furiosa.server.utils.thread import synchronous
+from furiosa.common.thread import synchronous
 from furiosa.serving import ServeAPI, ServeModel
 from furiosa.serving.apps import health, model, repository
 from furiosa.serving.processors import ImageNet

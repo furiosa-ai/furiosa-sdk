@@ -18,7 +18,7 @@ from .types import (
     RequestInput,
     ResponseOutput,
 )
-from .utils.thread import asynchronous
+from furiosa.common.thread import asynchronous
 
 
 class Model(ABC):
