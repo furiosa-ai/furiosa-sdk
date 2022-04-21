@@ -21,7 +21,7 @@ async def load(
     Args:
         uri (str): Registry URI which have a descriptor file (artifact.toml).
         name (str): Model name in a descriptor file.
-        version (Optional[str]): Model version in a descriptor file.
+        version (Optional[str]): Model version in a descriptor file. If not specified, load first.
         args, kwargs (Any): Arguments for Model instantiation.
 
     Returns:
@@ -31,7 +31,7 @@ async def load(
     artifacts = [
         artifact
         for artifact in await list(uri)
-        if artifact.name == name and artifact.version == version
+        if artifact.name == name and (not version or version == artifact.version)
     ]
 
     if not artifacts:

@@ -1,3 +1,5 @@
+from typing import Any
+
 from ...artifact import Artifact
 from ...model import Model
 from .base import Resolver
@@ -6,7 +8,7 @@ from .base import Resolver
 class SerialResolver(Resolver):
     """Model resolver from a artifact with a serialized(protobuf, flatbuffer) data."""
 
-    async def resolve(self, uri: str, artifact: Artifact, *args, **kwargs) -> Model:
+    async def resolve(self, uri: str, artifact: Artifact, *args: Any, **kwargs: Any) -> Model:
         model = Model(
             name=artifact.name,
             description=artifact.metadata and artifact.metadata.description,

@@ -31,11 +31,12 @@ class Model(BaseModel):
     __config__ = Config
 
     name: str
+    family: Optional[str]
     # FIXME(yan): This 'model' field should be trucated as it has very long contents.
     # For next pydantic release, we will bypass via "model: bytes = Field(repr=False)"
     #
     # See https://github.com/samuelcolvin/pydantic/discussions/2756
-    #     https://github.com/samuelcolvin/pydantic/pull/2593
+    #     https://githu.com/samuelcolvin/pydantic/pull/2593
     model: bytes = Field(repr=False)
     version: Optional[str] = None
     description: Optional[str] = None
