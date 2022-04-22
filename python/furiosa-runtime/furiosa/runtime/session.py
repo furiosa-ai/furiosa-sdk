@@ -78,7 +78,9 @@ def _create_session_options(
         LIBNUX.nux_session_option_set_worker_num(options, worker_num)
     if compile_config:
         compile_config = yaml.dump(compile_config).encode()
-        LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
+        err = LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
+        if is_err(err):
+            raise into_exception(err)
     if compiler_log:
         compiler_log = str(compiler_log).encode()
         LIBNUX.nux_session_option_set_compiler_log_path(options, compiler_log)
