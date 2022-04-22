@@ -201,7 +201,7 @@ class Session(Model):
 
     def close(self):
         """Close the session and release all resources belonging to the session"""
-        if self.ref:
+        if hasattr(self, "ref") and self.ref:
             LIBNUX.nux_session_destroy(self.ref)
             self.ref = None
 
