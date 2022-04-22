@@ -1,6 +1,6 @@
 from collections import defaultdict
 import itertools
-from typing import IO, Callable, Dict, Iterable, List, Optional, Text, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import onnx
@@ -30,7 +30,6 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern 
     FuseRedundantReshapePattern,
 )
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
-from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa.quantizer.frontend.onnx.utils.version_checker import CheckVersion
 
 _CONV = "Conv"
@@ -39,35 +38,6 @@ _MAT_MUL = "MatMul"
 _QUANTIZE_LINEAR = "QuantizeLinear"
 _Q_LINEAR_CONV = "QLinearConv"
 _Q_LINEAR_MAT_MUL = "QLinearMatMul"
-
-
-def _transform(
-    transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]], model: onnx.ModelProto
-) -> onnx.ModelProto:
-    for transform in transformers:
-        model = transform(model)
-    return model
-
-
-def _inference_shape(model: onnx.ModelProto) -> onnx.ModelProto:
-    return InferenceShape(model).inference_shape()
-
-
-def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
-    transformers = [
-        ConvertConv1dToConv2d().transform,
-        FuseConv().transform,
-        FusePad().transform,
-        FuseBatchNorm().transform,
-        FuseDepthToSpace().transform,
-        FuseGELU().transform,
-        FuseLayerNormalization().transform,
-        FuseLpNormalization().transform,
-        FuseRedundantReshapePattern().transform,
-        FuseGatherMatMul().transform,
-        EliminateRedundantShapePattern().transform,
-    ]
-    return _transform(transformers, model)
 
 
 def optimize_model(
@@ -178,6 +148,31 @@ def parse_onnx_graph(
             consumers[tensor].append(node)
 
     return value_infos, producer, consumers
+
+
+def _transform(
+    transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]], model: onnx.ModelProto
+) -> onnx.ModelProto:
+    for transform in transformers:
+        model = transform(model)
+    return model
+
+
+def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
+    transformers = [
+        ConvertConv1dToConv2d().transform,
+        FuseConv().transform,
+        FusePad().transform,
+        FuseBatchNorm().transform,
+        FuseDepthToSpace().transform,
+        FuseGELU().transform,
+        FuseLayerNormalization().transform,
+        FuseLpNormalization().transform,
+        FuseRedundantReshapePattern().transform,
+        FuseGatherMatMul().transform,
+        EliminateRedundantShapePattern().transform,
+    ]
+    return _transform(transformers, model)
 
 
 def _is_fully_quantized(model: onnx.ModelProto) -> bool:
