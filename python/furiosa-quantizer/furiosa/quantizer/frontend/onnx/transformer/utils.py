@@ -212,35 +212,39 @@ def check_value_info(model: onnx.ModelProto) -> None:
         vi.name: vi
         for vi in list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)
     }
-    for node in model.graph.node:
-        for name in list(node.input) + list(node.output):
-            if name in initializer:
-                continue
+    tensor_names = set(
+        tensor_name for node in model.graph.node for tensor_name in (*node.input, *node.output)
+    )
+    for name in tensor_names:
+        if name in initializer or not name:  # empty name indicates no optional input
+            continue
 
-            if name not in value_info:
-                raise Exception(
-                    f'value_info for {name} is missing. Optimize model before quantization.'
+        if name not in value_info:
+            raise ValueError(
+                f'value_info of {name} is missing. Optimize model before quantization.'
+            )
+        try:
+            if not value_info[name].type.tensor_type.HasField('elem_type'):
+                raise ValueError(
+                    f'elem_type of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
                 )
-            try:
-                if not value_info[name].type.tensor_type.shape.dim:
-                    raise ValueError(
-                        f'shape of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
-                    )
-                if not value_info[name].type.tensor_type.elem_type:
-                    raise ValueError(
-                        f'elem_type of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
-                    )
-                if value_info[name].type.tensor_type.elem_type != onnx.TensorProto.FLOAT:
-                    logger.warning(
-                        'elem_type of %s(%s) is not FLOAT: Model might be already quantized.',
-                        name,
-                        onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[
-                            value_info[name].type_tensor_type.elem_type
-                        ],
-                    )
-            except ValueError as e:
-                raise e
-            except AttributeError as e:
-                raise AttributeError(
-                    f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'
-                ) from None
+            if value_info[name].type.tensor_type.elem_type != onnx.TensorProto.FLOAT:
+                logger.warning(
+                    'elem_type of %s(%s) is not FLOAT: Model might be already quantized.',
+                    name,
+                    onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[
+                        value_info[name].type.tensor_type.elem_type
+                    ],
+                )
+            if not value_info[name].type.tensor_type.HasField(
+                'shape'
+            ):  # when shape inference failed, shape field does not exist, unlike empty shape.dim array for scalar.
+                raise ValueError(
+                    f'shape of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
+                )
+        except ValueError as e:
+            raise e
+        except AttributeError as e:
+            raise AttributeError(
+                f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'
+            ) from None

@@ -97,7 +97,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 3)
 
     def test_case2(self):
         in_channel = 6
@@ -138,7 +140,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 3)
 
     def test_case3(self):
         input_shape = [1, 3, 8, 8]
@@ -175,7 +179,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 3)
 
     def test_case4(self):
         input_shape = [1, 3, 8, 8]
@@ -214,7 +220,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 3)
 
     def test_case5(self):
         in_channel = out_channel = 32
@@ -259,7 +267,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 5)
 
     def test_case6(self):
         in_channel = out_channel = 32
@@ -306,7 +316,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-1]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 5)
 
     def test_case7(self):
         in_channel = 3
@@ -360,7 +372,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-3]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 3)
 
     def test_case8(self):
         in_channel = 8
@@ -421,7 +435,9 @@ class TestEliminateClipper(TestTransformer):
         dqlinear1 = graph.node[-3]
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
-        self.check_value_info(trans_model)
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(trans_model)
+            self.assertEqual(len(cm.output), 7)
 
 
 def _get_intermedidate_representation(
