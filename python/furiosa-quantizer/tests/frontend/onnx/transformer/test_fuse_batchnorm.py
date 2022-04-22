@@ -9,20 +9,6 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import (
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-def _bn_param_generator(num_features):
-    """
-    returns scale, B, input_mean and input_var
-    as defined in https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-12
-    """
-    rng = np.random.default_rng()
-    return (
-        rng.standard_normal(num_features, dtype=np.float32),
-        rng.standard_normal(num_features, dtype=np.float32),
-        rng.standard_normal(num_features, dtype=np.float32),
-        rng.standard_normal(num_features, dtype=np.float32) ** 2,
-    )
-
-
 class TestFuseBatchNorm(TestTransformer):
     def test_case1(self):
         in_channel = 3
@@ -430,3 +416,17 @@ class TestFuseBatchNorm(TestTransformer):
         self.check_graph_node(trans_model, op_types=['ConvTranspose'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
+
+
+def _bn_param_generator(num_features):
+    """
+    returns scale, B, input_mean and input_var
+    as defined in https://github.com/onnx/onnx/blob/master/docs/Operators.md#inputs-12
+    """
+    rng = np.random.default_rng()
+    return (
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32),
+        rng.standard_normal(num_features, dtype=np.float32) ** 2,
+    )

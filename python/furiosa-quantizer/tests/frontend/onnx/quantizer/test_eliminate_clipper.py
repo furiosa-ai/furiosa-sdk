@@ -19,56 +19,6 @@ from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from tests.frontend.onnx.transformer import TestTransformer, make_onnx_model
 
 
-def _get_intermedidate_representation(
-    model: onnx.ModelProto,
-    dynamic_ranges: Dict[str, Tuple[float, float]],
-) -> onnx.ModelProto:
-    onnx_quantizer = quantizer.FuriosaONNXQuantizer(
-        model=model,
-        per_channel=True,
-        static=True,
-        mode=QuantizationMode.DFG,
-        dynamic_ranges=dynamic_ranges,
-    )
-    onnx_quantizer.quantize_model()
-    return onnx_quantizer.make_intermediate_representation()
-
-
-def _make_test_model(
-    model: onnx.ModelProto,
-    pattern: ONNXTransformer,
-    dynamic_ranges: Optional[Dict[str, Tuple[float, float]]] = None,
-) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
-    if dynamic_ranges is None:
-        dynamic_ranges = calibrate.calibrate_with_random_data(model, dataset_size=1)
-    orig_model = _get_intermedidate_representation(model, dynamic_ranges)
-
-    copy_model = onnx.ModelProto()
-    copy_model.CopyFrom(orig_model)
-
-    transformer = pattern(copy_model)
-    trans_model = transformer.transform()
-
-    return orig_model, trans_model
-
-
-def _get_quant_param(graph: onnx.GraphProto, tensor_name: str) -> np.ndarray:
-    return onnx.numpy_helper.to_array(
-        next(tensor for tensor in graph.initializer if tensor.name == tensor_name)
-    )
-
-
-def _run_onnx_model(
-    model: onnx.ModelProto, input_arrays: List[np.ndarray]
-) -> Dict[str, np.ndarray]:
-    sess = ort.InferenceSession(model.SerializeToString())
-    input_names = [inp.name for inp in sess.get_inputs()]
-    output_names = [out.name for out in sess.get_outputs()]
-    feed_dict = dict(zip(input_names, input_arrays))
-    outputs = sess.run(output_names, input_feed=feed_dict)
-    return dict(zip(output_names, outputs))
-
-
 class TestEliminateClipper(TestTransformer):
     def check_output_value_using_FAKE_mode(
         self,
@@ -474,3 +424,53 @@ class TestEliminateClipper(TestTransformer):
         self.check_quant_params(qlinear1, dqlinear1, graph)
         self.check_output_value_using_FAKE_mode(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
+
+
+def _get_intermedidate_representation(
+    model: onnx.ModelProto,
+    dynamic_ranges: Dict[str, Tuple[float, float]],
+) -> onnx.ModelProto:
+    onnx_quantizer = quantizer.FuriosaONNXQuantizer(
+        model=model,
+        per_channel=True,
+        static=True,
+        mode=QuantizationMode.DFG,
+        dynamic_ranges=dynamic_ranges,
+    )
+    onnx_quantizer.quantize_model()
+    return onnx_quantizer.make_intermediate_representation()
+
+
+def _make_test_model(
+    model: onnx.ModelProto,
+    pattern: ONNXTransformer,
+    dynamic_ranges: Optional[Dict[str, Tuple[float, float]]] = None,
+) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
+    if dynamic_ranges is None:
+        dynamic_ranges = calibrate.calibrate_with_random_data(model, dataset_size=1)
+    orig_model = _get_intermedidate_representation(model, dynamic_ranges)
+
+    copy_model = onnx.ModelProto()
+    copy_model.CopyFrom(orig_model)
+
+    transformer = pattern(copy_model)
+    trans_model = transformer.transform()
+
+    return orig_model, trans_model
+
+
+def _get_quant_param(graph: onnx.GraphProto, tensor_name: str) -> np.ndarray:
+    return onnx.numpy_helper.to_array(
+        next(tensor for tensor in graph.initializer if tensor.name == tensor_name)
+    )
+
+
+def _run_onnx_model(
+    model: onnx.ModelProto, input_arrays: List[np.ndarray]
+) -> Dict[str, np.ndarray]:
+    sess = ort.InferenceSession(model.SerializeToString())
+    input_names = [inp.name for inp in sess.get_inputs()]
+    output_names = [out.name for out in sess.get_outputs()]
+    feed_dict = dict(zip(input_names, input_arrays))
+    outputs = sess.run(output_names, input_feed=feed_dict)
+    return dict(zip(output_names, outputs))

@@ -4,42 +4,6 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import Patt
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-def _get_args(input_shape, blocksize, mode):
-    """
-    DepthToSpace DRC mode
-        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
-        b, c, h, w = x.shape
-        tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
-        tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
-        y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize]
-
-    DepthToSpace CRD mode
-        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
-        b, c, h, w = x.shape
-        tmp = np.reshape(x, [b, c // (blocksize ** 2), blocksize, blocksize, h, w])
-        tmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])
-        y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
-    """
-
-    b, c, h, w = input_shape
-
-    channel_split = c // (blocksize**2)
-    assert channel_split * blocksize**2 == c
-
-    assert mode in ['DCR', 'CRD'], f"Unknown mode: {mode}. 'mode' must be either 'DCR' or 'CRD'."
-
-    if mode == 'DCR':
-        permute = [0, 3, 4, 1, 5, 2]
-        pre_reshape = [b, blocksize, blocksize, channel_split, h, w]
-    elif mode == 'CRD':
-        permute = [0, 1, 4, 2, 5, 3]
-        pre_reshape = [b, channel_split, blocksize, blocksize, h, w]
-
-    post_reshape = [b, channel_split, h * blocksize, w * blocksize]
-
-    return pre_reshape, permute, post_reshape
-
-
 class TestFuseDepthToSpace(TestTransformer):
     def test_case1(self):
         """
@@ -130,3 +94,39 @@ class TestFuseDepthToSpace(TestTransformer):
         orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
+
+
+def _get_args(input_shape, blocksize, mode):
+    """
+    DepthToSpace DRC mode
+        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
+        b, c, h, w = x.shape
+        tmp = np.reshape(x, [b, blocksize, blocksize, c // (blocksize**2), h, w])
+        tmp = np.transpose(tmp, [0, 3, 4, 1, 5, 2])
+        y = np.reshape(tmp, [b, c // (blocksize**2), h * blocksize, w * blocksize]
+
+    DepthToSpace CRD mode
+        https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace
+        b, c, h, w = x.shape
+        tmp = np.reshape(x, [b, c // (blocksize ** 2), blocksize, blocksize, h, w])
+        tmp = np.transpose(tmp, [0, 1, 4, 2, 5, 3])
+        y = np.reshape(tmp, [b, c // (blocksize ** 2), h * blocksize, w * blocksize])
+    """
+
+    b, c, h, w = input_shape
+
+    channel_split = c // (blocksize**2)
+    assert channel_split * blocksize**2 == c
+
+    assert mode in ['DCR', 'CRD'], f"Unknown mode: {mode}. 'mode' must be either 'DCR' or 'CRD'."
+
+    if mode == 'DCR':
+        permute = [0, 3, 4, 1, 5, 2]
+        pre_reshape = [b, blocksize, blocksize, channel_split, h, w]
+    elif mode == 'CRD':
+        permute = [0, 1, 4, 2, 5, 3]
+        pre_reshape = [b, channel_split, blocksize, blocksize, h, w]
+
+    post_reshape = [b, channel_split, h * blocksize, w * blocksize]
+
+    return pre_reshape, permute, post_reshape

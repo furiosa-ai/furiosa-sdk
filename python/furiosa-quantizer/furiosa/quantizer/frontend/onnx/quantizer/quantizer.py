@@ -305,7 +305,9 @@ class FuriosaONNXQuantizer:
                 self._quantize_conv_weight(node, output_channel_axis=0)
             elif node.op_type == 'ConvTranspose':
                 self._quantize_conv_weight(node, output_channel_axis=1)
-            elif any(node.op_type == op for op in ['MatMul', 'Add', 'Mul', 'Div']):
+            elif any(
+                node.op_type == op for op in ['MatMul', 'Add', 'Mul', 'Div', 'Sub', 'Concat', 'Pow']
+            ):
                 self._quantize_matmul_weight(node)
             elif node.op_type == 'Clip':
                 self._quantize_clip_minmax(node)
