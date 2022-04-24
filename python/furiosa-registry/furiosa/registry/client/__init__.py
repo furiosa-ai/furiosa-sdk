@@ -1,83 +1,86 @@
 """FuriosaAI registry client."""
 
-from typing import Any, Callable, Dict, List, Optional
+import asyncio
+import inspect
+from typing import Any, List, Optional
 
-import toml
-import yaml
-
-from ..artifact import Artifact
 from ..model import Model
-from .resolver import resolve
-from .transport import read
+from ..utils import import_module, python_path, working_directory
+from .transport import download
 
 __all__ = ["list", "load", "help"]
 
 
-async def load(
-    uri: str, name: str, version: Optional[str] = None, *args: Any, **kwargs: Any
-) -> Optional[Model]:
+descriptor = "artifacts.py"
+
+
+async def load(uri: str, name: str, *args: Any, **kwargs: Any) -> Optional[Model]:
     """Load models from the specified registry URI.
 
     Args:
-        uri (str): Registry URI which have a descriptor file (artifact.toml).
+        uri (str): Registry URI which have a descriptor file (artifacts.py).
         name (str): Model name in a descriptor file.
-        version (Optional[str]): Model version in a descriptor file. If not specified, load first.
         args, kwargs (Any): Arguments for Model instantiation.
 
     Returns:
         Model: A model loaded from the registry.
+
+    Raises:
+        ModuleNotFoundError: If descriptor file not found in the registry.
     """
 
-    artifacts = [
-        artifact
-        for artifact in await list(uri)
-        if artifact.name == name and (not version or version == artifact.version)
-    ]
+    directory = await download(uri)
 
-    if not artifacts:
+    module = import_module(directory, descriptor)
+
+    if name not in dir(module):
         return None
 
-    assert len(artifacts) == 1, "Model name should be unique in a artifact descriptor"
+    entry = getattr(module, name)
 
-    return await resolve(uri, artifacts[0], *args, **kwargs)
+    # Replace working directory to use file system dependent function like 'open' in a registry.
+    with python_path(directory), working_directory(directory):
+        if asyncio.iscoroutinefunction(entry):
+            return await entry(*args, **kwargs)
+
+        return entry(*args, **kwargs)
 
 
-async def list(uri: str) -> List[Artifact]:
+async def list(uri: str) -> List[str]:
     """List Artifacts from the specified registry URI.
 
     Args:
-        uri (str): Registry URI which have a descriptor file (artifact.toml).
+        uri (str): Registry URI which have a descriptor file (artifacts.py).
 
     Returns:
-        List[Artifact]: Artifacts from the registry.
+        List[str]: Available model names in the registry
+
+    Raises:
+        ModuleNotFoundError: If descriptor file not found in the registry.
     """
 
-    def serialize(format: str, data: str) -> List[Artifact]:
-        """Serialize artifact from data specified."""
-        loaders: Dict[str, Callable] = {
-            "yaml": yaml.safe_load,
-            "toml": toml.loads,
-        }
+    def ismodel(value):
+        return inspect.isfunction(value) and issubclass(
+            inspect.signature(value).return_annotation, Model
+        )
 
-        serialized: Dict = loaders[format](data)
-        return [Artifact.parse_obj(artifact) for artifact in serialized["artifacts"]]
-
-    # TODO(ileixe): Implement fallback for different descriptors like artifact.toml.
-    descriptor = "artifacts.yaml"
-
-    data = (await read(uri, descriptor)).decode()
-    return serialize(descriptor.split(".")[1], data)
+    module = import_module(await download(uri), descriptor)
+    return [name for name in dir(module) if ismodel(getattr(module, name))]
 
 
-async def help(uri: str, name: str, version: str = "") -> str:
+async def help(uri: str, name: str, version: Optional[str] = None) -> str:
     """Show the documentation for the model
 
     Args:
-        uri (str): Registry URI which have a descriptor file (artifact.toml).
+        uri (str): Registry URI which have a descriptor file (artifacts.py).
         name (str): Model name in a descriptor file.
         version (Optional[str]): Model version to be created.
 
     Returns:
         str: Documentation string for the model.
+
+    Raises:
+        ModuleNotFoundError: If descriptor file not found in the registry.
     """
+
     return (await load(uri, name, version)).__doc__

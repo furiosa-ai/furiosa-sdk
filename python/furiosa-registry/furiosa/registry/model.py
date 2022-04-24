@@ -1,12 +1,41 @@
+import datetime
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseConfig, BaseModel, Extra, Field
 
 
 class Config(BaseConfig):
-    # Non pydantic attribute allowed
-    # https://pydantic-docs.helpmanual.io/usage/types/#arbitrary-types-allowed
-    arbitrary_types_allowed = True
+    # Extra fields not permitted
+    extra: Extra = Extra.forbid
+
+
+class Format(str, Enum):
+    """Model binary format to represent the binary specified."""
+
+    ONNX = "onnx"
+    TFLite = "tflite"
+
+
+class Publication(BaseModel):
+    """Model publication information."""
+
+    __config__ = Config
+
+    authors: Optional[List[str]] = None
+    title: Optional[str] = None
+    publisher: Optional[str] = None
+    date: Optional[datetime.date] = None
+    url: Optional[str] = None
+
+
+class Metadata(BaseModel):
+    """Model metadata to understand a model."""
+
+    __config__ = Config
+
+    description: Optional[str] = None
+    publication: Optional[Publication] = None
 
 
 class Tags(BaseModel):
@@ -16,7 +45,7 @@ class Tags(BaseModel):
     content_type: Optional[str] = None
 
 
-class MetadataTensor(BaseModel):
+class ModelTensor(BaseModel):
     name: str
     datatype: str
     shape: List[int]
@@ -24,22 +53,21 @@ class MetadataTensor(BaseModel):
 
 
 class Model(BaseModel):
-    """
-    Model for a FuriosaAI system
-    """
+    """Model for a Furiosa SDK."""
 
-    __config__ = Config
+    # class Config(BaseConfig):
+    #     # Non pydantic attribute allowed
+    #     # https://pydantic-docs.helpmanual.io/usage/types/#arbitrary-types-allowed
+    #     arbitrary_types_allowed = True
 
     name: str
-    family: Optional[str]
-    # FIXME(yan): This 'model' field should be trucated as it has very long contents.
-    # For next pydantic release, we will bypass via "model: bytes = Field(repr=False)"
-    #
-    # See https://github.com/samuelcolvin/pydantic/discussions/2756
-    #     https://githu.com/samuelcolvin/pydantic/pull/2593
     model: bytes = Field(repr=False)
-    version: Optional[str] = None
-    description: Optional[str] = None
+    format: Format
 
-    inputs: Optional[List[MetadataTensor]] = []
-    outputs: Optional[List[MetadataTensor]] = []
+    family: Optional[str] = None
+    version: Optional[str] = None
+
+    metadata: Optional[Metadata] = None
+
+    inputs: Optional[List[ModelTensor]] = []
+    outputs: Optional[List[ModelTensor]] = []

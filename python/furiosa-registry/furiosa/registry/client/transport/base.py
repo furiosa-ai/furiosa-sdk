@@ -12,7 +12,7 @@ class Transport(ABC):
         """Decicde wether this transport supports the specified URI.
 
         Args:
-            uri (str): Registry URI to locate the artifacts.
+            uri (str): Registry URI to locate the models.
 
         Returns:
             bool: This transport supports the URI or not.
@@ -26,7 +26,7 @@ class Transport(ABC):
         This is a high level function to use `read(location)` internally.
 
         Args:
-            uri (str): Registry URI to locate the artifacts.
+            uri (str): Registry URI to locate the models.
             path (str): Relative file path in the repositry to read.
 
         Returns:
