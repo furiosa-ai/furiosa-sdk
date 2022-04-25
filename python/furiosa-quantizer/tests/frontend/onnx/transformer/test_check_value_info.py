@@ -7,6 +7,7 @@ from furiosa.quantizer.frontend.onnx import post_training_quantization_with_rand
 from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
 from furiosa.quantizer.frontend.onnx.transformer import utils
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
+from tests.frontend.onnx.transformer import TestTransformer
 
 
 class TestCheckValueInfo(unittest.TestCase):
@@ -28,7 +29,7 @@ class TestCheckValueInfo(unittest.TestCase):
         model = make_onnx_model(model_desc)
         self.assertRaisesRegex(ValueError, r"shape of(\w)*", utils.check_value_info, model)
 
-    def test_warning_for_quantized_model(self):
+    def test_warning_for_quantized_model(self):  # pylint: disable=no-self-use
         input_channel = 1
         output_channel = 2
         model_desc = {
@@ -41,9 +42,7 @@ class TestCheckValueInfo(unittest.TestCase):
         quant_model = post_training_quantization_with_random_calibration(
             model, per_channel=True, static=True, mode=QuantizationMode.DFG
         )
-        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
-            utils.check_value_info(quant_model)
-            self.assertEqual(len(cm.output), 2)
+        TestTransformer().check_value_info_with_warning(quant_model, num_warning=2)
 
     def test_no_shape_inference(self):
         model_desc = {

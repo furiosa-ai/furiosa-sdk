@@ -1,3 +1,4 @@
+import itertools
 import logging
 from typing import Any, Callable, Iterable, List, Optional, TypeVar
 
@@ -210,13 +211,15 @@ def check_value_info(model: onnx.ModelProto) -> None:
     initializer = {init.name: init for init in model.graph.initializer}
     value_info = {
         vi.name: vi
-        for vi in list(model.graph.value_info) + list(model.graph.input) + list(model.graph.output)
+        for vi in itertools.chain(model.graph.value_info, model.graph.input, model.graph.output)
     }
     tensor_names = set(
         tensor_name for node in model.graph.node for tensor_name in (*node.input, *node.output)
     )
     for name in tensor_names:
-        if name in initializer or not name:  # empty name indicates no optional input
+        if (
+            name in initializer or not name
+        ):  # empty name indicates that optional input is unspecified
             continue
 
         if name not in value_info:
@@ -242,8 +245,6 @@ def check_value_info(model: onnx.ModelProto) -> None:
                 raise ValueError(
                     f'shape of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
                 )
-        except ValueError as e:
-            raise e
         except AttributeError as e:
             raise AttributeError(
                 f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'

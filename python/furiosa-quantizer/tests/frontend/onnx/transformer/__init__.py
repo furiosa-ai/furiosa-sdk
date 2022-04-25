@@ -59,6 +59,12 @@ class TestTransformer(unittest.TestCase):
     def check_value_info(model):
         utils.check_value_info(model)
 
+    def check_value_info_with_warning(self, model, num_warning):
+        # check value info and assert number of warning for value_info with elem_type != FLOAT
+        with self.assertLogs("Furiosa-Quantizer", level="WARNING") as cm:
+            self.check_value_info(model)
+            self.assertEqual(len(cm.output), num_warning)
+
     def check_initializer(self, actual, expected):
         self.assertListAlmostEqual(actual.flatten().tolist(), expected.flatten().tolist())
 
