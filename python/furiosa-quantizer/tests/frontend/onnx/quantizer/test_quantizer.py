@@ -164,10 +164,24 @@ class TestFuriosaONNXQuantizer(TestTransformer):
         }
 
         onnx_model = make_onnx_model(model_desc)
-        # make graph.output duplicated
         onnx_model.graph.output.append(onnx_model.graph.output[0])
-        # AssertionError raises when graph outputs are duplicated
-        self.assertRaises(AssertionError, _make_intermediate_representation, onnx_model)
+        inter_repr = _make_intermediate_representation(onnx_model)
+        self.check_graph_node(
+            inter_repr,
+            op_types=[
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'Relu',
+                'QuantizeLinear',
+                'DequantizeLinear',
+            ],
+        )
+        self._check_dqlinear_consumer_is_unique(inter_repr, op_type='Relu')
+        self._check_tensor_name(
+            inter_repr,
+            next(node for node in inter_repr.graph.node if node.op_type == 'Relu').input[0],
+            "x_dequantized",
+        )
 
     def test_make_intermediate_representation_4(self):
         in_channel = 8

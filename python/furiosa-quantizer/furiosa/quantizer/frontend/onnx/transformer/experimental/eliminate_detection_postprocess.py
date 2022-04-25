@@ -24,7 +24,7 @@ class EliminateSSDDetectionPostprocess(Transformer):
 
         removed_nodes = _get_postprocess_nodes(model, self.ssd_outputs)
 
-        new_nodes = list(filter(lambda node: node not in removed_nodes, model.graph.node))
+        new_nodes = [node for node in model.graph.node if node not in removed_nodes]
         model = utils.rebuild_model(model, new_nodes)
         for output in self.ssd_outputs:
             model.graph.output.append(vi_by_names[output])

@@ -5,7 +5,10 @@ import onnx
 import onnxruntime as ort
 
 from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
-from furiosa.quantizer.frontend.onnx.transformer.utils import include_initializer_to_graph_input
+from furiosa.quantizer.frontend.onnx.transformer.utils import (
+    eliminate_initializer_from_graph_input,
+    include_initializer_to_graph_input,
+)
 
 
 def make_onnx_model_from_model_desc(
@@ -29,7 +32,7 @@ def make_onnx_model_from_model_desc(
     input_desc = model_desc["input"]
     output_desc = model_desc["output"]
     init_desc = model_desc.get("initializer", {})
-    node_desc = model_desc["node"]
+    node_desc = model_desc.get("node", [])
     opsetid_desc = model_desc.get("opsetid", [(__DOMAIN__, __OPSET_VERSION__)])
 
     inputs = _make_value_info_list(input_desc)
@@ -47,6 +50,7 @@ def make_onnx_model_from_model_desc(
         # to ensure onnx.shape_inference.infer_shapes get to work.
         # If not, it fails silently.
         model = onnx.shape_inference.infer_shapes(include_initializer_to_graph_input(model))
+        model = eliminate_initializer_from_graph_input(model)
 
     return model
 

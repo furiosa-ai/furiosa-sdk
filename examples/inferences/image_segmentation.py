@@ -68,7 +68,6 @@ def run_segmentation(image_path: str, model_path: str, is_fp32: bool) -> None:
 
     if is_fp32:
         # ONNX runtime inference with the given FP32 model
-        ort.set_default_logger_severity(3)
         sess = ort.InferenceSession(model_path)
         start_time = time.time()
         output_tensor = sess.run(['out'], input_feed={'input': np.expand_dims(input_array, axis=0)})[0]

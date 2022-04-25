@@ -34,29 +34,43 @@ class ONNXTest(unittest.TestCase):
 
         # load efficientdet_d0
         cls.effdet = onnx.load(Path(__file__).resolve().parent / "efficientdet_d0-f3276ba8.onnx")
+        cls.opt_effdet = optimize_model(cls.effdet)
+        cls.ranges = calibrate.calibrate(cls.opt_effdet, cls.dataset)
 
     def test_post_training_quantize_with_raw_data_True(self):
-        post_training_quantize(self.effdet, self.dataset, False)
+        quant_model = post_training_quantize(self.effdet, self.dataset, False)
+        self._ensure_no_initializer_in_graph_input(quant_model)
 
     def test_post_training_quantize_with_raw_data_False(self):
-        model = optimize_model(self.effdet)
-        ranges = calibrate.calibrate(model, self.dataset)
-        quantizer.FuriosaONNXQuantizer(
-            model=model,
+        quant_model = quantizer.FuriosaONNXQuantizer(
+            model=self.opt_effdet,
             per_channel=False,
             static=True,
             mode=quantizer.QuantizationMode.DFG,
-            dynamic_ranges=ranges,
+            dynamic_ranges=self.ranges,
             raw_data=False,
         ).quantize()
+        self._ensure_no_initializer_in_graph_input(quant_model)
+
+    def test_post_training_quantize_with_FAKE_mode(self):
+        quant_model = quantizer.FuriosaONNXQuantizer(
+            model=self.opt_effdet,
+            per_channel=True,
+            static=True,
+            mode=quantizer.QuantizationMode.FAKE,
+            dynamic_ranges=self.ranges,
+            raw_data=True,
+        ).quantize()
+        self._ensure_no_initializer_in_graph_input(quant_model)
+        self._ensure_no_unused_initializer(quant_model)
 
     def test__is_sandwiched(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         test_node = model.graph.node[2]
         self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched2(self):
-        model = _make_sandwiced_i64_model()
+        model = _make_sandwiched_i64_model()
         test_node = model.graph.node[0]
         self.assertTrue(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
@@ -66,17 +80,17 @@ class ONNXTest(unittest.TestCase):
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched4(self):
-        model = _make_partially_sandwiced_model()
+        model = _make_partially_sandwiched_model()
         test_node = model.graph.node[1]
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_sandwiched5(self):
-        model = _make_partially_sandwiced_bot_model()
+        model = _make_partially_sandwiched_bot_model()
         test_node = model.graph.node[0]
         self.assertFalse(_is_sandwiched(test_node, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         self.assertTrue(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_dfg_mode2(self):
@@ -88,13 +102,13 @@ class ONNXTest(unittest.TestCase):
         self.assertFalse(_is_fully_quantized_in_dfg_mode(model.graph, *parse_onnx_graph(model)))
 
     def test__is_fully_quantized_in_fake_quant_mode(self):
-        model = _make_sandwiced_model()
+        model = _make_sandwiched_model()
         self.assertTrue(
             _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
         )
 
     def test__is_fully_quantized_in_fake_quant_mode2(self):
-        model = _make_partially_sandwiced_bot_model()
+        model = _make_partially_sandwiched_bot_model()
         self.assertFalse(
             _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
         )
@@ -108,6 +122,23 @@ class ONNXTest(unittest.TestCase):
         model = post_training_quantization_with_random_calibration(
             model, per_channel=True, static=True, mode=QuantizationMode.DFG
         )
+        self._ensure_no_initializer_in_graph_input(model)
+
+    def _ensure_no_initializer_in_graph_input(self, model: onnx.ModelProto) -> None:
+        graph_inputs = set(value_info.name for value_info in model.graph.input)
+        self.assertTrue(all(tensor.name not in graph_inputs for tensor in model.graph.initializer))
+
+    def _ensure_no_unused_initializer(self, model: onnx.ModelProto) -> None:
+        node_input_names = set(
+            tensor_name for node in model.graph.node for tensor_name in node.input
+        )
+        self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
+
+    def _ensure_no_unused_initializer(self, model: onnx.ModelProto) -> None:
+        node_input_names = set(
+            tensor_name for node in model.graph.node for tensor_name in node.input
+        )
+        self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
 
 
 def _make_dfg_quantized_model():
@@ -141,7 +172,7 @@ def _make_dfg_quantized_model():
     )
 
 
-def _make_sandwiced_model():
+def _make_sandwiched_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -163,7 +194,7 @@ def _make_sandwiced_model():
     )
 
 
-def _make_partially_sandwiced_model():
+def _make_partially_sandwiched_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -205,7 +236,7 @@ def _make_partially_sandwiched_top_model():
     )
 
 
-def _make_partially_sandwiced_bot_model():
+def _make_partially_sandwiched_bot_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(
@@ -225,7 +256,7 @@ def _make_partially_sandwiced_bot_model():
     )
 
 
-def _make_sandwiced_i64_model():
+def _make_sandwiched_i64_model():
     input_shape = [1, 8]
     output_shape = input_shape
     return make_onnx_model(

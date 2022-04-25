@@ -19,13 +19,7 @@ class EliminateClipper(Transformer):
             Pattern_6,
         ]:
             transformer = transformer(model)
-            # EliminateClipper().transform() is called on QDQ graph.
-            # QDQ graph will apply QuantizeLinear - DequantizeLinear to bias of Conv operators.
-            # bias of QLinearConv operator should be i32, so QDQ graph will have i32 quantization information for bias.
-            # However, QuantizeLinear operator of onnx are only defined on i8 quantization parmeter, so temporarily, QDQ graph is not valid.
-            transformer.check_runnable = False
             model = transformer.transform()
-
         return model
 
 
@@ -37,6 +31,12 @@ class ClipperElimination(ONNXTransformer, ABC):
         1. a pattern given should be matched.
         2. every consumer's output quantization parameters of the previous node of clipper should be mutually identical.
     """
+
+    # EliminateClipper().transform() is called on QDQ graph.
+    # QDQ graph will apply QuantizeLinear - DequantizeLinear to bias of Conv operators.
+    # bias of QLinearConv operator should be i32, so QDQ graph will have i32 quantization information for bias.
+    # However, QuantizeLinear operator of onnx are only defined on i8 quantization parmeter, so temporarily, QDQ graph is not valid.
+    check_runnable = False
 
     @property
     @abstractmethod

@@ -46,7 +46,7 @@ class FuseLayerNormalization(Transformer):
                 visited += 1
 
         if not visited:
-            sorted_nodes = model.graph.node
+            sorted_nodes = list(model.graph.node)
 
         model = utils.rebuild_model(model, sorted_nodes)
         check_model(model)

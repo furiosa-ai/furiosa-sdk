@@ -14,7 +14,7 @@ class InferenceShape:
     """
 
     def __init__(self, model: onnx.ModelProto) -> None:
-        self.model = utils.rebuild_model(model, model.graph.node)
+        self.model = utils.rebuild_model(model, list(model.graph.node))
 
     def inference_shape(
         self, input_shapes: Optional[Dict[str, List[int]]] = None

@@ -56,6 +56,7 @@ class TestTransformer(unittest.TestCase):
             self.assertListAlmostEqual(act, exp, msg=f"{data}")
 
     def check_value_info(self, model):
+        initializer = set(init.name for init in model.graph.initializer)
         has_value_info = set(
             value_info.name
             for value_info in itertools.chain(
@@ -65,6 +66,8 @@ class TestTransformer(unittest.TestCase):
 
         for node in model.graph.node:
             for tensor_name in itertools.chain(node.input, node.output):
+                if tensor_name in initializer:
+                    continue
                 self.assertTrue(tensor_name in has_value_info or not tensor_name)
 
     def check_initializer(self, actual, expected):
