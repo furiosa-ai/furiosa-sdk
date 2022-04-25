@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import copy
 from pathlib import Path
 import pickle
+import random
 import unittest
 
 import numpy as np
@@ -62,13 +64,20 @@ class ONNXTest(unittest.TestCase):
         self._ensure_no_initializer_in_graph_input(quant_model)
         self._ensure_no_unused_initializer(quant_model)
 
-    def test_zero_bias_scale(self):  # pylint: disable=no-self-use
+    def test_zero_bias_scale(self):
+        input_shape = [1, 1, 3, 3]
         model = _make_zero_bias_scale_model()
         quantized_model = post_training_quantization_with_random_calibration(
-            _make_zero_bias_scale_model(), per_channel=True, static=True, mode=QuantizationMode.FAKE
+            copy.deepcopy(model), per_channel=True, static=True, mode=QuantizationMode.FAKE
         )
         self._ensure_no_initializer_in_graph_input(quantized_model)
         TestTransformer().check_output_value(model, quantized_model, [input_shape])
+
+    def test_per_channel_small_weight_conv(self):
+        self._do_test_small_weight_conv(per_channel=True)
+
+    def test_per_layer_small_weight_conv(self):
+        self._do_test_small_weight_conv(per_channel=False)
 
     def test__verify_not_quantized(self) -> None:
         model = _make_partially_sandwiched_model()
@@ -89,6 +98,22 @@ class ONNXTest(unittest.TestCase):
             tensor_name for node in model.graph.node for tensor_name in node.input
         )
         self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
+
+    def _do_test_small_weight_conv(self, per_channel):
+        n_models = 10
+        for model in _make_small_weight_conv_models(n_models):
+            quantized_model = post_training_quantization_with_random_calibration(
+                copy.deepcopy(model),
+                per_channel=per_channel,
+                static=True,
+                mode=QuantizationMode.FAKE,
+            )
+            self._ensure_no_initializer_in_graph_input(quantized_model)
+            input_vi = next(_input for _input in quantized_model.graph.input if _input.name == 'x')
+            input_shape = [dim.dim_value for dim in input_vi.type.tensor_type.shape.dim]
+            TestTransformer().check_original_and_fake_output_value(
+                model, quantized_model, [input_shape]
+            )
 
 
 def _make_partially_sandwiched_model():
@@ -148,6 +173,40 @@ def _make_zero_bias_scale_model():
             "node": [("Conv", ["x", "w", "b"], "y")],
         }
     )
+
+
+def _make_small_weight_conv_models(num_models):
+    def _make_small_weight(input_channel, output_channel, H_in, W_in, H_out, W_out):
+        H_weight = H_in - H_out + 1
+        W_weight = W_in - W_out + 1
+        return np.random.normal(
+            0, 2**-60, size=(output_channel, input_channel, H_weight, W_weight)
+        ).astype(np.float32)
+
+    models = []
+    for _ in range(num_models):
+        input_channel = random.randint(1, 10)
+        output_channel = random.randint(1, 10)
+        H_in = random.randint(1, 10)
+        W_in = random.randint(1, 10)
+        H_out = random.randint(1, H_in)
+        W_out = random.randint(1, W_in)
+        models.append(
+            make_onnx_model(
+                model_desc={
+                    "input": {"x": (np.float32, [1, input_channel, H_in, W_in])},
+                    "output": {"y": (np.float32, [1, output_channel, H_out, W_out])},
+                    "initializer": {
+                        "w": _make_small_weight(
+                            input_channel, output_channel, H_in, W_in, H_out, W_out
+                        ),
+                        "b": np.array(np.random.standard_normal(output_channel), dtype=np.float32),
+                    },
+                    "node": [("Conv", ["x", "w", "b"], "y")],
+                }
+            )
+        )
+    return models
 
 
 if __name__ == "__main__":
