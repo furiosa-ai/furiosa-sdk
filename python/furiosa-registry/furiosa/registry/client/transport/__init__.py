@@ -51,7 +51,7 @@ async def read(uri: str, path: str) -> bytes:
     """Read a file binary data from the registry URI and path with a transport which supports the URI.
 
     Args:
-        uri (str): Registry URI to locate the artifacts.
+        uri (str): Registry URI to locate the models.
         path (str): Relative file path in the repositry to read.
 
     Returns:

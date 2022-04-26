@@ -1,48 +1,58 @@
 {
-  "title": "Artifact",
-  "description": "Data including model binary, metadata, and configurations to run a single model.",
+  "title": "Model",
+  "description": "Model for a Furiosa SDK.",
   "type": "object",
   "properties": {
     "name": {
       "title": "Name",
       "type": "string"
     },
-    "version": {
-      "title": "Version",
-      "type": "string"
+    "model": {
+      "title": "Model",
+      "type": "string",
+      "format": "binary"
+    },
+    "format": {
+      "$ref": "#/definitions/Format"
     },
     "family": {
       "title": "Family",
       "type": "string"
     },
-    "location": {
-      "title": "Location",
-      "type": "string"
-    },
-    "format": {
-      "$ref": "#/definitions/Format"
-    },
-    "doc": {
-      "title": "Doc",
+    "version": {
+      "title": "Version",
       "type": "string"
     },
     "metadata": {
-      "$ref": "#/definitions/ModelMetadata"
+      "$ref": "#/definitions/Metadata"
+    },
+    "inputs": {
+      "title": "Inputs",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ModelTensor"
+      }
+    },
+    "outputs": {
+      "title": "Outputs",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ModelTensor"
+      }
     }
   },
   "required": [
     "name",
-    "family",
-    "location",
+    "model",
     "format"
   ],
-  "additionalProperties": false,
   "definitions": {
     "Format": {
       "title": "Format",
       "description": "Model binary format to represent the binary specified.",
       "enum": [
-        "code",
         "onnx",
         "tflite"
       ],
@@ -80,8 +90,8 @@
       },
       "additionalProperties": false
     },
-    "ModelMetadata": {
-      "title": "ModelMetadata",
+    "Metadata": {
+      "title": "Metadata",
       "description": "Model metadata to understand a model.",
       "type": "object",
       "properties": {
@@ -94,6 +104,45 @@
         }
       },
       "additionalProperties": false
+    },
+    "Tags": {
+      "title": "Tags",
+      "type": "object",
+      "properties": {
+        "content_type": {
+          "title": "Content Type",
+          "type": "string"
+        }
+      }
+    },
+    "ModelTensor": {
+      "title": "ModelTensor",
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "datatype": {
+          "title": "Datatype",
+          "type": "string"
+        },
+        "shape": {
+          "title": "Shape",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "tags": {
+          "$ref": "#/definitions/Tags"
+        }
+      },
+      "required": [
+        "name",
+        "datatype",
+        "shape"
+      ]
     }
   }
 }

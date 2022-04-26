@@ -53,7 +53,7 @@ Note that model binary which is now supported by Furiosa NPU should be one of th
 - [ONNX](https://github.com/onnx/onnx)
 
 ```python
-from furiosa.server.utils.thread import synchronous
+from furiosa.common.thread import synchronous
 from furiosa.serving import ServeAPI, ServeModel
 
 
@@ -91,7 +91,7 @@ You should follow [FastAPI Request Body concept](https://fastapi.tiangolo.com/tu
 from typing import Dict
 
 from fastapi import File, UploadFile
-from furiosa.server.utils.thread import synchronous
+from furiosa.common.thread import synchronous
 from furiosa.serving import ServeAPI, ServeModel
 import numpy as np
 
@@ -157,7 +157,7 @@ You can directly use the `preprocess()`, `postprocess()` from `Processor` instan
 
 ```python
 import numpy as np
-from furiosa.server.utils.thread import synchronous
+from furiosa.common.thread import synchronous
 from furiosa.serving import ServeModel, ServeAPI
 from furiosa.serving.processors import ImageNet
 
@@ -221,7 +221,7 @@ You can composite multiple models using [FastAPI dependency injection](https://f
 
 ```python
 from fastapi import Depends
-from furiosa.server.utils.thread import synchronous
+from furiosa.common.thread import synchronous
 from furiosa.serving import ServeModel, ServeAPI
 from furiosa.serving.processors import ImageNet, SegmentNet
 

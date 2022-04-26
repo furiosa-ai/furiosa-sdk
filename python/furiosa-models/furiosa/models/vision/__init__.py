@@ -1,19 +1,28 @@
 from functools import partial
 from typing import Optional
 
+from furiosa.common.thread import synchronous
 import furiosa.registry as registry
 from furiosa.registry import Model
 
-version = "v1.1"
-repository = "https://github.com/furiosa-ai/furiosa-artifacts"
+__all__ = []
+
+
+# Main repository to load models
+repository = "https://github.com/furiosa-ai/furiosa-artifacts:v0.0.1"
 
 
 async def load(name, *args, **kwargs) -> Optional[Model]:
-    return await registry.load(uri=repository, version=version, name=name)
+    return await registry.load(uri=repository, name=name)
 
 
-MLCommonsResNet50 = partial(load, name="mlcommons_resnet50")
+for name in synchronous(registry.list)(repository):
+    model = partial(load, name=name)
 
-MLCommonsMobileNet = partial(load, name="mlcommons_ssd_mobilenet")
+    # Export Model class in this module scope
+    globals()[name] = model
+    __all__.append(name)
 
-MLCommonsSSDResNet34 = partial(load, name="mlcommons_ssd_resnet34")
+
+# Clean up unncessary variables in this module
+del Model, Optional, load, model, name, partial, synchronous

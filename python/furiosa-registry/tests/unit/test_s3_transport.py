@@ -35,10 +35,10 @@
 
 
 # @pytest.mark.asyncio
-# async def test_list(transport, artifact_file, artifacts, bucket):
-#     assert (await transport.list(f"s3://{bucket}/{artifact_file}")) == artifacts
+# async def test_list(transport, bucket):
+#     assert (await transport.list(f"s3://{bucket}/")) == ["MNISTNet"]
 
 
 # @pytest.mark.asyncio
-# async def test_download(transport, model_file, bucket, MNISTnet):
-#     assert await transport.download(f"s3://{bucket}/{model_file}") == MNISTnet
+# async def test_download(transport, bucket, model_file, model_binary):
+#     assert await transport.download(f"s3://{bucket}/{model_file}") == model_binary

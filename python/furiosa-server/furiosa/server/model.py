@@ -7,6 +7,7 @@ from typing import Any, List, Optional, overload
 
 import numpy as np
 
+from furiosa.common.thread import asynchronous
 from furiosa.runtime import session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
@@ -18,7 +19,6 @@ from .types import (
     RequestInput,
     ResponseOutput,
 )
-from .utils.thread import asynchronous
 
 
 class Model(ABC):
