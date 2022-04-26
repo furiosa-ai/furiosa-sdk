@@ -38,6 +38,25 @@ _Q_LINEAR_CONV = "QLinearConv"
 _Q_LINEAR_MAT_MUL = "QLinearMatMul"
 
 
+class AlreadyQuantizedError(ValueError):
+    """
+    Exception raised if given model is partially quantized.
+    """
+
+    def __init__(self, op_type: str) -> None:
+        assert op_type in [
+            _DEQUANTIZE_LINEAR,
+            _QUANTIZE_LINEAR,
+            _Q_LINEAR_CONV,
+            _Q_LINEAR_MAT_MUL,
+        ], repr(op_type)
+        super().__init__(
+            "furiosa-quantizer cannot proceed with a quantized model. "
+            "The model seems to be at least partially quantized "
+            f"since it includes {op_type}."
+        )
+
+
 def optimize_model(
     model: onnx.ModelProto, input_shapes: Optional[Dict[str, List[int]]] = None
 ) -> onnx.ModelProto:
@@ -79,11 +98,7 @@ def post_training_quantize(
         dataset.
     """
 
-    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-        raise ValueError(
-            "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-        )
-
+    _verify_not_quantized(model)
     model = optimize_model(model)
     ranges = calibrate.calibrate(model, dataset)
     return quantize(model, per_channel, True, quantizer.QuantizationMode.DFG, ranges)
@@ -99,10 +114,7 @@ def post_training_quantization_with_random_calibration(
     if not static:
         raise Exception("Currently only supports static quantization.")
 
-    if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-        raise ValueError(
-            "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-        )
+    _verify_not_quantized(model)
 
     model = optimize_model(model)
     dynamic_ranges = calibrate.calibrate_with_random_data(model, num_data)
@@ -164,3 +176,11 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         EliminateRedundantShapePattern().transform,
     ]
     return _transform(transformers, model)
+
+
+def _verify_not_quantized(model: onnx.ModelProto) -> None:
+    # TODO also don't accept quantized operators in com.microsoft domain.
+    for node in model.graph.node:
+        op_type = node.op_type
+        if op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR, _Q_LINEAR_CONV, _Q_LINEAR_MAT_MUL]:
+            raise AlreadyQuantizedError(op_type)

@@ -7,6 +7,8 @@ import numpy as np
 import onnx
 
 from furiosa.quantizer.frontend.onnx import (
+    AlreadyQuantizedError,
+    _verify_not_quantized,
     calibrate,
     optimize_model,
     post_training_quantization_with_random_calibration,
@@ -66,6 +68,10 @@ class ONNXTest(unittest.TestCase):
         )
         self._ensure_no_initializer_in_graph_input(model)
 
+    def test__verify_not_quantized(self) -> None:
+        model = _make_partially_sandwiched_model()
+        self.assertRaises(AlreadyQuantizedError, _verify_not_quantized, model)
+
     def _ensure_no_initializer_in_graph_input(self, model: onnx.ModelProto) -> None:
         graph_inputs = set(value_info.name for value_info in model.graph.input)
         self.assertTrue(all(tensor.name not in graph_inputs for tensor in model.graph.initializer))
@@ -81,6 +87,26 @@ class ONNXTest(unittest.TestCase):
             tensor_name for node in model.graph.node for tensor_name in node.input
         )
         self.assertTrue(all(tensor.name in node_input_names for tensor in model.graph.initializer))
+
+
+def _make_partially_sandwiched_model():
+    input_shape = [1, 8]
+    output_shape = input_shape
+    return make_onnx_model(
+        model_desc={
+            "input": {"x": (np.int8, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "a": (np.float32, [input_shape[1]]),
+                "s": (np.float32, []),
+                "z": (np.int8, []),
+            },
+            "node": [
+                ("DequantizeLinear", ["x", "s", "z"], ["0"]),
+                ("Add", ["0", "a"], ["y"]),
+            ],
+        }
+    )
 
 
 def _make_zero_bias_scale_model():
