@@ -117,7 +117,7 @@ class ONNXTest(unittest.TestCase):
         model = _make_dfg_quantized_model()
         self.assertTrue(_is_fully_quantized(model))
 
-    def test_zero_bias_scale(self):  # pylint: disable=no-self-use
+    def test_zero_bias_scale(self):
         model = _make_zero_bias_scale_model()
         model = post_training_quantization_with_random_calibration(
             model, per_channel=True, static=True, mode=QuantizationMode.DFG

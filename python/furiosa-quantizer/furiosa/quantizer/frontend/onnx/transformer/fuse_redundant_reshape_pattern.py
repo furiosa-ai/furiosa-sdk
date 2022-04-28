@@ -30,7 +30,7 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Reshape', 'Reshape']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -50,8 +50,8 @@ class Pattern_1(ONNXTransformer):
         reshape, reshape1 = nodes_to_check
         return not self.is_same_shape(reshape.input[0], reshape1.output[0])
 
-    # pylint: disable=no-self-use
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         reshape, reshape1 = matched_nodes
         return [
             onnx.helper.make_node(
@@ -88,7 +88,7 @@ class Pattern_2(ONNXTransformer):
 
     pattern_to_match = ['Reshape', 'Reshape', 'Reshape']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -108,8 +108,8 @@ class Pattern_2(ONNXTransformer):
         reshape, _, reshape2 = nodes_to_check
         return not self.is_same_shape(reshape.input[0], reshape2.output[0])
 
-    # pylint: disable=no-self-use
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         reshape, _, reshape2 = matched_nodes
         return [
             onnx.helper.make_node(
@@ -145,7 +145,7 @@ class Pattern_3(ONNXTransformer):
 
     pattern_to_match = ['Flatten/Squeeze', 'Unsqueeze']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -165,8 +165,8 @@ class Pattern_3(ONNXTransformer):
         flatten, unsqueeze = nodes_to_check
         return not self.is_same_shape(flatten.input[0], unsqueeze.output[0])
 
-    # pylint: disable=no-self-use
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
         flatten, unsqueeze = matched_nodes
         return [
             onnx.helper.make_node(
