@@ -226,7 +226,7 @@ def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
-    if err in _errors_to_exceptions.keys():
+    if err in _errors_to_exceptions:
         return _errors_to_exceptions[err]
 
     return InternalError()
