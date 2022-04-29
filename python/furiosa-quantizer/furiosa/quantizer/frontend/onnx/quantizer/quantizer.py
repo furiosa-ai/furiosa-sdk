@@ -110,26 +110,18 @@ class FuriosaONNXQuantizer:
             )
         }
 
-        # (Case1) check if model is optimized: all value_infos are given.
-        for node in self.model.graph.node:
-            for name in list(node.input) + list(node.output):
-                if name in self.initializer.keys():
-                    continue
-
-                if name not in self.value_info_all:
-                    raise Exception(
-                        f'value_info for {name} is missing. Optimize model before quantization.'
-                    )
+        # (Case1) check if model is optimized: all value_infos are given with valid dimension/type info.
+        utils.check_value_info(self.model)
 
         # (Case2) raise Exception if dynamic_range is missing
         for key, vi in self.value_info_all.items():
             if not is_float_tensor(vi):
                 continue
 
-            if key in self.initializer.keys():
+            if key in self.initializer:
                 continue
 
-            if key not in dynamic_ranges.keys():
+            if key not in dynamic_ranges:
                 raise Exception(f'dynamic_range for {key} is missing')
 
         # (Case3) raise Exception if dynamic_range is not defined in model.graph.value_info
@@ -515,7 +507,7 @@ class FuriosaONNXQuantizer:
             return
 
     def _stack_quant_value_info(self, name, name_quant, elem_type, quant_vi_dict):
-        if name_quant in quant_vi_dict.keys():
+        if name_quant in quant_vi_dict:
             return
 
         vi = self.value_info_all[name]

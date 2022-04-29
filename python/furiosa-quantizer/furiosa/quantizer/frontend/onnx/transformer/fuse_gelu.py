@@ -41,7 +41,7 @@ class FuseGELU(Transformer):
         for node in orig_model.graph.node:
             if node in model.graph.node:
                 sorted_nodes.append(node)
-                if node.output[0] in gelu_by_input_name.keys():
+                if node.output[0] in gelu_by_input_name:
                     sorted_nodes.append(gelu_by_input_name[node.output[0]])
                 visited += 1
 
