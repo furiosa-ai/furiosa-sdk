@@ -362,8 +362,8 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.5.2-2"
-    NUX_VERSION = "0.7.0-2+nightly-220413"
+    FIRMWARE_VERSION = "0.6.2-2"
+    NUX_VERSION = "0.6.3-2"
   }
 
   stages {
@@ -380,7 +380,7 @@ pipeline {
           sh "echo 'deb [arch=amd64] ${env.REPO_URL}/ubuntu ${env.UBUNTU_DISTRIB} restricted' > /etc/apt/sources.list.d/furiosa.list"
           script {
             if ("${NPU_TOOLS_STAGE}" == "nightly") {
-              sh "echo 'deb [arch=amd64] ${env.REPO_URL}/ubuntu ${env.UBUNTU_DISTRIB}-nightly restricted' >> /etc/apt/sources.list.d/furiosa.list"
+              sh "echo 'deb [arch=amd64] ${env.REPO_URL}/ubuntu ${env.UBUNTU_DISTRIB}-rc restricted' >> /etc/apt/sources.list.d/furiosa.list"
             }
           }
           sh "apt-get update && apt-cache search furiosa"
@@ -393,7 +393,7 @@ pipeline {
         container('default') {
           sh """
           apt-get install -y build-essential cmake git \
-          furiosa-libnpu-xrt=${env.FIRMWARE_VERSION} \
+          furiosa-libhal-xrt=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
           libonnxruntime=1.9.*
           """

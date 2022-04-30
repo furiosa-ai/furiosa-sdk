@@ -36,6 +36,7 @@ class NativeError(IntEnum):
     DEVICE_BUSY = 23
     TENSOR_NAME_NOT_FOUND = 24
     UNSUPPORTED_FEATURE = 25
+    INVALID_COMPILER_CONFIG = 30
 
 
 class NativeException(FuriosaError):
@@ -182,6 +183,13 @@ class UnsupportedFeature(NativeException):
         super().__init__("Unsupported feature", NativeError.UNSUPPORTED_FEATURE)
 
 
+class InvalidCompilerConfig(NativeException):
+    """Compiler config is invalid"""
+
+    def __init__(self):
+        super().__init__("Invalid compiler config", NativeError.INVALID_COMPILER_CONFIG)
+
+
 class SessionClosed(FuriosaError):
     """Session is already terminated"""
 
@@ -203,6 +211,7 @@ _errors_to_exceptions = {
     NativeError.DEVICE_BUSY: DeviceBusy(),
     NativeError.TENSOR_NAME_NOT_FOUND: TensorNameNotFound(),
     NativeError.UNSUPPORTED_FEATURE: UnsupportedFeature(),
+    NativeError.INVALID_COMPILER_CONFIG: InvalidCompilerConfig(),
 }
 
 

@@ -73,7 +73,7 @@ Outputs:
 @unittest.skipIf(not NPU_DEVICE_READY, "No NPU device")
 class TestDeviceBusy(unittest.TestCase):
     def test_device_busy(self):
-        with session.create(MNIST_ONNX) as sess:
+        with session.create(MNIST_ONNX) as _:
             self.assertRaises(errors.DeviceBusy, lambda: session.create(MNIST_ONNX))
             pass
 
@@ -174,6 +174,20 @@ class TestSessionWithNames(unittest.TestCase):
                     ["Plus214_Output_0"], {"WrongInput3": tensor.zeros(sess.input(0))}
                 ),
             )
+
+
+class TestCompilerConfig(unittest.TestCase):
+    def test_non_existence_config(self):
+        non_existence_config = {"non_existence_config": 1}
+        with session.create(MNIST_ONNX, compile_config=non_existence_config) as _:
+            pass
+
+    def test_invalid_config(self):  # put an existing config but use a different type
+        invalid_config = {"remove_lower": 1}  # the correct value type is boolean
+        self.assertRaises(
+            errors.InvalidCompilerConfig,
+            lambda: session.create(MNIST_ONNX, compile_config=invalid_config),
+        )
 
 
 if __name__ == '__main__':
