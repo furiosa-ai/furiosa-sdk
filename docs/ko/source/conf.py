@@ -22,7 +22,7 @@ copyright = '2021, FuriosaAI Inc.'
 author = 'FuriosaAI Inc.'
 
 # The full version, including alpha/beta/rc tags
-release = 'furiosa-docs'
+release = '0.6.3'
 
 
 # -- General configuration ---------------------------------------------------

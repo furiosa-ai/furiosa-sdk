@@ -104,22 +104,21 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
     .. code-block:: sh
 
-      sudo apt-get update && sudo apt-get install -y \
-      furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+      sudo apt-get update && sudo apt-get install -y furiosa-driver-pdma furiosa-libnux
 
   .. tab:: 다운로드 센터를 이용한 설치
 
     아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다.
 
     * NPU Driver (furiosa-driver-pdma)
-    * Firmware (furiosa-libnpu)
+    * Hard Abstraction Layer (furiosa-libhal)
     * Runtime library  (furiosa-libnux)
     * Onnxruntime  (libonnxruntime)
 
     .. code-block:: sh
 
       sudo apt-get install -y ./furiosa-driver-pdma-x.y.z-?.deb
-      sudo apt-get install -y ./furiosa-libnpu-warboy-x.y.z-?.deb
+      sudo apt-get install -y ./furiosa-libhal-warboy-x.y.z-?.deb
       sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
       sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
@@ -132,7 +131,7 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
 .. code-block:: sh
 
-  sudo apt-mark hold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark hold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 고정된 패키지 버전을 해제하여 업데이트 하기 위해서는 ``apt-mark unhold``
@@ -141,7 +140,7 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
 .. code-block:: sh
 
-  sudo apt-mark unhold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark unhold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 특정 버전 설치 방법
@@ -160,4 +159,4 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.6.0-2
+  sudo apt-get install -y furiosa-libnux=0.6.3-2
