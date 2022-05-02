@@ -111,7 +111,7 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
     아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다.
 
     * NPU Driver (furiosa-driver-pdma)
-    * Hard Abstraction Layer (furiosa-libhal)
+    * Hardware Abstraction Layer (furiosa-libhal)
     * Runtime library  (furiosa-libnux)
     * Onnxruntime  (libonnxruntime)
 
