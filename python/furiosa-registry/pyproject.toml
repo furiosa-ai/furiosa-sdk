@@ -77,6 +77,8 @@ asyncio_mode = "auto"
 # https://github.com/pypa/setuptools_scm#configuration-parameters
 root = "../.."
 write_to = "python/furiosa-registry/furiosa/registry/git_version.txt"
+# SemVer with release branch: https://github.com/pypa/setuptools_scm#version-number-construction
+version_scheme = "release-branch-semver"
 
 [tool.flit.sdist]
 include = ["git_version.txt"]
