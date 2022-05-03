@@ -22,7 +22,7 @@ from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_mod
 from tests.frontend.onnx.transformer import TestTransformer
 
 
-class ONNXTest(unittest.TestCase):
+class ONNXTest(TestTransformer):
     @classmethod
     def setUpClass(cls):
         # val2017-10.pickle contains a calibration dataset that consists
@@ -71,7 +71,7 @@ class ONNXTest(unittest.TestCase):
             copy.deepcopy(model), per_channel=True, static=True, mode=QuantizationMode.FAKE
         )
         self._ensure_no_initializer_in_graph_input(quantized_model)
-        TestTransformer().check_output_value(model, quantized_model, [input_shape])
+        self.check_output_value(model, quantized_model, [input_shape])
 
     def test_per_channel_small_weight_conv(self):
         self._do_test_small_weight_conv(per_channel=True)
@@ -111,9 +111,7 @@ class ONNXTest(unittest.TestCase):
             self._ensure_no_initializer_in_graph_input(quantized_model)
             input_vi = next(_input for _input in quantized_model.graph.input if _input.name == 'x')
             input_shape = [dim.dim_value for dim in input_vi.type.tensor_type.shape.dim]
-            TestTransformer().check_original_and_fake_output_value(
-                model, quantized_model, [input_shape]
-            )
+            self.check_original_and_fake_output_value(model, quantized_model, [input_shape])
 
 
 def _make_partially_sandwiched_model():
@@ -176,13 +174,6 @@ def _make_zero_bias_scale_model():
 
 
 def _make_small_weight_conv_models(num_models):
-    def _make_small_weight(input_channel, output_channel, H_in, W_in, H_out, W_out):
-        H_weight = H_in - H_out + 1
-        W_weight = W_in - W_out + 1
-        return np.random.normal(
-            0, 2**-60, size=(output_channel, input_channel, H_weight, W_weight)
-        ).astype(np.float32)
-
     models = []
     for _ in range(num_models):
         input_channel = random.randint(1, 10)
@@ -207,6 +198,14 @@ def _make_small_weight_conv_models(num_models):
             )
         )
     return models
+
+
+def _make_small_weight(input_channel, output_channel, H_in, W_in, H_out, W_out):
+    H_weight = H_in - H_out + 1
+    W_weight = W_in - W_out + 1
+    return np.random.normal(
+        0, 2**-60, size=(output_channel, input_channel, H_weight, W_weight)
+    ).astype(np.float32)
 
 
 if __name__ == "__main__":

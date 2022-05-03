@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict, Iterable, List, Type, Union
+from typing import Dict, Iterable, List, Sequence, Tuple, Type, Union
 import unittest
 
 import numpy as np
@@ -48,15 +48,15 @@ class TestTransformer(unittest.TestCase):
         self,
         orig_model: onnx.ModelProto,
         trans_model: onnx.ModelProto,
-        input_shapes: Iterable[List[int]],
+        input_shapes: Iterable[Sequence[int]],
         data: List[np.ndarray] = None,
     ):
         if data is None:
             rng = np.random.default_rng()
             data = [rng.standard_normal(shape, dtype=np.float32) for shape in input_shapes]
 
-        actual = self.run_onnx_model(orig_model, data)
-        expected = self.run_onnx_model(trans_model, data)
+        actual = self.run_onnx_model_flatten_output(orig_model, data)
+        expected = self.run_onnx_model_flatten_output(trans_model, data)
 
         for act, exp in zip(actual, expected):
             self.assertListAlmostEqual(act, exp, msg=f"{data}")
@@ -65,7 +65,7 @@ class TestTransformer(unittest.TestCase):
         self,
         orig_model: onnx.ModelProto,
         fake_quant_model: onnx.ModelProto,
-        input_shapes: Iterable[Iterable[int]],
+        input_shapes: Iterable[Sequence[int]],
         data: List[np.ndarray] = None,
     ):
         # this function can be used in two cases:
@@ -79,8 +79,8 @@ class TestTransformer(unittest.TestCase):
             rng = np.random.default_rng()
             data = [rng.standard_normal(shape, dtype=np.float32) for shape in input_shapes]
 
-        orig_output = self._run_onnx_model(orig_model, data)
-        fake_quant_output = self._run_onnx_model(fake_quant_model, data)
+        orig_output = self.run_onnx_model_output_dict(orig_model, data)
+        fake_quant_output = self.run_onnx_model_output_dict(fake_quant_model, data)
 
         self.AssertFakeAlmostEqual(
             fake_model_graph, orig_output, fake_quant_output, fake_model_producer_map
@@ -109,10 +109,14 @@ class TestTransformer(unittest.TestCase):
             return fake_quantized_data
 
         for (original_output_name, dequantized_output_name) in zip(orig_output, fake_quant_output):
-            assert dequantized_output_name.endswith('_dequantized')
+            assert dequantized_output_name.endswith(
+                '_dequantized'
+            ), f"fake_quant output name({dequantized_output_name}) should end with _dequantized suffix. Is {fake_model_graph.name} really a fake quantized model?"
             assert original_output_name.replace(
                 '_dequantized', ''
-            ) == dequantized_output_name.replace('_dequantized', '')
+            ) == dequantized_output_name.replace(
+                '_dequantized', ''
+            ), f"original output name({original_output_name}) and fake_quant output name({dequantized_output_name}) should be same except for _dequantized suffix"
 
             scale, zp = self._get_quant_param(
                 fake_model_graph, fake_model_producer_map[dequantized_output_name]
@@ -122,7 +126,7 @@ class TestTransformer(unittest.TestCase):
                 orig_output[original_output_name], scale, zp
             )
             fake_model_output = fake_quant_output[dequantized_output_name]
-            max_diff = np.mean(np.abs(original_fake_quantized_output - fake_model_output))
+            max_diff = np.max(np.abs(original_fake_quantized_output - fake_model_output))
             self.assertLessEqual(
                 round(max_diff / scale), 1
             )  # check if max i8 quantized error is less than or equal to 1
@@ -152,30 +156,31 @@ class TestTransformer(unittest.TestCase):
             self.assertAlmostEqual(a, b, tol, msg=msg)
 
     @staticmethod
-    def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> List[List[float]]:
+    def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> List[np.ndarray]:
         sess = ort.InferenceSession(model.SerializeToString())
         input_names = [inp.name for inp in sess.get_inputs()]
         output_names = [out.name for out in sess.get_outputs()]
         feed_dict = dict(zip(input_names, input_arrays))
         outputs = sess.run(output_names, input_feed=feed_dict)
 
-        flattened_outputs = [val.flatten().tolist() for val in outputs]
+        return outputs
 
-        return flattened_outputs
+    def run_onnx_model_flatten_output(
+        self, model: onnx.ModelProto, input_arrays: List[np.ndarray]
+    ) -> List[List[float]]:
+        outputs = self.run_onnx_model(model, input_arrays)
+        return [val.flatten().tolist() for val in outputs]
 
-    @staticmethod
-    def _run_onnx_model(
-        model: onnx.ModelProto, input_arrays: List[np.ndarray]
+    def run_onnx_model_output_dict(
+        self, model: onnx.ModelProto, input_arrays: List[np.ndarray]
     ) -> Dict[str, np.ndarray]:
-        sess = ort.InferenceSession(model.SerializeToString())
-        input_names = [inp.name for inp in sess.get_inputs()]
-        output_names = [out.name for out in sess.get_outputs()]
-        feed_dict = dict(zip(input_names, input_arrays))
-        outputs = sess.run(output_names, input_feed=feed_dict)
+        outputs = self.run_onnx_model(model, input_arrays)
+        output_names = [out.name for out in model.graph.output]
         return dict(zip(output_names, outputs))
 
     @staticmethod
-    def _get_quant_param(graph: onnx.GraphProto, node: onnx.NodeProto) -> Iterable[np.ndarray]:
+    def _get_quant_param(graph: onnx.GraphProto, node: onnx.NodeProto) -> Tuple[np.ndarray]:
+        assert node.op_type in ['QuantizeLinear', 'DequantizeLinear']
         quant_param_dict = {
             tensor.name: onnx.numpy_helper.to_array(tensor)
             for tensor in graph.initializer

@@ -406,27 +406,14 @@ class FuriosaONNXQuantizer:
             data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name
         )
 
-        if input_scale:
+        if input_scale is not None:
             input_scale = onnx.numpy_helper.to_array(input_scale)
             bias_amax = (
                 np.absolute(onnx.numpy_helper.to_array(bias_init)).max()
-                if bias_init
+                if bias_init is not None
                 else np.zeros(1)
             )
-            if input_scale * s * 2**31 < bias_amax:
-                # when the condition is met, bias value is much larger than input * filter value, so output is almost equal to the bias
-                # therefore, it is ok to control filter scale freely, since output value does not really depend on filter scale.
-                # make filter scale to be large enough, so that bias is not clamped during quantization.
-                s = (
-                    bias_amax / 2**31 / input_scale
-                )  # for such s, bias_scale * 2**31 ~= abs(bias_array[i]), so i32 quantized value is approximately i32::MAX.
-                s *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
-            elif input_scale * s == 0:
-                # when bias does not exist or bias is 0, if condition may not be met(input_scale_array * s == 0 and bias == 0).
-                s = 2**-149 / input_scale  # scale value that makes bias_scale = 2**-149
-                s = max(
-                    s, 2**-149
-                )  # if input_scale_array > 1, s = 0. then, setting s = 2**-149 will make bias scale non-zero.
+            s = self._correct_small_filter_scale(s, input_scale, bias_amax)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -455,7 +442,9 @@ class FuriosaONNXQuantizer:
         zp_list = []
         input_scale_array = onnx.numpy_helper.to_array(input_scale)
         bias_array = (
-            onnx.numpy_helper.to_array(bias_init) if bias_init else np.zeros(num_output_channels)
+            onnx.numpy_helper.to_array(bias_init)
+            if bias_init is not None
+            else np.zeros(num_output_channels)
         )
 
         for i in range(num_output_channels):
@@ -465,20 +454,7 @@ class FuriosaONNXQuantizer:
             zp, s = calculate_weight_quant_params(
                 per_channel_weight, self.weight_qtype, weight_init.name
             )
-            if input_scale_array * s * 2**31 < abs(bias_array[i]):
-                # when the condition is met, bias value is much larger than input * filter value, so output is almost equal to the bias
-                # therefore, it is ok to control filter scale freely, since output value does not really depend on filter scale.
-                # make filter scale to be large enough, so that bias is not clamped during quantization.
-                s = (
-                    abs(bias_array[i]) / 2**31 / input_scale_array
-                )  # for such s, bias_scale * 2**31 ~= abs(bias_array[i]), so i32 quantized value is approximately i32::MAX.
-                s *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
-            elif input_scale_array * s == 0:
-                # when bias does not exist or bias is 0, if condition may not be met(input_scale_array * s == 0 and bias == 0).
-                s = 2**-149 / input_scale_array  # scale value that makes bias_scale = 2**-149
-                s = max(
-                    s, 2**-149
-                )  # if input_scale_array > 1, s = 0. then, setting s = 2**-149 will make bias scale non-zero.
+            s = self._correct_small_filter_scale(s, input_scale_array, bias_array[i])
             s_list.append(s)
             zp_list.append(zp)
 
@@ -493,6 +469,27 @@ class FuriosaONNXQuantizer:
             vals_zp=np.asarray(zp_list, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
             vals_scale=np.asarray(s_list, dtype=np.float32),
         )
+
+    @staticmethod
+    def _correct_small_filter_scale(s: float, input_scale: np.ndarray, bias: float) -> float:
+        assert (
+            input_scale.size == 1
+        ), f"Only per tensor activation is supported, but multiple scales for activation given:\n{input_scale}"
+        if input_scale * s * 2**31 < abs(bias):
+            # when the condition is met, bias value is much larger than input * filter value, so output is almost equal to the bias
+            # therefore, it is ok to control filter scale freely, since output value does not really depend on filter scale.
+            # make filter scale to be large enough, so that bias is not clamped during quantization.
+            s = (
+                abs(bias) / 2**31 / input_scale
+            )  # for such s, bias_scale * 2**31 ~= abs(bias), so i32 quantized value is approximately i32::MAX.
+            s *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
+        elif input_scale * s == 0:
+            # when bias does not exist or bias is 0, if condition may not be met(input_scale * s == 0 and bias == 0).
+            s = 2**-149 / input_scale  # scale value that makes bias_scale = 2**-149
+            s = max(
+                s, 2**-149
+            )  # if input_scale > 1, s = 0. then, setting s = 2**-149 will make bias scale non-zero.
+        return s
 
     def _quantize_bias(
         self,
