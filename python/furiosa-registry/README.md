@@ -56,7 +56,7 @@ import furiosa.registry as registry
 # Repository where to load models from.
 repository = "https://github.com/furiosa-ai/furiosa-artifacts"
 
-print(registry.help(repository, "MLCommonsResNet50"))
+print(synchronous(registry.help)(repository, "MLCommonsResNet50"))
 ```
 
 ## Development

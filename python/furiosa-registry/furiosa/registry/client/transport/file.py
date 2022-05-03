@@ -45,8 +45,10 @@ class FileTransport(Transport):
         if not os.path.exists(directory):
             os.mkdir(directory)
 
-        src = removeprefix(uri, self.scheme)
-        dst = os.path.join(directory, pathlib.Path(uri).name)
+        location = removeprefix(uri, self.scheme)
+
+        src = location
+        dst = os.path.join(directory, pathlib.Path(location).absolute().name)
 
         shutil.rmtree(dst, ignore_errors=True)
         return shutil.copytree(src, dst)
