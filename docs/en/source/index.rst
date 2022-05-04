@@ -1,5 +1,5 @@
 ****************************************************
-FuriosaAI NPU & SDK 0.6.0 Documents
+FuriosaAI NPU & SDK 0.7.0-dev Documents
 ****************************************************
 
 This document explains FuriosaAI NPU and its SDKs.
@@ -109,5 +109,6 @@ Other Links
    :hidden:
    :caption: Previous Documents
 
+   v0.6.0 <https://furiosa-ai.github.io/docs/v0.6.0/en/>
    v0.5.0 <https://furiosa-ai.github.io/docs/v0.5.0/en/>
    v0.2.0 <https://furiosa-ai.github.io/docs/v0.2.0/en/>

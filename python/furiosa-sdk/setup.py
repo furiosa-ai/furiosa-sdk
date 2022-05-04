@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from setuptools import setup
 
-version = "0.6.3"
+version = "0.6.4"
 
 EXTRAS_REQUIREMENTS: Dict[str, List[str]] = {
     "server": ["furiosa-server~=" + version],

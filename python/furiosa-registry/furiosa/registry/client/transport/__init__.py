@@ -25,17 +25,12 @@ __all__ = [
     "is_relative",
 ]
 
-transports = [
-    FileTransport(),
-    GithubTransport(),
-    HTTPTransport(),
-    S3Transport(),
-]
+transports = [FileTransport(), GithubTransport(), HTTPTransport(), S3Transport()]
 
 
 @contextmanager
 def supported(uri: str) -> Iterator[Transport]:
-    """Supported trasnport for the URI."""
+    """Supported transport for the URI."""
     for transport in transports:
         if transport.is_supported(uri):
             # Note that each transport should be exclusive as we are returning first one.
@@ -58,7 +53,7 @@ async def read(uri: str, path: str) -> bytes:
         bytes: Downloaded binary data.
 
     Raises:
-        TransportNotFound: If all of the available transports are not supporing the URI.
+        TransportNotFound: If all the available transports are not supporting the URI.
     """
     with supported(uri) as transport:
         return await transport.read(uri, path)
@@ -91,7 +86,7 @@ async def download(uri: str) -> str:
         str: Destination directory name. This directory will be located in `cache` directory.
 
     Raises:
-        TransportNotFound: If all of the available transports are not supporing the URI.
+        TransportNotFound: If all the available transports are not supporting the URI.
     """
     with supported(uri) as transport:
         return await transport.download(uri)
@@ -100,7 +95,7 @@ async def download(uri: str) -> str:
 def is_relative(path: str) -> bool:
     """Is this path relative path?
 
-    If all of the available transports are not supporting the path, we assume that it's relative
-    path. You should find the path from the registry URI if it's relative path.
+    If all the available transports are not supporting the path, we assume that it's a relative
+    path. You should find the path from the registry URI if it's a relative path.
     """
     return all(not transport.is_supported(path) for transport in transports)

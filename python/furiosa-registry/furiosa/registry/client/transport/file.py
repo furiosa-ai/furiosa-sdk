@@ -41,7 +41,7 @@ class FileTransport(Transport):
         # TODO(ileixe): Implement cache layer.
         assert self.is_supported(uri)
 
-        directory = self.cache
+        directory = self.cache_directory
         if not os.path.exists(directory):
             os.mkdir(directory)
 

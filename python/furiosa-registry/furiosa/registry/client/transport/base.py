@@ -9,7 +9,7 @@ class Transport(ABC):
 
     @staticmethod
     def is_supported(uri: str) -> bool:
-        """Decicde wether this transport supports the specified URI.
+        """Decide whether this transport supports the specified URI.
 
         Args:
             uri (str): Registry URI to locate the models.
@@ -59,7 +59,7 @@ class Transport(ABC):
         raise NotImplementedError
 
     @property
-    def cache(self) -> str:
+    def cache_directory(self) -> str:
         """Cache directory to save downloaded files."""
         return os.path.expanduser(
             os.getenv(

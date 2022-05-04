@@ -102,6 +102,8 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
   .. tab:: APT 서버를 이용한 설치
 
+    아래 패키지를 설치하면 의존된 패키지들은 자동으로 설치된다.
+
     .. code-block:: sh
 
       sudo apt-get update && sudo apt-get install -y furiosa-driver-pdma furiosa-libnux

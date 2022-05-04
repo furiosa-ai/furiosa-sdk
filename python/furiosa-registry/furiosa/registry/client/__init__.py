@@ -11,6 +11,7 @@ from .transport import download
 __all__ = ["list", "load", "help"]
 
 
+# Default descriptor where Model classes reside
 descriptor = "artifacts.py"
 
 
@@ -59,13 +60,13 @@ async def list(uri: str) -> List[str]:
         ModuleNotFoundError: If descriptor file not found in the registry.
     """
 
-    def ismodel(value):
+    def is_model(value):
         return inspect.isfunction(value) and issubclass(
             inspect.signature(value).return_annotation, Model
         )
 
     module = import_module(await download(uri), descriptor)
-    return [name for name in dir(module) if ismodel(getattr(module, name))]
+    return [name for name in dir(module) if is_model(getattr(module, name))]
 
 
 async def help(uri: str, name: str, version: Optional[str] = None) -> str:

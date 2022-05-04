@@ -36,7 +36,7 @@ def working_directory(directory: str) -> Iterator[None]:
 
 
 def import_module(directory: str, path: str) -> types.ModuleType:
-    """Import module via specifed path from the local directory."""
+    """Import module via specified path from the local directory."""
 
     # Replace working directory to use file system dependent function like 'open' in a registry.
     with python_path(directory), working_directory(directory):
