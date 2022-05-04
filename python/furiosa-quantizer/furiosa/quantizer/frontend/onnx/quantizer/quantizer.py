@@ -295,7 +295,7 @@ class FuriosaONNXQuantizer:
     def _quantize_weight(self):
         disabled = bool(os.environ.get('TQDM_DISABLE'))
         for node in tqdm.tqdm(
-            self.model.graph.node, desc='Quantization', disable=disabled, unit='operators'
+            self.model.graph.node, desc='Quantization', disable=disabled, unit=' operators'
         ):
             if node.op_type == 'Conv':
                 self._quantize_conv_weight(node, output_channel_axis=0)
