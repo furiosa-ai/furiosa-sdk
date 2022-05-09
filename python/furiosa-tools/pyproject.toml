@@ -7,13 +7,12 @@ build-backend = "flit_scm:buildapi"
 [project]
 name = "furiosa-tools"
 version = "0.7.0.dev0"
-authors = [{ name = "FurioaAI Inc.", email = "pkg@furiosa.ai" }]
+authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
-    "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: Apache Software License",
@@ -33,7 +32,7 @@ test = []
 
 [project.urls]
 Home = "https://furiosa.ai"
-Documentation = "https://docs.furiosa.ai"
+Documentation = "https://furiosa-ai.github.io/docs"
 "Bug Tracker" = "https://github.com/furiosa-ai/furiosa-sdk/issues"
 "Source Code" = "https://github.com/furiosa-ai/furiosa-sdk"
 
