@@ -12,10 +12,10 @@ class FuriosaVersionInfo:
     def __init__(self, version: Version):
         self.version = version.base_version
         self.stage = "dev" if version.is_devrelease else "release"
-        self.hash = next(iter(version.local.split(".")))[1:]
+        self.hash = version.local.split(".")[0][1:]
 
     def __str__(self):
-        return f"{self.version} (rev: {self.hash[0:9]})"
+        return f"{self.version}-{self.stage} (rev: {self.hash[0:9]})"
 
     def __repr__(self):
         return f"FuriosaVersionInfo(({self.stage}, {self.version}, {self.hash}))"
