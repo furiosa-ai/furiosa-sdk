@@ -28,7 +28,7 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Conv', 'BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -58,7 +58,7 @@ class Pattern_2(ONNXTransformer):
 
     pattern_to_match = ['ConvTranspose', 'BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -93,7 +93,7 @@ class Pattern_3(ONNXTransformer):
 
     pattern_to_match = ['Conv', 'Mul', 'Add']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -135,7 +135,7 @@ class Pattern_4(ONNXTransformer):
 
     pattern_to_match = ['BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> List[str]:
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input

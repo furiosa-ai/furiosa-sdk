@@ -1,3 +1,5 @@
+from typing import Iterable, List
+
 import onnx
 
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
@@ -27,55 +29,54 @@ class Pattern_1(ONNXTransformer):
     """
 
     pattern_to_match = ['Reshape', 'Reshape']
-    postfix = '_reshape_fused'
 
-    def pattern_matching(self, base_node):
-        inputs = base_node.input
-
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
-            return inputs
+            return base_node.input
 
         if not self.pattern_condition_checker(matched_nodes):
-            return inputs
-
-        top_node = matched_nodes[0]
+            return base_node.input
 
         self.transform_to_fuse(
             matched_nodes,
-            nodes_to_add=[self.make_new_node(matched_nodes)],
-            inits_to_add=[self.make_new_init(matched_nodes)],
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
         )
-        return top_node.input
+        reshape = matched_nodes[0]
+        return reshape.input
 
-    def pattern_condition_checker(self, nodes_to_check):
-        top_node = nodes_to_check[0]
-        base_node = nodes_to_check[-1]
-        if self.is_same_shape(top_node.input[0], base_node.output[0]):
-            return False
-        return True
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+        reshape, reshape1 = nodes_to_check
+        return not self.is_same_shape(reshape.input[0], reshape1.output[0])
 
-    def make_new_node(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
-        return onnx.helper.make_node(
-            'Reshape',
-            [top_node.input[0], top_node.input[1] + self.postfix],
-            [base_node.output[0]],
-            name=top_node.name,
-        )
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        reshape, reshape1 = matched_nodes
+        return [
+            onnx.helper.make_node(
+                'Reshape',
+                [reshape.input[0], reshape.input[1] + '_fused'],
+                [reshape1.output[0]],
+                name=reshape.name,
+            )
+        ]
 
-    def make_new_init(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
-        return self.make_int64_initializer(top_node.input[1] + self.postfix, base_node.output[0])
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
+        reshape, reshape1 = matched_nodes
+        return [
+            onnx.helper.make_tensor(
+                name=reshape.input[1] + '_fused',
+                data_type=onnx.TensorProto.INT64,
+                dims=[
+                    len(self.get_value_info_shape(reshape1.output[0])),
+                ],
+                vals=self.get_value_info_shape(reshape1.output[0]),
+            )
+        ]
 
-    def make_new_vi(self, matched_nodes):
-        top_node = matched_nodes[0]
-        return self.copy_value_info(top_node.input[0])
 
-
-class Pattern_2(Pattern_1):
+class Pattern_2(ONNXTransformer):
     """
     transform
         prev --> Reshape --> Reshape --> Reshape --> next
@@ -87,8 +88,53 @@ class Pattern_2(Pattern_1):
 
     pattern_to_match = ['Reshape', 'Reshape', 'Reshape']
 
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+        matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
+        if not matched_nodes:
+            return base_node.input
 
-class Pattern_3(Pattern_1):
+        if not self.pattern_condition_checker(matched_nodes):
+            return base_node.input
+
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
+        )
+        reshape = matched_nodes[0]
+        return reshape.input
+
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+        reshape, _, reshape2 = nodes_to_check
+        return not self.is_same_shape(reshape.input[0], reshape2.output[0])
+
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        reshape, _, reshape2 = matched_nodes
+        return [
+            onnx.helper.make_node(
+                'Reshape',
+                [reshape.input[0], reshape.input[1] + '_fused'],
+                [reshape2.output[0]],
+                name=reshape.name,
+            )
+        ]
+
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
+        reshape, _, reshape2 = matched_nodes
+        return [
+            onnx.helper.make_tensor(
+                name=reshape.input[1] + '_fused',
+                data_type=onnx.TensorProto.INT64,
+                dims=[
+                    len(self.get_value_info_shape(reshape2.output[0])),
+                ],
+                vals=self.get_value_info_shape(reshape2.output[0]),
+            )
+        ]
+
+
+class Pattern_3(ONNXTransformer):
     """
     transform
         prev --> Flatten/Squeeze --> Unsqueeze --> next
@@ -99,17 +145,47 @@ class Pattern_3(Pattern_1):
 
     pattern_to_match = ['Flatten/Squeeze', 'Unsqueeze']
 
-    def make_new_node(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
-        return onnx.helper.make_node(
-            'Reshape',
-            [top_node.input[0], top_node.input[0] + self.postfix],
-            [base_node.output[0]],
-            top_node.name,
-        )
+    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+        matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
+        if not matched_nodes:
+            return base_node.input
 
-    def make_new_init(self, matched_nodes):
-        top_node = matched_nodes[0]
-        base_node = matched_nodes[-1]
-        return self.make_int64_initializer(top_node.input[0] + self.postfix, base_node.output[0])
+        if not self.pattern_condition_checker(matched_nodes):
+            return base_node.input
+
+        self.transform_to_fuse(
+            matched_nodes,
+            nodes_to_add=self.make_new_node(matched_nodes),
+            inits_to_add=self.make_new_init(matched_nodes),
+        )
+        flatten = matched_nodes[0]
+        return flatten.input
+
+    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+        flatten, unsqueeze = nodes_to_check
+        return not self.is_same_shape(flatten.input[0], unsqueeze.output[0])
+
+    @staticmethod
+    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+        flatten, unsqueeze = matched_nodes
+        return [
+            onnx.helper.make_node(
+                'Reshape',
+                [flatten.input[0], flatten.input[0] + '_fused'],
+                [unsqueeze.output[0]],
+                flatten.name,
+            )
+        ]
+
+    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+        flatten, unsqueeze = matched_nodes
+        return [
+            onnx.helper.make_tensor(
+                name=flatten.input[0] + '_fused',
+                data_type=onnx.TensorProto.INT64,
+                dims=[
+                    len(self.get_value_info_shape(unsqueeze.output[0])),
+                ],
+                vals=self.get_value_info_shape(unsqueeze.output[0]),
+            )
+        ]
