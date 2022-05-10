@@ -25,6 +25,7 @@ class TestCheckValueInfo(unittest.TestCase):
                 ("Unsqueeze", ["x_3"], ["x_4"], {"axes": [0, 2, 3]}),
                 ("Squeeze", ["x_4"], ["y"]),
             ],
+            "opsetid": [("", 12)],
         }
         model = make_onnx_model(model_desc)
         self.assertRaisesRegex(ValueError, r"shape of(\w)*", utils.check_value_info, model)
