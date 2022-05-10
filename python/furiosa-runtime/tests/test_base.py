@@ -14,6 +14,7 @@ logging.basicConfig(level=LOGLEVEL)
 
 
 MNIST_ONNX = test_data("mnist-8.onnx")
+MNIST_TFLITE_QUANTIZED = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
 NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
 
 
