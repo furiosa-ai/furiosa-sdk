@@ -1,2 +1,0 @@
-mnist
-onnxruntime ~= 1.9.0

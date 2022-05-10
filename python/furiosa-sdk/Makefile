@@ -1,7 +1,3 @@
-ifndef OPENAPI_SPEC_URI
-OPENAPI_SPEC_URI=https://api.furiosa.ai/openapi.yaml
-endif
-
 default: install
 
 install:
@@ -9,9 +5,6 @@ install:
 
 install_full:
 	pip install --use-feature=in-tree-build .[full]
-
-build:
-	python -m build
 
 lint:
 	isort --check --diff . && black --check --diff .

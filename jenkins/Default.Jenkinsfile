@@ -135,9 +135,8 @@ def buildPackages(pythonVersion) {
     source ${MINICONDA_DIR}/bin/activate;
     conda activate env-${pythonVersion};
     python --version;
-    git clean -d -f && git reset --hard && \
-    cd python/${it} && make clean build && \
-    pip install dist/${it}-*.tar.gz
+
+    cd python/${it} && pip install .
     """
   }
 
@@ -206,12 +205,7 @@ def testModules(pythonVersion) {
 
     cd python/${it};
 
-    if [ -f tests/requirements.txt ]; then
-      echo 'Installing ${it}/tests/requirements.txt ..';
-      pip install -r tests/requirements.txt
-    else
-      echo 'No requirements.txt file ${it}'
-    fi
+    pip install '.[test]'
 
     make test
     """
@@ -287,7 +281,7 @@ def publishPackages(pythonVersion, repo) {
 }
 
 def extractSdkVersion() {
-    return sh(script: """grep -Po "version = \\"(\\K[^\\"]+)" python/furiosa-sdk/setup.py""", returnStdout: true).trim()
+    return sh(script: """grep -Po "version = (\\K[^']+)" python/furiosa-sdk/pyproject.toml""", returnStdout: true).trim()
 }
 
 def getNightlyVersion() {

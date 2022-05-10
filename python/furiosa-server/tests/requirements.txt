@@ -1,7 +1,0 @@
-datamodel-code-generator
-grpcio-tools
-mypy
-mypy-protobuf
-pytest
-pytest-asyncio ~= 0.17.2
-types-PyYAML

@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'FuriosaAI NPU 및 Software 문서'
-copyright = '2021, FuriosaAI Inc.'
-author = 'FuriosaAI Inc.'
+copyright = '2021, FuriosaAI, Inc.'
+author = 'FuriosaAI, Inc.'
 
 # The full version, including alpha/beta/rc tags
 release = '0.7.0-dev'
