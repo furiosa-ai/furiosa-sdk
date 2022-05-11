@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 import numpy as np
 import onnx
@@ -13,8 +13,12 @@ from furiosa.quantizer.interfaces.transformer import Transformer
 
 
 class EmbeddingBagPorting(Transformer):
+    # When https://github.com/pytorch/pytorch/issues/58567 issue gets resolved, this transformer is no longer needed.
+    def __init__(self, batch_size: Optional[int] = 128):
+        self.batch_size = batch_size
+
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
-        dynamic_axes = {"batch_size": 2048}
+        dynamic_axes = {"batch_size": self.batch_size}
         input_shapes = {
             input.name: [
                 dynamic_axes.get(dim.dim_param, dim.dim_value)
@@ -55,7 +59,7 @@ class EmbeddingBagPattern(ONNXTransformer):
                 # TODO case when EmbeddingBag mode is mean or max
                 raise Exception("EmbeddingBagPorting of mean or max mode is not implemented")
 
-        if not subgraph_base_nodes or len(subgraph_base_nodes) > 1:
+        if len(subgraph_base_nodes) != 1:
             return base_node.input
 
         subgraph_base_node = subgraph_base_nodes[0]
