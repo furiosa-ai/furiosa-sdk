@@ -2,6 +2,7 @@
 
 import asyncio
 import inspect
+import logging
 from typing import Any, List, Optional
 
 from ..model import Model
@@ -11,8 +12,10 @@ from .transport import download
 __all__ = ["list", "load", "help"]
 
 
+Logger = logging.getLogger(__name__)
+
 # Default descriptor where Model classes reside
-descriptor = "artifacts.py"
+Descriptor = "artifacts.py"
 
 
 async def load(uri: str, name: str, *args: Any, **kwargs: Any) -> Optional[Model]:
@@ -32,9 +35,10 @@ async def load(uri: str, name: str, *args: Any, **kwargs: Any) -> Optional[Model
 
     directory = await download(uri)
 
-    module = import_module(directory, descriptor)
+    module = import_module(directory, Descriptor)
 
     if name not in dir(module):
+        Logger.debug(f"{name} not found in {module}")
         return None
 
     entry = getattr(module, name)
@@ -65,7 +69,7 @@ async def list(uri: str) -> List[str]:
             inspect.signature(value).return_annotation, Model
         )
 
-    module = import_module(await download(uri), descriptor)
+    module = import_module(await download(uri), Descriptor)
     return [name for name in dir(module) if is_model(getattr(module, name))]
 
 
