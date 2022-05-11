@@ -1,7 +1,6 @@
-from collections import ChainMap, Counter, OrderedDict, defaultdict
-from typing import List, Optional, Sequence, Set
+from collections import Counter, OrderedDict, defaultdict
+from typing import List, Optional, Set
 
-import numpy as np
 import onnx
 from onnx import numpy_helper
 from onnx.helper import make_tensor, make_tensor_value_info

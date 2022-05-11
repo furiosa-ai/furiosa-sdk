@@ -32,12 +32,29 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern 
 from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
 from furiosa.quantizer.frontend.onnx.utils.version_checker import CheckVersion
 
-_CONV = "Conv"
 _DEQUANTIZE_LINEAR = "DequantizeLinear"
-_MAT_MUL = "MatMul"
 _QUANTIZE_LINEAR = "QuantizeLinear"
 _Q_LINEAR_CONV = "QLinearConv"
 _Q_LINEAR_MAT_MUL = "QLinearMatMul"
+
+
+class AlreadyQuantizedError(ValueError):
+    """
+    Exception raised if given model is partially quantized.
+    """
+
+    def __init__(self, op_type: str) -> None:
+        assert op_type in [
+            _DEQUANTIZE_LINEAR,
+            _QUANTIZE_LINEAR,
+            _Q_LINEAR_CONV,
+            _Q_LINEAR_MAT_MUL,
+        ], repr(op_type)
+        super().__init__(
+            "furiosa-quantizer cannot proceed with a quantized model. "
+            "The model seems to be at least partially quantized "
+            f"since it includes {op_type}."
+        )
 
 
 def optimize_model(
@@ -67,7 +84,6 @@ def post_training_quantize(
     model: onnx.ModelProto,
     dataset: Iterable[Dict[str, np.ndarray]],
     per_channel: bool = True,
-    check_idempotency: bool = False,
 ) -> onnx.ModelProto:
     """Post-training-quantizes an ONNX model with a calibration dataset.
 
@@ -81,14 +97,8 @@ def post_training_quantize(
         An ONNX model post-training-quantized with the calibration
         dataset.
     """
-    if check_idempotency:
-        if _is_fully_quantized(model):
-            return model
-        if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-            raise ValueError(
-                "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-            )
 
+    _verify_not_quantized(model)
     model = optimize_model(model)
     ranges = calibrate.calibrate(model, dataset)
     return quantize(model, per_channel, True, quantizer.QuantizationMode.DFG, ranges)
@@ -100,18 +110,11 @@ def post_training_quantization_with_random_calibration(
     static: bool,
     mode: quantizer.QuantizationMode,
     num_data: int = 8,
-    check_idempotency: bool = False,
 ) -> onnx.ModelProto:
     if not static:
         raise Exception("Currently only supports static quantization.")
 
-    if check_idempotency:
-        if _is_fully_quantized(model):
-            return model
-        if any(node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR] for node in model.graph.node):
-            raise ValueError(
-                "an ONNX model with DequantizeLinear or QuantizeLinear is not supported yet."
-            )
+    _verify_not_quantized(model)
 
     model = optimize_model(model)
     dynamic_ranges = calibrate.calibrate_with_random_data(model, num_data)
@@ -175,57 +178,9 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
     return _transform(transformers, model)
 
 
-def _is_fully_quantized(model: onnx.ModelProto) -> bool:
-    """Return `True` if the ONNX `graph` is already quantized."""
-    return _is_fully_quantized_in_dfg_mode(
-        model.graph, *parse_onnx_graph(model)
-    ) or _is_fully_quantized_in_fake_quant_mode(model.graph, *parse_onnx_graph(model))
-
-
-def _is_fully_quantized_in_dfg_mode(
-    graph: onnx.GraphProto,
-    value_infos: Dict[str, onnx.ValueInfoProto],
-    producer: Dict[str, onnx.NodeProto],
-    consumers: Dict[str, List[onnx.NodeProto]],
-) -> bool:
-    return all(
-        node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR, _Q_LINEAR_CONV, _Q_LINEAR_MAT_MUL]
-        or (
-            node.op_type not in [_CONV, _MAT_MUL]
-            and _is_sandwiched(node, value_infos, producer, consumers)
-        )
-        for node in graph.node
-    )
-
-
-def _is_fully_quantized_in_fake_quant_mode(
-    graph: onnx.GraphProto,
-    value_infos: Dict[str, onnx.ValueInfoProto],
-    producer: Dict[str, onnx.NodeProto],
-    consumers: Dict[str, List[onnx.NodeProto]],
-) -> bool:
-    return all(
-        node.op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR]
-        or _is_sandwiched(node, value_infos, producer, consumers)
-        for node in graph.node
-    )
-
-
-def _is_sandwiched(
-    node: onnx.NodeProto,
-    value_infos: Dict[str, onnx.ValueInfoProto],
-    producer: Dict[str, onnx.NodeProto],
-    consumers: Dict[str, List[onnx.NodeProto]],
-) -> bool:
-    return all(
-        value_infos[tensor].type.tensor_type.elem_type != onnx.TensorProto.FLOAT
-        or (tensor in producer and producer[tensor].op_type == _DEQUANTIZE_LINEAR)
-        for tensor in node.input
-    ) and all(
-        value_infos[tensor].type.tensor_type.elem_type != onnx.TensorProto.FLOAT
-        or (
-            tensor in consumers
-            and all(consumer.op_type == _QUANTIZE_LINEAR for consumer in consumers[tensor])
-        )
-        for tensor in node.output
-    )
+def _verify_not_quantized(model: onnx.ModelProto) -> None:
+    # TODO also don't accept quantized operators in com.microsoft domain.
+    for node in model.graph.node:
+        op_type = node.op_type
+        if op_type in [_DEQUANTIZE_LINEAR, _QUANTIZE_LINEAR, _Q_LINEAR_CONV, _Q_LINEAR_MAT_MUL]:
+            raise AlreadyQuantizedError(op_type)
