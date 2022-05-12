@@ -44,6 +44,8 @@ class EmbeddingBagPattern(ONNXTransformer):
     """
 
     def pattern_matching(self, base_node):
+        # pylint: disable=too-many-return-statements
+
         if base_node.op_type != 'Loop':
             return base_node.input
         subgraph = onnx.helper.get_attribute_value(base_node.attribute[0])
@@ -63,44 +65,26 @@ class EmbeddingBagPattern(ONNXTransformer):
             return base_node.input
 
         subgraph_base_node = subgraph_base_nodes[0]
-
-        # code style to prevent pylint 'too many boolean expressions in if statement' and 'too-many-return-statements' errors
-        gather_0 = subgraph_producer_map.get(subgraph_base_node.input[0], None)
-
-        slice_0 = (
-            subgraph_producer_map.get(gather_0.input[1], None) if gather_0 is not None else None
-        )
-        unsqueeze_0 = (
-            subgraph_producer_map.get(slice_0.input[1], None) if slice_0 is not None else None
-        )
-        gather_1 = (
-            subgraph_producer_map.get(unsqueeze_0.input[0], None) if gather_0 is not None else None
-        )
-        unsqueeze_1 = (
-            subgraph_producer_map.get(slice_0.input[2], None) if slice_0 is not None else None
-        )
-        gather_2 = (
-            subgraph_producer_map.get(unsqueeze_1.input[0], None)
-            if unsqueeze_1 is not None
-            else None
-        )
-        gather_0_op_type = None if gather_0 is None else gather_0.op_type
-        slice_0_op_type = (
-            None if slice_0 is None or gather_0_op_type != 'Gather' else slice_0.op_type
-        )
-        unsqueeze_0_op_type = (
-            None if unsqueeze_0 is None or slice_0_op_type != 'Slice' else unsqueeze_0.op_type
-        )
-        gather_1_op_type = (
-            None if gather_1 is None or unsqueeze_0_op_type != 'Unsqueeze' else gather_1.op_type
-        )
-        unsqueeze_1_op_type = (
-            None if unsqueeze_1 is None or gather_1_op_type != 'Gather' else unsqueeze_1.op_type
-        )
-        gather_2_op_type = (
-            None if gather_2 is None or unsqueeze_1_op_type != 'Unsqueeze' else gather_2.op_type
-        )
-        if gather_2_op_type != 'Gather':
+        try:
+            gather_0 = subgraph_producer_map[subgraph_base_node.input[0]]
+            if gather_0.op_type != "Gather":
+                return base_node.input
+            slice_0 = subgraph_producer_map[gather_0.input[1]]
+            if slice_0.op_type != "Slice":
+                return base_node.input
+            unsqueeze_0 = subgraph_producer_map[slice_0.input[1]]
+            if unsqueeze_0.op_type != "Unsqueeze":
+                return base_node.input
+            gather_1 = subgraph_producer_map[unsqueeze_0.input[0]]
+            if gather_1.op_type != "Gather":
+                return base_node.input
+            unsqueeze_1 = subgraph_producer_map[slice_0.input[2]]
+            if unsqueeze_1.op_type != "Unsqueeze":
+                return base_node.input
+            gather_2 = subgraph_producer_map[unsqueeze_1.input[0]]
+            if gather_2.op_type != "Gather":
+                return base_node.input
+        except IndexError:
             return base_node.input
 
         matched_nodes = [
@@ -161,30 +145,30 @@ class EmbeddingBagPattern(ONNXTransformer):
 def _check_condition_1(node: onnx.NodeProto) -> bool:
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
     axes = attrs.get("axes")
-    keepdims = attrs.get("keepdims")
+    keepdims = attrs.get("keepdims", 1)
 
-    return axes is not None and axes == [0] and keepdims is not None and keepdims == 0
+    return axes is not None and axes == [0] and keepdims == 0
 
 
 def _check_condition_2(node: onnx.NodeProto) -> bool:
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-    axis = attrs.get("axis")
+    axis = attrs.get("axis", 0)
 
-    return axis is not None and axis == 0
+    return axis == 0
 
 
 def _check_condition_4(node: onnx.NodeProto) -> bool:
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-    axes = attrs.get("axes")
+    axes = attrs["axes"]
 
-    return axes is not None and axes == [0]
+    return axes == [0]
 
 
 def _check_condition_5(node_1: onnx.NodeProto, node_2: onnx.NodeProto) -> bool:
     for node in [node_1, node_2]:
         attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
-        axis = attrs.get("axis")
-        if axis is None or axis != 0:
+        axis = attrs.get("axis", 0)
+        if axis != 0:
             return False
     return node_1.input[1] == node_2.input[1]
 
@@ -251,6 +235,6 @@ def _make_new_node(base_node: onnx.NodeProto, subgraph: onnx.GraphProto) -> List
             inputs=base_node.input,
             outputs=base_node.output,
             name=base_node.name,
-            **{"body": subgraph},
+            body=subgraph,
         )
     ]
