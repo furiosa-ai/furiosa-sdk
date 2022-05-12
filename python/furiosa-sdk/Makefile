@@ -4,7 +4,7 @@ install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 install_full:
-	pip install --use-feature=in-tree-build .[full]
+	pip install .[full]
 
 lint:
 	isort --check --diff . && black --check --diff .
