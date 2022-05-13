@@ -370,22 +370,38 @@ class FuriosaONNXQuantizer:
         except KeyError:
             return
 
+        i_scale = self._get_quant_param(node.input[0], '_scale')
+        b_init = self.initializer[node.input[2]] if len(node.input) == 3 else None
         if self.per_channel:
-            self._quantize_weight_per_axis(w_init, axis=output_channel_axis)
+            self._quantize_weight_per_axis(
+                w_init, axis=output_channel_axis, input_scale=i_scale, bias_init=b_init
+            )
         else:
-            self._quantize_weight_per_layer(w_init)
+            self._quantize_weight_per_layer(w_init, input_scale=i_scale, bias_init=b_init)
 
-        if len(node.input) == 3:
-            b_init = self.initializer[node.input[2]]
-            i_scale = self._get_quant_param(node.input[0], '_scale')
+        if b_init is not None:
             w_scale = self._get_quant_param(node.input[1], '_scale')
             self._quantize_bias(b_init, input_scale=i_scale, weight_scale=w_scale)
 
-    def _quantize_weight_per_layer(self, weight_init: onnx.TensorProto) -> None:
+    def _quantize_weight_per_layer(
+        self,
+        weight_init: onnx.TensorProto,
+        input_scale: Optional[onnx.TensorProto] = None,
+        bias_init: Optional[onnx.TensorProto] = None,
+    ) -> None:
         weight = numpy_helper.to_array(weight_init)
         zp, s = calculate_weight_quant_params(
             data=weight.flatten(), weight_qtype=self.weight_qtype, name=weight_init.name
         )
+
+        if input_scale is not None:
+            input_scale = onnx.numpy_helper.to_array(input_scale)
+            bias_amax = (
+                np.absolute(onnx.numpy_helper.to_array(bias_init)).max()
+                if bias_init is not None
+                else np.zeros(1)
+            )
+            s = self._correct_small_filter_scale(s, input_scale, bias_amax)
 
         suffix = ['_quantized', '_zero_point', '_scale']
         _, zp_name, s_name = append_suffix(name=weight_init.name, suffix=suffix)
@@ -399,13 +415,26 @@ class FuriosaONNXQuantizer:
             vals_scale=np.asarray(s, dtype=np.float32),
         )
 
-    def _quantize_weight_per_axis(self, weight_init: onnx.TensorProto, axis: int) -> None:
+    def _quantize_weight_per_axis(
+        self,
+        weight_init: onnx.TensorProto,
+        axis: int,
+        input_scale: onnx.TensorProto,
+        bias_init: Optional[onnx.TensorProto] = None,
+    ) -> None:
         assert len(weight_init.dims) == 4, f'weight should have rank 4: {repr(weight_init)}'
         weight = numpy_helper.to_array(weight_init)
 
         num_output_channels = weight.shape[axis]
         s_list = []
         zp_list = []
+        input_scale_array = onnx.numpy_helper.to_array(input_scale)
+        bias_array = (
+            onnx.numpy_helper.to_array(bias_init)
+            if bias_init is not None
+            else np.zeros(num_output_channels)
+        )
+
         for i in range(num_output_channels):
             indices = [slice(None)] * weight.ndim
             indices[axis] = i
@@ -413,6 +442,7 @@ class FuriosaONNXQuantizer:
             zp, s = calculate_weight_quant_params(
                 per_channel_weight, self.weight_qtype, weight_init.name
             )
+            s = self._correct_small_filter_scale(s, input_scale_array, bias_array[i])
             s_list.append(s)
             zp_list.append(zp)
 
@@ -427,6 +457,29 @@ class FuriosaONNXQuantizer:
             vals_zp=np.asarray(zp_list, dtype=TENSOR_TYPE_TO_NP_TYPE[self.weight_qtype]),
             vals_scale=np.asarray(s_list, dtype=np.float32),
         )
+
+    @staticmethod
+    def _correct_small_filter_scale(
+        filter_scale: float, input_scale: np.ndarray, bias: float
+    ) -> float:
+        assert (
+            input_scale.size == 1
+        ), f"Only per tensor activation is supported, but multiple scales for activation given:\n{input_scale}"
+        if input_scale * filter_scale * 2**31 < abs(bias):
+            # when the condition is met, bias value is much larger than input * filter value, so output is almost equal to the bias
+            # therefore, it is ok to control filter scale freely, since output value does not really depend on filter scale.
+            # make filter scale to be large enough, so that bias is not clamped during quantization.
+            filter_scale = (
+                abs(bias) / 2**31 / input_scale
+            )  # for such filter_scale, bias_scale * 2**31 ~= abs(bias), so i32 quantized value is approximately i32::MAX.
+            filter_scale *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
+        elif input_scale * filter_scale == 0:
+            # when bias does not exist or bias is 0, if condition may not be met(input_scale * filter_scale == 0 and bias == 0).
+            filter_scale = 2**-149 / input_scale  # scale value that makes bias_scale = 2**-149
+            filter_scale = max(
+                filter_scale, 2**-149
+            )  # if input_scale > 1, filter_scale = 0. then, setting filter_scale = 2**-149 will make bias scale non-zero.
+        return filter_scale
 
     def _quantize_bias(
         self,

@@ -2,7 +2,6 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import onnx
-import onnxruntime as ort
 
 from furiosa.quantizer.frontend.onnx import calibrate, quantizer
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer_mode
@@ -33,10 +32,10 @@ class TestEliminateClipper(TestTransformer):
         rng = np.random.default_rng()
         data = [rng.standard_normal(shape, dtype=np.float32) for shape in input_shapes]
 
-        orig_output = _run_onnx_model(
+        orig_output = self.run_onnx_model_output_dict(
             quantizer_mode.ONNXRuntimeExecutable(orig_model, raw_data=True).transform(), data
         )
-        trans_output = _run_onnx_model(
+        trans_output = self.run_onnx_model_output_dict(
             quantizer_mode.ONNXRuntimeExecutable(trans_model, raw_data=True).transform(), data
         )
 
@@ -44,7 +43,7 @@ class TestEliminateClipper(TestTransformer):
         # In other words, if well transformed, the output error(s) between orig model and trans model should be only caused by
         # Q-DQ before clipper in the former, supposed to be removed in the latter.
         for k in orig_output:
-            scale = _get_quant_param(graph, producer_map[k].input[1])
+            scale, _ = self._get_quant_param(graph, producer_map[k])
             max_diff = np.max(np.abs(orig_output[k] - trans_output[k]))
             self.assertAlmostEqual(max_diff / scale, round(max_diff / scale), places=4)
 
@@ -54,10 +53,12 @@ class TestEliminateClipper(TestTransformer):
         assert qlinear.op_type == "QuantizeLinear", repr(qlinear)
         assert dqlinear.op_type == "DequantizeLinear", repr(dqlinear)
 
-        for idx in range(1, 3):
+        for qparam_qlinear, qparam_dqlinear in zip(
+            self._get_quant_param(graph, qlinear), self._get_quant_param(graph, dqlinear)
+        ):
             self.check_initializer(
-                _get_quant_param(graph, qlinear.input[idx]),
-                _get_quant_param(graph, dqlinear.input[idx]),
+                qparam_qlinear,
+                qparam_dqlinear,
             )
 
     def test_case1(self):
@@ -455,20 +456,3 @@ def _make_test_model(
     trans_model = transformer.transform()
 
     return orig_model, trans_model
-
-
-def _get_quant_param(graph: onnx.GraphProto, tensor_name: str) -> np.ndarray:
-    return onnx.numpy_helper.to_array(
-        next(tensor for tensor in graph.initializer if tensor.name == tensor_name)
-    )
-
-
-def _run_onnx_model(
-    model: onnx.ModelProto, input_arrays: List[np.ndarray]
-) -> Dict[str, np.ndarray]:
-    sess = ort.InferenceSession(model.SerializeToString())
-    input_names = [inp.name for inp in sess.get_inputs()]
-    output_names = [out.name for out in sess.get_outputs()]
-    feed_dict = dict(zip(input_names, input_arrays))
-    outputs = sess.run(output_names, input_feed=feed_dict)
-    return dict(zip(output_names, outputs))
