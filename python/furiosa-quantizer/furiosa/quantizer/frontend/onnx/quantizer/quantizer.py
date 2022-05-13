@@ -370,28 +370,16 @@ class FuriosaONNXQuantizer:
         except KeyError:
             return
 
+        i_scale = self._get_quant_param(node.input[0], '_scale')
+        b_init = self.initializer[node.input[2]] if len(node.input) == 3 else None
         if self.per_channel:
-            i_scale = self._get_quant_param(node.input[0], '_scale')
-            if len(node.input) == 3:
-                b_init = self.initializer[node.input[2]]
-                self._quantize_weight_per_axis(
-                    w_init, axis=output_channel_axis, input_scale=i_scale, bias_init=b_init
-                )
-            else:
-                self._quantize_weight_per_axis(
-                    w_init, axis=output_channel_axis, input_scale=i_scale
-                )
+            self._quantize_weight_per_axis(
+                w_init, axis=output_channel_axis, input_scale=i_scale, bias_init=b_init
+            )
         else:
-            i_scale = self._get_quant_param(node.input[0], '_scale')
-            if len(node.input) == 3:
-                b_init = self.initializer[node.input[2]]
-                self._quantize_weight_per_layer(w_init, input_scale=i_scale, bias_init=b_init)
-            else:
-                self._quantize_weight_per_layer(w_init, input_scale=i_scale)
+            self._quantize_weight_per_layer(w_init, input_scale=i_scale, bias_init=b_init)
 
-        if len(node.input) == 3:
-            b_init = self.initializer[node.input[2]]
-            i_scale = self._get_quant_param(node.input[0], '_scale')
+        if b_init is not None:
             w_scale = self._get_quant_param(node.input[1], '_scale')
             self._quantize_bias(b_init, input_scale=i_scale, weight_scale=w_scale)
 
@@ -471,25 +459,27 @@ class FuriosaONNXQuantizer:
         )
 
     @staticmethod
-    def _correct_small_filter_scale(s: float, input_scale: np.ndarray, bias: float) -> float:
+    def _correct_small_filter_scale(
+        filter_scale: float, input_scale: np.ndarray, bias: float
+    ) -> float:
         assert (
             input_scale.size == 1
         ), f"Only per tensor activation is supported, but multiple scales for activation given:\n{input_scale}"
-        if input_scale * s * 2**31 < abs(bias):
+        if input_scale * filter_scale * 2**31 < abs(bias):
             # when the condition is met, bias value is much larger than input * filter value, so output is almost equal to the bias
             # therefore, it is ok to control filter scale freely, since output value does not really depend on filter scale.
             # make filter scale to be large enough, so that bias is not clamped during quantization.
-            s = (
+            filter_scale = (
                 abs(bias) / 2**31 / input_scale
-            )  # for such s, bias_scale * 2**31 ~= abs(bias), so i32 quantized value is approximately i32::MAX.
-            s *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
-        elif input_scale * s == 0:
-            # when bias does not exist or bias is 0, if condition may not be met(input_scale * s == 0 and bias == 0).
-            s = 2**-149 / input_scale  # scale value that makes bias_scale = 2**-149
-            s = max(
-                s, 2**-149
-            )  # if input_scale > 1, s = 0. then, setting s = 2**-149 will make bias scale non-zero.
-        return s
+            )  # for such filter_scale, bias_scale * 2**31 ~= abs(bias), so i32 quantized value is approximately i32::MAX.
+            filter_scale *= 2  # by scaling scale by 2, i32 bias value becomes approximately i32::MAX / 2, so overflow will not occur during conv calcuation.
+        elif input_scale * filter_scale == 0:
+            # when bias does not exist or bias is 0, if condition may not be met(input_scale * filter_scale == 0 and bias == 0).
+            filter_scale = 2**-149 / input_scale  # scale value that makes bias_scale = 2**-149
+            filter_scale = max(
+                filter_scale, 2**-149
+            )  # if input_scale > 1, filter_scale = 0. then, setting filter_scale = 2**-149 will make bias scale non-zero.
+        return filter_scale
 
     def _quantize_bias(
         self,
