@@ -232,7 +232,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install -r ./requirements.txt && \
     pip install nbmake && \
-    pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' \\))
+    pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' \\))
     """
 }
 
