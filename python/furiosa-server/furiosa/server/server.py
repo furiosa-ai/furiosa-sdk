@@ -32,15 +32,15 @@ class ModelServer:
         )
 
     async def start(self):
+        # Model loading
+        if self._config.intial_model_autoload:
+            await self.load()
+
         # Signal handling
         loop = asyncio.get_event_loop()
         for sign in (signal.SIGTERM, signal.SIGINT):
             # Add signal handler for terminating GRPC/REST server at once
             loop.add_signal_handler(sign, lambda: asyncio.ensure_future(self.stop()))
-
-        # Model loading
-        if self._config.intial_model_autoload:
-            await self.load()
 
         # Run servers
         await asyncio.gather(self._rest_server.start(), self._grpc_server.start())
