@@ -15,4 +15,5 @@
 * `CPU 기반 추론과 정확도 비교하기 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/InferenceAccuracyCheck.ipynb>`_
 * `이미지 분류 (Image Classification) 모델 추론 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/Image_Classification.ipynb>`_
 * `객체 탐지 (SSD Object Detection) 모델 추론 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/SSD_Object_Detection.ipynb>`_
+* `YOLOX-L 모델 최적화 컴파일 및 추론 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/YOLOX-L.ipynb>`_
 * `기타 Python 코드 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/inferences>`_
