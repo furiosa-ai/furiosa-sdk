@@ -12,8 +12,12 @@ from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
 class ONNXTransformer:
     check_runnable = True
 
-    def __init__(self, model):
-        self.model = utils.name_nodes(model)
+    def __init__(self, model, name_nodes=True):
+        if name_nodes:
+            self.model = utils.name_nodes(model)
+        else:
+            # When transformer is applied to the subgraph in attribute, prevent renaming of nodes inside the subgraph.
+            self.model = model
         self.producer_map = {
             node_output: node for node in model.graph.node for node_output in node.output
         }
@@ -77,7 +81,7 @@ class ONNXTransformer:
             getattr(model.graph, field).extend(self.get_map_values(field))
         return model
 
-    def build_optimized_model(self, model):
+    def build_optimized_model(self, model, check=True):
         model = self.update_graph_fields(model)
         new_nodes = []
         for member in self.get_map_values('node'):
@@ -89,7 +93,9 @@ class ONNXTransformer:
                 raise Exception(member)
 
         model = utils.rebuild_model(model, new_nodes)
-        check_model(model, self.check_runnable)
+        if check:
+            # if the model is a subgraph attribute model, inputs may be defined outside subgraph, so disable check option.
+            check_model(model, self.check_runnable)
 
         return model
 
