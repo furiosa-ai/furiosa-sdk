@@ -49,7 +49,7 @@ class ServerConfig(BaseSettings):
 
     # Server metadata for predict API
     server_name: str = "furiosa-server"
-    server_version: str = __version__
+    server_version: str = str(__version__)
     extensions: List[str] = []
 
     # Repository/Registry configs
