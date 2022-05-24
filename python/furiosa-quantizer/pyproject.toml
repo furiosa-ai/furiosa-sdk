@@ -29,17 +29,16 @@ dependencies = [
     "furiosa-common == 0.7.*",
 
     "numpy ~= 1.21.5",
-    "onnx ~= 1.10.2",
-    "onnx-simplifier ~= 0.3.7",
-    "onnxoptimizer ~= 0.2.6",
+    "onnx ~= 1.11.0",
+    "onnx-simplifier ~= 0.3.10",
+    "onnxoptimizer ~= 0.2.7",
     "onnxruntime ~= 1.11.1",
-    "pyyaml ~= 6.0.0",
-    "tqdm ~= 4.63",
+    "tqdm ~= 4.64",
 
     # onnxruntime appears to miss specifying some dependencies. Refer to
     # <https://github.com/microsoft/onnxruntime/issues/7527>.
     "packaging ~= 21.3",
-    "sympy ~= 1.10.0",
+    "sympy ~= 1.10.1",
 ]
 
 [project.optional-dependencies]
