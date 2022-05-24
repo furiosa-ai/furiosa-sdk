@@ -28,7 +28,7 @@ requires-python = "~=3.7"
 dependencies = ["furiosa-common == 0.7.*", "cffi ~= 1.14", "numpy ~=1.21.5"]
 
 [project.optional-dependencies]
-test = ["mnist", "onnxruntime ~= 1.9.0"]
+test = ["mnist", "onnxruntime ~= 1.11.1"]
 
 [project.urls]
 Home = "https://furiosa.ai"
