@@ -44,6 +44,7 @@ class ONNXTransformer:
             **self.graph_output_map,
         }
 
+        # TODO check all value_infos are defined and have both shape and dtype.
         self.input_count_map = Counter()
         for node in model.graph.node:
             for tensor_name in node.input:
