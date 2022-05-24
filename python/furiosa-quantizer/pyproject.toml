@@ -34,7 +34,7 @@ dependencies = [
     "onnxoptimizer ~= 0.2.7",
     "onnxruntime ~= 1.11.1",
     "pyyaml ~= 6.0.0",
-    "tqdm ~= 4.63",
+    "tqdm ~= 4.64",
 
     # onnxruntime appears to miss specifying some dependencies. Refer to
     # <https://github.com/microsoft/onnxruntime/issues/7527>.
