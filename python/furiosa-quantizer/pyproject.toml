@@ -33,7 +33,6 @@ dependencies = [
     "onnx-simplifier ~= 0.3.10",
     "onnxoptimizer ~= 0.2.7",
     "onnxruntime ~= 1.11.1",
-    "pyyaml ~= 6.0.0",
     "tqdm ~= 4.64",
 
     # onnxruntime appears to miss specifying some dependencies. Refer to
