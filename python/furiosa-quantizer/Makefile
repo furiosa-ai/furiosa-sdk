@@ -4,7 +4,7 @@ install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 lint:
-	isort --check --diff . && black --check --diff . && pylint --verbose furiosa/ tests/ *.py
+	isort --check --diff . && black --check --diff . && pylint --verbose furiosa/ tests/
 
 upload_test:
 	twine upload --repository testpypi dist/*
