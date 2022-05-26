@@ -7,10 +7,10 @@ lint:
 	isort --check --diff . && black --check --diff .
 
 upload_test:
-	twine upload --repository testpypi dist/*
+	flit publish --repository testpypi
 
 upload:
-	twine upload dist/*
+	flit publish
 
 test:
 	FURIOSA_TEST_IS_RUNNING=1 python -m unittest discover -v -s ./tests

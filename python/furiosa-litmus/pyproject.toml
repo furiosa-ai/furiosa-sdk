@@ -67,4 +67,4 @@ write_to = "python/furiosa-litmus/furiosa/litmus/git_version.txt"
 version_scheme = "release-branch-semver"
 
 [tool.flit.sdist]
-include = ["git_version.txt"]
+include = ["furiosa/litmus/git_version.txt"]

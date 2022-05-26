@@ -10,10 +10,10 @@ lint:
 	isort --check --diff . && black --check --diff .
 
 upload_test:
-	twine upload --repository testpypi dist/*
+	flit publish --repository testpypi
 
 upload:
-	twine upload dist/*
+	flit publish
 
 test:
 	if [ -d ./tests ]; then python -m unittest discover -v -s ./tests; fi;
