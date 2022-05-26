@@ -3,11 +3,12 @@ from __future__ import annotations
 from contextlib import contextmanager
 from ctypes import byref, c_void_p
 from enum import Flag, IntEnum, auto
+import io
 import sys
 from types import TracebackType
 from typing import Any, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ._api import LIBNUX
 from .errors import into_exception, is_err
@@ -31,13 +32,22 @@ class ChromeTraceConfig(BaseModel):
     """ChromeTrace specific config.
 
     Attributes:
-        file (int): raw file descriptor(int) to write profile data. By default, sys.stdout.fileno().
+        file: file descriptor to write profile data. By default, sys.stdout.
     """
 
     class Config:
         extra = "forbid"
+        arbitrary_types_allowed = True
 
-    file: int = sys.stdout.fileno()
+        # Custom encoder for File like type.
+        # See https://pydantic-docs.helpmanual.io/usage/exporting_models/#json_encoders
+        # Here we uses C module "_io" as actual type which pydantic will use is "_io._IOBase".
+        import _io
+
+        json_encoders = {_io._IOBase: lambda f: f.fileno()}
+
+    # Provide default value as default_factory because stdout itself is not pickle-able.
+    file: io.IOBase = Field(default_factory=lambda: sys.stdout)
 
 
 # Format specific configs
@@ -50,7 +60,7 @@ class profile:
     Examples:
         >>> from furiosa.runtime.profiler import RecordFormat
         >>> with open("profile.json", "w") as f:
-        >>>     with profile(format=RecordFormat.ChromeTrace, file=f.fileno()) as profiler:
+        >>>     with profile(format=RecordFormat.ChromeTrace, file=f) as profiler:
         >>>         # Profiler enabled from here
         >>>         with profiler.record("Inference"):
         >>>             ... # Profiler recorded with span named 'Inference'
