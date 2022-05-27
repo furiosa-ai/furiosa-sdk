@@ -10,8 +10,8 @@ spec:
         limits:
           cpu: "4"
           memory: "8Gi"
-          alpha.furiosa.ai/npu: "1"
+          beta.furiosa.ai/npu: "1"
         requests:
           cpu: "4"
           memory: "8Gi"
-          alpha.furiosa.ai/npu: "1"
+          beta.furiosa.ai/npu: "1"

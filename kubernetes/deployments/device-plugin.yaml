@@ -1,24 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: npu-device-plugin
+  namespace: kube-system
+data:
+  config.yaml: |
+    defaultPe: Fusion
+    disabledDevices: []
+    interval: 10
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: furiosa-device-plugin
   namespace: kube-system
+  labels:
+    app.kubernetes.io/name: furiosa-device-plugin
 spec:
   selector:
     matchLabels:
-      k8s-app: furiosa-device-plugin
+      app.kubernetes.io/name: furiosa-device-plugin
   template:
     metadata:
       labels:
-        k8s-app: furiosa-device-plugin
+        app.kubernetes.io/name: furiosa-device-plugin
     spec:
+      nodeSelector:
+        feature.node.kubernetes.io/pci-1ed2.present: "true"
       containers:
-      - image: ghcr.io/furiosa-ai/k8s-device-plugin:0.9.1
+      - image: ghcr.io/furiosa-ai/k8s-device-plugin:0.10.0
         name: furiosa-device-plugin
         imagePullPolicy: Always
-        workingDir: /opt/bin
-        command: ["./k8s-device-plugin"]
-        args: ["--interval", "10", "--default-pe", "pe0-1"]
+        command: ["/usr/bin/k8s-device-plugin"]
+        args: ["--config-file", "/etc/furiosa/config.yaml"]
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: RUST_LOG
+          value: info
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -30,16 +51,18 @@ spec:
             mountPath: /dev
           - name: dp
             mountPath: /var/lib/kubelet/device-plugins
+          - name: config
+            mountPath: /etc/furiosa
       volumes:
-        - name: sys
-          hostPath:
-            path: /sys
-        - name: dev
-          hostPath:
-            path: /dev
-        - name: dp
-          hostPath:
-            path: /var/lib/kubelet/device-plugins
-      nodeSelector:
-        kubernetes.io/os: linux
-        alpha.furiosa.ai/npu.family: warboy
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: dev
+        hostPath:
+          path: /dev
+      - name: dp
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: config
+        configMap:
+          name: npu-device-plugin
