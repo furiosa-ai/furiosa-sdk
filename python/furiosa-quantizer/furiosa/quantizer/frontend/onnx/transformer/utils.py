@@ -1,6 +1,6 @@
 import itertools
 import logging
-from typing import Any, Callable, Iterable, List, Optional, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 
 import onnx
 from onnx.helper import make_model, make_opsetid, make_tensor_value_info
@@ -19,22 +19,23 @@ def name_nodes(model):
     return model
 
 
-def eliminate_unused_initializer(model: onnx.ModelProto) -> onnx.ModelProto:
+def eliminate_unused_initializer(model):
     """
     This function eliminates every initializers not used by node input,
     regardless of any graph fields they are defined in.
     """
-    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    node_input_names = get_node_input_names(model)
     used_initializers = [
         tensor for tensor in model.graph.initializer if tensor.name in node_input_names
     ]
     del model.graph.initializer[:]
     model.graph.initializer.extend(used_initializers)
+
     return model
 
 
 def eliminate_unused_input(model):
-    node_input_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    node_input_names = get_node_input_names(model)
     graph_output_names = set(value_info.name for value_info in model.graph.output)
     used_inputs = [
         value_info
@@ -47,7 +48,7 @@ def eliminate_unused_input(model):
 
 
 def eliminate_unused_output(model):
-    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    node_output_names = get_node_output_names(model)
     graph_input_names = set(value_info.name for value_info in model.graph.input)
     used_outputs = [
         value_info
@@ -60,7 +61,7 @@ def eliminate_unused_output(model):
 
 
 def eliminate_unused_value_info(model):
-    node_output_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    node_output_names = get_node_output_names(model)
     graph_output_names = set(value_info.name for value_info in model.graph.output)
     used_value_infos = [
         value_info
@@ -186,14 +187,6 @@ def fixed_point(x: T, functions: Iterable[Callable[[T], T]]) -> T:
             return x
 
 
-def get_attribute(
-    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
-) -> Any:
-    return next(
-        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
-    )
-
-
 def make_unhashables_unique(values):
     seen = []
     for v in values:
@@ -249,3 +242,63 @@ def check_value_info(model: onnx.ModelProto) -> None:
             raise AttributeError(
                 f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'
             ) from None
+
+
+def get_node_input_names(model):
+    tensor_names = set(tensor_name for node in model.graph.node for tensor_name in node.input)
+    # get tensor names in the graph attribute
+    for node in model.graph.node:
+        if node.op_type == 'If':
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['else_branch', 'then_branch']
+            )
+        elif node.op_type in ['Loop', 'Scan']:
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['body']
+            )
+        else:
+            continue
+        for graph in graphs:
+            for subgraph_node in graph.node:
+                tensor_names.update(tensor_name for tensor_name in subgraph_node.input)
+    return tensor_names
+
+
+def get_node_output_names(model):
+    tensor_names = set(tensor_name for node in model.graph.node for tensor_name in node.output)
+    # get tensor names in the graph attribute
+    for node in model.graph.node:
+        if node.op_type == 'If':
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['else_branch', 'then_branch']
+            )
+        elif node.op_type in ['Loop', 'Scan']:
+            graphs = (
+                onnx.helper.get_attribute_value(attr)
+                for attr in node.attribute
+                if attr.name in ['body']
+            )
+        else:
+            continue
+        for graph in graphs:
+            for subgraph_node in graph.node:
+                tensor_names.update(tensor_name for tensor_name in subgraph_node.output)
+    return tensor_names
+
+
+def get_attribute(
+    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
+) -> Any:
+    return next(
+        (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
+    )
+
+
+def get_node_attributes(node: onnx.NodeProto) -> Dict[str, Any]:
+    return {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
