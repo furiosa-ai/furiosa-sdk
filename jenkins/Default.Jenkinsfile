@@ -125,7 +125,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade pip setuptools wheel;
-  pip install --upgrade flit gitpython papermill black isort pylint pylint-protobuf;
+  pip install --root-user-action=ignore --upgrade flit gitpython papermill black isort pylint pylint-protobuf;
   """
 }
 
@@ -136,7 +136,7 @@ def buildPackages(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    cd python/${it} && pip install .
+    cd python/${it} && pip install --root-user-action=ignore .
     """
   }
 
@@ -205,7 +205,7 @@ def testModules(pythonVersion) {
 
     cd python/${it};
 
-    pip install '.[test]'
+    pip install --root-user-action=ignore '.[test]'
 
     make test
     """
@@ -218,7 +218,7 @@ def testExamples(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    pip install -r examples/inferences/requirements.txt && \
+    pip install --root-user-action=ignore -r examples/inferences/requirements.txt && \
     tests/test_examples.sh
     """
 }
@@ -230,8 +230,8 @@ def testNotebooks(pythonVersion) {
     python --version;
 
     cd examples/notebooks/ && \
-    pip install -r ./requirements.txt && \
-    pip install nbmake && \
+    pip install --root-user-action=ignore -r ./requirements.txt && \
+    pip install --root-user-action=ignore nbmake && \
     pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' \\))
     """
 }
@@ -295,9 +295,9 @@ def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
     conda activate env-${pythonVersion};
     python --version
 
-    pip uninstall -y ${module}
-    pip install --no-cache-dir --upgrade --pre ${indexOption} ${module}==${sdkVersion}
-    pip uninstall -y ${module}
+    pip uninstall --root-user-action=ignore -y ${module}
+    pip install --root-user-action=ignore --no-cache-dir --upgrade --pre ${indexOption} ${module}==${sdkVersion}
+    pip uninstall --root-user-action=ignore -y ${module}
     """
   }
 
@@ -307,7 +307,7 @@ def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
   conda activate env-${pythonVersion};
   python --version
 
-  pip install --no-cache-dir --upgrade --pre ${indexOption} furiosa-sdk[full]==${sdkVersion}
+  pip install --root-user-action=ignore --no-cache-dir --upgrade --pre ${indexOption} furiosa-sdk[full]==${sdkVersion}
   """
 }
 
