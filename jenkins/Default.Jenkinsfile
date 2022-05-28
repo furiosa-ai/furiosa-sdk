@@ -125,7 +125,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade pip setuptools wheel;
-  pip install --upgrade build twine gitpython papermill black isort pylint pylint-protobuf;
+  pip install --upgrade flit gitpython papermill black isort pylint pylint-protobuf;
   """
 }
 
@@ -275,7 +275,7 @@ def publishPackages(pythonVersion, repo) {
     conda activate env-${pythonVersion};
     python --version
 
-    cd python/${it} && twine upload -r ${repo} dist/*
+    cd python/${it} && flit publish --repository ${repo}
     """
   }
 }
@@ -307,7 +307,7 @@ def validatePypiPackage(pythonVersion, indexOption, sdkVersion) {
   conda activate env-${pythonVersion};
   python --version
 
-  pip install --no-cache-dir --upgrade ${indexOption} furiosa-sdk[full]==${sdkVersion}
+  pip install --no-cache-dir --upgrade --pre ${indexOption} furiosa-sdk[full]==${sdkVersion}
   """
 }
 

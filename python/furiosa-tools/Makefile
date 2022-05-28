@@ -7,10 +7,10 @@ lint:
 	isort --check --diff . && black --check --diff .
 
 upload_test:
-	twine upload --repository testpypi dist/*
+	flit publish --repository testpypi
 
 upload:
-	twine upload dist/*
+	flit publish
 
 test:
 	python -m unittest
