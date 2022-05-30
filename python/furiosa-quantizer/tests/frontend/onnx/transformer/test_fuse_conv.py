@@ -1,10 +1,8 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import (
+from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import (  # Pattern_1_a,
     Pattern_1,
-    Pattern_1_a,
     Pattern_2,
-    Pattern_2_a,
     Pattern_3,
 )
 from tests.frontend.onnx.transformer import TestTransformer
@@ -51,7 +49,7 @@ class TestFuseConv(TestTransformer):
             "opsetid": [opsetid],
         }
 
-        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1_a)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
         self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
@@ -91,7 +89,7 @@ class TestFuseConv(TestTransformer):
             "opsetid": [opsetid],
         }
 
-        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2_a)
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
         self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
