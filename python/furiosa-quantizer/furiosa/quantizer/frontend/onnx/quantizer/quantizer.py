@@ -230,7 +230,7 @@ class FuriosaONNXQuantizer:
         return self.model
 
     def make_quant_dequant_node(
-        self, node_input: str, axis: Optional[Dict] = None, idx: Optional[int] = None
+        self, node_input: str, axis: Optional[int] = None, idx: Optional[int] = None
     ) -> None:
         scale = node_input + '_scale'
         zero_point = node_input + '_zero_point'
@@ -244,7 +244,7 @@ class FuriosaONNXQuantizer:
             op_type='QuantizeLinear',
             inputs=[node_input, scale, zero_point],
             outputs=[qlinear_output],
-            attrs=axis,
+            axis=axis,
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
@@ -258,7 +258,7 @@ class FuriosaONNXQuantizer:
             op_type='DequantizeLinear',
             inputs=[qlinear_output, scale, zero_point],
             outputs=[dqlinear_output],
-            attrs=axis,
+            axis=axis,
         )
         self._stack_quant_vi_and_qa_helper(
             name=node_input,
@@ -519,13 +519,13 @@ class FuriosaONNXQuantizer:
         )
 
     def _stack_quant_node(
-        self, inputs: List[str], outputs: List[str], op_type: str, attrs: Optional[Dict] = None
+        self, inputs: List[str], outputs: List[str], op_type: str, axis: Optional[int] = None
     ) -> None:
-        if attrs is None:
-            attrs = {}
-
         # make quantized node proto
-        quant_node = make_node(op_type, inputs, outputs, **attrs)
+        if axis is not None:
+            quant_node = make_node(op_type, inputs, outputs, axis=axis)
+        else:
+            quant_node = make_node(op_type, inputs, outputs)
 
         # stack quantized node
         self._quant_node.update({outputs[0]: quant_node})
@@ -768,7 +768,7 @@ class FuriosaONNXQuantizer:
             raise Exception(f"dynamic-range '{origin}' is missing")
         return result
 
-    def _decide_qdq_axis(self, node_input: str, op_type: str) -> Optional[Dict]:
+    def _decide_qdq_axis(self, node_input: str, op_type: str) -> Optional[int]:
         """
         This function decides axis for onnx opset >= 13 QuantizeLinear and DequantizeLinear
         """
@@ -776,11 +776,11 @@ class FuriosaONNXQuantizer:
             return None
         if op_type == 'Conv':
             # axis for Conv weight/bias
-            return {'axis': 0}
+            return 0
         if op_type == 'ConvTranspose':
             if len(self.initializer.get(node_input).dims) < 2:
                 # axis for ConvTranspose bias
-                return {'axis': 0}
+                return 0
             # axis for ConvTranspose weight
-            return {'axis': 1}
+            return 1
         return None
