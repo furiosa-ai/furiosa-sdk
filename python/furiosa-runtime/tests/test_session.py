@@ -110,7 +110,21 @@ class TestSessionOptions(unittest.TestCase):
     def test_create(self):
         with session.create(
             MNIST_ONNX, worker_num=1, compile_config={"split_after_lower": True}
+        ) as _:
+            pass
+
+    def test_batch(self):
+        with session.create(
+            MNIST_ONNX,
+            batch_size=1,
         ) as sess:
+            self.assertEqual(sess.input(0).shape, (1, 1, 28, 28))
+            pass
+        with session.create(
+            MNIST_ONNX,
+            batch_size=4,
+        ) as sess:
+            self.assertEqual(sess.input(0).shape, (4, 1, 28, 28))
             pass
 
 

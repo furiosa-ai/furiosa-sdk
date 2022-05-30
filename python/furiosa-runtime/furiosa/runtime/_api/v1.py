@@ -58,6 +58,12 @@ LIBNUX.nux_session_option_set_output_queue_size.restype = None
 LIBNUX.nux_session_option_set_worker_num.argtypes = [c_void_p, c_ulonglong]
 LIBNUX.nux_session_option_set_worker_num.restype = None
 
+LIBNUX.nux_session_option_set_batch_size.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_session_option_set_batch_size.restype = None
+
+LIBNUX.nux_session_option_enable_compiler_hints.argtypes = [c_void_p, c_bool]
+LIBNUX.nux_session_option_enable_compiler_hints.restype = None
+
 LIBNUX.nux_session_option_destroy.argtypes = [c_void_p]
 LIBNUX.nux_session_option_destroy.restype = None
 

@@ -66,6 +66,8 @@ def _fill_all_tensors(
 def _create_session_options(
     device: Optional[str] = None,
     worker_num: Optional[int] = None,
+    batch_size: Optional[int] = None,
+    compiler_hints: Optional[bool] = None,
     compile_config: Optional[Dict[str, object]] = None,
     compiler_log: Optional[Path] = None,
     input_queue_size: Optional[int] = None,
@@ -76,6 +78,10 @@ def _create_session_options(
         LIBNUX.nux_session_option_set_device(options, device.encode())
     if worker_num:
         LIBNUX.nux_session_option_set_worker_num(options, worker_num)
+    if batch_size:
+        LIBNUX.nux_session_option_set_batch_size(options, batch_size)
+    if compiler_hints:
+        LIBNUX.nux_session_option_enable_compiler_hints(options, compiler_hints)
     if compile_config:
         compile_config = yaml.dump(compile_config).encode()
         err = LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
@@ -98,15 +104,24 @@ class Session(Model):
     def __init__(
         self,
         model: Union[bytes, str, Path],
-        device: str = None,
-        worker_num: int = None,
-        compile_config: Dict[str, object] = None,
+        device: Optional[str] = None,
+        worker_num: Optional[int] = None,
+        batch_size: Optional[int] = None,
+        compiler_hints: bool = True,
+        compile_config: Optional[Dict[str, object]] = None,
     ):
 
         if device is None:
             device = envs.current_npu_device()
         log_path = generate_compiler_log_path()
-        options = _create_session_options(device, worker_num, compile_config, log_path)
+        options = _create_session_options(
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compiler_hints=compiler_hints,
+            compile_config=compile_config,
+            compiler_log=log_path,
+        )
         model_image = _model_image(model)
 
         print(f"Using furiosa-compiler {runtime_version()}")
@@ -218,7 +233,7 @@ class Session(Model):
 class CompletionQueue:
     """Receives the completion results asynchronously from AsyncSession"""
 
-    def __init__(self, ref: c_void_p, context_ty: type, output_descs: [TensorDesc]):
+    def __init__(self, ref: c_void_p, context_ty: Optional[type], output_descs: [TensorDesc]):
         self._as_parameter_ = ref
         self.ref = ref
         self.context_ty = context_ty
@@ -361,7 +376,9 @@ def create(
     model: Union[bytes, str, Path],
     device: str = None,
     worker_num: int = None,
+    batch_size: int = None,
     compile_config: Dict[str, object] = None,
+    compiler_hints: bool = True,
 ) -> Session:
     """Creates a session for a model
 
@@ -370,23 +387,34 @@ def create(
         a path string of a model image file
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
+        batch_size: Batch size of input tensors
         compile_config (Dict[str, object]): Compile config
+        compiler_hints: Print compiler hints if True (default: True)
 
     Returns:
         the session for a given model, allowing to run predictions. \
         Session is a thread safe.
     """
-    return Session(model, device, worker_num, compile_config)
+    return Session(
+        model=model,
+        device=device,
+        worker_num=worker_num,
+        batch_size=batch_size,
+        compile_config=compile_config,
+        compiler_hints=compiler_hints,
+    )
 
 
 def create_async(
     model: Union[bytes, str, Path],
-    context_ty: type = None,
-    device: str = None,
-    worker_num: int = None,
-    input_queue_size: int = None,
-    output_queue_size: int = None,
-    compile_config: Dict[str, object] = None,
+    context_ty: Optional[type] = None,
+    device: Optional[str] = None,
+    worker_num: Optional[int] = None,
+    batch_size: Optional[int] = None,
+    compiler_hints: Optional[bool] = True,
+    input_queue_size: Optional[int] = None,
+    output_queue_size: Optional[int] = None,
+    compile_config: Optional[Dict[str, object]] = None,
 ) -> (AsyncSession, CompletionQueue):
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
@@ -396,6 +424,8 @@ def create_async(
         context_ty (type): Type for passing context from AsyncSession to CompletionQueue
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
+        batch_size: Batch size of input tensors
+        compiler_hints: Print compiler hints if True (default: True)
         input_queue_size: The input queue size, and it must be > 0 and < 2^31.
         output_queue_size: The output queue size, and it must be be > 0 and < 2^31.
         compile_config (Dict[str, object]): Compile config
@@ -414,7 +444,14 @@ def create_async(
         model_image = _model_image(model)
         log_path = generate_compiler_log_path()
         options = _create_session_options(
-            device, worker_num, compile_config, log_path, input_queue_size, output_queue_size
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compile_config=compile_config,
+            compiler_hints=compiler_hints,
+            compiler_log=log_path,
+            input_queue_size=input_queue_size,
+            output_queue_size=output_queue_size,
         )
 
         print(f"Using furiosa-compiler {runtime_version()}")
