@@ -104,11 +104,11 @@ class Session(Model):
     def __init__(
         self,
         model: Union[bytes, str, Path],
-        device: str = None,
-        worker_num: int = None,
-        batch_size: int = None,
+        device: Optional[str] = None,
+        worker_num: Optional[int] = None,
+        batch_size: Optional[int] = None,
         compiler_hints: bool = True,
-        compile_config: Dict[str, object] = None,
+        compile_config: Optional[Dict[str, object]] = None,
     ):
 
         if device is None:
@@ -233,7 +233,7 @@ class Session(Model):
 class CompletionQueue:
     """Receives the completion results asynchronously from AsyncSession"""
 
-    def __init__(self, ref: c_void_p, context_ty: type, output_descs: [TensorDesc]):
+    def __init__(self, ref: c_void_p, context_ty: Optional[type], output_descs: [TensorDesc]):
         self._as_parameter_ = ref
         self.ref = ref
         self.context_ty = context_ty
@@ -407,14 +407,14 @@ def create(
 
 def create_async(
     model: Union[bytes, str, Path],
-    context_ty: type = None,
-    device: str = None,
-    worker_num: int = None,
-    batch_size: int = None,
-    compiler_hints: bool = True,
-    input_queue_size: int = None,
-    output_queue_size: int = None,
-    compile_config: Dict[str, object] = None,
+    context_ty: Optional[type] = None,
+    device: Optional[str] = None,
+    worker_num: Optional[int] = None,
+    batch_size: Optional[int] = None,
+    compiler_hints: Optional[bool] = True,
+    input_queue_size: Optional[int] = None,
+    output_queue_size: Optional[int] = None,
+    compile_config: Optional[Dict[str, object]] = None,
 ) -> (AsyncSession, CompletionQueue):
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
