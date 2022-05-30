@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: furiosa-npu-feature-discovery
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: furiosa-npu-feature-discovery
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: furiosa-npu-feature-discovery
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: furiosa-npu-feature-discovery
+    spec:
+      nodeSelector:
+        feature.node.kubernetes.io/pci-1ed2.present: "true"
+      containers:
+      - image: ghcr.io/furiosa-ai/npu-feature-discovery:0.1.0
+        name: furiosa-npu-feature-discovery
+        volumeMounts:
+        - name: output-dir
+          mountPath: "/etc/kubernetes/node-feature-discovery/features.d"
+        - name: dmi-id
+          mountPath: "/sys/class/dmi/id"
+        env:
+        - name: RUST_LOG
+          value: info
+        securityContext:
+          capabilities:
+            drop: ["ALL"]
+          privileged: true
+      volumes:
+      - name: output-dir
+        hostPath:
+          path: "/etc/kubernetes/node-feature-discovery/features.d"
+      - name: dmi-id
+        hostPath:
+          path: "/sys/class/dmi/id"
