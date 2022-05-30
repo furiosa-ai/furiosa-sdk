@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [unreleased]
+### Add
+- Session should support batch size and compiler_hints flag #375
+
 ### Changed
 - Fix the missing git_version files and README.md in some modules #318
 - More abundant version information in CLI tools #320
