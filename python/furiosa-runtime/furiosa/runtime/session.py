@@ -23,6 +23,7 @@ from .errors import (
     is_ok,
 )
 from .model import Model, TensorArray
+from .profiler import profile
 from .tensor import Tensor, TensorDesc
 
 
@@ -110,6 +111,12 @@ class Session(Model):
         compiler_hints: bool = True,
         compile_config: Optional[Dict[str, object]] = None,
     ):
+        profiler_path = envs.profiler_output()
+        if profiler_path is not None:
+            self.profiler_file = open(profiler_path, "w")
+            self.profiler = profile(file=self.profiler_file)
+            self.profiler.__enter__()
+            print(f"Wrtting profiler output into {profiler_path}. Profiler API profile() disabled")
 
         if device is None:
             device = envs.current_npu_device()
@@ -216,6 +223,11 @@ class Session(Model):
 
     def close(self):
         """Close the session and release all resources belonging to the session"""
+        if hasattr(self, "profiler") and self.profiler:
+            self.profiler.__exit__(None, None, None)
+            self.profiler_file.close()
+            self.profiler = None
+
         if hasattr(self, "ref") and self.ref:
             LIBNUX.nux_session_destroy(self.ref)
             self.ref = None

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
-import sys
+import warnings
 
 from . import consts
 
@@ -43,3 +45,21 @@ def current_npu_device() -> str:
         NPU device name
     """
     return os.environ.get(consts.ENV_NPU_DEVNAME, consts.DEFAULT_DEVNAME)
+
+
+def profiler_output() -> None | str:
+    """
+    Return FURIOSA_PROFILER_OUTPUT_PATH where profiler outputs written.
+
+    For compatibility, NUX_PROFILER_PATH is also currently being supported, but it will be
+    deprecated by FURIOSA_PROFILER_OUTPUT_PATH later.
+
+    Returns:
+        The file path of profiler output if specified, or None.
+    """
+    if os.environ.get("NUX_PROFILER_PATH") is not None:
+        warnings.warn("NUX_PROFILER_PATH is deprecated, use FURIOSA_PROFILER_OUTPUT_PATH instead")
+
+    return os.environ.get(
+        consts.ENV_FURIOSA_PROFILER_OUTPUT_PATH, os.environ.get("NUX_PROFILER_PATH")
+    )
