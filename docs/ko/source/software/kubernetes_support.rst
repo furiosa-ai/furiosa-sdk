@@ -4,11 +4,11 @@
 Kubernetes 지원
 **********************************
 
-`Kuberentes <https://kubernetes.io/>`_ 는 컨테이너화된 워크로드와 서비스를
+`Kubernetes <https://kubernetes.io/>`_ 는 컨테이너화된 워크로드와 서비스를
 관리하는 오픈소스 플랫폼이다. FuriosaAI SDK는 Kubernetes 환경 지원을 위해 다음 컴포넌트를 제공한다.
 
-* `Kubernetes 장치 플러그인 (Device Plugin) <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_
-* FuriosaAI NPU Feature Discovery
+* FuriosaAI NPU Device Plugin (`Kubernetes Device Plugin 소개 <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_)
+* FuriosaAI NPU Feature Discovery (`Node Feature Discovery 소개 <https://kubernetes-sigs.github.io/node-feature-discovery/stable/get-started/index.html>`_)
 
 위 두 컴포넌트는 다음 기능을 제공한다.
 
@@ -16,7 +16,7 @@ Kubernetes 지원
 * Kubernetes의 ``spec.containers[].resources.limits`` 를 통해 Pod 워크로드 배포 시 NPU를 함께 스케쥴링 하게 한다.
 * NPU가 장착된 머신의 NPU의 정보를 파악하여 노드의 레이블로 등록한다 (이 정보와 ``nodeSelector`` 등을 사용하면 Pod을 선택적으로 스케쥴링할 수 있다).
 
-  * node-feature-discovery가 클러스터에 설치되어 있어야하며, NPU가 장착된 노드에 ``nfd-worker`` pod이 실행되고 있어야 한다.
+  * node-feature-discovery가 클러스터에 설치되어 있어야 하며, NPU가 장착된 노드에 ``nfd-worker`` Pod이 실행되고 있어야 한다.
 
 Kubernetes 지원을 위한 셋업 과정은 다음 순서를 따라 진행하면 된다.
 
@@ -35,7 +35,7 @@ APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음�
   apt-get update && apt install -y furiosa-driver-pdma furiosa-toolkit
 
 
-위 필수 패키지가 설치되면 furiosa-toolkit에 포함된 furiosactl 커맨드로 아래와 같이 NPU 인식을 확인 해볼 수 있다.
+위 필수 패키지가 설치되면 furiosa-toolkit에 포함된 furiosactl 커맨드로 아래와 같이 NPU 인식을 확인해 볼 수 있다.
 만약 아래 커맨드로 NPU가 인식되지 않는다면 환경에 따라 재부팅 후에 다시 시도해본다.
 
 .. code-block:: sh
@@ -50,18 +50,11 @@ APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음�
 2. Node Feature Discovery 설치
 =========================================
 Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필요하다.
-Node Feature Discovery의 설치 여부는 다음을 통해 확인할 수 있다.
-
-* 임의의 namespace에서,
-
-  * ``nfd-master`` 라는 이름의 deployment를 통해 하나 이상의 pod이 실행되어야하고,
-  * ``nfd-worker`` 라는 이름의 daemonset을 통해 각 NPU 노드에서 pod이 실행되고 있어야 한다.
-
-* ``nfd-worker`` 가 실행 중인 노드에는 ``feature.node.kubernetes.io/...`` 로 시작되는 레이블이 보인다.
+아래 예제처럼 커맨드를 실행하여 ``feature.node.kubernetes.io/...`` 로 시작되는 노드 레이블이 있다면 Node Feature Discovery의 DaemonSet이 이미 설치된 것으로 볼 수 있다.
 
 .. code-block:: sh
 
-  $ kubectl get no -o json | jq .items[].metadata.labels
+  $ kubectl get no -o json | jq '.items[].metadata.labels'
   {
     "beta.kubernetes.io/arch": "amd64",
     "beta.kubernetes.io/os": "linux",
@@ -73,20 +66,20 @@ Node Feature Discovery의 설치 여부는 다음을 통해 확인할 수 있다
 
   * `Quick start / Installation <https://kubernetes-sigs.github.io/node-feature-discovery/v0.11/get-started/quick-start.html#installation>`_ 
 
-* Node Feature Discovery가 없어도 다음 단계를 진행할 수 있지만, 각 컴포넌트의 데몬셋 생성 시 nodeSelector 조건을 변경해야 정상 설치가 가능하다.
+* Node Feature Discovery가 없어도 다음 단계를 진행할 수 있지만, 각 컴포넌트의 DaemonSet 생성 시 nodeSelector 조건을 변경해야 정상 설치가 가능하다.
 
 3. Device Plugin, NPU Feature Discovery 설치
 ==============================================
 
-NPU 노드 준비가 완료되면, 장치 플러그인과 NPU Feature Discovery 데몬셋 (daemonset)을 다음과 같이 설치한다.
+NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 DaemonSet을 다음과 같이 설치한다.
 
 .. code-block:: sh
 
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/device-plugin.yaml
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/npu-feature-discovery.yaml
 
-위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 데몬셋이 정상 동작하는지 확인할 수 있다.
-참고로 이 데몬셋들은 NPU가 장착된 노드에만 배포되며 이를 위해 Node Feature Discovery가 각 node에 붙여주는 ``feature.node.kubernetes.io/pci-1ed2.present=true`` 정보를 사용한다.
+위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 DaemonSet이 정상 동작하는지 확인할 수 있다.
+참고로 이 DaemonSet들은 NPU가 장착된 노드에만 배포되며 이를 위해 Node Feature Discovery가 각 node에 붙여주는 ``feature.node.kubernetes.io/pci-1ed2.present=true`` 정보를 사용한다.
 
 .. code-block:: sh
 
@@ -95,7 +88,7 @@ NPU 노드 준비가 완료되면, 장치 플러그인과 NPU Feature Discovery 
   furiosa-device-plugin          3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   128m
   furiosa-npu-feature-discovery  3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   162m
 
-NPU Feature Discovery (``furiosa-npu-feature-discovery``)가 붙이는 메타데이터는 다음 표와 같다.
+NPU Feature Discovery가 노드에 레이블로 붙여주는 메타데이터는 다음 표와 같다.
 
 .. _K8sNodeLabels:
 
@@ -138,7 +131,7 @@ NPU Feature Discovery (``furiosa-npu-feature-discovery``)가 붙이는 메타데
      - NPU Device Driver 빌드의 commit hash
 
 
-노드의 레이블을 확인하기 위해 ``kubectl get nodes --show-labels`` 명령을 실행하면
+노드의 레이블을 확인하고 싶다면 ``kubectl get nodes --show-labels`` 명령을 실행하면 된다.
 다음과 같이 ``beta.furiosa.ai`` 로 시작하는 레이블이 보이면 정상적으로 설치된 것이다.
 
 .. code-block:: sh
@@ -196,8 +189,8 @@ Pod 생성 뒤에는 다음과 같이 NPU 할당을 확인해볼 수 있다.
       beta.furiosa.ai/npu: "1"
 
 
-다수의 NPU 장치가 있을 경우 어떤 장치가 할당되었는지 아래와 같이 확인할 수 있다.
-SDK의 어플리케이션은 자동으로 할당된 NPU 장치를 인식한다.
+다수의 NPU 장치가 있는 노드에서 Pod을 생성했을 때, 어떤 장치가 할당되었는지는 아래와 같이 확인할 수 있다.
+(SDK의 어플리케이션은 자동으로 할당된 NPU 장치를 인식한다.)
 
 .. code-block:: sh
 
@@ -206,7 +199,7 @@ SDK의 어플리케이션은 자동으로 할당된 NPU 장치를 인식한다.
   npu0pe0-1
 
 
-Pod 안에 furiosa-toolkit을 설치하면 아래 처럼 furiosactl 커맨드를 이용하여 더 자세한 장치 정보를
+Pod 안에 furiosa-toolkit을 설치하면 아래처럼 furiosactl 커맨드를 이용하여 더 자세한 장치 정보를
 확인할 수 있다. APT를 이용한 설치 방법은 :ref:`SetupAptRepository` 찾을 수 있다.
 
 .. code-block:: sh
