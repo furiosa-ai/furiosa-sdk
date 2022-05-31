@@ -12,7 +12,7 @@ import yaml
 from . import envs
 from ._api import LIBNUX
 from ._api.v1 import convert_to_cchar_array, decref, increase_ref_count, runtime_version
-from ._util import dump_info
+from ._util import dump_info, eprint
 from .compiler import _model_image, generate_compiler_log_path
 from .errors import (
     InvalidInput,
@@ -116,7 +116,7 @@ class Session(Model):
             self.profiler_file = open(profiler_path, "w")
             self.profiler = profile(file=self.profiler_file)
             self.profiler.__enter__()
-            print(f"Wrtting profiler output into {profiler_path}. Profiler API profile() disabled")
+            eprint(f"Wrtting profiler output into {profiler_path}. Profiler API profile() disabled")
 
         if device is None:
             device = envs.current_npu_device()
@@ -131,7 +131,7 @@ class Session(Model):
         )
         model_image = _model_image(model)
 
-        print(f"Using furiosa-compiler {runtime_version()}")
+        eprint(f"Using furiosa-compiler {runtime_version()}")
         sess = c_void_p(None)
         err = LIBNUX.nux_session_create(model_image, len(model_image), options, byref(sess))
         if is_err(err):
@@ -466,7 +466,7 @@ def create_async(
             output_queue_size=output_queue_size,
         )
 
-        print(f"Using furiosa-compiler {runtime_version()}")
+        eprint(f"Using furiosa-compiler {runtime_version()}")
         sess_ref = c_void_p(None)
         queue_ref = c_void_p(None)
         err = LIBNUX.nux_async_session_create(
