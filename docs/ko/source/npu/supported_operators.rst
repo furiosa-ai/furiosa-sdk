@@ -30,22 +30,30 @@ FuriosaAI NPU와 SDK 에서는
    * - `Clip <https://github.com/onnx/onnx/blob/master/docs/Operators.md#clip>`_
      -
    * - `Concat <https://github.com/onnx/onnx/blob/master/docs/Operators.md#concat>`_
-     - height 축에 대해서만 지원
+     - H axis 지원 (>= 0.6.0), C axis 지원 (>= 0.7.0)
    * - `Conv <https://github.com/onnx/onnx/blob/master/docs/Operators.md#conv>`_
-     - `group` <= 128, dilation <= 12 인 경우에 대해 지원
+     - `group` <= 128, `dilation` <= 12 인 경우에 대해 지원
    * - `ConvTranspose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#convtranspose>`_
      -
    * - `DepthToSpace <https://github.com/onnx/onnx/blob/master/docs/Operators.md#depthtospace>`_
-     -
+     - CRD 모드 지원 (>= 0.6.0), DCR 모드 지원 (>= 0.7.0)
    * - `Exp <https://github.com/onnx/onnx/blob/master/docs/Operators.md#exp>`_
-     -
+     - 0.7.0 이상 부터 지원
+   * - `Elu <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Elu>`_
+     - 0.7.0 이상 부터 지원
+   * - `Erf <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Erf>`_
+     - 0.7.0 이상 부터 지원   
    * - `Expand <https://github.com/onnx/onnx/blob/master/docs/Operators.md#expand>`_
      -
    * - `Flatten <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Flatten>`_
      -
    * - `Gemm <https://github.com/onnx/onnx/blob/master/docs/Operators.md#gemm>`_
      -
+   * - `Gelu <https://github.com/microsoft/onnxruntime/blob/master/docs/ContribOperators.md#com.microsoft.Gelu>`_
+     - 0.7.0 이상 부터 지원
    * - `LeakyRelu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#leakyrelu>`_
+     -
+   * - `Log <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Log>`_
      -
    * - `LpNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#lpnormalization>`_
      - p = 2 인 경우에 한하여 지원
@@ -58,23 +66,25 @@ FuriosaAI NPU와 SDK 에서는
    * - `Mul <https://github.com/onnx/onnx/blob/master/docs/Operators.md#mul>`_
      -
    * - `Pad <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Pad>`_
-     -
+     - CWH axis 지원 (>= 0.7.0)
    * - `ReduceL2 <https://github.com/onnx/onnx/blob/master/docs/Operators.md#ReduceL2>`_
      -
    * - `ReduceSum <https://github.com/onnx/onnx/blob/master/docs/Operators.md#ReduceSum>`_
-     -
+     -   
    * - `Relu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Relu>`_
      -
    * - `Reshape <https://github.com/onnx/onnx/blob/master/docs/Operators.md#reshape>`_
      -
+   * - `Resize <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Resize>`_
+     - Linear, Nearest 모드 지원 (>= 0.7.0)
    * - `Pow <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Pow>`_
      -
    * - `SpaceToDepth <https://github.com/onnx/onnx/blob/main/docs/Operators.md#SpaceToDepth>`_
-     - 0.6.0 이상 버전에서 mode="CRD" 인 경우에 지원
+     - CRD 모드 지원 (>= 0.6.0), DCR 모드 지원 (>= 0.7.0)
    * - `Sigmoid <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Sigmoid>`_
      -
    * - `Slice <https://github.com/onnx/onnx/blob/master/docs/Operators.md#slice>`_
-     - height 축에 대해서만 지원
+     - H axis 지원 (>= 0.6.0), C axis 지원 (>= 0.7.0)
    * - `Softmax <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softmax>`_
      -
    * - `Softplus <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softplus>`_
@@ -85,7 +95,11 @@ FuriosaAI NPU와 SDK 에서는
      -
    * - `Sqrt <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Sqrt>`_
      -
+   * - `Tanh <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Tanh>`_
+     - 0.7.0 이상 버전 부터 지원
    * - `Transpose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Transpose>`_
-     -
+     - 0.6.0 이상 버전 부터 지원
+   * - `Transpose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Transpose>`_
+     - 0.6.0 이상 버전 부터 지원
    * - `Unsqueeze <https://github.com/onnx/onnx/blob/master/docs/Operators.md#unsqueeze>`_
      -

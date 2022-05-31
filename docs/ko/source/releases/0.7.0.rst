@@ -1,0 +1,101 @@
+*********************************************************
+Release Notes - 0.7.0
+*********************************************************
+
+FuriosaAI SDK 0.7.0은 메이저 릴리즈로 성능 개선, 기능 추가, 버그픽스에 대한
+234개의 PR과 약 900여개의 커밋을 포함하고 있다.
+
+업그레이드 방법
+--------------------------------------------------------
+APT 저장소를 사용하고 있다면 다음과 간단히 업그레이드할 수 있다.
+더 자세한 설치 방법은 :ref:`RequiredPackages` 에서 찾을 수 있다.
+
+  .. code-block:: sh
+
+    apt-get update && \
+    apt-get install -y furiosa-driver-pdma furiosa-libnux
+
+    pip install --upgrade furiosa-sdk
+
+
+주요 변경 사항
+--------------------------------------------------------
+
+더 많은 연산자의 NPU 가속 지원 추가
+================================================================
+다양한 연산자 지원이 추가되었으며 기존 연산자들은 더 다양한 조건에서 NPU 가속이 지원 된다.
+자세한 개선 내용은 아래에서 확인할 수 있으며 가속 연산자의 전체 리스트는 :ref:`SupportedOperators`에서 찾을 수 있다.
+
+  * Resize 연산자의 Linear 및 Nearest 모드 지원 추가
+  * SpaceToDepth 연산자의 DCR 모드 지원 추가
+  * DepthToSpace 연산자의 DCR 모드 지원 추가
+  * Pad 연산자의 CHW axis 지원 추가
+  * Slice 연산자의 C axis 지원 추가
+  * Tanh, Exp, Log 연산자에 대한 가속 지원
+  * Concat의 C axis 지원
+  * Dilation이 최대 12까지 지원되도록 개선
+  * Gelu, Erf, Elu 연산자 가속 지원
+
+
+컴파일러 캐쉬 도입
+================================================================
+같은 모델을 컴파일러하는 경우 컴파일 결과 캐쉬가 활용되도록 개선되었다.
+DNN 모델의 최적화를 수반하는 컴파일 과정은 모델에 따라 수 분 이상 걸리기도 한다.
+컴파일러 캐쉬는 로컬 파일 시스템 (`$HOME/cache/furiosa/compiler`) 또는 Redis를 캐쉬 스토리지로 활용하는
+기능을 제공하여 같은 모델로 식별되면 즉각적으로 리턴된다. 컴파일러 버전이 업데이트 되거나 모델이 업데이트 되는 경우는 
+컴파일러가 자동으로 인식하고 컴파일 과정을 새로 수행한다.
+
+Quantizer
+================================================================
+* 
+
+
+Python SDK
+================================================================
+
+* 추론 프로파일링 기능 추가
+
+  * furiosa-sdk-runtime -> furiosa-sdk
+  * furiosa-sdk-quantizer -> furiosa-quantizer
+  * furiosa-sdk-validator -> furiosa-litmus
+
+* 모델 Zoo
+
+  .. code-block:: sh
+
+    $ pip install 'furiosa-sdk[litmus]'
+
+
+.. _ChangeLogsV070:
+Changelogs
+--------------------------------------------------------
+Compiler
+================================================================
+
+Added
+^^^^^^^^^^^^^^^^^^^
+* 컴파일러 결과 캐쉬 도입 (파일 시스템, Redis 지원) (npu-tools#3215)
+* Can replace Quantizes at the beginning of a model by computationally efficient operators (npu-tools#3278)
+* Suggest to perform quantization if ValueInfoProto about an ONNX tensor is not found (npu-tools#3312)
+* Accelerate Resize with linear mode (npu-tools#3276)
+* Accelerate SpaceToDepth with DCR mode(npu-tools#3332)
+* Accelerate DepthToSpace with DCR mode(npu-tools#3345)
+* Accelerate Pad with CHW axis(npu-tools#3385)
+* Accelerate Slice with C axis(HW was already supported)(npu-tools#3382)
+* Add batch size to Session and improve Nux to log out compiler hints as warnings (npu-tools#3411)
+* Introduce InstructionSpecLoop(npu-tools#3424)
+
+Changed
+^^^^^^^^^^^^^^^^^^^
+* Enable more cases with dilation (up to 12) (npu-tools#2700)
+* Accelerate Tanh, Exp, Log operators (npu-tools#3249)
+* Support concatenation on the channel axis (npu-tools#3253)
+* Accelerate Resize with nearest mode (npu-tools#3222)
+* Accelerate Gelu, Erf, Elu (npu-tools#3271)
+* Rename UnlabeledTranspose to Permute (npu-tools#3374)
+* Accelerate TransposeConv2d with groups(npu-tools#3360)
+
+Fixed
+^^^^^^^^^^^^^^^^^^^
+* incorrect ConvTranspose transformer for stride > 1 && dilation > 1 (npu-tools#2700)
+* incorrect ConvTranspose transformer for the case kernel alignment is required (npu-tools#3359)

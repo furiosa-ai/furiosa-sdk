@@ -4,7 +4,7 @@
 컴파일러
 ****************************************
 FuriosaAI의 컴파일러는 `TFLite <https://www.tensorflow.org/lite>`_ 와 `Onnx <https://onnx.ai/>`_
-형식의 모델을 컴파일하여 FuriosaAI NPU와 호스트 머신의 자원(CPU, 메모리)을 이용해 추론(inference)을
+형식의 모델(`OpSet 16 <https://onnxruntime.ai/docs/reference/compatibility#onnx-opset-support>`_ 호환)을 컴파일하여 FuriosaAI NPU와 호스트 머신의 자원(CPU, 메모리)을 이용해 추론(inference)을
 실행하는 프로그램을 생성한다. 이 과정에서 모델을 연산자 단위로 분석하고 최적화하여 최대한 NPU 가속와 호스트 자원을
 잘 활용할 수 있도록 프로그램을 생성한다. 따라서, 기존에 알려진 모델이 아니라도 지원되는
 연산자를 잘 활용하면 NPU에 최적화된 모델을 설계할 수 있다.
@@ -25,6 +25,7 @@ NPU 가속이 지원되는 연산자 목록은 :ref:`SupportedOperators` 에서 
 .. code-block:: sh
 
   furiosa compile MODEL_PATH [-o OUTPUT] [--target-npu TARGET_NPU] [--batch BATCH_SIZE]
+
 
 `-o OUTPUT` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
 생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. 여기서 enf는 Executable NPU Format의 약어이다.
@@ -75,8 +76,7 @@ NPU의 활용도를 높일 수 있고 추론을 실행하는 과정을 공유하
 그러나 NPU에 더 많은 메모리가 필요하게 되어 필요한 메모리 사이즈가 NPU의 DRAM 크기를 초과하면
 오히려 호스트(Host)와 NPU간에 메모리 I/O 비용이 커져 큰 성능 저하가 일어날 수 있다.
 기본 값은 1이며 적절한 설정은 일반적으로 실험을 통해 찾을 수 있다.
-참고로, `MLPerf™ Inference Edge v2.0 <https://mlcommons.org/en/inference-edge-20/>`_
-벤치마크에 포함된 일부 모델들의 최적 배치 크기는 다음과 같다.
+참고로, `MLPerf™ Inference Edge v2.0 <https://mlcommons.org/en/inference-edge-20/>`_ 벤치마크에 포함된 일부 모델들의 최적 배치 크기는 다음과 같다.
 
 .. list-table:: Optimal Batch Size for Well-known Models
    :widths: 50 50
@@ -114,3 +114,47 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
 
   from furiosa.runtime import session
   sess = session.create("foo.enf")
+
+
+.. _CompilerCache:
+
+컴파일러 캐쉬 (Compiler Cache) 기능
+-------------------------------------------
+컴파일러 캐쉬는 같은 모델을 컴파일 하는 경우 기존에 컴파일된 결과를 재활용하게 한다.
+로컬 파일 시스템 (``$HOME/cache/furiosa/compiler``) 또는 Redis를 캐쉬 스토리지로 활용할 수 있게 한다.
+
+기본으로 컴파일러 캐쉬 기능은 활성화 되어 있으며 환경변수 ``FC_CACHE_ENABLED`` 를 이용해 명시적으로 활성화/비활성화 할 수 있다.
+아래 환경 변수는 명령형 도구, Python SDK, 서빙 프레임워크 등 모든 도구에서 동일하게 적용된다.
+
+.. code-block:: sh
+
+  # Enable Compiler Cache
+  export FC_CACHE_ENABLED=1
+  # Disable Compiler Cache
+  export FC_CACHE_ENABLED=0
+
+
+캐쉬 스토리지는 환경변수 ``FC_CACHE_STORE_URL`` 를 통해 설정 가능하다. ``redis://`` 또는 ``rediss://`` (SSL의 경우) 
+scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스토리지로 활용 가능하다.
+
+.. code-block:: sh
+
+  # When you want to specify a cache directory
+  export FC_CACHE_STORE_URL=/tmp/cache
+
+  # When you want to specify a Redis cluster as the cache storage
+  export FC_CACHE_STORE_URL=redis://:<PASSWORD>@127.0.0.1:6379 
+
+
+캐쉬의 생명주기는 환경변수 ``FC_CACHE_LIFETIME`` 를 통해 설정 가능하며 초(second) 단위의 정수를 입력하면 주어진 시간 만큼 
+캐쉬가 유효하며 시간이 지난 뒤에 캐쉬는 무효가 된다. 캐쉬 무효화 없이 영구적으로 사용하려면 ``-1`` 를 설정하면 된다.
+``0`` 으로 설정하면 모든 컴파일 시도에 대해 캐쉬는 무효가 되며 매번 새로 컴파일 하게 된다.
+
+.. code-block:: sh
+
+  # 2 hours cache lifetime
+  export FC_CACHE_LIFETIME=7200
+  # All compiler caches are updated forcibly
+  export FC_CACHE_LIFETIME=0
+  # Indefinite cache lifetime
+  export FC_CACHE_LIFETIME=-1
