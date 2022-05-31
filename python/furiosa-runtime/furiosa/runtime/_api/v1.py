@@ -210,6 +210,18 @@ LIBNUX.nux_buffer_destroy.restype = None
 LIBNUX.nux_string_destroy.argtypes = [c_void_p]
 LIBNUX.nux_string_destroy.restype = None
 
+LIBNUX.profiler_enable.argtypes = [c_int, c_int, c_char_p, POINTER(c_void_p)]
+LIBNUX.profiler_enable.restype = c_int
+
+LIBNUX.profiler_disable.argtypes = [c_void_p]
+LIBNUX.profiler_disable.restype = None
+
+LIBNUX.profiler_record_start.argtypes = [c_char_p, c_bool]
+LIBNUX.profiler_record_start.restype = POINTER(c_void_p)
+
+LIBNUX.profiler_record_end.argtypes = [POINTER(c_void_p)]
+LIBNUX.profiler_record_end.restype = None
+
 # To control manually the reference count
 increase_ref_count = ctypes.pythonapi.Py_IncRef
 increase_ref_count.argtypes = [ctypes.py_object]

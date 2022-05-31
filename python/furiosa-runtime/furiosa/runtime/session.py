@@ -12,7 +12,7 @@ import yaml
 from . import envs
 from ._api import LIBNUX
 from ._api.v1 import convert_to_cchar_array, decref, increase_ref_count, runtime_version
-from ._util import dump_info
+from ._util import dump_info, eprint
 from .compiler import _model_image, generate_compiler_log_path
 from .errors import (
     InvalidInput,
@@ -23,6 +23,7 @@ from .errors import (
     is_ok,
 )
 from .model import Model, TensorArray
+from .profiler import profile
 from .tensor import Tensor, TensorDesc
 
 
@@ -110,6 +111,12 @@ class Session(Model):
         compiler_hints: bool = True,
         compile_config: Optional[Dict[str, object]] = None,
     ):
+        profiler_path = envs.profiler_output()
+        if profiler_path is not None:
+            self.profiler_file = open(profiler_path, "w")
+            self.profiler = profile(file=self.profiler_file)
+            self.profiler.__enter__()
+            eprint(f"Wrtting profiler output into {profiler_path}. Profiler API profile() disabled")
 
         if device is None:
             device = envs.current_npu_device()
@@ -124,7 +131,7 @@ class Session(Model):
         )
         model_image = _model_image(model)
 
-        print(f"Using furiosa-compiler {runtime_version()}")
+        eprint(f"Using furiosa-compiler {runtime_version()}")
         sess = c_void_p(None)
         err = LIBNUX.nux_session_create(model_image, len(model_image), options, byref(sess))
         if is_err(err):
@@ -216,6 +223,11 @@ class Session(Model):
 
     def close(self):
         """Close the session and release all resources belonging to the session"""
+        if hasattr(self, "profiler") and self.profiler:
+            self.profiler.__exit__(None, None, None)
+            self.profiler_file.close()
+            self.profiler = None
+
         if hasattr(self, "ref") and self.ref:
             LIBNUX.nux_session_destroy(self.ref)
             self.ref = None
@@ -454,7 +466,7 @@ def create_async(
             output_queue_size=output_queue_size,
         )
 
-        print(f"Using furiosa-compiler {runtime_version()}")
+        eprint(f"Using furiosa-compiler {runtime_version()}")
         sess_ref = c_void_p(None)
         queue_ref = c_void_p(None)
         err = LIBNUX.nux_async_session_create(

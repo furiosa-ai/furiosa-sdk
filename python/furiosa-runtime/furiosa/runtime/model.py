@@ -4,7 +4,7 @@ from ctypes import c_void_p
 from typing import List
 
 from ._api import LIBNUX, convert_to_cchar_array
-from ._util import list_to_dict
+from ._util import eprint, list_to_dict
 from .errors import InvalidInput
 from .tensor import TensorArray, TensorDesc
 
@@ -135,4 +135,4 @@ class Model(ABC):
 
     def print_summary(self):
         """Prints the summary of this model"""
-        print(self.summary())
+        eprint(self.summary())

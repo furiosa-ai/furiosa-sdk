@@ -6,7 +6,7 @@ import string
 from typing import Union
 
 from . import envs
-from ._api import runtime_version
+from ._util import eprint
 
 LOG = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def generate_compiler_log_path() -> Path:
         compiler_log_path = Path(envs.log_dir())
         compiler_log_path.mkdir(mode=0o755, parents=True, exist_ok=True)
         compiler_log_path = _generate_unique_log_filename(compiler_log_path)
-        print(f"Saving the compilation log into {compiler_log_path}")
+        eprint(f"Saving the compilation log into {compiler_log_path}")
         return compiler_log_path
     else:
         return None
