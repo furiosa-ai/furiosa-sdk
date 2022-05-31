@@ -35,6 +35,10 @@ dependencies = [
     "onnxruntime ~= 1.11.1",
     "tqdm ~= 4.64",
 
+    # onnx v1.11.0 is not compatible with protobuf v4.2. Refer to
+    # <https://github.com/onnx/onnx/issues/4222>.
+    "protobuf ~= 3.20",
+
     # onnxruntime appears to miss specifying some dependencies. Refer to
     # <https://github.com/microsoft/onnxruntime/issues/7527>.
     "packaging ~= 21.3",
