@@ -22,7 +22,11 @@ def synchronous(f: Callable) -> Callable:
             return future.result()
         except RuntimeError:
             # When no running event loop exists, create new one and run the coroutine
-            return asyncio.run(f(*args, **kwargs))
+            try:
+                return asyncio.run(f(*args, **kwargs))
+            except Exception as e:
+                # Suppress previous RuntimeError due to running loop
+                raise e from None
 
     return wrapper
 
