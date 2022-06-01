@@ -245,12 +245,21 @@ class Session(Model):
 class CompletionQueue:
     """Receives the completion results asynchronously from AsyncSession"""
 
-    def __init__(self, ref: c_void_p, context_ty: Optional[type], output_descs: [TensorDesc]):
+    def __init__(
+        self,
+        ref: c_void_p,
+        context_ty: Optional[type],
+        output_descs: [TensorDesc],
+        profiler,
+        profiler_file,
+    ):
         self._as_parameter_ = ref
         self.ref = ref
         self.context_ty = context_ty
         self.output_descs = output_descs
         self.queue_ok = True
+        self.profiler = profiler
+        self.profiler_file = profiler_file
 
     def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
         """Receives the prediction results which are asynchronously coming from AsyncSession
@@ -304,7 +313,12 @@ class CompletionQueue:
 
         If it is closed, AsyncSession also will stop working.
         """
-        if self.ref:
+        if hasattr(self, "profiler") and self.profiler:
+            self.profiler.__exit__(None, None, None)
+            self.profiler_file.close()
+            self.profiler = None
+
+        if hasattr(self, "ref") and self.ref:
             LIBNUX.nux_completion_queue_destroy(self.ref)
             self.ref = None
 
@@ -453,6 +467,16 @@ def create_async(
         if device is None:
             device = envs.current_npu_device()
 
+        profiler_path = envs.profiler_output()
+        if profiler_path is not None:
+            profiler_file = open(profiler_path, "w")
+            profiler = profile(file=profiler_file)
+            profiler.__enter__()
+            eprint(f"Wrtting profiler output into {profiler_path}. Profiler API profile() disabled")
+        else:
+            profiler_file = None
+            profiler = None
+
         model_image = _model_image(model)
         log_path = generate_compiler_log_path()
         options = _create_session_options(
@@ -474,7 +498,9 @@ def create_async(
         )
         if is_ok(err):
             sess = AsyncSession(sess_ref)
-            return sess, CompletionQueue(queue_ref, context_ty, sess.outputs())
+            return sess, CompletionQueue(
+                queue_ref, context_ty, sess.outputs(), profiler, profiler_file
+            )
         else:
             dump_info(log_path)
             raise into_exception(err)
