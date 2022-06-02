@@ -41,6 +41,7 @@ test = [
     "timm",
     "torch",
     "torchvision",
+    "protobuf < 4.0dev",
 
     # segmentation_models_pytorch: from https://github.com/qubvel/segmentation_models.pytorch
     "segmentation_models_pytorch @ git+https://github.com/deeplearningfromscratch/segmentation_models.pytorch.git",
