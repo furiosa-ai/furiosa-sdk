@@ -29,7 +29,7 @@ class TestCheckValueInfo(unittest.TestCase):
         model = make_onnx_model(model_desc)
         self.assertRaisesRegex(ValueError, r"shape of(\w)*", utils.check_value_info, model)
 
-    def test_warning_for_quantized_model(self):  # pylint: disable=no-self-use
+    def test_warning_for_quantized_model(self):
         input_channel = 1
         output_channel = 2
         model_desc = {
