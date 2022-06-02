@@ -22,8 +22,6 @@ disable=
     fixme, # W0511
 
     # Convention
-    bad-continuation, # C0330
-    bad-whitespace, # C0326
     invalid-name, # C0103
     line-too-long, # C0301
     missing-class-docstring, # C0115
