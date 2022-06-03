@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Session should support batch size and compiler_hints flag #375
 - Profiler API added to enable/disable runtime profiler dynamically #363
+- Adopt the profiler enabled by env variable to async session #393
 
 ### Changed
 - Fix the missing git_version files and README.md in some modules #318
