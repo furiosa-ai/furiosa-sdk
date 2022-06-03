@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "furiosa-sdk"
-version = "0.7.0.dev0"
+version = "0.8.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -24,30 +24,30 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = [
-    "furiosa-cli == 0.7.*",
-    "furiosa-runtime == 0.7.*",
-    "furiosa-tools == 0.7.*",
+    "furiosa-cli == 0.8.*",
+    "furiosa-runtime == 0.8.*",
+    "furiosa-tools == 0.8.*",
 ]
 
 [project.optional-dependencies]
 test = []
 
-cli = ["furiosa-cli == 0.7.*"]
-litmus = ["furiosa-litmus == 0.7.*"]
-models = ["furiosa-models == 0.7.*"]
-quantizer = ["furiosa-quantizer == 0.7.*"]
-registry = ["furiosa-registry == 0.7.*"]
-server = ["furiosa-server == 0.7.*"]
-tool = ["furiosa-tools == 0.7.*"]
+cli = ["furiosa-cli == 0.8.*"]
+litmus = ["furiosa-litmus == 0.8.*"]
+models = ["furiosa-models == 0.8.*"]
+quantizer = ["furiosa-quantizer == 0.8.*"]
+registry = ["furiosa-registry == 0.8.*"]
+server = ["furiosa-server == 0.8.*"]
+tool = ["furiosa-tools == 0.8.*"]
 
 full = [
-    "furiosa-cli == 0.7.*",
-    "furiosa-litmus == 0.7.*",
-    "furiosa-models == 0.7.*",
-    "furiosa-quantizer == 0.7.*",
-    "furiosa-registry == 0.7.*",
-    "furiosa-server == 0.7.*",
-    "furiosa-tools == 0.7.*",
+    "furiosa-cli == 0.8.*",
+    "furiosa-litmus == 0.8.*",
+    "furiosa-models == 0.8.*",
+    "furiosa-quantizer == 0.8.*",
+    "furiosa-registry == 0.8.*",
+    "furiosa-server == 0.8.*",
+    "furiosa-tools == 0.8.*",
 ]
 
 [project.urls]
