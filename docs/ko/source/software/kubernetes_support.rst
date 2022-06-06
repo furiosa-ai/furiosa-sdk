@@ -75,8 +75,8 @@ NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 Dae
 
 .. code-block:: sh
 
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/device-plugin.yaml
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/npu-feature-discovery.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/device-plugin.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/npu-feature-discovery.yaml
 
 위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 DaemonSet이 정상 동작하는지 확인할 수 있다.
 참고로 이 DaemonSet들은 NPU가 장착된 노드에만 배포되며 이를 위해 Node Feature Discovery가 각 node에 붙여주는 ``feature.node.kubernetes.io/pci-1ed2.present=true`` 정보를 사용한다.
@@ -154,7 +154,7 @@ NPU를 Pod에 할당하기 위해서는 ``spec.containers[].resources.limits`` �
       beta.furiosa.ai/npu: "1" # requesting 1 NPU
 
 
-Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.7.0/kubernetes/deployments/pod-example.yaml>`_ 는 다음과 같다.
+Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.8.0/kubernetes/deployments/pod-example.yaml>`_ 는 다음과 같다.
 
 .. code-block:: sh
 
