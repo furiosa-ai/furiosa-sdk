@@ -1,8 +1,8 @@
 [build-system]
-# Custom backend from https://gitlab.com/WillDaSilva/flit_scm to use setuptools-scm
+# Custom backend from https://gitlab.com/ileixe/flit_ext to use setuptools-scm
 # Upstream flit does not support it. See https://github.com/pypa/flit/issues/257
-requires = ["flit_scm"]
-build-backend = "flit_scm:buildapi"
+requires = ["flit_ext"]
+build-backend = "flit_ext:buildapi"
 
 [project]
 name = "furiosa-models"
@@ -85,6 +85,8 @@ root = "../.."
 write_to = "python/furiosa-models/furiosa/models/git_version.txt"
 # SemVer with release branch: https://github.com/pypa/setuptools_scm#version-number-construction
 version_scheme = "release-branch-semver"
+# Custom local scheme to emit commit hash: https://github.com/ileixe/flit_ext/blob/main/pyproject.toml#L22
+local_scheme = "force-local-version"
 
 [tool.flit.sdist]
 include = ["furiosa/models/git_version.txt"]
