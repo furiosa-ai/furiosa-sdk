@@ -13,11 +13,11 @@ async def load(name, *args, **kwargs) -> Optional[Model]:
     import furiosa.registry
 
     return await furiosa.registry.load(
-        uri="https://github.com/furiosa-ai/furiosa-artifacts:v0.0.1", name=name, *args, **kwargs
+        uri="https://github.com/furiosa-ai/furiosa-artifacts:v0.0.2", name=name, *args, **kwargs
     )
 
 
-for name in synchronous(registry.list)("https://github.com/furiosa-ai/furiosa-artifacts:v0.0.1"):
+for name in synchronous(registry.list)("https://github.com/furiosa-ai/furiosa-artifacts:v0.0.2"):
     model = partial(load, name=name)
 
     # Export Model class in this module scope
