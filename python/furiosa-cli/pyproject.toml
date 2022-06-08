@@ -30,6 +30,9 @@ dependencies = ["furiosa-common == 0.7.*"]
 [project.optional-dependencies]
 test = []
 
+[project.scripts]
+furiosa = "furiosa.cli.main:main"
+
 [project.urls]
 Home = "https://furiosa.ai"
 Documentation = "https://furiosa-ai.github.io/docs"
