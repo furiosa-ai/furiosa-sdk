@@ -27,6 +27,9 @@ dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = ["furiosa-common == 0.8.*"]
 
+[project.scripts]
+furiosa = "furiosa.cli.main:main"
+
 [project.optional-dependencies]
 test = []
 
