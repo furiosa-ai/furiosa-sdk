@@ -14,14 +14,13 @@ class TestProfiler(unittest.TestCase):
         with tempfile.TemporaryFile() as f:
             # Record profile data into temporary file
             with profile(file=f) as profiler:
-                sess = session.create(MNIST_TFLITE_QUANTIZED)
+                with session.create(MNIST_TFLITE_QUANTIZED) as sess:
+                    input_meta = sess.inputs()[0]
 
-                input_meta = sess.inputs()[0]
+                    input = np.random.randint(0, 127, input_meta.shape, dtype=np.uint8)
 
-                input = np.random.randint(0, 127, input_meta.shape, dtype=np.uint8)
-
-                with profiler.record("Run"):
-                    sess.run(input)
+                    with profiler.record("Run"):
+                        sess.run(input)
 
             f.seek(0)
 
