@@ -223,14 +223,14 @@ class Session(Model):
 
     def close(self):
         """Close the session and release all resources belonging to the session"""
+        if hasattr(self, "ref") and self.ref:
+            LIBNUX.nux_session_destroy(self.ref)
+            self.ref = None
+
         if hasattr(self, "profiler") and self.profiler:
             self.profiler.__exit__(None, None, None)
             self.profiler_file.close()
             self.profiler = None
-
-        if hasattr(self, "ref") and self.ref:
-            LIBNUX.nux_session_destroy(self.ref)
-            self.ref = None
 
     def __enter__(self):
         return self
