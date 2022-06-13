@@ -6,7 +6,7 @@ build-backend = "flit_scm:buildapi"
 
 [project]
 name = "furiosa-runtime"
-version = "0.7.0.dev0"
+version = "0.8.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -25,7 +25,7 @@ classifiers = [
 ]
 dynamic = ["description"]
 requires-python = "~=3.7"
-dependencies = ["furiosa-common == 0.7.*", "cffi ~= 1.14", "numpy ~=1.21.5"]
+dependencies = ["furiosa-common == 0.8.*", "cffi ~= 1.14", "numpy ~=1.21.5", "pydantic ~= 1.9"]
 
 [project.optional-dependencies]
 test = ["mnist", "onnxruntime ~= 1.11.1"]

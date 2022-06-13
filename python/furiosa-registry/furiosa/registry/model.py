@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseConfig, BaseModel, Extra, Field
 
@@ -15,6 +15,8 @@ class Format(str, Enum):
 
     ONNX = "onnx"
     TFLite = "tflite"
+    DFG = "dfg"
+    ENF = "enf"
 
 
 class Publication(BaseModel):
@@ -71,3 +73,5 @@ class Model(BaseModel):
 
     inputs: Optional[List[ModelTensor]] = []
     outputs: Optional[List[ModelTensor]] = []
+
+    compiler_config: Optional[Dict] = None

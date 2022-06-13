@@ -6,7 +6,7 @@ build-backend = "flit_scm:buildapi"
 
 [project]
 name = "furiosa-serving"
-version = "0.7.0.dev0"
+version = "0.8.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -27,8 +27,8 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = [
-    "furiosa-server == 0.7.*",
-    "furiosa-registry == 0.7.*",
+    "furiosa-server == 0.8.*",
+    "furiosa-registry == 0.8.*",
 
     "Pillow",
     "python-multipart"

@@ -4,10 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [unreleased]
+
+## [Unreleased]
+### Added
+
+### Changed
+
+## [0.7.0]
 ### Added
 - Session should support batch size and compiler_hints flag #375
 - Profiler API added to enable/disable runtime profiler dynamically #363
+- Adopt the profiler enabled by env variable to async session #393
 
 ### Changed
 - Fix the missing git_version files and README.md in some modules #318
@@ -21,4 +28,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.6.1]
 ### Fixed
 - Compiler report shouldn't be displayed unless running as unit tests (#306)
-- Throw an exception if session is already closed (#305)
+- Throw an exception if session is already closed (#305)  

@@ -1,5 +1,5 @@
 ****************************************************
-FuriosaAI NPU & SDK 0.7.0-dev Documents
+FuriosaAI NPU & SDK 0.8.0-dev Documents
 ****************************************************
 
 This document explains FuriosaAI NPU and its SDKs.

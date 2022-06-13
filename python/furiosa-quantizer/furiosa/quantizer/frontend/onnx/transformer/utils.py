@@ -3,7 +3,7 @@ import logging
 from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 
 import onnx
-from onnx.helper import make_model, make_opsetid, make_tensor_value_info
+from onnx.helper import make_model, make_opsetid
 
 from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 from furiosa.quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
@@ -95,17 +95,6 @@ def eliminate_initializer_from_graph_input(model: onnx.ModelProto) -> onnx.Model
     del model.graph.input[:]
     model.graph.input.extend(graph_input)
 
-    return model
-
-
-def include_initializer_to_graph_input(model: onnx.ModelProto) -> onnx.ModelProto:
-    input_value_names = [inp.name for inp in model.graph.input]
-    for init in model.graph.initializer:
-        if init.name not in input_value_names:
-            value_info = make_tensor_value_info(init.name, init.data_type, init.dims)
-            model.graph.input.append(value_info)
-            # do not append duplicated initializer to graph input
-            input_value_names.append(init.name)
     return model
 
 

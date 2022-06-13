@@ -50,5 +50,5 @@ ifndef SDK_VERSION
 endif
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
 	for MODULE in "$${MODULES[@]}"; do \
-		sed -i "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" furiosa-$${MODULE}/pyproject.toml ; \
+		sed -i.bak "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" furiosa-$${MODULE}/pyproject.toml ; rm -f furiosa-$${MODULE}/pyproject.toml.bak ; \
 	done

@@ -6,7 +6,7 @@ build-backend = "flit_scm:buildapi"
 
 [project]
 name = "furiosa-models"
-version = "0.7.0.dev0"
+version = "0.8.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -25,14 +25,14 @@ classifiers = [
 ]
 dynamic = ["description"]
 requires-python = "~=3.7"
-dependencies = ["furiosa-common == 0.7.*", "furiosa-registry == 0.7.*"]
+dependencies = ["furiosa-common == 0.8.*", "furiosa-registry == 0.8.*"]
 
 [project.optional-dependencies]
 test = [
     "pytest",
     "pytest-asyncio ~= 0.17.2",
 
-    # Runtime dependency from https://github.com/furiosa-ai/furiosa-artifacts/blob/v0.0.1/requirements.txt
+    # Runtime dependency from https://github.com/furiosa-ai/furiosa-artifacts/blob/v0.0.2/pyproject.toml
     "furiosa-registry",
     "onnx",
     "onnxruntime",
@@ -41,6 +41,9 @@ test = [
     "timm",
     "torch",
     "torchvision",
+    "dvc[s3]",
+    "pydantic",
+    # Protobuf major version change issue https://github.com/furiosa-ai/furiosa-sdk-private/issues/389
     "protobuf < 4.0dev",
 
     # segmentation_models_pytorch: from https://github.com/qubvel/segmentation_models.pytorch

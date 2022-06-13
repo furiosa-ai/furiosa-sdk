@@ -41,6 +41,10 @@
       "items": {
         "$ref": "#/definitions/ModelTensor"
       }
+    },
+    "compiler_config": {
+      "title": "Compiler Config",
+      "type": "object"
     }
   },
   "required": [
@@ -54,7 +58,9 @@
       "description": "Model binary format to represent the binary specified.",
       "enum": [
         "onnx",
-        "tflite"
+        "tflite",
+        "dfg",
+        "enf"
       ],
       "type": "string"
     },
