@@ -452,4 +452,18 @@ pipeline {
       }
     }
   }
+
+  post {
+    unsuccessful {
+      script {
+        if (env.UPLOAD_INTERNAL_PYPI != null && env.UPLOAD_INTERNAL_PYPI.toBoolean()) {
+          slackSend(
+            channel: '#daily-build',
+            color: 'danger',
+            message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}"
+          )
+        }
+      }
+    }
+  }
 }
