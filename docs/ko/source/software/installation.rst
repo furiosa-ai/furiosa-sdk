@@ -110,7 +110,8 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 
   .. tab:: 다운로드 센터를 이용한 설치
 
-    아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다.
+    아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다. 
+    ``x.y.z-?`` 버전 부분은 다운받은 파일의 버전에 맞게 변경한다.
 
     * NPU Driver (furiosa-driver-pdma)
     * Hardware Abstraction Layer (furiosa-libhal)
@@ -157,8 +158,8 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
   sudo apt list -a furiosa-libnux
 
 
-2. ``apt-get install`` 명령에 옵션으로 패키지 이름 과 버전을 지정한다.
+2. ``apt-get install`` 명령에 옵션으로 패키지 이름과 버전을 지정한다.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.6.3-2
+  sudo apt-get install -y furiosa-libnux=0.7.0-?

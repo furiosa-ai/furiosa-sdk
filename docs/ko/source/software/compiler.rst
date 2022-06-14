@@ -106,9 +106,12 @@ ENF (Executable NPU Format) 형식의 데이터이다.
 일반적으로, 컴파일 과정은 모델에 따라서 수 초에서 수 분까지 걸리는데
 ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략할 수 있다.
 
-예를 들면, 아래 처럼 :ref:`PythonSDK <PythonSDK>` 를 사용할 때 ``session.create()``
-함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로
-``Session`` 객체를 생성한다.
+빈번하게 세션을 생성해야 하거나 실제 운영 환경에서 하나의 모델을 여러 머신에서
+서빙해야 하는 경우 유용하게 활용할 수 있다.
+
+예를 들면, :ref:`CompilerCli` 사용법을 참고하여 ENF 파일을 생성하고 
+아래 처럼 :ref:`PythonSDK <PythonSDK>` 를 사용할 때 ``session.create()``
+함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로 ``Session`` 객체를 생성한다. 
 
 .. code-block:: python
 
@@ -118,12 +121,13 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
 
 .. _CompilerCache:
 
-컴파일러 캐쉬 (Compiler Cache) 기능
+컴파일러 캐쉬 (Compiler Cache)
 -------------------------------------------
-컴파일러 캐쉬는 같은 모델을 컴파일 하는 경우 기존에 컴파일된 결과를 재활용하게 한다.
-로컬 파일 시스템 (``$HOME/cache/furiosa/compiler``) 또는 Redis를 캐쉬 스토리지로 활용할 수 있게 한다.
+컴파일러 캐쉬는 같은 모델을 컴파일 하는 경우 기존에 컴파일된 결과를 저장해 재활용하게 한다.
+로컬 파일 시스템 (기본 설정: ``$HOME/.cache/furiosa/compiler``) 또는 
+Redis를 캐쉬 스토리지로 활용한다.
 
-기본으로 컴파일러 캐쉬 기능은 활성화 되어 있으며 환경변수 ``FC_CACHE_ENABLED`` 를 이용해 명시적으로 활성화/비활성화 할 수 있다.
+컴파일러 캐쉬 기능은 기본으로 활성화 되어 있으며 환경변수 ``FC_CACHE_ENABLED`` 를 이용해 비활성화 할 수 있다.
 아래 환경 변수는 명령형 도구, Python SDK, 서빙 프레임워크 등 모든 도구에서 동일하게 적용된다.
 
 .. code-block:: sh
@@ -133,8 +137,8 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
   # Disable Compiler Cache
   export FC_CACHE_ENABLED=0
 
-
-캐쉬 스토리지는 환경변수 ``FC_CACHE_STORE_URL`` 를 통해 설정 가능하다. ``redis://`` 또는 ``rediss://`` (SSL의 경우) 
+캐쉬 스토리지의 기본 설정은 ``$HOME/.cache/furiosa/compiler``이며 
+환경변수 ``FC_CACHE_STORE_URL`` 를 통해 오버라이드 가능하다. ``redis://`` 또는 ``rediss://`` (SSL의 경우) 
 scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스토리지로 활용 가능하다.
 
 .. code-block:: sh
@@ -144,17 +148,32 @@ scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스�
 
   # When you want to specify a Redis cluster as the cache storage
   export FC_CACHE_STORE_URL=redis://:<PASSWORD>@127.0.0.1:6379 
+  # When you want to specify a Redis cluster over SSL as the cache storage
+  export FC_CACHE_STORE_URL=rediss://:<PASSWORD>@127.0.0.1:25945
 
-
-캐쉬의 생명주기는 환경변수 ``FC_CACHE_LIFETIME`` 를 통해 설정 가능하며 초(second) 단위의 정수를 입력하면 주어진 시간 만큼 
-캐쉬가 유효하며 시간이 지난 뒤에 캐쉬는 무효가 된다. 캐쉬 무효화 없이 영구적으로 사용하려면 ``-1`` 를 설정하면 된다.
-``0`` 으로 설정하면 모든 컴파일 시도에 대해 캐쉬는 무효가 되며 매번 새로 컴파일 하게 된다.
+캐쉬는 기본으로 72시간(3일)의 유효시간을 가지고 있으며 환경변수 ``FC_CACHE_LIFETIME`` 를 통해 초 단위 설정을 통해
+오버라이드 가능하다.
 
 .. code-block:: sh
 
   # 2 hours cache lifetime
   export FC_CACHE_LIFETIME=7200
-  # All compiler caches are updated forcibly
-  export FC_CACHE_LIFETIME=0
-  # Indefinite cache lifetime
-  export FC_CACHE_LIFETIME=-1
+
+옵션 값에 따라 목적에 맞는 다양한 동작 방식을 선택 할 수 있다.
+
+.. list-table:: FC_CACHE_LIFETIME 설정 값에 따른 캐쉬 동작
+   :widths: 50 200 50
+   :header-rows: 1
+
+   * - 값 (초)
+     - 설명
+     - 예
+   * - *N* > 0
+     - 컴파일 결과가 *N* 초 만큼 캐쉬로 활용 됨
+     - 7200 (2 시간)
+   * - 0
+     - 기존 컴파일 결과가 무효가 되며 항상 새로 컴파일 함 (기존 컴파일 결과를 다시 생성하고 싶을 때 활용 가능)
+     - 0
+   * - *N* < 0
+     - 기존 컴파일 결과를 유효시간 없이 영구적으로 사용한다. 읽기 전용 캐쉬를 활용할 때 사용할 수 있다.
+     - -1

@@ -76,6 +76,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    /software/cli
    /software/compiler
    /software/quantization
+   /software/profiler
    /software/kubernetes_support
    /software/serving
    /software/tutorials

@@ -2,13 +2,33 @@
 Release Notes - 0.7.0
 *********************************************************
 
-FuriosaAI SDK 0.7.0은 메이저 릴리즈로 성능 개선, 기능 추가, 버그픽스에 대한
-234개의 PR과 약 900여개의 커밋을 포함하고 있다.
+Furiosa SDK 0.7.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추가, 버그픽스를 포함하고 있다.
+
+.. list-table:: 컴포넌트 버전 정보
+   :widths: 200 50
+   :header-rows: 1
+
+   * - 패키지 이름
+     - 버전
+   * - NPU Driver
+     - 1.3.0
+   * - HAL (hard abstraction layer)
+     - 0.8.0
+   * - Furiosa Compiler
+     - 0.7.0
+   * - Python SDK (furiosa-runtime, furiosa-server, furiosa-serving, furiosa-quantizer, ..)
+     - 0.7.0
+   * - NPU Device Plugin
+     - 0.11.0
+   * - NPU Feature Discovery
+     - 0.1.0
+   * - furiosactl (NPU management CLI)
+     - 0.10.0
 
 업그레이드 방법
 --------------------------------------------------------
 APT 저장소를 사용하고 있다면 다음과 간단히 업그레이드할 수 있다.
-더 자세한 설치 방법은 :ref:`RequiredPackages` 에서 찾을 수 있다.
+APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`RequiredPackages` 에서 찾을 수 있다.
 
   .. code-block:: sh
 
@@ -21,10 +41,11 @@ APT 저장소를 사용하고 있다면 다음과 간단히 업그레이드할 �
 주요 변경 사항
 --------------------------------------------------------
 
-NPU 가속 지원 연산자 추가
+더 많은 연산자가 가속되도록 컴파일러 개선
 ================================================================
-다양한 연산자 지원이 추가되었으며 기존 연산자들은 더 다양한 조건에서 NPU 가속이 지원 된다.
-자세한 개선 내용은 아래에서 확인할 수 있으며 가속 연산자의 전체 리스트는 :ref:`SupportedOperators`에서 찾을 수 있다.
+컴파일러 개선을 통해 더 많은 연산자가 다양한 조건에서 가속될 수 있게 되었다.
+0.7.0에서 추가된 가속 연산자와 조건은 아래에서 확인할 수 있으며 
+가속 연산자의 전체 리스트는 :ref:`SupportedOperators` 에서 찾을 수 있다.
 
   * Resize 연산자의 Linear 및 Nearest 모드 지원 추가
   * SpaceToDepth 연산자의 DCR 모드 지원 추가
@@ -43,63 +64,37 @@ NPU 가속 지원 연산자 추가
 결과를 재활용하게 한다. 로컬 파일 시스템 (`$HOME/cache/furiosa/compiler`) 또는 Redis를 캐쉬 스토리지로 활용할 수 있으며
 자세한 사용법은 :ref:`CompilerCache` 에서 찾아볼 수 있다.
 
-프로파일러 도입
+
+성능 프로파일링 도구 도입
 ================================================================
 모델 추론(inference) 과정에서 수행되는 시간을 단계별로 측정하여 볼 수 있는 프로파일링 기능이 도입되었다.
+환경변수 또는 Python 코드 내에서 프로파일링 컨텍스트를 통해 프로파일러를 활성화 할 수 있다.
+자세한 사용법은 :ref:`Profiling` 에서 찾아볼 수 있다.
+
+.. image:: ../../../imgs/tracing.png
+  :alt: Tracing
+  :class: with-shadow
+  :align: center
+  :width: 600
 
 
+\
 
 Quantizer
 ================================================================
-* 
+.. warning::
+  WIP
 
 
-Python SDK
+Model Zoo
 ================================================================
 
-* 추론 프로파일링 기능 추가
-
-  * furiosa-sdk-runtime -> furiosa-sdk
-  * furiosa-sdk-quantizer -> furiosa-quantizer
-  * furiosa-sdk-validator -> furiosa-litmus
-
-* 모델 Zoo
-
-  .. code-block:: sh
-
-    $ pip install 'furiosa-sdk[litmus]'
+.. warning::
+  WIP
 
 
-.. _ChangeLogsV070:
-Changelogs
---------------------------------------------------------
-Compiler
+Device Plugin의 파일 기반 설정 도입
 ================================================================
 
-Added
-^^^^^^^^^^^^^^^^^^^
-* 컴파일러 결과 캐쉬 도입 (파일 시스템, Redis 지원) (npu-tools#3215)
-* Can replace Quantizes at the beginning of a model by computationally efficient operators (npu-tools#3278)
-* Suggest to perform quantization if ValueInfoProto about an ONNX tensor is not found (npu-tools#3312)
-* Accelerate Resize with linear mode (npu-tools#3276)
-* Accelerate SpaceToDepth with DCR mode(npu-tools#3332)
-* Accelerate DepthToSpace with DCR mode(npu-tools#3345)
-* Accelerate Pad with CHW axis(npu-tools#3385)
-* Accelerate Slice with C axis(HW was already supported)(npu-tools#3382)
-* Add batch size to Session and improve Nux to log out compiler hints as warnings (npu-tools#3411)
-* Introduce InstructionSpecLoop(npu-tools#3424)
-
-Changed
-^^^^^^^^^^^^^^^^^^^
-* Enable more cases with dilation (up to 12) (npu-tools#2700)
-* Accelerate Tanh, Exp, Log operators (npu-tools#3249)
-* Support concatenation on the channel axis (npu-tools#3253)
-* Accelerate Resize with nearest mode (npu-tools#3222)
-* Accelerate Gelu, Erf, Elu (npu-tools#3271)
-* Rename UnlabeledTranspose to Permute (npu-tools#3374)
-* Accelerate TransposeConv2d with groups(npu-tools#3360)
-
-Fixed
-^^^^^^^^^^^^^^^^^^^
-* incorrect ConvTranspose transformer for stride > 1 && dilation > 1 (npu-tools#2700)
-* incorrect ConvTranspose transformer for the case kernel alignment is required (npu-tools#3359)
+.. warning::
+  WIP
