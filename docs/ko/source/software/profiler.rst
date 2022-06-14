@@ -29,15 +29,16 @@
 .. code-block:: sh
 
     cd furiosa-sdk/examples/inferences
-    export FURIOSA_PROFILER_OUTPUT_PATH=`pwd`/trace.json
+    export FURIOSA_PROFILER_OUTPUT_PATH=`pwd`/tracing.json
     ./image_classification.sh ../assets/images/car.jpeg
 
-    ls -l ./traces.json
+    ls -l ./tracing.json
+    -rw-r--r--@ 1 furiosa  furiosa  605054 Jun  15 02:02 tracing.json
 
 
 위와 같이 환경변수를 통해 설정하면 환경변수 값에 설정된 경로에 JSON 파일이 쓰여진다. 
 크롬 브라우져에서 주소창에서 ``chrome://tracing`` 주소를 입력하면 트레이스 뷰어가
-시작된다. 트레이스 뷰어에서 왼쪽 상단에 ``Load`` 버튼을 누르고 저장된 파일 (위의 예에서는 ``trace.json``) 
+시작된다. 트레이스 뷰어에서 왼쪽 상단에 ``Load`` 버튼을 누르고 저장된 파일 (위의 예에서는 ``tracing.json``) 
 파일을 선택하면 트레이스 결과를 볼 수 있다.
 
 .. image:: ../../../imgs/tracing.png
