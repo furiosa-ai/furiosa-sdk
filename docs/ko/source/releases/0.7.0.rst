@@ -66,6 +66,27 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 자세한 사용법은 :ref:`CompilerCache` 에서 찾아볼 수 있다.
 
 
+컴파일러 힌트 도입
+================================================================
+``session.create()`` 과 같이 컴파일 과정을 수반하는 함수 실행 시
+아래와 같이 컴파일러 로그가 저장된 경로가 출력된다.
+
+  .. code-block:: sh
+
+    Saving the compilation log into /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log
+
+
+로그에는 기본적으로 컴파일 과정을 이해하는 유용한 정보를 담고 있는데 0.7.0 버전 부터 성능 개선에 유용한 힌트를 추가로 출력한다.
+``cat <log file> | grep Hint`` 커맨드로 힌트만 출력해볼 수 있다. 힌트는 어떤 연산자를 왜 가속되지 않는지를 알려준다.
+
+  .. code-block:: sh
+
+    cat /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log | grep Hint
+    2022-05-24T02:44:11.399402Z  WARN nux::session: Hint [19]: 'LogSoftmax' cannot be accelerated yet
+    2022-05-24T02:44:11.399407Z  WARN nux::session: Hint [12]: groups should be bigger than 1
+    2022-05-24T02:44:11.399408Z  WARN nux::session: Hint [17]: Softmax with large batch (36 > 2) cannot be accelerated by Warboy
+
+
 성능 프로파일링 도구 도입
 ================================================================
 모델 추론(inference) 과정에서 수행되는 시간을 단계별로 측정하여 볼 수 있는 프로파일링 기능이 도입되었다.
@@ -77,6 +98,27 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
   :class: with-shadow
   :align: center
   :width: 600
+
+
+\
+
+Python SDK 개선
+================================================================
+* ``session.create()`` 및 ``session.create_async()`` 함수가 배치 사이즈를 인자로 받도록 개선
+* ``session.create()`` 및 ``session.create_async()`` 에서 파라메터로 전달된 컴파일러 옵션이 반영되지 않는 버그 수정
+
+아래는 배치 사이즈와 컴파일러 옵션을 사용 하는 예이다.
+
+  .. code-block:: python
+
+    config = {
+      "without_quantize": {
+          "parameters": [{"input_min": 0.0, "input_max": 255.0, "permute": [0, 2, 3, 1]}]
+      }
+    }
+
+    with session.create("model.onnx", batch_size=2, compile_config=config) as sess:
+      outputs = sess.run(inputs)
 
 
 양자화 도구
