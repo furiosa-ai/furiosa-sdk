@@ -42,7 +42,7 @@ FuriosaAI NPU와 SDK 에서는
    * - `Elu <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Elu>`_
      - 0.7.0 이상 부터 지원
    * - `Erf <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Erf>`_
-     - 0.7.0 이상 부터 지원   
+     - 0.7.0 이상 부터 지원
    * - `Expand <https://github.com/onnx/onnx/blob/master/docs/Operators.md#expand>`_
      -
    * - `Flatten <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Flatten>`_
@@ -70,7 +70,7 @@ FuriosaAI NPU와 SDK 에서는
    * - `ReduceL2 <https://github.com/onnx/onnx/blob/master/docs/Operators.md#ReduceL2>`_
      -
    * - `ReduceSum <https://github.com/onnx/onnx/blob/master/docs/Operators.md#ReduceSum>`_
-     -   
+     -
    * - `Relu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Relu>`_
      -
    * - `Reshape <https://github.com/onnx/onnx/blob/master/docs/Operators.md#reshape>`_
