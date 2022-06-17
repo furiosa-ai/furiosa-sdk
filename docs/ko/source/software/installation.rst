@@ -43,7 +43,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
   sudo apt update
   sudo apt install -y ca-certificates apt-transport-https gnupg
 
-2. FuriosaAI의 공개 Singing 키를 등록 한다.
+2. FuriosaAI의 공개 Signing 키를 등록 한다.
 
 .. code-block:: sh
 
@@ -96,7 +96,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 =====================================================================
 
 위에 설명에 따라 APT 서버를 등록했거나 다운로드 사이트에 가입했다면 필수 패키지인
-NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
+NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
 
 .. tabs::
 
@@ -111,6 +111,7 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
   .. tab:: 다운로드 센터를 이용한 설치
 
     아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다.
+    ``x.y.z-?`` 버전 부분은 다운받은 파일의 버전에 맞게 변경한다.
 
     * NPU Driver (furiosa-driver-pdma)
     * Hardware Abstraction Layer (furiosa-libhal)
@@ -128,7 +129,7 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
 설치된 버전 고정 및 해제
 ------------------------------
 
-패키지 설치 이후 안정적인 운영환경을 유지하기 위해 설치된 패키지의 버전을 고정할 필요가 있다
+패키지 설치 이후 안정적인 운영환경을 유지하기 위해 설치된 패키지의 버전을 고정할 필요가 있다.
 아래 명령어를 이용하면 현재 설치된 버전을 고정 할 수 있다.
 
 .. code-block:: sh
@@ -157,8 +158,8 @@ NPU 커널 드라이버, 펌웨어, 런타임를 설치할 수 있다.
   sudo apt list -a furiosa-libnux
 
 
-2. ``apt-get install`` 명령에 옵션으로 패키지 이름 과 버전을 지정한다.
+2. ``apt-get install`` 명령에 옵션으로 패키지 이름과 버전을 지정한다.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.6.3-2
+  sudo apt-get install -y furiosa-libnux=0.7.0-?

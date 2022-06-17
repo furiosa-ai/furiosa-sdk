@@ -43,6 +43,13 @@ FuriosaAI Warboy의 하드웨어 스펙
   :alt: Warboy Hardware Specification
   :class: with-shadow
   :align: center
+  :width: 400
+
+
+..
+  for bottom margin of the above image
+
+\
 
 FuriosaAI Warboy의 성능
 ------------------------------
