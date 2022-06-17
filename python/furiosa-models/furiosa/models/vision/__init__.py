@@ -1,29 +1,24 @@
-from functools import partial
-from typing import Optional
+import functools
 
 from furiosa.common.thread import synchronous
-import furiosa.registry as registry
 from furiosa.registry import Model
+
+from ..nonblocking import vision
 
 __all__ = []
 
 
-async def load(name, *args, **kwargs) -> Optional[Model]:
-    # Import registry again to avoid exporting non-Model variable
-    import furiosa.registry
+# Iterate over non-blocking version of Furiosa Models Classes
+for model in [
+    getattr(vision, m) for m in dir(vision) if isinstance(getattr(vision, m), functools.partial)
+]:
+    # Get original function name through `functools.partial`'s metadata
+    name = model.keywords['name']
 
-    return await furiosa.registry.load(
-        uri="https://github.com/furiosa-ai/furiosa-artifacts:v0.0.2", name=name, *args, **kwargs
-    )
-
-
-for name in synchronous(registry.list)("https://github.com/furiosa-ai/furiosa-artifacts:v0.0.2"):
-    model = partial(load, name=name)
-
-    # Export Model class in this module scope
-    globals()[name] = model
+    # Export synchronous version of Model class in this module scope
+    globals()[name] = synchronous(model)
     __all__.append(name)
 
 
-# Clean up unncessary variables in this module
-del Model, Optional, load, model, name, partial, synchronous, registry
+# Clean up unnecessary variables in this module
+del Model, vision, functools, model, name, synchronous
