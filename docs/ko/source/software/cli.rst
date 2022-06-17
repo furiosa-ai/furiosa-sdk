@@ -56,7 +56,7 @@ furiosactl 사용법
 furiosa
 ===================================
 
-``furiosa`` 커맨드는 `Python SDK <PythonSDK>` 를 설치하면 사용할 수 있는 메타 명령형 도구이다.
+``furiosa`` 커맨드는 :ref:`Python SDK <PythonSDK>` 를 설치하면 사용할 수 있는 메타 명령형 도구이다.
 또한 확장 패키지를 설치하면 추가 하위 커맨드(subcommand) 가 추가 된다.
 
 만약 Python 실행 환경이 준비되어 있지 않다면 :any:`SetupPython` 를 참고한다.
