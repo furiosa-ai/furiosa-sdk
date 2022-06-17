@@ -28,8 +28,8 @@ NPU 가속이 지원되는 연산자 목록은 :ref:`SupportedOperators` 에서 
 
 
 `-o OUTPUT` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
-생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. 여기서 enf는 Executable NPU Format의 약어이다.
-따라서, 예를 들면 아래와 같이 실행하면 기본으로 ``output.enf`` 파일을 생성한다.
+생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. enf는 Executable NPU Format의 확장자이다.
+예를 들면 아래와 같이 실행하면 기본으로 ``output.enf`` 파일을 생성한다.
 
 .. code-block:: sh
 
@@ -109,9 +109,9 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
 빈번하게 세션을 생성해야 하거나 실제 운영 환경에서 하나의 모델을 여러 머신에서
 서빙해야 하는 경우 유용하게 활용할 수 있다.
 
-예를 들면, :ref:`CompilerCli` 사용법을 참고하여 ENF 파일을 생성하고 
+예를 들면, :ref:`CompilerCli` 사용법을 참고하여 ENF 파일을 생성하고
 아래 처럼 :ref:`PythonSDK <PythonSDK>` 를 사용할 때 ``session.create()``
-함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로 ``Session`` 객체를 생성한다. 
+함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로 ``Session`` 객체를 생성한다.
 
 .. code-block:: python
 
@@ -124,7 +124,7 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
 컴파일러 캐쉬 (Compiler Cache)
 -------------------------------------------
 컴파일러 캐쉬는 같은 모델을 컴파일 하는 경우 기존에 컴파일된 결과를 저장해 재활용하게 한다.
-로컬 파일 시스템 (기본 설정: ``$HOME/.cache/furiosa/compiler``) 또는 
+로컬 파일 시스템 (기본 설정: ``$HOME/.cache/furiosa/compiler``) 또는
 Redis를 캐쉬 스토리지로 활용한다.
 
 컴파일러 캐쉬 기능은 기본으로 활성화 되어 있으며 환경변수 ``FC_CACHE_ENABLED`` 를 이용해 비활성화 할 수 있다.
@@ -137,8 +137,8 @@ Redis를 캐쉬 스토리지로 활용한다.
   # Disable Compiler Cache
   export FC_CACHE_ENABLED=0
 
-캐쉬 스토리지의 기본 설정은 ``$HOME/.cache/furiosa/compiler``이며 
-환경변수 ``FC_CACHE_STORE_URL`` 를 통해 오버라이드 가능하다. ``redis://`` 또는 ``rediss://`` (SSL의 경우) 
+캐쉬 스토리지의 기본 설정은 ``$HOME/.cache/furiosa/compiler``이며
+환경변수 ``FC_CACHE_STORE_URL`` 를 통해 오버라이드 가능하다. ``redis://`` 또는 ``rediss://`` (SSL의 경우)
 scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스토리지로 활용 가능하다.
 
 .. code-block:: sh
@@ -147,7 +147,7 @@ scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스�
   export FC_CACHE_STORE_URL=/tmp/cache
 
   # When you want to specify a Redis cluster as the cache storage
-  export FC_CACHE_STORE_URL=redis://:<PASSWORD>@127.0.0.1:6379 
+  export FC_CACHE_STORE_URL=redis://:<PASSWORD>@127.0.0.1:6379
   # When you want to specify a Redis cluster over SSL as the cache storage
   export FC_CACHE_STORE_URL=rediss://:<PASSWORD>@127.0.0.1:25945
 

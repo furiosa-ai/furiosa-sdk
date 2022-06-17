@@ -13,7 +13,7 @@ Furiosa SDK 0.7.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추�
      - 버전
    * - NPU Driver
      - 1.3.0
-   * - HAL (hard abstraction layer)
+   * - HAL (Hardware Abstraction Layer)
      - 0.8.0
    * - Furiosa Compiler
      - 0.7.0
@@ -23,7 +23,7 @@ Furiosa SDK 0.7.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추�
      - 0.10.0
    * - NPU Feature Discovery
      - 0.1.0
-   * - furiosactl (NPU management CLI)
+   * - NPU Management CLI (furiosactl)
      - 0.9.1
 
 업그레이드 방법
@@ -59,10 +59,10 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
   * Gelu, Erf, Elu 연산자 가속 지원
 
 
-컴파일러 캐쉬 도입
+컴파일러 캐시 도입
 ================================================================
-컴파일러 캐쉬는 모델의 바이너리와 속성에 기반한 해쉬 값과 컴파일 결과를 함께 저장하여 동일한 모델을 컴파일 할 때
-결과를 재활용하게 한다. 로컬 파일 시스템 (`$HOME/cache/furiosa/compiler`) 또는 Redis를 캐쉬 스토리지로 활용할 수 있으며
+컴파일러 캐시는 모델의 바이너리와 속성에 기반한 해쉬 값과 컴파일 결과를 함께 저장하여 동일한 모델을 컴파일 할 때
+결과를 재활용하게 한다. 로컬 파일 시스템 (`$HOME/.cache/furiosa/compiler`) 또는 Redis를 캐쉬 스토리지로 활용할 수 있으며
 자세한 사용법은 :ref:`CompilerCache` 에서 찾아볼 수 있다.
 
 
