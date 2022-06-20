@@ -3,12 +3,14 @@ import functools
 from furiosa.common.thread import synchronous
 from furiosa.registry import Model
 
+# Where async models reside
 from ..nonblocking import vision
 
 __all__ = []
 
 
-# Iterate over non-blocking version of Furiosa Models Classes
+# Iterate over non-blocking versions of Model classes (that of ..nonblocking.vision)
+# TODO: Need more precise model checking logic (as-is: is it functools.partial?)
 for model in [
     getattr(vision, m) for m in dir(vision) if isinstance(getattr(vision, m), functools.partial)
 ]:
