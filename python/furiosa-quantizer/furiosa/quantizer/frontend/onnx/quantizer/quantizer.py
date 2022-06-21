@@ -70,8 +70,7 @@ class FuriosaONNXQuantizer:
         self.opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
         if self.opset is None:
             raise ValueError(
-                "opset in ai.onnx domain is missing. "
-                "the version of the ONNX OperatorSet must be specified."
+                f"could not figure out the version of the default ONNX operator set from Model.opset_import: {self.model.opset_import}"
             )
         self.raw_data = raw_data
 
