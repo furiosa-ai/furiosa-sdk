@@ -1,6 +1,6 @@
 import pytest
 
-from furiosa.models.vision import (
+from furiosa.models.nonblocking.vision import (
     EfficientNetV2_S,
     MLCommonsResNet50,
     MLCommonsSSDMobileNet,
