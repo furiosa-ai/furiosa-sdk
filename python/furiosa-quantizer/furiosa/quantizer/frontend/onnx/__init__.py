@@ -6,10 +6,11 @@ import numpy as np
 import onnx
 
 __DOMAIN__ = ''
-__OPSET_VERSION__ = 12
+__OPSET_VERSION__ = 13
 
 from furiosa.quantizer.frontend.onnx import calibrate
 from furiosa.quantizer.frontend.onnx.quantizer import quantizer
+from furiosa.quantizer.frontend.onnx.quantizer.quantizer import QuantizationMode
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
 )
@@ -58,9 +59,11 @@ class AlreadyQuantizedError(ValueError):
 
 
 def optimize_model(
-    model: onnx.ModelProto, input_shapes: Optional[Dict[str, List[int]]] = None
+    model: onnx.ModelProto,
+    input_shapes: Optional[Dict[str, List[int]]] = None,
+    opset_version: int = __OPSET_VERSION__,
 ) -> onnx.ModelProto:
-    model = _transform([CheckVersion().transform], model)
+    model = _transform([CheckVersion(opset_version).transform], model)
     model = _transform([PolishModel(input_shapes).transform], model)
 
     # TODO check if graph_transform should apply.
@@ -68,22 +71,11 @@ def optimize_model(
     return model
 
 
-def quantize(
-    model: onnx.ModelProto,
-    per_channel: bool,
-    static: bool,
-    mode: quantizer.QuantizationMode,
-    dynamic_ranges: Dict[str, Tuple[float, float]],
-) -> onnx.ModelProto:
-    return quantizer.FuriosaONNXQuantizer(
-        model, per_channel, static, mode, dynamic_ranges
-    ).quantize()
-
-
 def post_training_quantize(
     model: onnx.ModelProto,
     dataset: Iterable[Dict[str, np.ndarray]],
     per_channel: bool = True,
+    opset_version: int = __OPSET_VERSION__,
 ) -> onnx.ModelProto:
     """Post-training-quantizes an ONNX model with a calibration dataset.
 
@@ -93,32 +85,34 @@ def post_training_quantize(
         per_channel: If per_channel is True, Conv's filters are
           per-channel quantized. Otherwise, they are per-tensor
           quantized.
+        opset_version: ONNX OperatorSet version to use.
     Returns:
         An ONNX model post-training-quantized with the calibration
         dataset.
     """
 
     _verify_not_quantized(model)
-    model = optimize_model(model)
+    model = optimize_model(model, opset_version=opset_version)
     ranges = calibrate.calibrate(model, dataset)
-    return quantize(model, per_channel, True, quantizer.QuantizationMode.DFG, ranges)
+    return _quantize(model, per_channel, True, QuantizationMode.DFG, ranges)
 
 
 def post_training_quantization_with_random_calibration(
     model: onnx.ModelProto,
     per_channel: bool,
     static: bool,
-    mode: quantizer.QuantizationMode,
+    mode: QuantizationMode,
     num_data: int = 8,
+    opset_version: int = __OPSET_VERSION__,
 ) -> onnx.ModelProto:
     if not static:
         raise Exception("Currently only supports static quantization.")
 
     _verify_not_quantized(model)
 
-    model = optimize_model(model)
+    model = optimize_model(model, opset_version=opset_version)
     dynamic_ranges = calibrate.calibrate_with_random_data(model, num_data)
-    return quantize(model, per_channel, static, mode, dynamic_ranges)
+    return _quantize(model, per_channel, static, mode, dynamic_ranges)
 
 
 def parse_onnx_graph(
@@ -151,6 +145,18 @@ def parse_onnx_graph(
             consumers[tensor].append(node)
 
     return value_infos, producer, consumers
+
+
+def _quantize(
+    model: onnx.ModelProto,
+    per_channel: bool,
+    static: bool,
+    mode: QuantizationMode,
+    dynamic_ranges: Dict[str, Tuple[float, float]],
+) -> onnx.ModelProto:
+    return quantizer.FuriosaONNXQuantizer(
+        model, per_channel, static, mode, dynamic_ranges
+    ).quantize()
 
 
 def _transform(

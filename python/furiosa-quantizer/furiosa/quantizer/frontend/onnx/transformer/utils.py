@@ -3,9 +3,8 @@ import logging
 from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 
 import onnx
-from onnx.helper import make_model, make_opsetid
+from onnx.helper import make_model
 
-from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 from furiosa.quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
 
 logger = logging.getLogger('Furiosa-Quantizer')
@@ -107,8 +106,7 @@ def rebuild_model(
     # remove all nodes and re-make model.graph based on newly given nodes.
     del model.graph.node[:]
     model.graph.node.extend(new_nodes)
-    default_opset = make_opsetid(__DOMAIN__, __OPSET_VERSION__)
-    model = make_model(model.graph, opset_imports=[default_opset])
+    model = make_model(model.graph, opset_imports=model.opset_import)
 
     # eliminate all unused protos such as initializer, input, output, and value_info.
     if eliminate:

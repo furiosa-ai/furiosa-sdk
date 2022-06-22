@@ -32,6 +32,15 @@ class DFGImportable:
         return self.model
 
     def remove_quantizelinear_operator_with_initializer(self):
+        """
+        transform
+            prev -> QuantizeLinear -> DequantizeLinear -> next
+        into
+            prev' -> DequantizeLinear -> next
+        where prev' is the output(s) of QuantizeLinear
+
+        if prev is defined in graph.initializer
+        """
         new_nodes = []
         rm_nodes = []
         for node in self.model.graph.node:
@@ -192,12 +201,32 @@ class DFGImportable:
 
 class ONNXRuntimeExecutable(DFGImportable):
     def transform(self):
-
-        self._remove_quant_dequantlinear_operator_with_initializer()
+        # If opset < 13, fake quantized weights and biases of Conv and ConvTranspose are folded into those operators.
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        if opset is not None:
+            if opset.version < 13:
+                self._remove_quant_dequantlinear_operator_with_initializer()
+            else:
+                self.remove_quantizelinear_operator_with_initializer()
+        else:
+            raise ValueError(
+                f"could not figure out the version of the default ONNX operator set from Model.opset_import: {self.model.opset_import}"
+            )
 
         return self.model
 
     def _remove_quant_dequantlinear_operator_with_initializer(self):
+        """
+        transform
+            prev -> QuantizeLinear -> DequantizeLinear -> next
+        into
+            next'
+        where next' is the output(s) of DequantizeLinear
+
+        if prev is defined in graph.initializer
+
+        note that all the fake-quantized weight/bias(=next') will be folded into fp32 operator
+        """
         rm_nodes = []
         new_nodes = []
         for node in self.model.graph.node:

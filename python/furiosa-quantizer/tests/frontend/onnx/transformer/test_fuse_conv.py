@@ -1,6 +1,10 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import Pattern_1, Pattern_2, Pattern_3
+from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import (  # Pattern_1_a,
+    Pattern_1,
+    Pattern_2,
+    Pattern_3,
+)
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -27,6 +31,29 @@ class TestFuseConv(TestTransformer):
         self.check_output_value(orig_model, trans_model, [input_shape])
         self.check_value_info(trans_model)
 
+    def test_case1_a(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        opsetid = ("", 12)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [8, 6]),
+                "a": (np.float32, [1, 6]),
+            },
+            "node": [
+                ("MatMul", ["x", "w"], ["0"]),
+                ("Add", ["0", "a"], ["y"]),
+            ],
+            "opsetid": [opsetid],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_1)
+        self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
     def test_case2(self):
         input_shape = [4, 8]
         output_shape = [4, 6]
@@ -39,6 +66,27 @@ class TestFuseConv(TestTransformer):
             "node": [
                 ("Gemm", ["x", "w"], ["y"]),
             ],
+        }
+
+        orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)
+        self.check_graph_node(trans_model, op_types=['Unsqueeze', 'Conv', 'Squeeze'])
+        self.check_output_value(orig_model, trans_model, [input_shape])
+        self.check_value_info(trans_model)
+
+    def test_case2_a(self):
+        input_shape = [4, 8]
+        output_shape = [4, 6]
+        opsetid = ("", 12)
+        model_desc = {
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [8, 6]),
+            },
+            "node": [
+                ("Gemm", ["x", "w"], ["y"]),
+            ],
+            "opsetid": [opsetid],
         }
 
         orig_model, trans_model = self.make_test_model(model_desc, Pattern_2)

@@ -3,6 +3,7 @@ import copy
 from pathlib import Path
 import pickle
 import random
+from typing import Dict, Optional, Sequence
 import unittest
 
 import numpy as np
@@ -113,6 +114,71 @@ class ONNXTest(TestTransformer):
             input_shape = [dim.dim_value for dim in input_vi.type.tensor_type.shape.dim]
             self.check_original_and_fake_output_value(model, quantized_model, [input_shape])
 
+    def test_opset_version(self):
+        model = _make_test_model(opset_version=11)
+        new_opset = 12
+        model = optimize_model(model, opset_version=new_opset)
+        self.check_opset_version(model, new_opset)
+
+    def test_opset_version_1(self):
+        model = _make_test_model(opset_version=12)
+        new_opset = 13
+        model = optimize_model(model, opset_version=new_opset)
+        self.check_opset_version(model, new_opset)
+
+    def test_opset_version_2(self):
+        model = _make_test_model(opset_version=12, input_shape=[1, 10], output_shape=[1, 6])
+        new_opset = 13
+        model = post_training_quantize(
+            model, dataset=_generate_random_dataset(model.graph), opset_version=new_opset
+        )
+        self.check_opset_version(model, new_opset)
+
+    def test_opset_version_3(self):
+        model = _make_test_model(opset_version=11)
+        new_opset = 12
+        model = post_training_quantization_with_random_calibration(
+            model,
+            per_channel=True,
+            static=True,
+            mode=QuantizationMode.DFG,
+            num_data=2,
+            opset_version=new_opset,
+        )
+        self.check_opset_version(model, new_opset)
+
+    def check_opset_version(self, model: onnx.ModelProto, opset: int):
+        self.assertEqual(model.opset_import[0].version, opset)
+
+
+def _make_test_model(
+    opset_version: int,
+    input_shape: Optional[Sequence[int]] = None,
+    output_shape: Optional[Sequence[int]] = None,
+) -> onnx.ModelProto:
+    if input_shape is None:
+        input_shape = [2, 8]
+    if output_shape is None:
+        output_shape = [2, 6]
+    in_channel = input_shape[1]
+    out_channel = output_shape[1]
+    opsetid = ("", opset_version)
+    return make_onnx_model(
+        model_desc={
+            "input": {"x": (np.float32, input_shape)},
+            "output": {"y": (np.float32, output_shape)},
+            "initializer": {
+                "w": (np.float32, [in_channel, out_channel]),
+                "a": (np.float32, [1, out_channel]),
+            },
+            "node": [
+                ("MatMul", ["x", "w"], ["0"]),
+                ("Add", ["0", "a"], ["y"]),
+            ],
+            "opsetid": [opsetid],
+        }
+    )
+
 
 def _make_partially_sandwiched_model():
     input_shape = [1, 8]
@@ -206,6 +272,25 @@ def _make_small_weight(input_channel, output_channel, H_in, W_in, H_out, W_out):
     return np.random.normal(
         0, 2**-60, size=(output_channel, input_channel, H_weight, W_weight)
     ).astype(np.float32)
+
+
+def _generate_random_dataset(graph: onnx.GraphProto) -> Dict[str, np.ndarray]:
+    dataset = []
+    rng = np.random.default_rng()
+    init = [init.name for init in graph.initializer]
+    for tensor in graph.input:
+        if tensor.name in init:
+            continue
+        dataset.append(
+            {
+                tensor.name: rng.standard_normal(
+                    size=[dim.dim_value for dim in tensor.type.tensor_type.shape.dim],
+                    dtype=np.float32,
+                )
+            }
+        )
+
+    return dataset
 
 
 if __name__ == "__main__":

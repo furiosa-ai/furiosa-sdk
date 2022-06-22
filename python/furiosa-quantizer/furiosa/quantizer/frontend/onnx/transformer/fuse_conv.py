@@ -6,6 +6,7 @@ import onnx
 from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
 from furiosa.quantizer.interfaces.transformer import Transformer
 
+OPSET_BOUND = [12, 13]
 
 # TODO: consider (init, data) input case for MatMul
 # related issue: https://github.com/furiosa-ai/furiosa-sdk-private/issues/243
@@ -28,10 +29,11 @@ class Pattern_1(ONNXTransformer):
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
 
-    if 1. MatMul.ndim == 2
-       2. MatMul must have exactly one initializer
-       3. Add must have exactly one initializer
-       4. Add's input with initializer is multidirectional broadcastable to (1, oC)
+    if 1. Opsetid is defined in ai.onnx domain and its version is in [12, 13]
+       2. rank(MatMul.input[i]) == 2 for i = 1, 2
+       3. MatMul must have exactly one initializer
+       4. Add must have exactly one initializer
+       5. Add's input with initializer is multidirectional broadcastable to (1, oC)
     """
 
     pattern_to_match = ['MatMul', 'Add']
@@ -51,25 +53,26 @@ class Pattern_1(ONNXTransformer):
             vis_to_add=self.make_new_vi(matched_nodes),
         )
 
-        matmul = matched_nodes[0]
+        matmul, _ = matched_nodes
         return matmul.input
 
     def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
         matmul, add = nodes_to_check
         return (
-            self.check_condition_1(matmul)
+            check_opset_version(self.model)
             and self.check_condition_2(matmul)
-            and self.check_condition_2(add)
-            and self.check_condition_3(matmul, add)
+            and self.check_condition_3(matmul)
+            and self.check_condition_3(add)
+            and self.check_condition_5(matmul, add)
         )
 
-    def check_condition_1(self, node: onnx.NodeProto) -> bool:
-        return len(self.get_value_info_shape(node.output[0])) == 2
-
     def check_condition_2(self, node: onnx.NodeProto) -> bool:
+        return all(len(self.get_value_info_shape(tensor)) == 2 for tensor in node.input)
+
+    def check_condition_3(self, node: onnx.NodeProto) -> bool:
         return sum(node_input in self.initializer_map for node_input in node.input) == 1
 
-    def check_condition_3(self, node: onnx.NodeProto, node_1: onnx.NodeProto) -> bool:
+    def check_condition_5(self, node: onnx.NodeProto, node_1: onnx.NodeProto) -> bool:
         bias_tensor = self.get_init_node_input(node_1)
         bias_arr = self.get_initializer_array(bias_tensor)
         oC = self.get_value_info_shape(node.output[0])[1]
@@ -81,14 +84,24 @@ class Pattern_1(ONNXTransformer):
         matmul_data_tensor = self.get_data_node_input(matmul)
         matmul_init_tensor = self.get_init_node_input(matmul)
         add_init_tensor = self.get_init_node_input(add)
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        assert opset.version in OPSET_BOUND, repr(opset.version)
 
-        unsqueeze = onnx.helper.make_node(
-            'Unsqueeze',
-            inputs=[matmul_data_tensor],
-            outputs=[matmul.output[0] + '_unsqueezed'],
-            name=matmul.output[0] + '_1',
-            axes=[2, 3],
-        )
+        if opset.version == 13:
+            unsqueeze = onnx.helper.make_node(
+                'Unsqueeze',
+                inputs=[matmul_data_tensor, matmul_data_tensor + '_axes'],
+                outputs=[matmul.output[0] + '_unsqueezed'],
+                name=matmul.output[0] + '_1',
+            )
+        else:
+            unsqueeze = onnx.helper.make_node(
+                'Unsqueeze',
+                inputs=[matmul_data_tensor],
+                outputs=[matmul.output[0] + '_unsqueezed'],
+                axes=[2, 3],
+                name=matmul.output[0] + '_1',
+            )
 
         conv = onnx.helper.make_node(
             'Conv',
@@ -101,17 +114,27 @@ class Pattern_1(ONNXTransformer):
             name=matmul.output[0] + '_2',
         )
 
-        squeeze = onnx.helper.make_node(
-            'Squeeze',
-            inputs=[conv.output[0]],
-            outputs=[add.output[0]],
-            name=matmul.output[0] + '_3',
-            axes=[2, 3],
-        )
+        if opset.version == 13:
+            squeeze = onnx.helper.make_node(
+                'Squeeze',
+                inputs=[conv.output[0], conv.output[0] + '_axes'],
+                outputs=[add.output[0]],
+                name=matmul.output[0] + '_3',
+            )
+        else:
+            squeeze = onnx.helper.make_node(
+                'Squeeze',
+                inputs=[conv.output[0]],
+                outputs=[add.output[0]],
+                axes=[2, 3],
+                name=matmul.output[0] + '_3',
+            )
         return [unsqueeze, conv, squeeze]
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         matmul, add = matched_nodes
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        assert opset.version in OPSET_BOUND, repr(opset.version)
 
         weight_tensor = self.get_init_node_input(matmul)
         w_arr = self.get_initializer_array(weight_tensor)
@@ -123,6 +146,14 @@ class Pattern_1(ONNXTransformer):
         oC = self.get_value_info_shape(matmul.output[0])[1]
         new_bias_arr = np.broadcast_to(bias_arr, (1, oC)).flatten()
         new_bias = onnx.numpy_helper.from_array(new_bias_arr, bias_tensor + '_fused')
+
+        if opset.version == 13:
+            axes = np.array([2, 3], dtype=np.int64)
+            unsqueeze_axes = onnx.numpy_helper.from_array(
+                axes, self.get_data_node_input(matmul) + '_axes'
+            )
+            squeeze_axes = onnx.numpy_helper.from_array(axes, matmul.output[0] + '_fused' + '_axes')
+            return [new_weight, new_bias, unsqueeze_axes, squeeze_axes]
 
         return [new_weight, new_bias]
 
@@ -151,9 +182,10 @@ class Pattern_2(ONNXTransformer):
         prev --> Gemm --> next
     to
         prev --> Unsqueeze --> Conv --> Squeeze --> next
-    if 1. Gemm.B must be defined in initializer whereas Gemm.A must not
-       2. if Gemm.C is defined, Gemm.C must be an initializer and multidirectional broadcastable to (1, oC)
-       3. all of Gemm.input must have onnx.TensorProto.FLOAT dtype
+    if 1. Opsetid is defined in ai.onnx domain and its version is in [12, 13]
+       2. Gemm.B must be defined in initializer whereas Gemm.A must not
+       3. if Gemm.C is defined, Gemm.C must be an initializer and multidirectional broadcastable to (1, oC)
+       4. all of Gemm.input must have onnx.TensorProto.FLOAT dtype
     """
 
     pattern_to_match = ['Gemm']
@@ -178,15 +210,16 @@ class Pattern_2(ONNXTransformer):
     def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
         (gemm,) = nodes_to_check
         return (
-            self.check_condition_1(gemm)
+            check_opset_version(self.model)
             and self.check_condition_2(gemm)
             and self.check_condition_3(gemm)
+            and self.check_condition_4(gemm)
         )
 
-    def check_condition_1(self, node: onnx.NodeProto) -> bool:
+    def check_condition_2(self, node: onnx.NodeProto) -> bool:
         return node.input[0] not in self.initializer_map and node.input[1] in self.initializer_map
 
-    def check_condition_2(self, node: onnx.NodeProto) -> bool:
+    def check_condition_3(self, node: onnx.NodeProto) -> bool:
         if len(node.input) == 3:
             if node.input[2] in self.initializer_map:
                 array = self.get_initializer_array(node.input[2])
@@ -198,7 +231,7 @@ class Pattern_2(ONNXTransformer):
         # always returns True if Gemm.C is not defined.
         return True
 
-    def check_condition_3(self, node: onnx.NodeProto) -> bool:
+    def check_condition_4(self, node: onnx.NodeProto) -> bool:
         return all(
             self.get_value_info_dtype(tensor) == onnx.TensorProto.FLOAT for tensor in node.input
         )
@@ -207,6 +240,8 @@ class Pattern_2(ONNXTransformer):
         (gemm,) = matched_nodes
         input_tensor, weight_tensor, bias_tensor = _get_gemm_inputs(gemm, set(self.initializer_map))
         attrs = _get_gemm_attrs(gemm)
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        assert opset.version in OPSET_BOUND, repr(opset.version)
 
         new_nodes = []
         unsqueeze_input = input_tensor
@@ -221,13 +256,21 @@ class Pattern_2(ONNXTransformer):
             )
             new_nodes.append(transpose)
 
-        unsqueeze = onnx.helper.make_node(
-            'Unsqueeze',
-            inputs=[unsqueeze_input],
-            outputs=[gemm.output[0] + '_unsqueezed'],
-            name=gemm.output[0] + '_1',
-            axes=[2, 3],
-        )
+        if opset.version == 13:
+            unsqueeze = onnx.helper.make_node(
+                'Unsqueeze',
+                inputs=[unsqueeze_input, unsqueeze_input + '_axes'],
+                outputs=[gemm.output[0] + '_unsqueezed'],
+                name=gemm.output[0] + '_1',
+            )
+        else:
+            unsqueeze = onnx.helper.make_node(
+                'Unsqueeze',
+                inputs=[unsqueeze_input],
+                outputs=[gemm.output[0] + '_unsqueezed'],
+                axes=[2, 3],
+                name=gemm.output[0] + '_1',
+            )
 
         conv_inputs = [unsqueeze.output[0], weight_tensor + '_fused']
         if bias_tensor is not None:
@@ -239,21 +282,31 @@ class Pattern_2(ONNXTransformer):
             name=gemm.output[0] + '_2',
         )
 
-        squeeze = onnx.helper.make_node(
-            'Squeeze',
-            inputs=[conv.output[0]],
-            outputs=[gemm.output[0]],
-            name=gemm.output[0] + '_3',
-            axes=[2, 3],
-        )
+        if opset.version == 13:
+            squeeze = onnx.helper.make_node(
+                'Squeeze',
+                inputs=[conv.output[0], conv.output[0] + '_axes'],
+                outputs=[gemm.output[0]],
+                name=gemm.output[0] + '_3',
+            )
+        else:
+            squeeze = onnx.helper.make_node(
+                'Squeeze',
+                inputs=[conv.output[0]],
+                outputs=[gemm.output[0]],
+                axes=[2, 3],
+                name=gemm.output[0] + '_3',
+            )
 
         new_nodes.extend([unsqueeze, conv, squeeze])
         return new_nodes
 
     def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
         (gemm,) = matched_nodes
-        _, weight_tensor, bias_tensor = _get_gemm_inputs(gemm, set(self.initializer_map))
+        input_tensor, weight_tensor, bias_tensor = _get_gemm_inputs(gemm, set(self.initializer_map))
         attrs = _get_gemm_attrs(gemm)
+        opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
+        assert opset.version in OPSET_BOUND, repr(opset.version)
 
         new_inits = []
         w_arr = self.get_initializer_array(weight_tensor) * attrs['alpha']
@@ -267,6 +320,16 @@ class Pattern_2(ONNXTransformer):
             new_b_arr = np.broadcast_to(b_arr, (1, oC)).flatten() * attrs['beta']
             new_b_init = onnx.numpy_helper.from_array(new_b_arr, bias_tensor + '_fused')
             new_inits.append(new_b_init)
+
+        if opset.version == 13:
+            attrs = _get_gemm_attrs(gemm)
+            input_idx = _get_input_index(input_tensor, gemm)
+            if _needs_gemm_transpose(input_idx, attrs):
+                input_tensor += '_transposed'
+            axes = np.array([2, 3], dtype=np.int64)
+            unsqueeze_axes = onnx.numpy_helper.from_array(axes, input_tensor + '_axes')
+            squeeze_axes = onnx.numpy_helper.from_array(axes, gemm.output[0] + '_fused' + '_axes')
+            new_inits.extend([unsqueeze_axes, squeeze_axes])
 
         return new_inits
 
@@ -345,7 +408,7 @@ class Pattern_3(ONNXTransformer):
         return len(node.input) == 2 or node.input[2] in self.initializer_map
 
     def check_condition_2(self, node: onnx.NodeProto) -> bool:
-        return sum(node_input in self.initializer_map for node_input in node.input) == 1
+        return (node.input[0] in self.initializer_map) != (node.input[1] in self.initializer_map)
 
     def check_condition_3(self, node: onnx.NodeProto, node_1: onnx.NodeProto) -> bool:
         bias_tensor = self.get_init_node_input(node_1)
@@ -388,12 +451,9 @@ class Pattern_3(ONNXTransformer):
 #    """
 
 
-def _is_np_broadcastable(array: np.ndarray, to_shape: Sequence[int]) -> bool:
-    try:
-        np.broadcast_to(array, to_shape)
-        return True
-    except ValueError:
-        return False
+def check_opset_version(model: onnx.ModelProto):
+    opset = next((opset for opset in model.opset_import if not opset.domain), None)
+    return opset and opset.version in OPSET_BOUND
 
 
 def _matmul_weight_transform(weight: np.ndarray) -> np.ndarray:
@@ -424,15 +484,6 @@ def _get_gemm_inputs(
     return input_tensor, weight_tensor, bias_tensor
 
 
-def _get_input_index(input_tensor: str, node: onnx.NodeProto) -> int:
-    return list(node.input).index(input_tensor)
-
-
-def _needs_gemm_transpose(input_idx: int, attrs: Dict) -> bool:
-    assert input_idx in (0, 1)
-    return attrs['transA' if input_idx == 0 else 'transB'] != 0
-
-
 def _get_gemm_attrs(node: onnx.NodeProto) -> Dict:
     assert node.op_type == "Gemm", repr(node)
 
@@ -444,3 +495,20 @@ def _get_gemm_attrs(node: onnx.NodeProto) -> Dict:
         'transA': attrs.get('transA', 0),
         'transB': attrs.get('transB', 0),
     }
+
+
+def _get_input_index(input_tensor: str, node: onnx.NodeProto) -> int:
+    return list(node.input).index(input_tensor)
+
+
+def _is_np_broadcastable(array: np.ndarray, to_shape: Sequence[int]) -> bool:
+    try:
+        np.broadcast_to(array, to_shape)
+        return True
+    except ValueError:
+        return False
+
+
+def _needs_gemm_transpose(input_idx: int, attrs: Dict) -> bool:
+    assert input_idx in (0, 1)
+    return attrs['transA' if input_idx == 0 else 'transB'] != 0
