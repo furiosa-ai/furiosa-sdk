@@ -68,6 +68,8 @@ Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필�
 
 * Node Feature Discovery가 없어도 다음 단계를 진행할 수 있지만, 각 컴포넌트의 DaemonSet 생성 시 nodeSelector 조건을 변경해야 정상 설치가 가능하다.
 
+.. _InstallingDevicePluginAndNfd:
+
 3. Device Plugin, NPU Feature Discovery 설치
 ==============================================
 
@@ -140,6 +142,107 @@ NPU Feature Discovery가 노드에 레이블로 붙여주는 메타데이터는 
 
   warboy-node01     Ready   <none>  65d   v1.20.10   beta.furiosa.ai/npu.count=1,beta.furiosa.ai/npu.product=warboy...,kubernetes.io/os=linux
   warboy-node02     Ready   <none>  12d   v1.20.10   beta.furiosa.ai/npu.count=1,beta.furiosa.ai/npu.product=warboy...,kubernetes.io/os=linux
+
+
+Device Plugin 설정
+--------------------------------------
+Device Plugin의 실행 옵션은 명령행의 인자로 지정하거나 설정 파일을 통해 지정할 수 있도록 두 가지 방법을 제공한다.
+
+1. 명령행 입력 방식
+
+``k8s-device-plugin`` 명령을 실행하면서 인자를 통해 옵션을 지정할 수 있다.
+
+.. code-block:: sh
+
+  $ k8s-device-plugin --interval 10
+
+Pod 또는 DaemonSet 명세에서는 다음과 같이 명령행 인자를 설정 할 수 있다.
+
+.. code-block:: yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: furiosa-device-plugin
+    namespace: kube-system
+  spec:
+    containers:
+      - name: device-plugin
+        image: ghcr.io/furiosa-ai/k8s-device-plugin:latest
+        command: ["/usr/bin/k8s-device-plugin"]
+        args: ["--interval", "10"]
+  # (이하 생략)
+
+.. list-table:: k8s-device-plugin 인자 목록
+   :widths: 50 150 50
+   :header-rows: 1
+
+   * - 항목
+     - 설명
+     - 기본값
+   * - default-pe
+     - Pod 할당 시 기본값으로 적용되는 Core 유형 (Fusion/Single)
+     - Fusion
+   * - interval
+     - 장치 탐색 주기 (단위: 초)
+     - 10
+   * - disabled-devices
+     - 할당 대상에서 제외할 장치 지정(콤마로 여러 장치를 지정 가능)
+     - 
+   * - plugin-dir
+     - kubelet의 device-plugin 디렉토리 경로
+     - /var/lib/kubelet/device-plugins
+   * - socket-name
+     - <plugin-dir> 아래에 생성할 socket 파일의 이름
+     - furiosa-npu
+   * - resource-name
+     - k8s 노드에 등록할 NPU 자원의 이름
+     - beta.furiosa.ai/npu
+
+2. 설정파일 지정 방식
+
+``k8s-device-plugin`` 명령을 실행하면서 ``config-file`` 인자를 통해 설정 파일을 지정할 수 있다.
+단, ``config-file`` 을 지정한 경우 나머지 인자들은 사용할 수 없다.
+
+.. code-block:: sh
+
+  $ k8s-device-plugin --config-file /etc/furiosa/device-plugin.conf
+
+.. code-block:: yaml
+   :caption: /etc/furiosa/device-plugin.conf
+
+   interval: 10
+   defaultPe: Fusion
+   disabledDevices:             # warboy-node01 노드의 npu1 장치를 사용하지 않음을 의미
+     - devName: npu1
+       nodeName: warboy-node01
+   pluginDir: /var/lib/kubelet/device-plugins
+   socketName: furiosa-npu
+   resourceName: beta.furiosa.ai/npu
+
+설정 파일은 Yaml 포맷의 텍스트 형태이다. 파일 내용이 변경되면 변경 사항이 Device Plugin에 즉시 적용된다. 설정이 업데이트 되었음은 Device Plugin의 로그를 통해 확인할 수 있다.
+(단, ``pluginDir`` , ``socketName``, ``resourceName`` 이 항목들의 변경을 적용하기 위해서는 재시작이 필요하다.)
+
+
+:ref:`InstallingDevicePluginAndNfd` 의 설치에서 제공하는 ``device-plugin.yaml`` 는 기본적으로 ConfigMap 기반의 설정 파일을 사용하는 구성을 제공한다.
+만약 Device Plugin의 실행 옵션을 변경하고 싶다면 이 ConfigMap을 수정하고, 변경된 ConfigMap이 Pod에 반영되면 Device Plugin은 이를 읽고 변경사항을 적용한다.
+
+.. code-block:: sh
+
+  $ kubectl edit configmap npu-device-plugin -n kube-system
+
+.. code-block:: yaml
+   :caption: configmap/npu-device-plugin
+
+   apiVersion: v1
+   data:
+     config.yaml: |
+       defaultPe: Fusion
+       interval: 15
+       disabledDevices:
+         - devName: npu2
+           nodeName: npu-001
+   kind: ConfigMap
 
 
 4. NPU와 함께 Pod 배포
