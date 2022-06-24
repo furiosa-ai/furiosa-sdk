@@ -2,12 +2,15 @@
 
 import ctypes
 from ctypes import byref, c_int, c_void_p
+import logging
 from pathlib import Path
 import typing
 from typing import Dict, List, Mapping, Optional, Union
 
 import numpy as np
 import yaml
+
+from furiosa import registry
 
 from . import envs
 from ._api import LIBNUX
@@ -429,7 +432,7 @@ class AsyncSession(Model):
 
 
 def create(
-    model: Union[bytes, str, Path],
+    model: Union[bytes, str, Path, registry.Model],
     device: str = None,
     worker_num: int = None,
     batch_size: int = None,
@@ -439,8 +442,8 @@ def create(
     """Creates a session for a model
 
     Args:
-        model (bytes, str, Path): a byte string containing a model image or \
-        a path string of a model image file
+        model (bytes, str, Path, Model): a byte string containing a model image or \
+        a path string of a model image file or `furiosa.registry.Model`
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
         batch_size: Batch size of input tensors
@@ -451,6 +454,22 @@ def create(
         the session for a given model, allowing to run predictions. \
         Session is a thread safe.
     """
+    if isinstance(model, registry.Model):
+        use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
+        use_enf = model.enf is not None and use_fusion
+
+        if compile_config is not None and model.compiler_config is not None:
+            logging.warning("Got two compiler configs. Using parameter's instead of model's")
+
+        return Session(
+            model=model.enf if use_enf else model.source,
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compile_config=compile_config or model.compiler_config,
+            compiler_hints=compiler_hints,
+        )
+
     return Session(
         model=model,
         device=device,
@@ -462,7 +481,7 @@ def create(
 
 
 def create_async(
-    model: Union[bytes, str, Path],
+    model: Union[bytes, str, Path, registry.Model],
     context_ty: Optional[type] = None,
     device: Optional[str] = None,
     worker_num: Optional[int] = None,
@@ -475,8 +494,8 @@ def create_async(
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:
-        model (bytes, str, Path): a byte string containing a model image or \
-        a path string of a model image file
+        model (bytes, str, Path, Model): a byte string containing a model image or \
+        a path string of a model image file or `furiosa.registry.Model`
         context_ty (type): Type for passing context from AsyncSession to CompletionQueue
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
@@ -492,6 +511,24 @@ def create_async(
         the completion queue allows users to receive the prediction outputs \
         asynchronously.
     """
+    if isinstance(model, registry.Model):
+        use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
+        use_enf = model.enf is not None and use_fusion
+
+        if compile_config is not None and model.compiler_config is not None:
+            logging.warning("Got two compiler configs. Using parameter's instead of model's")
+
+        return create_async(
+            model=model.enf if use_enf else model.source,
+            context_ty=context_ty,
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compiler_hints=compiler_hints,
+            input_queue_size=input_queue_size,
+            output_queue_size=output_queue_size,
+            compile_config=compile_config or model.compiler_config,
+        )
 
     try:
         if device is None:
