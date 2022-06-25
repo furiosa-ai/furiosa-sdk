@@ -4,7 +4,7 @@
 컴파일러
 ****************************************
 FuriosaAI의 컴파일러는 `TFLite <https://www.tensorflow.org/lite>`_ 와 `Onnx <https://onnx.ai/>`_
-형식의 모델(`OpSet 16 <https://onnxruntime.ai/docs/reference/compatibility#onnx-opset-support>`_ 호환)을 컴파일하여 FuriosaAI NPU와 호스트 머신의 자원(CPU, 메모리)을 이용해 추론(inference)을
+형식의 모델(`OpSet 12 <https://onnxruntime.ai/docs/reference/compatibility#onnx-opset-support>`_ 호환)을 컴파일하여 FuriosaAI NPU와 호스트 머신의 자원(CPU, 메모리)을 이용해 추론(inference)을
 실행하는 프로그램을 생성한다. 이 과정에서 모델을 연산자 단위로 분석하고 최적화하여 최대한 NPU 가속와 호스트 자원을
 잘 활용할 수 있도록 프로그램을 생성한다. 따라서, 기존에 알려진 모델이 아니라도 지원되는
 연산자를 잘 활용하면 NPU에 최적화된 모델을 설계할 수 있다.
