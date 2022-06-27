@@ -4,7 +4,7 @@ import ctypes
 from ctypes import byref, c_int, c_void_p
 from pathlib import Path
 import typing
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import numpy as np
 import yaml
@@ -69,7 +69,7 @@ def _create_session_options(
     worker_num: Optional[int] = None,
     batch_size: Optional[int] = None,
     compiler_hints: Optional[bool] = None,
-    compile_config: Optional[Dict[str, object]] = None,
+    compile_config: Optional[Mapping[str, object]] = None,
     compiler_log: Optional[Path] = None,
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
@@ -109,7 +109,7 @@ class Session(Model):
         worker_num: Optional[int] = None,
         batch_size: Optional[int] = None,
         compiler_hints: bool = True,
-        compile_config: Optional[Dict[str, object]] = None,
+        compile_config: Optional[Mapping[str, object]] = None,
     ):
         profiler_path = envs.profiler_output()
         if profiler_path is not None:
@@ -403,7 +403,7 @@ def create(
     device: str = None,
     worker_num: int = None,
     batch_size: int = None,
-    compile_config: Dict[str, object] = None,
+    compile_config: Mapping[str, object] = None,
     compiler_hints: bool = True,
 ) -> Session:
     """Creates a session for a model
@@ -414,7 +414,7 @@ def create(
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
         batch_size: Batch size of input tensors
-        compile_config (Dict[str, object]): Compile config
+        compile_config (Mapping[str, object]): Compile config
         compiler_hints: Print compiler hints if True (default: True)
 
     Returns:
@@ -440,7 +440,7 @@ def create_async(
     compiler_hints: Optional[bool] = True,
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
-    compile_config: Optional[Dict[str, object]] = None,
+    compile_config: Optional[Mapping[str, object]] = None,
 ) -> (AsyncSession, CompletionQueue):
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
@@ -454,7 +454,7 @@ def create_async(
         compiler_hints: Print compiler hints if True (default: True)
         input_queue_size: The input queue size, and it must be > 0 and < 2^31.
         output_queue_size: The output queue size, and it must be be > 0 and < 2^31.
-        compile_config (Dict[str, object]): Compile config
+        compile_config (Mapping[str, object]): Compile config
 
     Returns:
         A pair of the asynchronous session and the completion queue. \
