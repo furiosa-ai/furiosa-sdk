@@ -1,7 +1,6 @@
 import pytest
 
 from furiosa.models.nonblocking.vision import (
-    EfficientNetV2_S,
     MLCommonsResNet50,
     MLCommonsSSDMobileNet,
     MLCommonsSSDResNet34,
@@ -25,9 +24,3 @@ async def test_mobilenet():
 async def test_resnet34():
     model: Model = await MLCommonsSSDResNet34()
     assert model.name == "MLCommonsSSDResNet34"
-
-
-@pytest.mark.asyncio
-async def test_efficientnet():
-    model: Model = await EfficientNetV2_S()
-    assert model.name == "EfficientNetV2_S"
