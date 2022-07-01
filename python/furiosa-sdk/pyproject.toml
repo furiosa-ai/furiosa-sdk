@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "furiosa-sdk"
-version = "0.7.0"
+version = "0.7.1"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -34,7 +34,6 @@ test = []
 
 cli = ["furiosa-cli == 0.7.*"]
 litmus = ["furiosa-litmus == 0.7.*"]
-models = ["furiosa-models == 0.7.*"]
 quantizer = ["furiosa-quantizer == 0.7.*"]
 registry = ["furiosa-registry == 0.7.*"]
 server = ["furiosa-server == 0.7.*"]
@@ -43,7 +42,6 @@ tool = ["furiosa-tools == 0.7.*"]
 full = [
     "furiosa-cli == 0.7.*",
     "furiosa-litmus == 0.7.*",
-    "furiosa-models == 0.7.*",
     "furiosa-quantizer == 0.7.*",
     "furiosa-registry == 0.7.*",
     "furiosa-server == 0.7.*",
