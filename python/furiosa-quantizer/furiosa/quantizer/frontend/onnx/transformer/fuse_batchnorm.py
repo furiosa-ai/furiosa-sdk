@@ -157,14 +157,18 @@ class Pattern_4(ONNXTransformer):
         (batch_norm,) = matched_nodes
         bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
         multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
-        num_features = self.get_value_info_shape(batch_norm.output[0])[0]
+        shape = [
+            dim if i == 1 else 1
+            for (i, dim) in enumerate(self.get_value_info_shape(batch_norm.input[0]))
+        ]
         return [
             onnx.numpy_helper.from_array(
-                multiplier.reshape(num_features, -1, 1, 1),
+                multiplier.reshape(shape),
                 name=batch_norm.output[0] + '_bn_multiplier',
             ),
             onnx.numpy_helper.from_array(
-                shifter.reshape(num_features, -1, 1, 1), name=batch_norm.output[0] + '_bn_shifter'
+                shifter.reshape(shape),
+                name=batch_norm.output[0] + '_bn_shifter',
             ),
         ]
 
