@@ -38,11 +38,6 @@ In the calibration process, the data used to train the model is required in orde
 Accuracy of Quantized Models
 ========================================
 
-.. warning::
-
-  WIP: 양자화가 보편적이고 많은 실제 상황에서 정확도가 많이 떨어지지 않는다는 것을 뒷받침할
-  논문이나 문헌이 추가되면 좋을 듯
-
 Models - with their respective validation datasets - were quantized using min-max calibration with the Furiosa SDK quantizer.
 The table below compares accuracies.
 
