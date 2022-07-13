@@ -9,6 +9,7 @@ import tempfile
 
 import onnx
 
+from furiosa.common.error import is_err
 from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
@@ -61,11 +62,9 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         print(
             f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ..."
         )
-        try:
-            compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
-        except Exception as e:
-            eprint("[Step 2] Failed\n")
-            raise e
+        errno = compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
+        if is_err(errno):
+            raise Exception("[Step 2] Failed")
         print("[Step 2] Passed")
 
 
