@@ -267,7 +267,8 @@ def compile(
     errno = LIBCOMPILER.fc_compile(options, None, None, byref(input_buf), byref(output_buf))
 
     if is_err(errno):
-        return errno  # it's ok because furiosa-compiler will print out the error message to stderr
+        # it's ok because furiosa-compiler will print out the error message to stderr
+        return errno.value if isinstance(errno, ctypes.c_int) else errno
 
     try:
         with open(output_path, "wb") as output:
@@ -277,3 +278,6 @@ def compile(
             print(f"The output has been saved to {output_path}", file=sys.stderr)
     finally:
         LIBCOMPILER.fc_destroy_buffer(byref(output_buf))
+
+    # Happy return
+    return 0
