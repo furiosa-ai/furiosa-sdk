@@ -1,7 +1,4 @@
 """Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"""
-
-from __future__ import print_function
-
 import argparse
 from pathlib import Path
 import sys
@@ -36,7 +33,10 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             file=sys.stderr,
         )
         # Try quantization on input models
-        print("[Step 1] Checking if the model can be transformed into a quantized model ...")
+        print(
+            "[Step 1] Checking if the model can be transformed into a quantized model ...",
+            flush=True,
+        )
         try:
             quantized_model = post_training_quantization_with_random_calibration(
                 model=onnx.load_model(model_path),
@@ -48,7 +48,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         except Exception as e:
             eprint("[Step 1] Failed\n")
             raise e
-        print("[Step 1] Passed")
+        print("[Step 1] Passed", flush=True)
 
         step1_output = f"{tmpdir}/step1.onnx"
         step2_output = f"{tmpdir}/step2.enf"
@@ -60,7 +60,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             raise e
 
         print(
-            f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ..."
+            f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
+            flush=True,
         )
         errno = compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
         if is_err(errno):
