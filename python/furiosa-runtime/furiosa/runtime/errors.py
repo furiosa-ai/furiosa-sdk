@@ -227,10 +227,7 @@ def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
     """
     # FIXME (@hyunsik): C APIs defined in ctypes returns c_int, or int value.
     #   There's no way to make the behavior deterministic.
-    if isinstance(err, ctypes.c_int):
-        err = err.value
-    elif isinstance(err, int):
-        pass
+    err = err.value if isinstance(err, ctypes.c_int) else err
 
     if err == NativeError.SUCCESS:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
