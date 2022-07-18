@@ -33,7 +33,7 @@ Install Python dependencies.
 pip install -e .
 ```
 
-To build source, generate required files from [grpc tools](https://grpc.io/docs/languages/python/quickstart/) and [datamodel-codegen](https://koxudaxi.github.io/datamodel-code-generator/). Each step is needed to generate a GRPC stub and [pydantic](https://pydantic-docs.helpmanual.io/datamodel_code_generator/) data class.
+To build from source, generate required files from [grpc tools](https://grpc.io/docs/languages/python/quickstart/) and [datamodel-codegen](https://koxudaxi.github.io/datamodel-code-generator/). Each step is needed to generate a GRPC stub and [pydantic](https://pydantic-docs.helpmanual.io/datamodel_code_generator/) data class.
 
 **Generate GRPC API**
 ```sh
@@ -119,41 +119,33 @@ pip install furiosa_server-x.y.z-cp38-cp38-linux_x86_64.whl
 ## Usages
 
 ### Command lines
-`furiosa-server` command has the following options. 
-To print out the command line usage, you can run `furiosa-server --help` option. 
+`furiosa-server` command has the following options.
+To print out the command line usage, you can run `furiosa-server --help` option.
 ```sh
 Usage: furiosa-server [OPTIONS]
 
   Start serving models from FuriosaAI model server
 
-Options:
-  --log-level [ERROR|INFO|WARN|DEBUG|TRACE]
-                                  [default: INFO]
-  --model-path TEXT               Path to Model file (tflite, onnx are
-                                  supported)
-
-  --model-name TEXT               Model name used in URL path
-  --model-version INTEGER         Model version used in URL path
-  --host TEXT                     IP address to bind  [default: 0.0.0.0]
-  --http-port INTEGER             HTTP port to listen to requests  [default:
-                                  8080]
-
-  --model-config PATH             Path to a config file about models with
-                                  specific configurations
-
-  --server-config PATH            Path to Model file (tflite, onnx are
-                                  supported)
-
-  --install-completion            Install completion for the current shell.
-  --show-completion               Show completion for the current shell, to
-                                  copy it or customize the installation.
-
-  --help                          Show this message and exit.
+Options
+  --log-level                 [ERROR|INFO|WARN|DEBUG|TRACE]    [default: LogLevel.INFO]
+  --model-name                TEXT                             Model name [default: None]
+  --model-path                TEXT                             Path to a model file (tflite, onnx are supported)
+                                                               [default: None]
+  --model-version             TEXT                             Model version [default: default]
+  --host                      TEXT                             IPv4 address to bind [default: 0.0.0.0]
+  --http-port                 INTEGER                          HTTP port to bind [default: 8080]
+  --model-config              FILENAME                         Path to a model config file [default: None]
+  --server-config             FILENAME                         Path to a server config file [default: None]
+  --install-completion        [bash|zsh|fish|powershell|pwsh]  Install completion for the specified shell. [default: None]
+  --show-completion           [bash|zsh|fish|powershell|pwsh]  Show completion for the specified shell, to copy it or
+                                                               customize the installation.
+                                                               [default: None]
+  --help                                                       Show this message and exit.
 ```
 
 ### Serving a single model
-To serve a single model, you will need only a couple of command line options. 
-The following is an example to startup a model server with the specific model name and the model image file:
+To serve a single model, you will need only a couple of command line options.
+The following is an example to start a model server with the specific model name and the model image file:
 
 ```sh
 $ furiosa-server --model-name mnist --model-path samples/data/MNIST_inception_v3_quant.tflite --model-version 1
@@ -184,7 +176,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 You can find and try APIs via openapi: http://localhost:8080/docs#/
 
 ### Serving multiple models
-To serve multiple models, you need to write a model configuration file. 
+To serve multiple models, you need to write a model configuration file.
 The following is an example file located at `samples/model_config_example.yml`:
 ```yml
 model_config_list:
@@ -201,10 +193,10 @@ model_config_list:
     npu_device: npu1
 ```
 
-In a model configuration file, you can also specify a NPU device name dedicated to serve a certain model, 
-and a list of compiler configs as shown in the above example.  
+In a model configuration file, you can also specify a NPU device name dedicated to serve a certain model,
+and a list of compiler configs as shown in the above example.
 
-If you write a model config file, 
+If you write a model config file,
 you can launch the model server with a specific model config file as follow:
 ```sh
 $ furiosa-server --model-config samples/model_config_example.yaml
@@ -250,20 +242,20 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 
 ### Submitting inference tasks
 
-The following is an example of a request message. If you want to know the schema of the request message, 
+The following is an example of a request message. If you want to know the schema of the request message,
 please refer to openapi specication.
 ```
 {"inputs": [{"name": "mnist", "datatype": "INT32", "shape": [1, 1, 28, 28], "data": ...}]}
 
 ```
 
-You can test one of MNIST model with the following command: 
+You can test one of MNIST model with the following command:
 ```
 $ curl -X POST -H "Content-Type: application/json" \
 -d "@samples/mnist_input_sample_01.json" \
 http://localhost:8080/v2/models/mnist/versions/1/infer
 
-{"model_name":"mnist","model_version":"1","id":null,"parameters":null,"outputs":[{"name":"0","shape":[1,10],"datatype":"UINT8","parameters":null,"data":[0,0,0,1,0,255,0,0,0,0]}]}% 
+{"model_name":"mnist","model_version":"1","id":null,"parameters":null,"outputs":[{"name":"0","shape":[1,10],"datatype":"UINT8","parameters":null,"data":[0,0,0,1,0,255,0,0,0,0]}]}%
 ```
 
 Also, you can run a simple Python code to request the prediction task to the furiosa-server. Here is an example:
