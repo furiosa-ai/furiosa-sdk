@@ -23,7 +23,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dynamic = ["description"]
+# Temporarily use static description https://github.com/pypa/flit/issues/575
+# dynamic = ["description"]
+description = "Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"
 requires-python = "~=3.7"
 dependencies = ["furiosa-runtime == 0.8.*", "furiosa-quantizer == 0.8.*"]
 

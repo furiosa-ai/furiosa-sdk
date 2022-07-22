@@ -24,7 +24,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dynamic = ["description"]
+# Temporarily use static description https://github.com/pypa/flit/issues/575
+# dynamic = ["description"]
+description = "FuriosaAI model server interacting Furiosa NPU"
 requires-python = "~=3.7"
 dependencies = [
     "typer",
