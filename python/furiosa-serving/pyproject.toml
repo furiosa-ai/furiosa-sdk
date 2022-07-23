@@ -24,7 +24,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dynamic = ["description"]
+# Temporarily use static description https://github.com/pypa/flit/issues/575
+# dynamic = ["description"]
+description = "Furiosa serving framework, easy to use inference server"
 requires-python = "~=3.7"
 dependencies = [
     "furiosa-server == 0.8.*",
