@@ -40,6 +40,7 @@ models = ["furiosa-models == 0.8.*"]
 quantizer = ["furiosa-quantizer == 0.8.*"]
 registry = ["furiosa-registry == 0.8.*"]
 server = ["furiosa-server == 0.8.*"]
+serving = ["furiosa-serving == 0.8.*"]
 tool = ["furiosa-tools == 0.8.*"]
 
 full = [
@@ -49,6 +50,7 @@ full = [
     "furiosa-quantizer == 0.8.*",
     "furiosa-registry == 0.8.*",
     "furiosa-server == 0.8.*",
+    "furiosa-serving == 0.8.*",
     "furiosa-tools == 0.8.*",
 ]
 
