@@ -23,9 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-# Temporarily use static description https://github.com/pypa/flit/issues/575
-# dynamic = ["description"]
-description = "Furiosa SDK common utilities"
+dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = ["packaging"]
 

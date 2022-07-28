@@ -23,9 +23,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-# Temporarily use static description https://github.com/pypa/flit/issues/575
-# dynamic = ["description"]
-description = "Provide high-level Python APIs to access Furiosa AI's NPUs and its eco-system"
+dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = ["furiosa-common == 0.8.*", "cffi ~= 1.14", "numpy ~=1.21.5", "pydantic ~= 1.9"]
 
