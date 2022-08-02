@@ -182,6 +182,8 @@ class FuriosaONNXQuantizer:
             # to avoid updating every consumer_map that contains the mutated node
             orig_node = copy.deepcopy(node)
             for idx, node_input in enumerate(node.input):
+                if not node_input:
+                    continue
                 if not is_float_tensor(self.value_info_all[node_input]):
                     continue
                 if node_input + '_scale' not in self._quant_param:
@@ -691,7 +693,7 @@ class FuriosaONNXQuantizer:
             node_input
             for node in self.model.graph.node
             for node_input in node.input
-            if node_input not in self._quant_initializer_key
+            if node_input and node_input not in self._quant_initializer_key
         ]
         quant_outputs = [
             node_output for node in self.model.graph.node for node_output in node.output
