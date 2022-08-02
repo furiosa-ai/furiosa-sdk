@@ -221,10 +221,21 @@ class Session(Model):
 
         return output_tensors
 
-    def close(self):
-        """Close the session and release all resources belonging to the session"""
+    # _LIBNUX is meant to keep a valid reference to the Nux library at
+    # interpreter shutdown. From https://bugs.python.org/issue5099#msg80855:
+    #
+    # > At interpreter shutdown, the module's global variables are set to None
+    # > before the module itself is released. __del__ methods may be called in
+    # > those precarious circumstances, and should not rely on any global
+    # > state.
+    def close(self, *, _LIBNUX=LIBNUX):
+        """Close the session and release all resources belonging to the session
+
+        _LIBNUX is only for internal use and not supposed to be specified by a
+        user.
+        """
         if hasattr(self, "ref") and self.ref:
-            LIBNUX.nux_session_destroy(self.ref)
+            _LIBNUX.nux_session_destroy(self.ref)
             self.ref = None
 
         if hasattr(self, "profiler") and self.profiler:
@@ -308,10 +319,20 @@ class CompletionQueue:
 
         raise into_exception(err)
 
-    def close(self):
+    # _LIBNUX is meant to keep a valid reference to the Nux library at
+    # interpreter shutdown. From https://bugs.python.org/issue5099#msg80855:
+    #
+    # > At interpreter shutdown, the module's global variables are set to None
+    # > before the module itself is released. __del__ methods may be called in
+    # > those precarious circumstances, and should not rely on any global
+    # > state.
+    def close(self, *, _LIBNUX=LIBNUX):
         """Closes this completion queue.
 
         If it is closed, AsyncSession also will stop working.
+
+        _LIBNUX is only for internal use and not supposed to be specified by a
+        user.
         """
         if hasattr(self, "profiler") and self.profiler:
             self.profiler.__exit__(None, None, None)
@@ -319,7 +340,7 @@ class CompletionQueue:
             self.profiler = None
 
         if hasattr(self, "ref") and self.ref:
-            LIBNUX.nux_completion_queue_destroy(self.ref)
+            _LIBNUX.nux_completion_queue_destroy(self.ref)
             self.ref = None
 
     def __enter__(self):
@@ -378,14 +399,24 @@ class AsyncSession(Model):
         if is_err(err):
             raise into_exception(err)
 
-    def close(self):
+    # _LIBNUX is meant to keep a valid reference to the Nux library at
+    # interpreter shutdown. From https://bugs.python.org/issue5099#msg80855:
+    #
+    # > At interpreter shutdown, the module's global variables are set to None
+    # > before the module itself is released. __del__ methods may be called in
+    # > those precarious circumstances, and should not rely on any global
+    # > state.
+    def close(self, *, _LIBNUX=LIBNUX):
         """Closes this session
 
         After a session is closed, CompletionQueue will return an error
         if CompletionQueue.recv() is called.
+
+        _LIBNUX is only for internal use and not supposed to be specified by a
+        user.
         """
         if self._ref:
-            LIBNUX.nux_async_session_destroy(self._ref)
+            _LIBNUX.nux_async_session_destroy(self._ref)
             self._ref = None
 
     def __enter__(self):
