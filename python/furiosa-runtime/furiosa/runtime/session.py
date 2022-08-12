@@ -370,8 +370,6 @@ class AsyncSession(Model):
         self._as_parameter_ = self._ref
         super().__init__()
 
-        self._tensor_buffers = self.allocate_inputs()
-
     def _get_model_ref(self) -> c_void_p:
         if self._ref:
             return LIBNUX.nux_async_session_get_model(self)
@@ -391,10 +389,11 @@ class AsyncSession(Model):
             values: Input values
             context: an additional context to identify the prediction request
         """
-        _fill_all_tensors(values, self._tensor_buffers)
+        _inputs = self.allocate_inputs()
+        _inputs = _fill_all_tensors(values, _inputs)
         # manually increase reference count to keep the context object while running
         increase_ref_count(context)
-        err = LIBNUX.nux_async_session_run(self._ref, context, self._tensor_buffers)
+        err = LIBNUX.nux_async_session_run(self._ref, context, _inputs)
 
         if is_err(err):
             raise into_exception(err)
