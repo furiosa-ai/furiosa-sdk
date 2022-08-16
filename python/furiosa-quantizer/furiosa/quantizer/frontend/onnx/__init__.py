@@ -21,10 +21,6 @@ from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import FuseBatch
 from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import FuseConv
 from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import FuseDepthToSpace
 from furiosa.quantizer.frontend.onnx.transformer.fuse_gather_matmul import FuseGatherMatMul
-from furiosa.quantizer.frontend.onnx.transformer.fuse_gelu import FuseGELU
-from furiosa.quantizer.frontend.onnx.transformer.fuse_layer_normalization import (
-    FuseLayerNormalization,
-)
 from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import FuseLpNormalization
 from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad
 from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (
@@ -174,8 +170,6 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FusePad().transform,
         FuseBatchNorm().transform,
         FuseDepthToSpace().transform,
-        FuseGELU().transform,
-        FuseLayerNormalization().transform,
         FuseLpNormalization().transform,
         FuseRedundantReshapePattern().transform,
         FuseGatherMatMul().transform,
