@@ -1,3 +1,4 @@
+import copy
 import os
 import tempfile
 from typing import Dict, Iterable, Iterator, Optional, Tuple
@@ -41,8 +42,12 @@ def calibrate(
         with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
             augmented_model_path = f.name
 
-    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(
-        model, augmented_model_path=augmented_model_path
+    calibrator = onnxruntime.quantization.calibrate.create_calibrator(
+        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime v1.12.1 has a side-effect or a bug
+        # that converts raw data as external data.
+        copy.deepcopy(model),
+        augmented_model_path=augmented_model_path,
+        calibrate_method=onnxruntime.quantization.calibrate.CalibrationMethod.MinMax,
     )
     if os.environ.get("TQDM_DISABLE"):
         dataset = iter(dataset)
@@ -69,8 +74,12 @@ def calibrate_with_random_data(
         with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
             augmented_model_path = f.name
 
-    calibrator = onnxruntime.quantization.calibrate.MinMaxCalibrater(
-        model, augmented_model_path=augmented_model_path
+    calibrator = onnxruntime.quantization.calibrate.create_calibrator(
+        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime v1.12.1 has a side-effect or a bug
+        # that converts raw data as external data.
+        copy.deepcopy(model),
+        augmented_model_path=augmented_model_path,
+        calibrate_method=onnxruntime.quantization.calibrate.CalibrationMethod.MinMax,
     )
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
