@@ -14,6 +14,9 @@ from furiosa.quantizer.frontend.onnx.quantizer.quantizer import QuantizationMode
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
 )
+from furiosa.quantizer.frontend.onnx.transformer.convert_negative_pads_to_slice import (
+    ConvertNegativePadsToSlice,
+)
 from furiosa.quantizer.frontend.onnx.transformer.convert_prelu_to_relu import ConvertPReluToRelu
 from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
     EliminateRedundantShapePattern,
@@ -168,6 +171,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
     transformers = [
         ConvertConv1dToConv2d().transform,
         FuseConv().transform,
+        ConvertNegativePadsToSlice().transform,
         FusePad().transform,
         FuseBatchNorm().transform,
         FuseDepthToSpace().transform,
