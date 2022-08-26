@@ -50,6 +50,8 @@ def find_libcompiler(libname: str):
     """
 
     libpath = find_native_lib_path(libname)
+    if not libpath:
+        raise SystemExit(f'fail to find lib{libname}')
     ciface = CDLL(libpath)
 
     if ciface:

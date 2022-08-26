@@ -4,6 +4,7 @@ import glob
 import logging
 import os
 from sys import platform
+from typing import Optional
 
 LOG = logging.getLogger(__name__)
 
@@ -30,12 +31,13 @@ def find_global_lib_path(libname: str):
     return util.find_library(libname)
 
 
-def find_native_lib_path(libname: str):
+def find_native_lib_path(libname: str) -> Optional[str]:
     """Finding a native lib according to the following priority
     1. If the environment variable 'LD_LIBRARY_PATH' is set,
     this function tries to find native library found from LD_LIBRARY_PATH.
     2. Otherwise, it tries find the native library from global library paths,
     such as /usr/lib, /usr/local/lib.
+    3. If the library still cannot be founded, it returns None.
     """
     libpath = None
 
@@ -44,9 +46,6 @@ def find_native_lib_path(libname: str):
 
     if not libpath:
         libpath = find_global_lib_path(libname)
-
-    if not libpath:
-        raise SystemExit(f'fail to find lib{libname}')
 
     return libpath
 
@@ -78,6 +77,9 @@ def find_native_libs(libname: str):
     """
 
     libpath = find_native_lib_path(libname)
+    if not libpath:
+        raise SystemExit(f'fail to find lib{libname}')
+
     ciface = CDLL(libpath)
 
     if ciface:
