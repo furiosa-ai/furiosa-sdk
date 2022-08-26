@@ -33,8 +33,7 @@ test_modules = [
   "furiosa-registry",
   "furiosa-runtime",
   "furiosa-server",
-  "furiosa-tools",
-  "furiosa-models"
+  "furiosa-tools"
 ]
 
 LINUX_DISTRIB = "ubuntu:focal"
