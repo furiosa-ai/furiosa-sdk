@@ -63,8 +63,10 @@ class Model(BaseModel):
     #     arbitrary_types_allowed = True
 
     name: str
-    model: bytes = Field(repr=False)
+    source: bytes = Field(repr=False)
     format: Format
+    dfg: bytes = Field(repr=False)
+    enf: bytes = Field(repr=False)
 
     family: Optional[str] = None
     version: Optional[str] = None
