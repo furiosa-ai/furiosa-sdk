@@ -63,8 +63,8 @@ class Model(BaseModel):
     name: str
     source: bytes = Field(repr=False)
     format: Format
-    dfg: bytes = Field(repr=False)
-    enf: bytes = Field(repr=False)
+    dfg: Optional[bytes] = Field(repr=False)
+    enf: Optional[bytes] = Field(repr=False)
 
     family: Optional[str] = None
     version: Optional[str] = None
