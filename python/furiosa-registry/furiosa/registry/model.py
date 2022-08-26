@@ -15,8 +15,6 @@ class Format(str, Enum):
 
     ONNX = "onnx"
     TFLite = "tflite"
-    DFG = "dfg"
-    ENF = "enf"
 
 
 class Publication(BaseModel):
