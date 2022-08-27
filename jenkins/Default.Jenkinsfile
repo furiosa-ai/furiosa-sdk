@@ -124,7 +124,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade pip setuptools wheel;
-  pip install --root-user-action=ignore --upgrade flit gitpython papermill black isort pylint pylint-protobuf;
+  pip install --root-user-action=ignore --upgrade flit gitpython papermill black isort pylint==2.14.5 pylint-protobuf;
   """
 }
 
