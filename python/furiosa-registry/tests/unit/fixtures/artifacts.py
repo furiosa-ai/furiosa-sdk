@@ -15,7 +15,9 @@ class MNISTNetModel(Model):
 async def MNISTNet(*args: Any, **kwargs: Any) -> MNISTNetModel:
     return MNISTNetModel(
         name="MNISTNet",
-        model=await loader.read("models/MNISTnet_uint8_quant_without_softmax.tflite"),
+        source=await loader.read("models/MNISTnet_uint8_quant_without_softmax.tflite"),
+        dfg=await loader.read("models/MNISTnet_uint8_quant_without_softmax.dfg"),
+        enf=await loader.read("models/MNISTnet_uint8_quant_without_softmax.enf"),
         format=Format.TFLite,
         family="MNIST",
         version="v1.0",
