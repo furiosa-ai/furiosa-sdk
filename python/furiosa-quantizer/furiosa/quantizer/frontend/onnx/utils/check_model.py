@@ -1,5 +1,4 @@
 import onnx
-from onnx import checker
 import onnxruntime as ort
 
 
@@ -15,12 +14,12 @@ def check_model(model: onnx.ModelProto, check_runnable: bool = True) -> None:
         'No Op registered for LayerNormalization with domain_version of 12',
     ]
     try:
-        checker.check_model(model)
-    except checker.ValidationError as e:
+        onnx.checker.check_model(model)
+    except onnx.checker.ValidationError as e:
         if str(e).split("==>", maxsplit=1)[0].rstrip() in acceptable_error_msg:
             pass
         else:
-            checker.check_model(model)
+            onnx.checker.check_model(model)
 
     if check_runnable:
         ort.InferenceSession(model.SerializeToString())
