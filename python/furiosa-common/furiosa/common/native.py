@@ -32,7 +32,7 @@ def find_global_lib_path(libname: str):
 
 
 def find_native_lib_path(libname: str) -> Optional[str]:
-    """Finding a native lib according to the following priority
+    """Finding a native library path according to the following priority
     1. If the environment variable 'LD_LIBRARY_PATH' is set,
     this function tries to find native library found from LD_LIBRARY_PATH.
     2. Otherwise, it tries find the native library from global library paths,
@@ -68,7 +68,7 @@ def __register_common_capis(ciface):
 
 
 def find_native_libs(libname: str):
-    """Finding a native lib according to the priority
+    """Finding a native library c interface according to the following priority
     1. If the environment variable 'LD_LIBRARY_PATH' is set,
     this function tries to find native library found from LD_LIBRARY_PATH.
     2. Otherwise, it tries to find the native library embedded in the python package.
@@ -85,8 +85,7 @@ def find_native_libs(libname: str):
     if ciface:
         __register_common_capis(ciface)
         LOG.info(
-            'loaded native library %s (%s %s)'
-            % (
+            'loaded native library {} ({} {})'.format(
                 libpath,
                 ciface.version().decode(DEFAULT_ENCODING),
                 ciface.git_short_hash().decode(DEFAULT_ENCODING),
