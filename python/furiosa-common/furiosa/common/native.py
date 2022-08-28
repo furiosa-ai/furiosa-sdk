@@ -4,7 +4,7 @@ import glob
 import logging
 import os
 from sys import platform
-from typing import Optional
+from typing import Callable, Optional
 
 LOG = logging.getLogger(__name__)
 
@@ -67,13 +67,15 @@ def __register_common_capis(ciface):
     ciface.enable_logging.restype = None
 
 
-def find_native_libs(libname: str):
+def find_native_libs(libname: str, register_hook: Callable = __register_common_capis):
     """Finding a native library c interface according to the following priority
     1. If the environment variable 'LD_LIBRARY_PATH' is set,
     this function tries to find native library found from LD_LIBRARY_PATH.
     2. Otherwise, it tries to find the native library embedded in the python package.
     3. If the embedded native library cannot be found,
     it tries find the native library from global library paths, such as /usr/lib, /usr/local/lib.
+
+    After loading C Library, it will call register_hook(ciface).
     """
 
     libpath = find_native_lib_path(libname)
@@ -83,7 +85,7 @@ def find_native_libs(libname: str):
     ciface = CDLL(libpath)
 
     if ciface:
-        __register_common_capis(ciface)
+        register_hook(ciface)
         LOG.info(
             'loaded native library {} ({} {})'.format(
                 libpath,

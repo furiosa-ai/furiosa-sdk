@@ -23,7 +23,7 @@ class FcBuffer(Structure):
     ]
 
 
-def __register_minimum_apis(ciface):
+def __register_compiler_apis(ciface):
     ciface.fc_version.argtypes = []
     ciface.fc_version.restype = c_char_p
 
@@ -41,7 +41,7 @@ def __register_minimum_apis(ciface):
 
 
 ## Definition of Compiler Native C API
-LIBCOMPILER = find_native_libs("furiosa_compiler")
+LIBCOMPILER = find_native_libs("furiosa_compiler", register_hook=__register_compiler_apis)
 LIBCOMPILER.fc_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p]
 LIBCOMPILER.fc_compile.restype = c_int
 
