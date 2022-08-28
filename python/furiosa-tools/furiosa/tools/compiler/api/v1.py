@@ -39,6 +39,10 @@ def __register_compiler_apis(ciface):
     ciface.register_signal_handler.argtypes = []
     ciface.register_signal_handler.restype = None
 
+    # Making aliases to be compatible with find_native_libs
+    ciface.version = ciface.fc_version
+    ciface.git_short_hash = ciface.fc_revision
+
 
 ## Definition of Compiler Native C API
 LIBCOMPILER = find_native_libs("furiosa_compiler", register_hook=__register_compiler_apis)
