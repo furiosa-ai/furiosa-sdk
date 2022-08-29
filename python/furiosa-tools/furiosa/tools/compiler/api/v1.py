@@ -8,7 +8,7 @@ import sys
 from typing import Dict, Optional, Union
 
 from furiosa.common.error import FuriosaError, is_err
-from furiosa.common.native import LogLevel, find_native_lib_path
+from furiosa.common.native import LogLevel, find_native_libs
 
 LOG = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class FcBuffer(Structure):
     ]
 
 
-def __register_minimum_apis(ciface):
+def __register_compiler_apis(ciface):
     ciface.fc_version.argtypes = []
     ciface.fc_version.restype = c_char_p
 
@@ -39,39 +39,13 @@ def __register_minimum_apis(ciface):
     ciface.register_signal_handler.argtypes = []
     ciface.register_signal_handler.restype = None
 
-
-def find_libcompiler(libname: str):
-    """Finding a native lib according to the priority
-    1. If the environment variable 'LD_LIBRARY_PATH' is set,
-    this function tries to find native library found from LD_LIBRARY_PATH.
-    2. Otherwise, it tries to find the native library embedded in the python package.
-    3. If the embedded native library cannot be found,
-    it tries find the native library from global library paths, such as /usr/lib, /usr/local/lib.
-    """
-
-    libpath = find_native_lib_path(libname)
-    if not libpath:
-        raise SystemExit(f'fail to find lib{libname}')
-    ciface = CDLL(libpath)
-
-    if ciface:
-        __register_minimum_apis(ciface)
-        LOG.info(
-            'loaded native library %s (%s %s)'
-            % (
-                libpath,
-                ciface.fc_version().decode(DEFAULT_ENCODING),
-                ciface.fc_revision().decode(DEFAULT_ENCODING),
-            )
-        )
-    else:
-        raise SystemExit('fail to load native library')
-
-    return ciface
+    # Making aliases to be compatible with find_native_libs
+    ciface.version = ciface.fc_version
+    ciface.git_short_hash = ciface.fc_revision
 
 
 ## Definition of Compiler Native C API
-LIBCOMPILER = find_libcompiler("furiosa_compiler")
+LIBCOMPILER = find_native_libs("furiosa_compiler", register_hook=__register_compiler_apis)
 LIBCOMPILER.fc_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p]
 LIBCOMPILER.fc_compile.restype = c_int
 
