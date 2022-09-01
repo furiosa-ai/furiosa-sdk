@@ -235,7 +235,7 @@ decref.argtypes = [ctypes.py_object]
 decref.restype = None
 
 # Enable Furiosa logger
-LIBNUX.enable_logging(_nux_log_level_from_env())
+# LIBNUX.enable_logging(_nux_log_level_from_env())
 
 # Register Ctrl-C signal handler to interrupt native side for long running job
 LIBNUX.register_signal_handler()
