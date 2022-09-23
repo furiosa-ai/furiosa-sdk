@@ -2,5 +2,6 @@
 
 from .application import ServeAPI
 from .model import ServeModel
+from .processors import Processor
 
-__all__ = ["ServeAPI", "ServeModel"]
+__all__ = ["ServeAPI", "ServeModel", "Processor"]

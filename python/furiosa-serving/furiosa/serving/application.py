@@ -74,7 +74,6 @@ class ServeAPI:
         return model
 
     async def load(self):
-        print("application load")
         for inner, serve_model in self._models.items():
             # Load models via repository
             await self._repository.load(inner)
