@@ -27,13 +27,16 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = [
-    "typer",
-    "fastapi",
-    "mypy-extensions<0.5.0,>=0.4.3",
-    "toml",
-    "uvicorn",
-    "grpcio-tools",
     "furiosa-runtime == 0.8.*",
+
+    "fastapi",
+    "grpcio-tools",
+    "mypy-extensions<0.5.0,>=0.4.3",
+    # Protobuf major version change issue https://github.com/furiosa-ai/furiosa-sdk-private/issues/389
+    "protobuf < 4.0",
+    "toml",
+    "typer",
+    "uvicorn",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +48,7 @@ test = [
     "pytest >=2.7.3",
     "pytest",
     "pytest-asyncio ~= 0.17.2",
+    "requests",
     "types-PyYAML",
 ]
 
