@@ -6,11 +6,11 @@ from typing import Any, Callable
 class Processor(ABC):
     @abstractmethod
     async def preprocess(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+        return args
 
     @abstractmethod
     async def postprocess(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+        return args
 
     def __call__(self, func: Callable):
         """

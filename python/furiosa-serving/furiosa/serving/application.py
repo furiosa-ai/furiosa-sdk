@@ -1,9 +1,8 @@
-import os
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from fastapi import FastAPI
 
-from furiosa.registry.client import transport
+from furiosa.registry import TransportNotFound, transport
 from furiosa.server.model import Model
 from furiosa.server.registry import InMemoryRegistry
 from furiosa.server.repository import Repository
@@ -50,10 +49,15 @@ class ServeAPI:
         description: Optional[str] = None,
         npu_device: Optional[str] = None,
         compiler_config: Optional[Dict] = None,
+        preprocess: Optional[Callable[[Any], Any]] = None,
+        postprocess: Optional[Callable[[Any], Any]] = None,
     ):
-        # Assume that relative path is only for file
-        if transport.is_relative(location):
-            location = os.path.join("file://", location)
+        # Add file prefix if the scheme is not discoverable
+        try:
+            with transport.supported(location):
+                pass
+        except TransportNotFound:
+            location = "file://" + location
 
         model = ServeModel(
             app=self._app,
@@ -63,6 +67,8 @@ class ServeAPI:
             description=description,
             npu_device=npu_device,
             compiler_config=compiler_config,
+            preprocess=preprocess,
+            postprocess=postprocess,
         )
 
         self._models[model.inner] = model

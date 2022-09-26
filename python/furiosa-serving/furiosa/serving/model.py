@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union, Any
 
 from fastapi import FastAPI
 from fastapi.routing import Mount
@@ -19,6 +19,8 @@ class ServeModel:
         description: Optional[str] = None,
         npu_device: Optional[str] = None,
         compiler_config: Optional[Dict] = None,
+        preprocess: Optional[Callable[[Any], Any]] = None,
+        postprocess: Optional[Callable[[Any], Any]] = None,
     ):
         self._app = app
         self._config = ModelConfig(
@@ -32,6 +34,9 @@ class ServeModel:
 
         self._model = NuxModel(self._config)
         self._routes: Dict[Callable, Callable] = {}
+
+        self.preprocess = preprocess
+        self.postprocess = preprocess
 
     def expose(self):
         """
