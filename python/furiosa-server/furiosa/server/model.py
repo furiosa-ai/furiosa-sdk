@@ -3,7 +3,7 @@ Model class for prediction/explanation
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, overload
+from typing import List, Optional, overload
 
 import numpy as np
 
@@ -11,7 +11,7 @@ from furiosa.common.thread import asynchronous
 from furiosa.runtime import session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
-from .settings import ModelConfig
+from .settings import ModelConfig, NuxModelConfig
 from .types import (
     InferenceRequest,
     InferenceResponse,
@@ -22,9 +22,7 @@ from .types import (
 
 
 class Model(ABC):
-    """
-    Base model class for every runtime
-    """
+    """Base model class for every runtime."""
 
     def __init__(self, config: ModelConfig):
         self.ready = False
@@ -67,19 +65,12 @@ class Model(ABC):
     async def predict(self, payload):
         pass
 
-    @abstractmethod
-    def encode(self, metatdata: Any, payload: Any) -> ResponseOutput:
-        pass
-
-    @abstractmethod
-    def decode(self, metatdata: Any, request_input: RequestInput) -> Any:
-        pass
-
 
 class NuxModel(Model):
-    """
-    Model for Nux runtime
-    """
+    """Model for Nux runtime."""
+
+    def __init__(self, config: NuxModelConfig):
+        super().__init__(config)
 
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
@@ -114,6 +105,8 @@ class NuxModel(Model):
     async def load(self) -> bool:
         if self.ready:
             return True
+
+        assert isinstance(self._config, NuxModelConfig)
 
         # TODO(yan): Wrap functions with async thread now. Replace the functions itself
         self._session = await asynchronous(session.create)(

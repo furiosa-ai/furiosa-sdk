@@ -1,5 +1,7 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
+import numpy as np
+from functools import partial
 from fastapi import FastAPI
 
 from furiosa.registry import TransportNotFound, transport
@@ -8,7 +10,7 @@ from furiosa.server.registry import InMemoryRegistry
 from furiosa.server.repository import Repository
 
 from .apps.repository import repository
-from .model import ServeModel
+from .model import NPUServeModel, CPUServeModel, ServeModel
 
 
 class ServeAPI:
@@ -44,34 +46,49 @@ class ServeAPI:
         self,
         name: str,
         *,
-        location: str,
+        location: Optional[str] = None,
+        predict: Optional[Callable[[List[np.ndarray]], Awaitable[List[np.ndarray]]]] = None,
         version: Optional[str] = None,
         description: Optional[str] = None,
         npu_device: Optional[str] = None,
         compiler_config: Optional[Dict] = None,
         preprocess: Optional[Callable[[Any], Any]] = None,
         postprocess: Optional[Callable[[Any], Any]] = None,
-    ):
-        # Add file prefix if the scheme is not discoverable
-        try:
-            with transport.supported(location):
-                pass
-        except TransportNotFound:
-            location = "file://" + location
+    ) -> ServeModel:
+        if (location and predict) or (location is None and predict is None):
+            raise ValueError("ServeAPI model() expects only one of 'location' or 'predict'")
 
-        model = ServeModel(
+        def fallback(location: str) -> str:
+            # Add file prefix if the scheme is not discoverable
+            try:
+                with transport.supported(location):
+                    return location
+            except TransportNotFound:
+                return "file://" + location
+
+        create: Union[Callable[..., NPUServeModel], Callable[..., CPUServeModel]] = (
+            partial(
+                NPUServeModel,
+                model=await transport.read(fallback(location)),
+                npu_device=npu_device,
+                compiler_config=compiler_config,
+            )
+            if location
+            else partial(CPUServeModel, predict=predict)  # type: ignore
+        )  # Typing for partial not yet supported: https://github.com/python/mypy/issues/1484
+
+        model = create(
             app=self._app,
             name=name,
-            model=await transport.read(location),
             version=version,
             description=description,
-            npu_device=npu_device,
-            compiler_config=compiler_config,
             preprocess=preprocess,
             postprocess=postprocess,
         )
 
-        self._models[model.inner] = model
+        if location:
+            # Save model to load later only if it's on NPU
+            self._models[model.inner] = model
 
         # Register model config for model discovery
         assert self._registry is not None

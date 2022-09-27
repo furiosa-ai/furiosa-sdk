@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 import yaml
 
-from furiosa.server.settings import ModelConfig, ServerConfig
+from furiosa.server.settings import ModelConfig, NuxModelConfig, ServerConfig
 
 
 def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
@@ -13,7 +13,10 @@ def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
     """
 
     source = stream if isinstance(stream, MutableMapping) else yaml.safe_load(stream)
-    return [ModelConfig.parse_obj(model) for model in source["model_config_list"]]
+    return [
+        (NuxModelConfig if model["platform"] == "nux" else ModelConfig).parse_obj(model)
+        for model in source["model_config_list"]
+    ]
 
 
 def load_server_config(stream: Union[TextIOWrapper, Dict]) -> ServerConfig:

@@ -50,6 +50,7 @@ test = [
     "pytest-asyncio ~= 0.17.2",
     "requests",
     "types-PyYAML",
+    "types-protobuf"
 ]
 
 [project.urls]

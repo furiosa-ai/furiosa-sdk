@@ -3,7 +3,7 @@
 from .errors import ModelNotFound, ModelServerError
 from .model import Model, NuxModel
 from .server import ModelServer
-from .settings import ModelConfig, ServerConfig
+from .settings import ModelConfig, NuxModelConfig, ServerConfig
 
 __all__ = [
     "Model",

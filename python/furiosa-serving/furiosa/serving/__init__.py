@@ -1,7 +1,7 @@
 """Furiosa serving framework, easy to use inference server"""
 
 from .application import ServeAPI
-from .model import ServeModel
+from .model import ServeModel, NPUServeModel
 from .processors import Processor
 
-__all__ = ["ServeAPI", "ServeModel", "Processor"]
+__all__ = ["NPUServeModel", "Processor", "ServeAPI", "ServeModel"]
