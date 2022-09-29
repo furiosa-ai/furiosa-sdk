@@ -100,6 +100,10 @@ class TensorDesc:
         """Size in bytes"""
         return LIBNUX.nux_tensor_size(self)
 
+    def stride(self, idx: int) -> int:
+        """Stride of i-th dimension"""
+        return LIBNUX.nux_tensor_stride(self, idx)
+
     @property
     def length(self) -> int:
         """Number of all elements across all dimensions"""
@@ -179,8 +183,7 @@ class Tensor:
 
     def numpy(self) -> np.ndarray:
         """Return numpy.ndarray converted from this tensor"""
-        itemsize = np.dtype(self.numpy_dtype).itemsize
-        arr_size = np.prod(self.shape[:]) * itemsize
+        arr_size = self.desc.size
 
         buf_ptr = POINTER(c_uint8)()
         buf_len = c_uint64(0)
@@ -191,7 +194,13 @@ class Tensor:
         buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
         buffer = buf_from_mem(buf_ptr, arr_size, 0x100)
 
-        arr = np.ndarray(tuple(self.shape[:]), self.numpy_dtype, buffer, order="C")
+        itemsize = np.dtype(self.numpy_dtype).itemsize
+        strides = []
+        for i in range(self.desc.ndim):
+            strides.append(self.desc.stride(i) * itemsize)
+        strides = tuple(strides)
+
+        arr = np.ndarray(tuple(self.shape[:]), self.numpy_dtype, buffer, strides=strides)
         return arr.copy()
 
     def __repr__(self):

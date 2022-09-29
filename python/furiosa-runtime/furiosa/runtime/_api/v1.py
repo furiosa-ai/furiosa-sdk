@@ -88,6 +88,9 @@ LIBNUX.nux_tensor_dim_num.restype = c_ulonglong
 LIBNUX.nux_tensor_dim.argtypes = [c_void_p, c_ulonglong]
 LIBNUX.nux_tensor_dim_num.restype = c_ulonglong
 
+LIBNUX.nux_tensor_stride.argtypes = [c_void_p, c_ulonglong]
+LIBNUX.nux_tensor_stride.restype = c_ulonglong
+
 LIBNUX.nux_tensor_axis.argtypes = [c_void_p, c_ulonglong]
 LIBNUX.nux_tensor_axis.restype = c_int
 
