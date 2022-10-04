@@ -1,9 +1,7 @@
-"""
-Model class for prediction/explanation
-"""
+"""Model class for prediction/explanation."""
 
 from abc import ABC, abstractmethod
-from typing import List, Optional, overload
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, overload
 
 import numpy as np
 
@@ -11,7 +9,7 @@ from furiosa.common.thread import asynchronous
 from furiosa.runtime import session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
-from .settings import ModelConfig, NuxModelConfig
+from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
 from .types import (
     InferenceRequest,
     InferenceResponse,
@@ -67,7 +65,7 @@ class Model(ABC):
 
 
 class NuxModel(Model):
-    """Model for Nux runtime."""
+    """Model Nux runtime."""
 
     def __init__(self, config: NuxModelConfig):
         super().__init__(config)
@@ -99,7 +97,7 @@ class NuxModel(Model):
         else:
             return tensors
 
-    async def run(self, inputs: List[np.ndarray]) -> TensorArray:
+    async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
         return await self.session.run(inputs)
 
     async def load(self) -> bool:
@@ -141,3 +139,65 @@ class NuxModel(Model):
 
     def decode(self, tensor: TensorDesc, request_input: RequestInput) -> np.ndarray:
         return np.array(request_input.data, dtype=tensor.numpy_dtype).reshape(tensor.shape)
+
+
+class CPUModel(Model):
+    """Model runing on CPU."""
+
+    def __init__(
+        self,
+        config: ModelConfig,
+        *,
+        predict: Callable[[Any, Any], Awaitable[Any]],
+    ):
+        super().__init__(config)
+
+        self._predict = predict
+
+    async def predict(self, *args: Any, **kwargs: Any) -> Any:
+        return await self._predict(*args, **kwargs)
+
+
+class OpenVINOModel(Model):
+    """Model runing on OpenVINO runtime."""
+
+    from openvino.runtime.ie_api import InferRequest, CompiledModel
+
+    def __init__(self, config: OpenVINOModelConfig, *, compiler_config: Optional[Dict]):
+
+        from openvino.runtime import Core
+
+        super().__init__(config)
+
+        self._runtime = Core()
+
+    async def load(self) -> bool:
+        if self.ready:
+            return True
+
+        assert isinstance(self._config, OpenVINOModelConfig)
+
+        self._model = self._runtime.compile_model(
+            self._runtime.read_model(self._config.model), self._config.compiler_config
+        )
+        self._request = self._model.create_infer_request()
+
+        # TODO(yan): Wrap functions with async thread now. Use start_async().
+        self._request.infer = asynchronous(self._request.infer)
+
+        return await super().load()
+
+    async def predict(self, payload):
+        if isinstance(payload, InferenceRequest):
+            raise NotImplementedError("OpenVINO model does not support InferenceRequest input.")
+        else:
+            return await self.session.infer(payload)
+
+    @property
+    def session(self) -> InferRequest:
+        assert self.ready is True, "Could not access session unless model loaded first"
+        return self._request
+
+    @property
+    def inner(self) -> CompiledModel:
+        return self._model

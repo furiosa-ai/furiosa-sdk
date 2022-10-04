@@ -56,7 +56,7 @@ class ServerConfig(BaseSettings):
 class ModelConfig(BaseSettings):
     """Base Model configuration."""
 
-    # Model property for Nux
+    # Common model property
     name: str
     version: Optional[str] = None
     description: Optional[str] = None
@@ -78,3 +78,14 @@ class NuxModelConfig(ModelConfig):
     compiler_config: Optional[Dict] = None
 
     platform: str = "nux"
+
+
+class OpenVINOModelConfig(ModelConfig):
+    """Model configuration for a OpenVINO model."""
+
+    # Model property for OpenVINO
+    model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
+
+    compiler_config: Optional[Dict] = None
+
+    platform: str = "openvino"

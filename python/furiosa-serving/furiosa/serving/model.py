@@ -1,12 +1,22 @@
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union, overload
+import inspect
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.routing import Mount
 import numpy as np
 
+from furiosa.common.thread import asynchronous
 from furiosa.runtime.tensor import TensorDesc
-from furiosa.server import ModelConfig, NuxModel, Model, NuxModelConfig
+from furiosa.server import (
+    CPUModel,
+    Model,
+    ModelConfig,
+    NuxModel,
+    NuxModelConfig,
+    OpenVINOModel,
+    OpenVINOModelConfig,
+)
 
 
 class ServeModel(ABC):
@@ -16,7 +26,6 @@ class ServeModel(ABC):
         name: str,
         *,
         preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
-        predict: Optional[Callable[[List[np.ndarray]], Awaitable[List[np.ndarray]]]] = None,
         postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     ):
         self._app = app
@@ -27,18 +36,17 @@ class ServeModel(ABC):
             return (*args, kwargs) if kwargs else args
 
         self._preprocess = preprocess or identity
-        self._predict = predict
         self._postprocess = postprocess or identity
 
     async def preprocess(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._preprocess(args, kwargs)
+        return await self._preprocess(*args, **kwargs)
 
     @abstractmethod
-    async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
+    async def predict(self, *args: Any, **kwargs: Any) -> Any:
         ...
 
     async def postprocess(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._postprocess(args, kwargs)
+        return await self._postprocess(*args, *kwargs)
 
     @property
     @abstractmethod
@@ -50,28 +58,26 @@ class ServeModel(ABC):
     def config(self) -> ModelConfig:
         ...
 
+    # TODO(yan): Replace TensorDesc with abstract class like numpy.ndarray decoupling Nux context
     @property
     @abstractmethod
     def inputs(self) -> List[TensorDesc]:
         ...
 
+    # TODO(yan): Replace TensorDesc with abstract class like numpy.ndarray decoupling Nux context
     @property
     @abstractmethod
     def outputs(self) -> List[TensorDesc]:
         ...
 
     def expose(self):
-        """
-        Expose FastAPI route API endpoint
-        """
+        """Expose FastAPI route API endpoint."""
         for func, decorator in self._routes.items():
             # Decorate the path operation function to expose endpoint
             decorator(func)
 
     def hide(self):
-        """
-        Hide FastAPI route API endpoint
-        """
+        """Hide FastAPI route API endpoint."""
         # Gather routes not in sub applications
         routes = [route for route in self._app.routes if not isinstance(route, Mount)]
 
@@ -84,8 +90,7 @@ class ServeModel(ABC):
 
     def _method(self, kind: str, *args, **kwargs) -> Callable:
         def decorator(func):
-            """
-            Register FastAPI path operation function to be used later.
+            """Register FastAPI path operation function to be used later.
 
             The function will be registerd into FastAPI app when model is loaded.
             """
@@ -156,12 +161,10 @@ class NPUServeModel(ServeModel):
 
     @property
     def inputs(self) -> List[TensorDesc]:
-        # TODO(yan): Replace TensorDesc with abstract class like numpy.ndarray
         return self._model.session.inputs()
 
     @property
     def outputs(self) -> List[TensorDesc]:
-        # TODO(yan): Replace TensorDesc with abstract class like numpy.ndarray
         return self._model.session.outputs()
 
 
@@ -171,22 +174,25 @@ class CPUServeModel(ServeModel):
         app: FastAPI,
         name: str,
         *,
-        predict: Callable[[List[np.ndarray]], Awaitable[List[np.ndarray]]],
+        predict: Callable[[Any, Any], Union[Awaitable[Any], Any]],
         version: Optional[str] = None,
         description: Optional[str] = None,
         preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
         postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     ):
-        super().__init__(app, name, predict=predict, preprocess=preprocess, postprocess=postprocess)
+        super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
         self._config = ModelConfig(
             name=name, version=version, description=description, platform="CPU"
         )
 
+        if not inspect.iscoroutinefunction(predict):
+            predict = asynchronous(predict)
+
         self._model = CPUModel(self._config, predict=predict)
 
-    async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
-        return await self._model.predict(payload)
+    async def predict(self, *args: Any, **kwargs: Any) -> Any:
+        return await self._model.predict(*args, **kwargs)
 
     @property
     def inner(self) -> Model:
@@ -205,16 +211,53 @@ class CPUServeModel(ServeModel):
         raise NotImplementedError("CPUServerModel outputs() not yet supported")
 
 
-class CPUModel(Model):
+class OpenVINOServeModel(ServeModel):
+
+    from openvino.runtime.ie_api import ConstOutput
+
     def __init__(
         self,
-        config: ModelConfig,
+        app: FastAPI,
+        name: str,
         *,
-        predict: Callable[[List[np.ndarray]], Awaitable[List[np.ndarray]]],
+        model: bytes,
+        version: Optional[str] = None,
+        description: Optional[str] = None,
+        compiler_config: Optional[Dict] = None,
+        preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+        postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     ):
-        super().__init__(config)
+        super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
-        self._predict = predict
+        self._config = OpenVINOModelConfig(
+            model=model, name=name, version=version, description=description
+        )
 
-    async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
-        return await self._predict(payload)
+        self._model = OpenVINOModel(self._config, compiler_config=compiler_config)
+
+    async def predict(self, payload: np.ndarray) -> np.ndarray:
+        return await self._model.predict(payload)
+
+    @property
+    def inner(self) -> Model:
+        return self._model
+
+    @property
+    def config(self) -> ModelConfig:
+        return self._config
+
+    @property
+    def inputs(self) -> List[TensorDesc]:
+        raise NotImplementedError("OpenVINO inputs() not yet supported")
+
+    @property
+    def outputs(self) -> List[TensorDesc]:
+        raise NotImplementedError("OpenVINO outputs() not yet supported")
+
+    # TODO(yan): Replace this with inputs() above
+    def input(self, name: str) -> ConstOutput:
+        return self._model.inner.input(name)
+
+    # TODO(yan): Replace this with outputs() above
+    def output(self, name: str) -> ConstOutput:
+        return self._model.inner.output(name)

@@ -1,6 +1,4 @@
-"""
-Command line interface for FuriosaAI model server
-"""
+"""Command line interface for FuriosaAI model server."""
 
 import enum
 import logging
@@ -17,9 +15,7 @@ from ...utils.loader import load_model_config, load_server_config
 
 
 class LogLevel(str, enum.Enum):
-    """
-    Log level enum for typer choice parameter
-    """
+    """Log level enum for typer choice parameter."""
 
     ERROR = "ERROR"
     INFO = "INFO"

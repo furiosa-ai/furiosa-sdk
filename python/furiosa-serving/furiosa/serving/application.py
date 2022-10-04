@@ -1,8 +1,8 @@
+from functools import partial
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 
-import numpy as np
-from functools import partial
 from fastapi import FastAPI
+import numpy as np
 
 from furiosa.registry import TransportNotFound, transport
 from furiosa.server.model import Model
@@ -10,7 +10,7 @@ from furiosa.server.registry import InMemoryRegistry
 from furiosa.server.repository import Repository
 
 from .apps.repository import repository
-from .model import NPUServeModel, CPUServeModel, ServeModel
+from .model import CPUServeModel, NPUServeModel, OpenVINOServeModel, ServeModel
 
 
 class ServeAPI:
@@ -42,59 +42,28 @@ class ServeAPI:
     def app(self) -> FastAPI:
         return self._app
 
-    async def model(
-        self,
-        name: str,
-        *,
-        location: Optional[str] = None,
-        predict: Optional[Callable[[List[np.ndarray]], Awaitable[List[np.ndarray]]]] = None,
-        version: Optional[str] = None,
-        description: Optional[str] = None,
-        npu_device: Optional[str] = None,
-        compiler_config: Optional[Dict] = None,
-        preprocess: Optional[Callable[[Any], Any]] = None,
-        postprocess: Optional[Callable[[Any], Any]] = None,
-    ) -> ServeModel:
-        if (location and predict) or (location is None and predict is None):
-            raise ValueError("ServeAPI model() expects only one of 'location' or 'predict'")
+    def model(self, device: str) -> Callable[[Any], Awaitable[ServeModel]]:
+        def register(model: ServeModel):
+            # Register model config for model discovery
+            assert self._registry is not None
+            self._registry.register(model.config)
 
-        def fallback(location: str) -> str:
-            # Add file prefix if the scheme is not discoverable
-            try:
-                with transport.supported(location):
-                    return location
-            except TransportNotFound:
-                return "file://" + location
-
-        create: Union[Callable[..., NPUServeModel], Callable[..., CPUServeModel]] = (
-            partial(
-                NPUServeModel,
-                model=await transport.read(fallback(location)),
-                npu_device=npu_device,
-                compiler_config=compiler_config,
-            )
-            if location
-            else partial(CPUServeModel, predict=predict)  # type: ignore
-        )  # Typing for partial not yet supported: https://github.com/python/mypy/issues/1484
-
-        model = create(
-            app=self._app,
-            name=name,
-            version=version,
-            description=description,
-            preprocess=preprocess,
-            postprocess=postprocess,
-        )
-
-        if location:
-            # Save model to load later only if it's on NPU
+            # Keep inner model config for model discovery
             self._models[model.inner] = model
 
-        # Register model config for model discovery
-        assert self._registry is not None
-        self._registry.register(model.config)
+        constructors = {
+            "npu": partial(npu, app=self.app, on_create=register),
+            "cpu": partial(cpu, app=self.app, on_create=register),
+            "openvino": partial(openvino, app=self.app, on_create=register),
+        }
 
-        return model
+        try:
+            # https://github.com/python/mypy/issues/10740
+            return constructors[device]  # type: ignore
+        except KeyError:
+            raise ValueError(
+                f"Invalid device {device} for ServeModel. Available devices: {constructors.keys()}"
+            )
 
     async def load(self):
         for inner, serve_model in self._models.items():
@@ -102,9 +71,7 @@ class ServeAPI:
             await self._repository.load(inner)
 
     def _on_load(self, model: Model):
-        """
-        Callback function which expose API endpoints when model is loaded
-        """
+        """Apply callback function which expose API endpoints when model is loaded."""
         for inner, serve_model in self._models.items():
             # (name, version) pair gurantees Model identity
             # TODO(yan): Refactor repository API to load ServeModel directly
@@ -112,8 +79,94 @@ class ServeAPI:
                 serve_model.expose()
 
     def _on_unload(self, inner: Model):
-        """
-        Callback function which hide API endpoints when model is unloaded
-        """
+        """Apply callback function which hide API endpoints when model is unloaded."""
         serve_model = self._models[inner]
         serve_model.hide()
+
+
+def fallback(location: str) -> str:
+    # Add file prefix if the scheme is not discoverable
+    try:
+        with transport.supported(location):
+            return location
+    except TransportNotFound:
+        return "file://" + location
+
+
+async def cpu(
+    name: str,
+    predict: Callable[[Any, Any], Awaitable[Any]],
+    *,
+    app: FastAPI,
+    on_create: Callable[[ServeModel], None],
+    version: Optional[str] = None,
+    description: Optional[str] = None,
+    preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+    postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+) -> CPUServeModel:
+    model = CPUServeModel(
+        app,
+        name,
+        version=version,
+        description=description,
+        predict=predict,
+        preprocess=preprocess,
+        postprocess=postprocess,
+    )
+
+    on_create(model)
+    return model
+
+
+async def npu(
+    name: str,
+    location: str,
+    *,
+    app: FastAPI,
+    on_create: Callable[[ServeModel], None],
+    version: Optional[str] = None,
+    description: Optional[str] = None,
+    preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+    postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+    npu_device: Optional[str] = None,
+    compiler_config: Optional[Dict] = None,
+) -> NPUServeModel:
+    model = NPUServeModel(
+        app,
+        name,
+        model=await transport.read(fallback(location)),
+        version=version,
+        description=description,
+        preprocess=preprocess,
+        postprocess=postprocess,
+        npu_device=npu_device,
+        compiler_config=compiler_config,
+    )
+
+    on_create(model)
+    return model
+
+
+async def openvino(
+    name: str,
+    location: str,
+    *,
+    app: FastAPI,
+    on_create: Callable[[ServeModel], None],
+    version: Optional[str] = None,
+    description: Optional[str] = None,
+    preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+    postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
+) -> OpenVINOServeModel:
+    model = OpenVINOServeModel(
+        app,
+        name,
+        model=await transport.read(fallback(location)),
+        version=version,
+        description=description,
+        preprocess=preprocess,
+        postprocess=postprocess,
+    )
+
+    on_create(model)
+    return model
