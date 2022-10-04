@@ -64,4 +64,4 @@ write_to = "python/furiosa-common/furiosa/common/git_version.txt"
 version_scheme = "release-branch-semver"
 
 [tool.flit.sdist]
-include = ["furiosa/common/git_version.txt"]
+include = ["furiosa/common/git_version.txt", "furiosa/common/py.typed"]
