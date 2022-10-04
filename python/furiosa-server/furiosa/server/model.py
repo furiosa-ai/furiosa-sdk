@@ -110,6 +110,7 @@ class NuxModel(Model):
         self._session = await asynchronous(session.create)(
             self._config.model,
             device=self._config.npu_device,
+            batch_size=self._config.batch_size,
             compile_config=self._config.compiler_config,
         )
         self._session.run = asynchronous(self._session.run)
@@ -161,7 +162,7 @@ class CPUModel(Model):
 class OpenVINOModel(Model):
     """Model runing on OpenVINO runtime."""
 
-    from openvino.runtime.ie_api import InferRequest, CompiledModel
+    from openvino.runtime.ie_api import CompiledModel, InferRequest
 
     def __init__(self, config: OpenVINOModelConfig, *, compiler_config: Optional[Dict]):
 

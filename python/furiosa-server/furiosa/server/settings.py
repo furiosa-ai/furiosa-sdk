@@ -75,6 +75,7 @@ class NuxModelConfig(ModelConfig):
     model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
 
     npu_device: Optional[str] = None
+    batch_size: Optional[int] = None
     compiler_config: Optional[Dict] = None
 
     platform: str = "nux"

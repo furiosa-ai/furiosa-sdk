@@ -129,6 +129,7 @@ async def npu(
     preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     npu_device: Optional[str] = None,
+    batch_size: Optional[int] = None,
     compiler_config: Optional[Dict] = None,
 ) -> NPUServeModel:
     model = NPUServeModel(
@@ -140,6 +141,7 @@ async def npu(
         preprocess=preprocess,
         postprocess=postprocess,
         npu_device=npu_device,
+        batch_size=batch_size,
         compiler_config=compiler_config,
     )
 
