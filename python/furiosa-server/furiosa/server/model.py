@@ -1,7 +1,7 @@
 """Model class for prediction/explanation."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Sequence, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Sequence, overload
 
 import numpy as np
 
@@ -162,10 +162,10 @@ class CPUModel(Model):
 class OpenVINOModel(Model):
     """Model runing on OpenVINO runtime."""
 
-    from openvino.runtime.ie_api import CompiledModel, InferRequest
+    if TYPE_CHECKING:
+        from openvino.runtime.ie_api import CompiledModel, InferRequest
 
     def __init__(self, config: OpenVINOModelConfig, *, compiler_config: Optional[Dict]):
-
         from openvino.runtime import Core
 
         super().__init__(config)
@@ -195,10 +195,10 @@ class OpenVINOModel(Model):
             return await self.session.infer(payload)
 
     @property
-    def session(self) -> InferRequest:
+    def session(self) -> "InferRequest":
         assert self.ready is True, "Could not access session unless model loaded first"
         return self._request
 
     @property
-    def inner(self) -> CompiledModel:
+    def inner(self) -> "CompiledModel":
         return self._model

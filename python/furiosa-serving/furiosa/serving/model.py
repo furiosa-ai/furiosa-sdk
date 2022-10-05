@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import inspect
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from fastapi import FastAPI
 from fastapi.routing import Mount
@@ -143,7 +143,6 @@ class NPUServeModel(ServeModel):
             model=model,
             version=version,
             description=description,
-            batch_size=batch_size,
             npu_device=npu_device,
             compiler_config=compiler_config,
         )
@@ -215,7 +214,8 @@ class CPUServeModel(ServeModel):
 
 class OpenVINOServeModel(ServeModel):
 
-    from openvino.runtime.ie_api import ConstOutput
+    if TYPE_CHECKING:
+        from openvino.runtime.ie_api import ConstOutput
 
     def __init__(
         self,
@@ -257,9 +257,9 @@ class OpenVINOServeModel(ServeModel):
         raise NotImplementedError("OpenVINO outputs() not yet supported")
 
     # TODO(yan): Replace this with inputs() above
-    def input(self, name: str) -> ConstOutput:
+    def input(self, name: str) -> "ConstOutput":
         return self._model.inner.input(name)
 
     # TODO(yan): Replace this with outputs() above
-    def output(self, name: str) -> ConstOutput:
+    def output(self, name: str) -> "ConstOutput":
         return self._model.inner.output(name)
