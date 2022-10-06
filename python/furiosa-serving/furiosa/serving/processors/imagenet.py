@@ -5,6 +5,10 @@ from PIL import Image  # type: ignore
 from fastapi import File, UploadFile
 import numpy as np
 
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+
 from .. import ServeModel
 from .base import Processor
 
@@ -23,25 +27,36 @@ class ImageNet(Processor):
         _, height, width, channel = self.model.inputs[0].shape
 
         # Convert PIL image to Numpy array
-        data = np.zeros((width, height, channel), np.uint8)
-        data[:width, :height, :channel] = (
-            Image.open(image.file).convert("RGB").resize((width, height))
-        )
-        return np.reshape(data, (1, width, height, channel))
+        with tracer.start_as_current_span("zeros"):
+            data = np.zeros((width, height, channel), np.uint8)
+        with tracer.start_as_current_span("convert and resize"):
+            data[:width, :height, :channel] = (
+                Image.open(image.file).convert("RGB").resize((width, height))
+            )
+        with tracer.start_as_current_span("reshape"):
+            result = np.reshape(data, (1, width, height, channel))
+        return result
 
     async def postprocess(self, output: np.ndarray) -> Dict:  # type: ignore
         """
         Postprocess to classify image from compiled model with labels
         """
 
-        classified = np.squeeze(output)
+        with tracer.start_as_current_span("squeeze"):
+            classified = np.squeeze(output)
 
         # Load pre-defined labels
-        labels = {index: line.strip() for index, line in enumerate(open(self.label).readlines())}
+        with tracer.start_as_current_span("load labels"):
+            labels = {
+                index: line.strip() for index, line in enumerate(open(self.label).readlines())
+            }
 
         # Find objects with index which mostly fits
-        objects = sorted((score, index[0]) for index, score in np.ndenumerate(classified))[::-1]
+        with tracer.start_as_current_span("find objects"):
+            objects = sorted((score, index[0]) for index, score in np.ndenumerate(classified))[::-1]
 
         # Return fifth best fit image labels with scores. Note that we are casting int here to
         # convert numpy uin8 type into Python native int type to allow FastAPI serialize result JSON
-        return {labels[index]: int(score) for score, index in objects[:5]}
+        with tracer.start_as_current_span("write result"):
+            result = {labels[index]: int(score) for score, index in objects[:5]}
+        return result

@@ -3,6 +3,10 @@ from functools import wraps
 import inspect
 from typing import Any, Callable
 
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+
 
 class Processor(ABC):
     # TODO: Any other graceful way to provide pre/postprocess API?
@@ -29,15 +33,20 @@ class Processor(ABC):
         )
         async def decorator(*args: Any, **kwargs: Any) -> Any:
             # Preprocess
-            output = await self.preprocess(*args, **kwargs)
+            with tracer.start_as_current_span("preprocess") as span:
+                output = await self.preprocess(*args, **kwargs)
+
             # Infer
-            response = await func(output)
+            with tracer.start_as_current_span("inference") as span:
+                response = await func(output)
+
             # Postprocess
-            if inspect.signature(func).return_annotation.__origin__ is tuple:
-                # Unpack return variables if there are more than two (tuple case)
-                return await self.postprocess(*response)
-            else:
-                return await self.postprocess(response)
+            with tracer.start_as_current_span("postprocess") as span:
+                if inspect.signature(func).return_annotation.__origin__ is tuple:
+                    # Unpack return variables if there are more than two (tuple case)
+                    return await self.postprocess(*response)
+                else:
+                    return await self.postprocess(response)
 
         # # Extract parameter annotation from preprocess
         params = {

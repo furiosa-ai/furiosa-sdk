@@ -31,7 +31,14 @@ dependencies = [
     "furiosa-registry == 0.8.*",
 
     "Pillow",
-    "python-multipart"
+    "python-multipart",
+
+    "prometheus-client",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-instrumentation-logging",
+    "opentelemetry-exporter-otlp",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
 ]
 
 [project.optional-dependencies]

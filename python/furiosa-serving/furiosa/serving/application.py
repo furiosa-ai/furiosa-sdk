@@ -11,6 +11,7 @@ from furiosa.server.repository import Repository
 
 from .apps.repository import repository
 from .model import CPUServeModel, NPUServeModel, OpenVINOServeModel, ServeModel
+from .telemetry import setup_metrics, setup_otlp
 
 
 class ServeAPI:
@@ -19,7 +20,7 @@ class ServeAPI:
         repository: Repository = repository,
         **kwargs: Any,
     ):
-        self._app = FastAPI(**kwargs, on_startup=[self.load])
+        self._app = FastAPI(**kwargs, on_startup=[self.load, self.setup_telemetry])
         self._models: Dict[Model, ServeModel] = {}
         self._repository = repository
         self._registry = next(
@@ -69,6 +70,13 @@ class ServeAPI:
         for inner, serve_model in self._models.items():
             # Load models via repository
             await self._repository.load(inner)
+
+    def setup_telemetry(self):
+        app_name = os.environ.get("FURIOSA_SERVING_APP_NAME", "furiosa-serving")
+        otlp_endpoint = os.environ.get("FURIOSA_SERVING_OTLP_ENDPOINT")
+        setup_metrics(self._app, app_name)
+        if otlp_endpoint is not None:
+            setup_otlp(self._app, app_name, otlp_endpoint)
 
     def _on_load(self, model: Model):
         """Apply callback function which expose API endpoints when model is loaded."""
