@@ -4,7 +4,6 @@ from typing import Dict
 from PIL import Image  # type: ignore
 from fastapi import File, UploadFile
 import numpy as np
-
 from opentelemetry import trace
 
 tracer = trace.get_tracer(__name__)

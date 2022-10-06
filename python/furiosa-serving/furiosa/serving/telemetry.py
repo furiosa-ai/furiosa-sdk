@@ -1,9 +1,6 @@
 import time
 from typing import Tuple
 
-from prometheus_client import REGISTRY, Counter, Gauge, Histogram
-from prometheus_client.openmetrics.exposition import CONTENT_TYPE_LATEST, generate_latest
-
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -11,6 +8,9 @@ from opentelemetry.instrumentation.logging import LoggingInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.trace.span import INVALID_SPAN
+from prometheus_client import REGISTRY, Counter, Gauge, Histogram
+from prometheus_client.openmetrics.exposition import CONTENT_TYPE_LATEST, generate_latest
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -79,11 +79,15 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
             after_time = time.perf_counter()
             # retrieve trace id for exemplar
             span = trace.get_current_span()
-            trace_id = trace.format_trace_id(span.get_span_context().trace_id)
+            if span == INVALID_SPAN:
+                exemplar = {}
+            else:
+                trace_id = trace.format_trace_id(span.get_span_context().trace_id)
+                exemplar = {'TraceID': trace_id}
 
             REQUESTS_PROCESSING_TIME.labels(
                 method=method, path=path, app_name=self.app_name
-            ).observe(after_time - before_time, exemplar={'TraceID': trace_id})
+            ).observe(after_time - before_time, exemplar=exemplar)
         finally:
             RESPONSES.labels(
                 method=method, path=path, status_code=status_code, app_name=self.app_name

@@ -36,7 +36,7 @@ app: FastAPI = serve.app
 You can run [uvicorn](https://www.uvicorn.org/) server via internal `app` variable from `ServeAPI` instance like [normal FastAPI application](https://fastapi.tiangolo.com/tutorial/first-steps/#first-steps)
 
 ```sh
-$ uvicorn main:app # or uvicorn main:server.app
+$ uvicorn main:app # or uvicorn main:serve.app
 ```
 
 ### Load model
@@ -256,7 +256,7 @@ You can find a complete example at `examples/image_classify.py`
 ```sh
 cd examples
 
-examples$ uvicorn image_classify:serve.app
+examples$ python image_classify.py
 INFO:furiosa_sdk_runtime._api.v1:loaded dynamic library /home/ys/Furiosa/compiler/npu-tools/target/x86_64-unknown-linux-gnu/debug/libnux.so (0.4.0-dev d1720b938)
 INFO:     Started server process [984608]
 INFO:uvicorn.error:Started server process [984608]

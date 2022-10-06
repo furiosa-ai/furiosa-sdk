@@ -1,7 +1,8 @@
-from fastapi import FastAPI
 import logging
-import numpy as np
 import os
+
+from fastapi import FastAPI
+import numpy as np
 import uvicorn
 
 from furiosa.common.thread import synchronous

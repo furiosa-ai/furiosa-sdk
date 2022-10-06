@@ -20,7 +20,7 @@ class Processor(ABC):
         return (*args, kwargs) if kwargs else args
 
     def __call__(self, func: Callable):
-        """Rerturn decorator which will call preprocess and postprocess.
+        """Return decorator which will call preprocess and postprocess.
 
         Note that the function signatures (preprocess, infer, postprocess) must be
         compatible to make the pipelines correctly.
@@ -33,11 +33,11 @@ class Processor(ABC):
         )
         async def decorator(*args: Any, **kwargs: Any) -> Any:
             # Preprocess
-            with tracer.start_as_current_span("preprocess") as span:
+            with tracer.start_as_current_span("preprocess"):
                 output = await self.preprocess(*args, **kwargs)
 
             # Infer
-            with tracer.start_as_current_span("inference") as span:
+            with tracer.start_as_current_span("inference"):
                 response = await func(output)
 
             # Postprocess
