@@ -143,6 +143,7 @@ class NPUServeModel(ServeModel):
             model=model,
             version=version,
             description=description,
+            batch_size=batch_size,
             npu_device=npu_device,
             compiler_config=compiler_config,
         )
