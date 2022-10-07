@@ -192,10 +192,26 @@ class profile:
         yield
         LIBNUX.profiler_record_end(span)
 
+    def get_pandas_dataframe(self):
+        return self.df
+
+    def get_pandas_dataframe_with_filter(self, column, value):
+        return self.df[self.df[column] == value]
+
+    def get_cpu_pandas_dataframe(self):
+        return self.get_pandas_dataframe_with_filter("cat", "Nux")
+
+    def get_npu_pandas_dataframe(self):
+        return self.get_pandas_dataframe_with_filter("cat", "NPU")
+
     def print_npu_operators(self):
+        if self.df.empty:
+            print("DataFrame is empty.")
+            return
+
         df = self.get_npu_pandas_dataframe()
         print(
-            df[df["name"] != "Execution"]
+            df[~df["name"].isin(["Execution", "Load", "Store"])]
             .groupby(["name"])
             .agg({"dur": "mean", "span_id": "count"})
             .sort_values(by=['dur'], ascending=False)
@@ -203,60 +219,87 @@ class profile:
         )
 
     def print_npu_inference(self):
+        if self.df.empty:
+            print("DataFrame is empty.")
+            return
+
         df = self.get_npu_pandas_dataframe()
-        execution = df[df["inst_idx"].isnull()]
+        execution = df[df["instruction_index"].isnull()]
         computation = (
             df[~df["name"].isin(["Execution", "Load", "Store"])][
-                ["parent_span_id", "pe_idx", "exec_idx", "dur"]
+                ["parent_span_id", "pe_index", "execution_index", "dur"]
             ]
-            .groupby(["parent_span_id", "pe_idx", "exec_idx"], as_index=False)
+            .groupby(["parent_span_id", "pe_index", "execution_index"], as_index=False)
             .sum()
         )
         merged = execution.merge(computation, left_on='span_id', right_on='parent_span_id')[
-            ["trace_id", "span_id", "pe_idx_x", "exec_idx_x", "dur_x", "dur_y"]
+            ["trace_id", "span_id", "pe_index_x", "execution_index_x", "dur_x", "dur_y"]
         ]
+        merged['dur_gap'] = merged['dur_x'] - merged['dur_y']
         print(
-            merged[["trace_id", "span_id", "pe_idx_x", "exec_idx_x", "dur_x", "dur_y"]].rename(
+            merged[
+                [
+                    "trace_id",
+                    "span_id",
+                    "pe_index_x",
+                    "execution_index_x",
+                    "dur_x",
+                    "dur_y",
+                    "dur_gap",
+                ]
+            ].rename(
                 columns={
-                    'pe_idx_x': 'pe_idx',
-                    'exec_idx_x': 'exec_idx',
+                    'pe_index_x': 'pe_index',
+                    'execution_index_x': 'execution_index',
                     'dur_x': 'NPU Total',
                     'dur_y': 'NPU Run',
+                    'dur_gap': 'NPU IoWait',
                 }
             )
         )
 
-    def print_npu_inference_time_summary(self):
-        df = self.get_npu_pandas_dataframe()
-        execution = df[df["inst_idx"].isnull()]
-        print("Total Elapsed: " + "{:,}".format(execution["dur"].sum()) + " ns")
-        print("Average Elapsed: " + "{:,}".format(execution["dur"].mean()) + " ns")
-
     def print_external_operators(self):
+        if self.df.empty:
+            print("DataFrame is empty.")
+            return
+
         df = self.get_cpu_pandas_dataframe()
-        print(df[~df["op_idx"].isnull()])
+        print(
+            df[~df["operator_index"].isnull()][
+                ["trace_id", "span_id", "thread.id", "name", "operator_index", "dur"]
+            ]
+        )
 
     def print_inferences(self):
-        df = self.get_cpu_pandas_dataframe()
-        print(df[df["name"] == "Inference"][["trace_id", "span_id", "tid", "dur"]])
+        if self.df.empty:
+            print("DataFrame is empty.")
+            return
 
-    def print_inference_time_summary(self):
+        df = self.get_cpu_pandas_dataframe()
+        print(df[df["name"] == "Inference"][["trace_id", "span_id", "thread.id", "dur"]])
+
+    def print_summary(self):
+        if self.df.empty:
+            print("DataFrame is empty.")
+            return
+
         df = self.get_cpu_pandas_dataframe()
         inferences = df[df["name"] == "Inference"]
-        print("Total Elapsed: " + "{:,}".format(inferences["dur"].sum()) + " ns")
-        print("Average Elapsed: " + "{:,}".format(inferences["dur"].mean()) + " ns")
+        durations = inferences["dur"]
+        percentile = [0.5, 0.9, 0.95, 0.97, 0.99, 0.999]
+        quantiles = durations.quantile(percentile).apply(int)
 
-    def get_pandas_dataframe(self):
-        return self.df
+        print("================================================")
+        print("  Inference Results Summary")
+        print("================================================")
+        print("{:<30}  : {}".format("Inference counts", inferences["trace_id"].count()))
+        print("{:<30}  : {}".format("Min latency (ns)", durations.min()))
+        print("{:<30}  : {}".format("Max latency (ns)", durations.max()))
+        print("{:<30}  : {}".format("Mean latency (ns)", int(durations.mean())))
+        print("{:<30}  : {}".format("Median latency (ns)", int(durations.median())))
 
-    def get_pandas_dataframe_filter_with_cat(self, column, cat):
-        return self.df[self.df[column] == cat]
-
-    def get_cpu_pandas_dataframe(self):
-        return self.get_pandas_dataframe_filter_with_cat("cat", "Nux")
-
-    def get_npu_pandas_dataframe(self):
-        return self.get_pandas_dataframe_filter_with_cat("cat", "NPU")
+        for idx, value in enumerate(quantiles):
+            print("{} {:<25}  : {}".format(percentile[idx] * 100, "percentile latency (ns)", value))
 
     def export_chrome_trace(self, filename):
         if self.df.empty:
