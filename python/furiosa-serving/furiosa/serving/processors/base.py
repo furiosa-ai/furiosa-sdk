@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import wraps
+import inspect
 from typing import Any, Callable
 
 
@@ -32,7 +33,11 @@ class Processor(ABC):
             # Infer
             response = await func(output)
             # Postprocess
-            return await self.postprocess(*response)
+            if inspect.signature(func).return_annotation.__origin__ is tuple:
+                # Unpack return variables if there are more than two (tuple case)
+                return await self.postprocess(*response)
+            else:
+                return await self.postprocess(response)
 
         # # Extract parameter annotation from preprocess
         params = {
@@ -40,8 +45,6 @@ class Processor(ABC):
         }
         # Extract return annotation from postprocess
         returns = {"return": self.postprocess.__annotations__["return"]}
-        print("Signature returns")
-        print(returns)
 
         # Replace original function's annotation with new signature
         decorator.__annotations__ = dict(params, **returns)
