@@ -32,7 +32,7 @@ class Processor(ABC):
             # Infer
             response = await func(output)
             # Postprocess
-            return await self.postprocess(response)
+            return await self.postprocess(*response)
 
         # # Extract parameter annotation from preprocess
         params = {
