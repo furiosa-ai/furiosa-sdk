@@ -13,7 +13,7 @@ from furiosa.serving.processors import ImageNet
 async def test_imagenet():
     serve = ServeAPI()
 
-    model: ServeModel = await serve.model("npu")(
+    model: ServeModel = await serve.model("nux")(
         "imagenet", location="./examples/assets/models/image_classification.onnx"
     )
 

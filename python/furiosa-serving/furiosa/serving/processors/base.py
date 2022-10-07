@@ -40,6 +40,8 @@ class Processor(ABC):
         }
         # Extract return annotation from postprocess
         returns = {"return": self.postprocess.__annotations__["return"]}
+        print("Signature returns")
+        print(returns)
 
         # Replace original function's annotation with new signature
         decorator.__annotations__ = dict(params, **returns)

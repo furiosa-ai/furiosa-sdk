@@ -52,8 +52,8 @@ class ServeAPI:
             self._models[model.inner] = model
 
         constructors = {
-            "npu": partial(npu, app=self.app, on_create=register),
-            "cpu": partial(cpu, app=self.app, on_create=register),
+            "nux": partial(nux, app=self.app, on_create=register),
+            "python": partial(python, app=self.app, on_create=register),
             "openvino": partial(openvino, app=self.app, on_create=register),
         }
 
@@ -93,7 +93,7 @@ def fallback(location: str) -> str:
         return "file://" + location
 
 
-async def cpu(
+async def python(
     name: str,
     predict: Callable[[Any, Any], Awaitable[Any]],
     *,
@@ -118,7 +118,7 @@ async def cpu(
     return model
 
 
-async def npu(
+async def nux(
     name: str,
     location: str,
     *,
