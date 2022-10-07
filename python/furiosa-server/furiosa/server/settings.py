@@ -14,9 +14,7 @@ __version__ = get_sdk_version("furiosa.server")
 
 
 class GRPCServerConfig(BaseSettings):
-    """
-    GRPC server configuration
-    """
+    """GRPC server configuration."""
 
     host: str = "0.0.0.0"
     port: int = 8081
@@ -24,9 +22,7 @@ class GRPCServerConfig(BaseSettings):
 
 
 class RESTServerConfig(BaseSettings):
-    """
-    Rest server configuration
-    """
+    """Rest server configuration."""
 
     host: str = "0.0.0.0"
     port: int = 8080
@@ -35,17 +31,13 @@ class RESTServerConfig(BaseSettings):
 
 
 class FileRegistryConfig(BaseSettings):
-    """
-    File based registry configs.
-    """
+    """File based registry configs."""
 
     repository_root: str = "."
 
 
 class ServerConfig(BaseSettings):
-    """
-    Server (GRPC server + REST server) configuration
-    """
+    """Server (GRPC server + REST server) configuration."""
 
     # Server metadata for predict API
     server_name: str = "furiosa-server"
@@ -62,21 +54,39 @@ class ServerConfig(BaseSettings):
 
 
 class ModelConfig(BaseSettings):
-    """
-    Model configuration for a Nux model
-    """
+    """Base Model configuration."""
 
-    # Model property for Nux
+    # Common model property
     name: str
-    model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
     version: Optional[str] = None
     description: Optional[str] = None
 
-    npu_device: Optional[str] = None
-    compiler_config: Optional[Dict] = None
-
     # Model metadata for repository API
-    platform: str = "nux"
+    platform: str = "Unknown"
     versions: Optional[List[str]] = []
     inputs: Optional[List[MetadataTensor]] = []
     outputs: Optional[List[MetadataTensor]] = []
+
+
+class NuxModelConfig(ModelConfig):
+    """Model configuration for a Nux model."""
+
+    # Model property for Nux
+    model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
+
+    npu_device: Optional[str] = None
+    batch_size: Optional[int] = None
+    compiler_config: Optional[Dict] = None
+
+    platform: str = "nux"
+
+
+class OpenVINOModelConfig(ModelConfig):
+    """Model configuration for a OpenVINO model."""
+
+    # Model property for OpenVINO
+    model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
+
+    compiler_config: Optional[Dict] = None
+
+    platform: str = "openvino"

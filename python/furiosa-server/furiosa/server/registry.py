@@ -6,7 +6,8 @@ from typing import List
 import yaml
 
 from .errors import ModelNotFound
-from .settings import FileRegistryConfig, ModelConfig
+from .settings import FileRegistryConfig, ModelConfig, NuxModelConfig
+from .utils.loader import load_model_config
 
 
 class Registry(ABC):
@@ -81,8 +82,4 @@ class FileRegistry(Registry):
         pattern = os.path.join(self._config.repository_root, "*.yaml")
         matches = glob.glob(pattern, recursive=True)
 
-        def load(config_file):
-            models = yaml.safe_load(config_file)["model_config_list"]
-            return [ModelConfig.parse_obj(model) for model in models]
-
-        return sum((load(config) for config in matches), [])
+        return sum((load_model_config(open(config)) for config in matches), [])

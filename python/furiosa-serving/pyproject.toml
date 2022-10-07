@@ -39,6 +39,10 @@ test = [
     "pytest",
     "pytest-asyncio ~= 0.17.2"
 ]
+openvino = [
+    "furiosa-server[openvino] == 0.8.*",
+    "transformers"
+]
 
 [project.urls]
 Home = "https://furiosa.ai"
@@ -75,3 +79,8 @@ version_scheme = "release-branch-semver"
 
 [tool.flit.sdist]
 include = ["furiosa/serving/git_version.txt"]
+
+[tool.pydocstyle]
+convention = "google"
+# http://www.pydocstyle.org/en/stable/error_codes.html
+add_ignore = ["D100", "D101", "D102", "D103", "D106"]

@@ -13,7 +13,7 @@ serve = ServeAPI(repository.repository)
 app: FastAPI = serve.app
 
 # Define model
-network: ServeModel = synchronous(serve.model)(
+network: ServeModel = synchronous(serve.model("nux"))(
     "imagenet", location="./assets/models/image_classification.onnx"
 )
 

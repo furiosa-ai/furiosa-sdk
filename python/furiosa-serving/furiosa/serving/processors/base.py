@@ -1,20 +1,22 @@
 from abc import ABC, abstractmethod
 from functools import wraps
+import inspect
 from typing import Any, Callable
 
 
 class Processor(ABC):
+    # TODO: Any other graceful way to provide pre/postprocess API?
+    # Now, type is entirely useless and client requires type ignore to pass validator.
     @abstractmethod
     async def preprocess(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+        return (*args, kwargs) if kwargs else args
 
     @abstractmethod
     async def postprocess(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+        return (*args, kwargs) if kwargs else args
 
     def __call__(self, func: Callable):
-        """
-        Rerturn decorator which will call preprocess and postprocess.
+        """Rerturn decorator which will call preprocess and postprocess.
 
         Note that the function signatures (preprocess, infer, postprocess) must be
         compatible to make the pipelines correctly.
@@ -31,7 +33,11 @@ class Processor(ABC):
             # Infer
             response = await func(output)
             # Postprocess
-            return await self.postprocess(response)
+            if inspect.signature(func).return_annotation.__origin__ is tuple:
+                # Unpack return variables if there are more than two (tuple case)
+                return await self.postprocess(*response)
+            else:
+                return await self.postprocess(response)
 
         # # Extract parameter annotation from preprocess
         params = {

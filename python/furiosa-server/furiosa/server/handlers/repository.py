@@ -3,7 +3,7 @@ import asyncio
 from ..errors import ModelNotFound
 from ..model import NuxModel
 from ..repository import Repository
-from ..settings import ModelConfig
+from ..settings import ModelConfig, NuxModelConfig
 from ..types import (
     RepositoryIndexRequest,
     RepositoryIndexResponse,
@@ -56,7 +56,9 @@ class RepositoryHandler:
     async def load(self, name: str) -> bool:
         model_config = await self._repository.find(name)
 
-        # TODO(yan): Support other model implementation
+        # TODO(yan): Abtract Model here
+        assert isinstance(model_config, NuxModelConfig)
+
         return await self._repository.load(NuxModel(model_config))
 
     async def unload(self, name: str) -> bool:

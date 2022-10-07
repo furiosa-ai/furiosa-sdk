@@ -1,5 +1,5 @@
 import textwrap
-from typing import Dict
+from typing import Dict, List
 
 from fastapi import UploadFile
 import numpy as np
@@ -13,7 +13,7 @@ from furiosa.serving.processors import ImageNet
 async def test_imagenet():
     serve = ServeAPI()
 
-    model: ServeModel = await serve.model(
+    model: ServeModel = await serve.model("nux")(
         "imagenet", location="./examples/assets/models/image_classification.onnx"
     )
 
@@ -21,9 +21,9 @@ async def test_imagenet():
     @ImageNet(
         model=model, label="./examples/assets/labels/ImageNetLabels.txt"
     )  # This makes infer() Callable[[UploadFile], Dict]
-    async def infer(tensor: np.ndarray) -> np.ndarray:
+    async def infer(tensor: np.ndarray) -> List[np.ndarray]:
         """Actual inference"""
-        return await model.predict(tensor)
+        return await model.predict([tensor])
 
     doc = """
     Preprocess to convert a image (Python file-like object) to Numpy array
