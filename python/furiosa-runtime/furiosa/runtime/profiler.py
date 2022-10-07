@@ -286,7 +286,7 @@ class profile:
         df = self.get_cpu_pandas_dataframe()
         inferences = df[df["name"] == "Inference"]
         durations = inferences["dur"]
-        percentile = [0.5, 0.9, 0.95, 0.97, 0.99, 0.999]
+        percentile = [0.9, 0.95, 0.97, 0.99, 0.999]
         quantiles = durations.quantile(percentile).apply(int)
 
         print("================================================")
