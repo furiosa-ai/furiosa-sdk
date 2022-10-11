@@ -118,7 +118,7 @@ def setup_metrics(app: ASGIApp, app_name: str, metric_path: str = "/metrics") ->
 def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool = True) -> None:
     # Setting OpenTelemetry
     # set the service name to show in traces
-    resource = Resource.create(attributes={"service.name": app_name, "compose_service": app_name})
+    resource = Resource.create(attributes={"service.name": app_name, "app": app_name})
 
     # set the tracer provider
     tracer = TracerProvider(resource=resource)
