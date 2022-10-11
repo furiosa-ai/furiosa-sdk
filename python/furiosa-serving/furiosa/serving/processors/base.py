@@ -32,16 +32,18 @@ class Processor(ABC):
             assigned=(),
         )
         async def decorator(*args: Any, **kwargs: Any) -> Any:
+            name = self.__class__.__name__
+
             # Preprocess
-            with tracer.start_as_current_span("preprocess"):
+            with tracer.start_as_current_span("{}:preprocess".format(name)):
                 output = await self.preprocess(*args, **kwargs)
 
             # Infer
-            with tracer.start_as_current_span("inference"):
+            with tracer.start_as_current_span("{}:inference".format(name)):
                 response = await func(output)
 
             # Postprocess
-            with tracer.start_as_current_span("postprocess") as span:
+            with tracer.start_as_current_span("{}:postprocess".format(name)):
                 if inspect.signature(func).return_annotation.__origin__ is tuple:
                     # Unpack return variables if there are more than two (tuple case)
                     return await self.postprocess(*response)
