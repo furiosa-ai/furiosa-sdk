@@ -44,7 +44,8 @@ class Processor(ABC):
 
             # Postprocess
             with tracer.start_as_current_span("{}:postprocess".format(name)):
-                if inspect.signature(func).return_annotation.__origin__ is tuple:
+                annotation = inspect.signature(func).return_annotation
+                if hasattr(annotation, '__origin__') and annotation.__origin__ is tuple:
                     # Unpack return variables if there are more than two (tuple case)
                     return await self.postprocess(*response)
                 else:
