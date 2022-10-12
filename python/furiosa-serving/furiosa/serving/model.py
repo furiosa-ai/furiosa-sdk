@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional
 from fastapi import FastAPI
 from fastapi.routing import Mount
 import numpy as np
+from opentelemetry import trace
 
 from furiosa.common.thread import asynchronous
 from furiosa.runtime.tensor import TensorDesc
@@ -17,6 +18,8 @@ from furiosa.server import (
     OpenVINOModel,
     OpenVINOModelConfig,
 )
+
+tracer = trace.get_tracer(__name__)
 
 
 class ServeModel(ABC):
@@ -39,14 +42,16 @@ class ServeModel(ABC):
         self._postprocess = postprocess or identity
 
     async def preprocess(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._preprocess(*args, **kwargs)
+        with tracer.start_as_current_span("{}:preprocess".format(self._name)):
+            return await self._preprocess(*args, **kwargs)
 
     @abstractmethod
     async def predict(self, *args: Any, **kwargs: Any) -> Any:
         ...
 
     async def postprocess(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._postprocess(*args, *kwargs)
+        with tracer.start_as_current_span("{}:postprocess".format(self._name)):
+            return await self._postprocess(*args, *kwargs)
 
     @property
     @abstractmethod
@@ -151,7 +156,8 @@ class NPUServeModel(ServeModel):
         self._model = NuxModel(self._config)
 
     async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
-        return await self._model.predict(payload)
+        with tracer.start_as_current_span("{}:predict".format(self._name)):
+            return await self._model.predict(payload)
 
     @property
     def inner(self) -> NuxModel:
@@ -194,7 +200,8 @@ class CPUServeModel(ServeModel):
         self._model = CPUModel(self._config, predict=predict)
 
     async def predict(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._model.predict(*args, **kwargs)
+        with tracer.start_as_current_span("{}:predict (cpu)".format(self._name)):
+            return await self._model.predict(*args, **kwargs)
 
     @property
     def inner(self) -> Model:
@@ -239,7 +246,8 @@ class OpenVINOServeModel(ServeModel):
         self._model = OpenVINOModel(self._config, compiler_config=compiler_config)
 
     async def predict(self, payload: np.ndarray) -> np.ndarray:
-        return await self._model.predict(payload)
+        with tracer.start_as_current_span("{}:predict (openvino)".format(self._name)):
+            return await self._model.predict(payload)
 
     @property
     def inner(self) -> Model:

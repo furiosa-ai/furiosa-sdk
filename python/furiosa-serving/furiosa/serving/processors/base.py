@@ -3,6 +3,10 @@ from functools import wraps
 import inspect
 from typing import Any, Callable
 
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+
 
 class Processor(ABC):
     # TODO: Any other graceful way to provide pre/postprocess API?
@@ -16,7 +20,7 @@ class Processor(ABC):
         return (*args, kwargs) if kwargs else args
 
     def __call__(self, func: Callable):
-        """Rerturn decorator which will call preprocess and postprocess.
+        """Return decorator which will call preprocess and postprocess.
 
         Note that the function signatures (preprocess, infer, postprocess) must be
         compatible to make the pipelines correctly.
@@ -28,16 +32,23 @@ class Processor(ABC):
             assigned=(),
         )
         async def decorator(*args: Any, **kwargs: Any) -> Any:
+            name = self.__class__.__name__
+
             # Preprocess
-            output = await self.preprocess(*args, **kwargs)
+            with tracer.start_as_current_span("{}:preprocess".format(name)):
+                output = await self.preprocess(*args, **kwargs)
+
             # Infer
-            response = await func(output)
+            with tracer.start_as_current_span("{}:inference".format(name)):
+                response = await func(output)
+
             # Postprocess
-            if inspect.signature(func).return_annotation.__origin__ is tuple:
-                # Unpack return variables if there are more than two (tuple case)
-                return await self.postprocess(*response)
-            else:
-                return await self.postprocess(response)
+            with tracer.start_as_current_span("{}:postprocess".format(name)):
+                if inspect.signature(func).return_annotation.__origin__ is tuple:
+                    # Unpack return variables if there are more than two (tuple case)
+                    return await self.postprocess(*response)
+                else:
+                    return await self.postprocess(response)
 
         # # Extract parameter annotation from preprocess
         params = {
