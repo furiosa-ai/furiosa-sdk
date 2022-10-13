@@ -8,12 +8,12 @@ versionPattern = r'\d+(=?\.(\d+(=?\.(\d+)*)*)*)*'
 regexMatcher = re.compile(versionPattern)
 
 
-class TestTensor(unittest.TestCase):
+class TestVersion(unittest.TestCase):
     def test_version(self):
         self.assertTrue(len(runtime.__version__.version) > 0)
         self.assertTrue(regexMatcher.match(LIBNUX.version().decode('utf-8')))
-        self.assertTrue(len(str(LIBNUX.git_short_hash())) >= 9)
-        self.assertEqual(len(str(LIBNUX.build_timestamp())), 22)
+        self.assertTrue(len(LIBNUX.git_short_hash()) >= 9)
+        self.assertEqual(20, len(LIBNUX.build_timestamp()))
 
 
 if __name__ == '__main__':
