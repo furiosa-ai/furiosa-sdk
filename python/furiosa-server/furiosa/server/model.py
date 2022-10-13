@@ -1,12 +1,13 @@
 """Model class for prediction/explanation."""
 
 from abc import ABC, abstractmethod
+import itertools
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Sequence, overload
 
 import numpy as np
 
 from furiosa.common.thread import asynchronous
-from furiosa.runtime import session
+from furiosa.runtime import envs, session
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
@@ -75,7 +76,7 @@ class NuxModel(Model):
             # Python list to Numpy array
             inputs = [
                 self.decode(tensor, request)
-                for tensor, request in zip(self._session.inputs(), payload.inputs)
+                for tensor, request in zip(self.session.inputs(), payload.inputs)
             ]
         else:
             inputs: List[np.ndarray] = payload
@@ -98,7 +99,7 @@ class NuxModel(Model):
             return tensors
 
     async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
-        return await self.session.run(inputs)
+        return await next(self.pool).run(inputs)
 
     async def load(self) -> bool:
         if self.ready:
@@ -107,27 +108,40 @@ class NuxModel(Model):
         assert isinstance(self._config, NuxModelConfig)
 
         # TODO(yan): Wrap functions with async thread now. Replace the functions itself
-        self._session = await asynchronous(session.create)(
-            self._config.model,
-            device=self._config.npu_device,
-            batch_size=self._config.batch_size,
-            worker_num=self._config.worker_num,
-            compile_config=self._config.compiler_config,
-        )
-        self._session.run = asynchronous(self._session.run)
+
+        devices = self._config.npu_device or envs.current_npu_device()
+
+        self._sessions = []
+        for device in devices.split(","):
+            blocking = await asynchronous(session.create)(
+                self._config.model,
+                device=device,
+                batch_size=self._config.batch_size,
+                worker_num=self._config.worker_num,
+                compile_config=self._config.compiler_config,
+            )
+            blocking.run = asynchronous(blocking.run)
+            self._sessions.append(blocking)
+
+        # Round robin naive session pool
+        self.pool = itertools.cycle(self._sessions)
+
         return await super().load()
 
     async def unload(self):
         if not self.ready:
             return
 
-        self._session.close()
+        for s in self._sessions:
+            s.close()
+
         await super().unload()
 
     @property
     def session(self) -> session.Session:
         assert self.ready is True, "Could not access session unless model loaded first"
-        return self._session
+        # First session
+        return next(iter(self._sessions))
 
     # TODO(yan): Extract codecs to support other type conversion
     def encode(self, name: str, payload: np.ndarray) -> ResponseOutput:
