@@ -111,6 +111,7 @@ class NuxModel(Model):
             self._config.model,
             device=self._config.npu_device,
             batch_size=self._config.batch_size,
+            worker_num=self._config.worker_num,
             compile_config=self._config.compiler_config,
         )
         self._session.run = asynchronous(self._session.run)
