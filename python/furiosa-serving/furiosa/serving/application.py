@@ -139,6 +139,7 @@ async def nux(
     postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     npu_device: Optional[str] = None,
     batch_size: Optional[int] = None,
+    worker_num: Optional[int] = None,
     compiler_config: Optional[Dict] = None,
 ) -> NPUServeModel:
     model = NPUServeModel(
@@ -151,6 +152,7 @@ async def nux(
         postprocess=postprocess,
         npu_device=npu_device,
         batch_size=batch_size,
+        worker_num=worker_num,
         compiler_config=compiler_config,
     )
 

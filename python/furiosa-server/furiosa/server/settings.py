@@ -76,6 +76,7 @@ class NuxModelConfig(ModelConfig):
 
     npu_device: Optional[str] = None
     batch_size: Optional[int] = None
+    worker_num: Optional[int] = None
     compiler_config: Optional[Dict] = None
 
     platform: str = "nux"

@@ -137,6 +137,7 @@ class NPUServeModel(ServeModel):
         description: Optional[str] = None,
         npu_device: Optional[str] = None,
         batch_size: Optional[int] = None,
+        worker_num: Optional[int] = None,
         compiler_config: Optional[Dict] = None,
         preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
         postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
@@ -149,6 +150,7 @@ class NPUServeModel(ServeModel):
             version=version,
             description=description,
             batch_size=batch_size,
+            worker_num=worker_num,
             npu_device=npu_device,
             compiler_config=compiler_config,
         )
