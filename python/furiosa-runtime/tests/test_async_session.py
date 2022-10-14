@@ -77,8 +77,10 @@ class TestAsyncSessionExceptions(unittest.TestCase):
         try:
             nux_sess, nux_queue = session.create_async(model=MNIST_ONNX)
             self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
+            self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=int(0)))
             nux_sess.close()
             self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
+            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=0))
             self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
         except:
             if nux_sess:
