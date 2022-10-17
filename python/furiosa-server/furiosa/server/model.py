@@ -1,13 +1,28 @@
 """Model class for prediction/explanation."""
-
 from abc import ABC, abstractmethod
+import asyncio
+from asyncio import Future
 import itertools
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Sequence, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Union,
+    overload,
+)
+import uuid
 
 import numpy as np
 
 from furiosa.common.thread import asynchronous
 from furiosa.runtime import envs, session
+from furiosa.runtime.errors import QueueWaitTimeout
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
@@ -71,6 +86,10 @@ class NuxModel(Model):
     def __init__(self, config: NuxModelConfig):
         super().__init__(config)
 
+        # Uninitialized session pool. Will be loaded in load().
+        self.pool: Optional[Iterator[Union[session.Session, session.AsyncSession]]] = None
+        self.sessions: Optional[List[Union[session.Session, session.AsyncSession]]] = None
+
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
             # Python list to Numpy array
@@ -99,7 +118,13 @@ class NuxModel(Model):
             return tensors
 
     async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
-        return await next(self.pool).run(inputs)
+        assert self.pool is not None
+
+        session = next(self.pool)
+
+        assert session is not None
+
+        return await session.run(inputs)  # type: ignore
 
     async def load(self) -> bool:
         if self.ready:
@@ -107,32 +132,39 @@ class NuxModel(Model):
 
         assert isinstance(self._config, NuxModelConfig)
 
-        # TODO(yan): Wrap functions with async thread now. Replace the functions itself
-
         devices = self._config.npu_device or envs.current_npu_device()
 
-        self._sessions = []
-        for device in devices.split(","):
-            blocking = await asynchronous(session.create)(
-                self._config.model,
-                device=device,
-                batch_size=self._config.batch_size,
-                worker_num=self._config.worker_num,
-                compile_config=self._config.compiler_config,
-            )
-            blocking.run = asynchronous(blocking.run)
-            self._sessions.append(blocking)
+        self.sessions = await self.create_sessions(devices)
 
         # Round robin naive session pool
-        self.pool = itertools.cycle(self._sessions)
+        self.pool = itertools.cycle(self.sessions)
 
         return await super().load()
+
+    async def create_sessions(
+        self, devices: str
+    ) -> List[Union[session.Session, session.AsyncSession]]:
+        create = asynchronous(session.create)
+
+        sessions = []
+        for device in devices.split(","):
+            blocking = await create(
+                self._config.model,  # type: ignore
+                device=device,
+                batch_size=self._config.batch_size,  # type: ignore
+                worker_num=self._config.worker_num,  # type: ignore
+                compile_config=self._config.compiler_config,  # type: ignore
+            )
+            blocking.run = asynchronous(blocking.run)
+            sessions.append(blocking)
+
+        return sessions
 
     async def unload(self):
         if not self.ready:
             return
 
-        for s in self._sessions:
+        for s in self.sessions:
             s.close()
 
         await super().unload()
@@ -141,7 +173,7 @@ class NuxModel(Model):
     def session(self) -> session.Session:
         assert self.ready is True, "Could not access session unless model loaded first"
         # First session
-        return next(iter(self._sessions))
+        return next(iter(self.sessions))  # type: ignore
 
     # TODO(yan): Extract codecs to support other type conversion
     def encode(self, name: str, payload: np.ndarray) -> ResponseOutput:
@@ -155,6 +187,66 @@ class NuxModel(Model):
 
     def decode(self, tensor: TensorDesc, request_input: RequestInput) -> np.ndarray:
         return np.array(request_input.data, dtype=tensor.numpy_dtype).reshape(tensor.shape)
+
+
+class AsyncNuxModel(NuxModel):
+    """Model Nux runtime based on AsyncSession."""
+
+    def __init__(self, config: NuxModelConfig):
+        super().__init__(config)
+
+        self.queue: Dict[uuid.UUID, object] = {}
+
+    def completed(self, receiver: session.CompletionQueue, id: uuid.UUID, future: Future):
+        try:
+            context, value = receiver.recv(1)
+        except QueueWaitTimeout:
+            context, value = None, None
+            pass
+
+        # Save response
+        if context is not None:
+            self.queue[context] = value
+
+        if id in self.queue:
+            # Response found
+            future.set_result(self.queue.pop(id))
+            return
+
+        # Try next time
+        loop = asyncio.get_event_loop()
+        loop.call_soon(self.completed, receiver, id, future)
+
+    async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
+        sender, receiver = next(self.pool)  # type: ignore
+
+        id = uuid.uuid1()
+
+        sender.submit(inputs, id)
+
+        loop = asyncio.get_event_loop()
+        future = loop.create_future()
+        loop.call_soon(self.completed, receiver, id, future)
+
+        return await future
+
+    async def create_sessions(
+        self, devices: str
+    ) -> List[Union[session.Session, session.AsyncSession]]:
+        create = asynchronous(session.create_async)
+
+        sessions = []
+        for device in devices.split(","):
+            unblocking = await create(
+                self._config.model,
+                device=device,
+                batch_size=self._config.batch_size,
+                worker_num=self._config.worker_num,
+                compile_config=self._config.compiler_config,
+            )
+            sessions.append(unblocking)
+
+        return sessions
 
 
 class CPUModel(Model):
@@ -197,17 +289,26 @@ class OpenVINOModel(Model):
             self._runtime.read_model(self._config.model), "CPU", self._config.compiler_config
         )
         self._request = self._model.create_infer_request()
-
-        # TODO(yan): Wrap functions with async thread now. Use start_async().
-        self._request.infer = asynchronous(self._request.infer)
-
         return await super().load()
 
     async def predict(self, payload):
+        """Inference via OpenVINO runtime.
+
+        Note that it's not thread safe API as OpenVINO API does not support.
+        """
         if isinstance(payload, InferenceRequest):
             raise NotImplementedError("OpenVINO model does not support InferenceRequest input.")
         else:
-            return await self.session.infer(payload)
+            self.session.start_async(payload)
+
+            while True:
+                # Check whether the previous request is done.
+                # Use wait_for() as InferRequest does not have explict API to do.
+                if self.session.wait_for(1):
+                    return self.session.results
+
+                # 1 us
+                await asyncio.sleep(0.000001)
 
     @property
     def session(self) -> "InferRequest":
