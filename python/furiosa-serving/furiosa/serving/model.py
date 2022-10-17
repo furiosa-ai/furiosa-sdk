@@ -242,10 +242,14 @@ class OpenVINOServeModel(ServeModel):
         super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
         self._config = OpenVINOModelConfig(
-            model=model, name=name, version=version, description=description
+            model=model,
+            name=name,
+            version=version,
+            description=description,
+            compiler_config=compiler_config,
         )
 
-        self._model = OpenVINOModel(self._config, compiler_config=compiler_config)
+        self._model = OpenVINOModel(self._config)
 
     async def predict(self, payload: np.ndarray) -> np.ndarray:
         with tracer.start_as_current_span("{}:predict (openvino)".format(self._name)):
