@@ -7,9 +7,9 @@ import numpy as np
 from furiosa.runtime import session
 from furiosa.runtime.tensor import DataType, TensorArray, numpy_dtype
 from tests.test_base import (
-    QUANTIZED_CONV_TRUNCATED_TEST,
     MNIST_ONNX,
     NAMED_TENSORS_ONNX,
+    QUANTIZED_CONV_TRUNCATED_TEST,
     SessionTester,
     assert_tensors_equal,
 )
