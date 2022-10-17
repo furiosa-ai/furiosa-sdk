@@ -10,6 +10,7 @@ from opentelemetry import trace
 from furiosa.common.thread import asynchronous
 from furiosa.runtime.tensor import TensorDesc
 from furiosa.server import (
+    AsyncNuxModel,
     CPUModel,
     Model,
     ModelConfig,
@@ -87,7 +88,8 @@ class ServeModel(ABC):
         routes = [route for route in self._app.routes if not isinstance(route, Mount)]
 
         # Target routes to be removed
-        targets = [route for route in routes if route.endpoint in self._routes]  # type: ignore
+        # type: ignore
+        targets = [route for route in routes if route.endpoint in self._routes]
 
         # Unregister path operation functions to hide endpoint
         for route in targets:
@@ -132,6 +134,8 @@ class NPUServeModel(ServeModel):
         app: FastAPI,
         name: str,
         *,
+        # TODO: Converge two implementions into one when ready.
+        blocking: bool = True,
         model: Union[str, bytes],
         version: Optional[str] = None,
         description: Optional[str] = None,
@@ -155,7 +159,7 @@ class NPUServeModel(ServeModel):
             compiler_config=compiler_config,
         )
 
-        self._model = NuxModel(self._config)
+        self._model = (NuxModel if blocking else AsyncNuxModel)(self._config)
 
     async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
         with tracer.start_as_current_span("{}:predict".format(self._name)):
@@ -242,10 +246,14 @@ class OpenVINOServeModel(ServeModel):
         super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
         self._config = OpenVINOModelConfig(
-            model=model, name=name, version=version, description=description
+            model=model,
+            name=name,
+            version=version,
+            description=description,
+            compiler_config=compiler_config,
         )
 
-        self._model = OpenVINOModel(self._config, compiler_config=compiler_config)
+        self._model = OpenVINOModel(self._config)
 
     async def predict(self, payload: np.ndarray) -> np.ndarray:
         with tracer.start_as_current_span("{}:predict (openvino)".format(self._name)):

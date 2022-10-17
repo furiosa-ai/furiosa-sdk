@@ -131,6 +131,7 @@ async def nux(
     name: str,
     location: str,
     *,
+    blocking: bool = True,
     app: FastAPI,
     on_create: Callable[[ServeModel], None],
     version: Optional[str] = None,
@@ -145,6 +146,7 @@ async def nux(
     model = NPUServeModel(
         app,
         name,
+        blocking=blocking,
         model=await transport.read(fallback(location)),
         version=version,
         description=description,
@@ -168,6 +170,7 @@ async def openvino(
     on_create: Callable[[ServeModel], None],
     version: Optional[str] = None,
     description: Optional[str] = None,
+    compiler_config: Optional[Dict] = None,
     preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
     postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
 ) -> OpenVINOServeModel:
@@ -177,6 +180,7 @@ async def openvino(
         model=await transport.read(fallback(location)),
         version=version,
         description=description,
+        compiler_config=compiler_config,
         preprocess=preprocess,
         postprocess=postprocess,
     )
