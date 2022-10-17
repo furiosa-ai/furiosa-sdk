@@ -201,7 +201,7 @@ class Tensor:
         strides = tuple(strides)
 
         arr = np.ndarray(tuple(self.shape[:]), self.numpy_dtype, buffer, strides=strides)
-        return arr.copy()
+        return arr
 
     def __repr__(self):
         repr = self.__class__.__name__ + "("
