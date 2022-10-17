@@ -6,7 +6,13 @@ import numpy as np
 
 from furiosa.runtime import session
 from furiosa.runtime.tensor import DataType, TensorArray, numpy_dtype
-from tests.test_base import MNIST_ONNX, NAMED_TENSORS_ONNX, SessionTester, assert_tensors_equal
+from tests.test_base import (
+    MLCOMMONS_MOBILENET_TRUNCATED,
+    MNIST_ONNX,
+    NAMED_TENSORS_ONNX,
+    SessionTester,
+    assert_tensors_equal,
+)
 
 
 class TestTensor(unittest.TestCase):
@@ -90,6 +96,54 @@ class TestTensorNames(unittest.TestCase):
                 sess.input(0).__repr__(),
                 "TensorDesc(name=\"input.1\", shape=(1, 3, 8, 8), dtype=FLOAT32, format=NCHW, size=768, len=192)",
             )
+
+
+class TestLoweredTensor(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        compile_config = {
+            "remove_unlower": True,
+        }
+        cls.sess = SessionTester(
+            MLCOMMONS_MOBILENET_TRUNCATED, compile_config=compile_config
+        ).session
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.sess.close()
+
+    def test_tensor_desc(self):
+        tensor = self.sess.output(0)
+        self.assertEqual(6, tensor.ndim)
+        self.assertEqual(DataType.INT8, tensor.dtype)
+        self.assertEqual(np.int8, numpy_dtype(tensor))
+        self.assertLess(tensor.length * np.dtype(tensor.numpy_dtype).itemsize, tensor.size)
+
+    def test_tensor_numpy(self):
+        tensor = self.sess.output(0)
+
+        strides = []
+        stride = 1
+        for axis in reversed(range(tensor.ndim)):
+            strides.append(stride)
+            stride *= tensor.dim(axis)
+        strides = tuple(reversed(strides))
+
+        inputs = []
+        for session_input in self.sess.inputs():
+            inputs.append(np.random.random(session_input.shape).astype(np.float32))
+        outputs = self.sess.run(inputs)
+
+        output = outputs[0].numpy()
+        self.assertEqual(6, output.ndim)
+        self.assertEqual(np.int8, numpy_dtype(output))
+        self.assertNotEqual(strides, output.strides)
+
+        # calling copy() rearranges the memory layout
+        copied = output.copy()
+        self.assertEqual(6, copied.ndim)
+        self.assertEqual(np.int8, numpy_dtype(copied))
+        self.assertEqual(strides, copied.strides)
 
 
 if __name__ == '__main__':
