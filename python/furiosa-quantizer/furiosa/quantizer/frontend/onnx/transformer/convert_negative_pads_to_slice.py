@@ -29,8 +29,8 @@ class Pattern_1(ONNXTransformer):
     if
         1. Pad's pads input (pad.input[1]) is an initializer
         2. at least one of pads value is negative
-        3. Sum of negative pads value in axis i does not exceed corresponding input_shape[i] (which leads to invalid model)
-        4. absolute value of each negative pads in axis i is less than/equal to corresponding input_shape[i] (which leads to invalid model/'nan' output)
+        3. Sum of negative pads value in axis i does not exceed corresponding input_shape[i] (if not, model is invalid)
+        4. absolute value of each negative pads in axis i is less than corresponding input_shape[i] (if not, leads to invalid model/'nan' output)
     """
 
     pattern_to_match = ['Pad']
@@ -61,16 +61,16 @@ class Pattern_1(ONNXTransformer):
             return False
 
         input_shape = self.get_value_info_shape(pad.input[0])
-        pad_per_axis = list(zip(pads[: len(pads) // 2], pads[len(pads) // 2 :]))
+        pad_per_axis = zip(pads[: len(pads) // 2], pads[len(pads) // 2 :])
 
         # If sum of negative pad value exceeds input size, output size is negative, which leads to invaiid Pad operator
         # If one of negative pad value equals input size, original onnx Pad outputs 'nan' intermittently
         # If one of negative pad value exceeds input size, Pad is invalid
         return all(
-            input_size + min(pad[0], 0) + min(pad[1], 0) >= 0
-            and input_size + min(pad[0], 0) > 0
-            and input_size + min(pad[1], 0) > 0
-            for (input_size, pad) in zip(input_shape, pad_per_axis)
+            input_size + pad_begin + pad_end >= 0
+            and input_size + pad_begin > 0
+            and input_size + pad_end > 0
+            for (input_size, (pad_begin, pad_end)) in zip(input_shape, pad_per_axis)
         )
 
     def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
@@ -106,14 +106,17 @@ class Pattern_1(ONNXTransformer):
         pad_per_axis = list(zip(pads[: len(pads) // 2], pads[len(pads) // 2 :]))
         starts, ends, axes = zip(
             *[
-                (max(-pad[0], 0), input_shape[i] + min(pad[1], 0), i)
-                for (i, pad) in enumerate(pad_per_axis)
-                if pad[0] < 0 or pad[1] < 0
+                (max(-pad_begin, 0), input_shape[i] + min(pad_end, 0), i)
+                for (i, (pad_begin, pad_end)) in enumerate(pad_per_axis)
+                if pad_begin < 0 or pad_end < 0
             ]
         )
         pads = [max(pad, 0) for pad in pads]
-        for (init_list, suffix) in zip(
-            (starts, ends, axes, pads), ('_starts', '_ends', '_axes', '_pads')
+        for (init_list, suffix) in (
+            (starts, '_starts'),
+            (ends, '_ends'),
+            (axes, '_axes'),
+            (pads, '_pads'),
         ):
             new_init = onnx.numpy_helper.from_array(
                 np.array(init_list, dtype=np.int64), pad.output[0] + suffix
@@ -122,12 +125,13 @@ class Pattern_1(ONNXTransformer):
 
         new_vis = []
         slice_output_shape = [
-            int(shape + min(pad[0], 0) + min(pad[1], 0))
-            for (shape, pad) in zip(input_shape, pad_per_axis)
+            int(shape + min(pad_begin, 0) + min(pad_end, 0))
+            for (shape, (pad_begin, pad_end)) in zip(input_shape, pad_per_axis)
         ]
+        slice_output_dtype = self.get_value_info_dtype(pad.output[0])
         slice_output_vi = onnx.helper.make_tensor_value_info(
             pad.output[0] + '_slice_out',
-            onnx.TensorProto.FLOAT,
+            slice_output_dtype,
             slice_output_shape,
         )
         new_vis.append(slice_output_vi)
