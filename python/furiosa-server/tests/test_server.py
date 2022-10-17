@@ -23,6 +23,7 @@ MODEL_CONFIG_EXAMPLE = {
             "model": "samples/data/MNISTnet_uint8_quant.tflite",
             "version": MODEL_VERSION,
             "compiler_config": {"keep_unsignedness": True, "split_unit": 0},
+            "platform": "nux",
         }
     ]
 }

@@ -1,6 +1,4 @@
-"""
-Command line interface for FuriosaAI model server
-"""
+"""Command line interface for FuriosaAI model server."""
 
 import enum
 import logging
@@ -17,19 +15,13 @@ from ...utils.loader import load_model_config, load_server_config
 
 
 class LogLevel(str, enum.Enum):
-    """
-    Log level enum for typer choice parameter
-    """
+    """Log level enum for typer choice parameter."""
 
     ERROR = "ERROR"
     INFO = "INFO"
     WARN = "WARN"
     DEBUG = "DEBUG"
     TRACE = "TRACE"
-
-
-def _display_error_loc(error: Dict[str, Any]) -> str:
-    return ' -> '.join(str(e) for e in error['loc'])
 
 
 @synchronous
@@ -78,7 +70,7 @@ async def start(
             model_configs = load_model_config(model_config)
         except ValidationError as e:
             first_err = e.errors()[0]
-            typer.echo(f"ERROR: {_display_error_loc(first_err)} {first_err['msg']}")
+            typer.echo(f"ERROR: {' -> '.join(str(e) for e in first_err['loc'])} {first_err['msg']}")
             raise typer.Exit(1)
     else:
         model_configs = [ModelConfig(model=model_path, name=model_name, version=model_version)]

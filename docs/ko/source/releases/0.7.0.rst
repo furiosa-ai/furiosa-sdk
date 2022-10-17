@@ -113,7 +113,7 @@ Python SDK 개선
 
     config = {
       "without_quantize": {
-          "parameters": [{"input_min": 0.0, "input_max": 255.0, "permute": [0, 2, 3, 1]}]
+          "parameters": [{"permute": [0, 2, 3, 1]}]
       }
     }
 

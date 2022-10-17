@@ -301,7 +301,7 @@ class CompletionQueue:
         context_ref = ctypes.py_object(None)
         outputs_ref = c_void_p(None)
 
-        if timeout:
+        if timeout is not None:
             if timeout < 0:
                 raise RuntimeError("the timeout duration must be a positive integer")
             self.queue_ok = LIBNUX.nux_completion_queue_next_timeout(

@@ -14,6 +14,7 @@ from furiosa.quantizer.frontend.onnx.quantizer.quantizer import QuantizationMode
 from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
 )
+from furiosa.quantizer.frontend.onnx.transformer.convert_prelu_to_relu import ConvertPReluToRelu
 from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
     EliminateRedundantShapePattern,
 )
@@ -174,6 +175,7 @@ def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
         FuseRedundantReshapePattern().transform,
         FuseGatherMatMul().transform,
         EliminateRedundantShapePattern().transform,
+        ConvertPReluToRelu().transform,
     ]
     return _transform(transformers, model)
 

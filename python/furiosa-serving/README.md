@@ -36,7 +36,7 @@ app: FastAPI = serve.app
 You can run [uvicorn](https://www.uvicorn.org/) server via internal `app` variable from `ServeAPI` instance like [normal FastAPI application](https://fastapi.tiangolo.com/tutorial/first-steps/#first-steps)
 
 ```sh
-$ uvicorn main:app # or uvicorn main:server.app
+$ uvicorn main:app # or uvicorn main:serve.app
 ```
 
 ### Load model
@@ -61,19 +61,19 @@ serve = ServeAPI()
 
 
 # Load model from local disk
-imagenet: ServeModel = synchronous(serve.model)(
+imagenet: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
 
 # Load model from HTTP
-resnet: ServeModel = synchronous(serve.model)(
+resnet: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
      location='https://raw.githubusercontent.com/onnx/models/main/vision/classification/resnet/model/resnet50-v1-12.onnx'
 )
 
 # Load model from S3 (Auth environment variable for aioboto library required)
-densenet: ServeModel = synchronous(serve.model)(
+densenet: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
      location='s3://furiosa/models/93d63f654f0f192cc4ff5691be60fb9379e9d7fd'
 )
@@ -99,7 +99,7 @@ import numpy as np
 serve = ServeAPI()
 
 
-model: ServeModel = synchronous(serve.model)(
+model: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
@@ -164,7 +164,7 @@ from furiosa.serving.processors import ImageNet
 
 serve = ServeAPI()
 
-model: ServeModel = synchronous(serve.model)(
+model: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
@@ -228,12 +228,12 @@ from furiosa.serving.processors import ImageNet, SegmentNet
 
 serve = ServeAPI()
 
-imagenet: ServeModel = synchronous(serve.model)(
+imagenet: ServeModel = synchronous(serve.model("nux"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
 
-segmentnet: ServeModel = synchronous(serve.model)(
+segmentnet: ServeModel = synchronous(serve.model("nux"))(
     'segmentnet',
     location='./examples/assets/models/image_segmentation.onnx'
 )
@@ -256,7 +256,7 @@ You can find a complete example at `examples/image_classify.py`
 ```sh
 cd examples
 
-examples$ uvicorn image_classify:serve.app
+examples$ python image_classify.py
 INFO:furiosa_sdk_runtime._api.v1:loaded dynamic library /home/ys/Furiosa/compiler/npu-tools/target/x86_64-unknown-linux-gnu/debug/libnux.so (0.4.0-dev d1720b938)
 INFO:     Started server process [984608]
 INFO:uvicorn.error:Started server process [984608]
