@@ -180,7 +180,7 @@ class OpenVINOModel(Model):
     if TYPE_CHECKING:
         from openvino.runtime.ie_api import CompiledModel, InferRequest
 
-    def __init__(self, config: OpenVINOModelConfig, *, compiler_config: Optional[Dict]):
+    def __init__(self, config: OpenVINOModelConfig):
         from openvino.runtime import Core
 
         super().__init__(config)
@@ -194,7 +194,7 @@ class OpenVINOModel(Model):
         assert isinstance(self._config, OpenVINOModelConfig)
 
         self._model = self._runtime.compile_model(
-            self._runtime.read_model(self._config.model), self._config.compiler_config
+            self._runtime.read_model(self._config.model), "CPU", self._config.compiler_config
         )
         self._request = self._model.create_infer_request()
 
