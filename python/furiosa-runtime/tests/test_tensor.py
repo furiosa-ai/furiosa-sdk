@@ -7,7 +7,7 @@ import numpy as np
 from furiosa.runtime import session
 from furiosa.runtime.tensor import DataType, TensorArray, numpy_dtype
 from tests.test_base import (
-    MLCOMMONS_MOBILENET_TRUNCATED,
+    QUANTIZED_CONV_TRUNCATED_TEST,
     MNIST_ONNX,
     NAMED_TENSORS_ONNX,
     SessionTester,
@@ -105,7 +105,7 @@ class TestLoweredTensor(unittest.TestCase):
             "remove_unlower": True,
         }
         cls.sess = SessionTester(
-            MLCOMMONS_MOBILENET_TRUNCATED, compile_config=compile_config
+            QUANTIZED_CONV_TRUNCATED_TEST, compile_config=compile_config
         ).session
 
     @classmethod

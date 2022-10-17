@@ -16,7 +16,7 @@ logging.basicConfig(level=LOGLEVEL)
 MNIST_ONNX = test_data("mnist-8.onnx")
 MNIST_TFLITE_QUANTIZED = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
 NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
-MLCOMMONS_MOBILENET_TRUNCATED = test_data("mlcommons_ssd_mobilenet_v1_int8_truncated.onnx")
+QUANTIZED_CONV_TRUNCATED_TEST = test_data("quantized_i8_conv_truncated.onnx")
 
 
 def assert_tensors_equal(expected, result):
