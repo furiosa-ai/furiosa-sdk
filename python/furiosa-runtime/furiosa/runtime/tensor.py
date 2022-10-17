@@ -181,8 +181,8 @@ class Tensor:
         else:
             raise UnsupportedTensorType()
 
-    def numpy(self) -> np.ndarray:
-        """Return numpy.ndarray converted from this tensor"""
+    def view(self) -> np.ndarray:
+        """Return numpy.ndarray view converted from this tensor"""
         arr_size = self.desc.size
 
         buf_ptr = POINTER(c_uint8)()
@@ -202,6 +202,10 @@ class Tensor:
 
         arr = np.ndarray(tuple(self.shape[:]), self.numpy_dtype, buffer, strides=strides)
         return arr
+
+    def numpy(self) -> np.ndarray:
+        """Return numpy.ndarray converted from this tensor"""
+        return self.view().copy()
 
     def __repr__(self):
         repr = self.__class__.__name__ + "("

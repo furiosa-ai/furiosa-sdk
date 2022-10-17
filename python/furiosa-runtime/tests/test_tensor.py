@@ -134,16 +134,16 @@ class TestLoweredTensor(unittest.TestCase):
             inputs.append(np.random.random(session_input.shape).astype(np.float32))
         outputs = self.sess.run(inputs)
 
-        output = outputs[0].numpy()
+        output = outputs[0].view()
         self.assertEqual(6, output.ndim)
         self.assertEqual(np.int8, numpy_dtype(output))
         self.assertNotEqual(strides, output.strides)
 
-        # calling copy() rearranges the memory layout
-        copied = output.copy()
-        self.assertEqual(6, copied.ndim)
-        self.assertEqual(np.int8, numpy_dtype(copied))
-        self.assertEqual(strides, copied.strides)
+        # calling numpy() rearranges the memory layout due to internal copy() call
+        output = outputs[0].numpy()
+        self.assertEqual(6, output.ndim)
+        self.assertEqual(np.int8, numpy_dtype(output))
+        self.assertEqual(strides, output.strides)
 
 
 if __name__ == '__main__':
