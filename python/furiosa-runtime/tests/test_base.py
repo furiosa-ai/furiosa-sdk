@@ -16,6 +16,7 @@ logging.basicConfig(level=LOGLEVEL)
 MNIST_ONNX = test_data("mnist-8.onnx")
 MNIST_TFLITE_QUANTIZED = test_data("MNISTnet_uint8_quant_without_softmax.tflite")
 NAMED_TENSORS_ONNX = test_data("named_tensors.onnx")
+QUANTIZED_CONV_TRUNCATED_TEST = test_data("quantized_i8_conv_truncated.onnx")
 
 
 def assert_tensors_equal(expected, result):
@@ -25,8 +26,8 @@ def assert_tensors_equal(expected, result):
 
 
 class SessionTester:
-    def __init__(self, model_path):
-        self.session = session.create(model=model_path)
+    def __init__(self, model_path, compile_config=None):
+        self.session = session.create(model=model_path, compile_config=compile_config)
 
     def close(self):
         self.session.close()
