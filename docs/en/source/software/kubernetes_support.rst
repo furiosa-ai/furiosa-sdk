@@ -7,14 +7,16 @@ Kubernetes Support
 `Kuberentes <https://kubernetes.io/>`_ is an open source platform for managing containerized workloads and services.
 Furiosa SDK provides the following components to support the Kubernetes environment.
 
-* `Kubernetes Device Plugin <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_
-* Kubernetes Node Labeller
+* FuriosaAI NPU Device Plugin (`Introduction to Kubernetes Device Plugin <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_)
+
+* FuriosaAI NPU Feature Discovery (`Introduction to Node Feature Discovery <https://kubernetes-sigs.github.io/node-feature-discovery/stable/get-started/index.html>`_)
 
 The two components above provide the following functions.
 
 * Make the Kubernetes cluster aware of the NPUs available to the node.
 * Through Kubernetes ``spec.containers[].resources.limits`` , schedule the NPU simultaneously when distributing Pod workload.
 * Identify NPU information of NPU-equipped machine, and register it as node label (you can selectively schedule Pods with this information and `nodeSelector`)
+   * The node-feature-discovery needs to be installed to the cluster, and the ``nfd-worker`` Pod must be running in the nodes equipped with NPUs.
 
 The setup process for Kubernetes support is as follows.
 
@@ -34,7 +36,7 @@ If the APT server is set up (see :ref:`SetupAptRepository`), you can easily inst
 
 
 Once the required package is installed as above, you can check for NPU recognition as follows, with the
-furiosactl command included in furiosa-toolkit.
+``furiosactl`` command included in furiosa-toolkit.
 If the NPU is not recognized with the command below, try again after rebooting - depending on the environment.
 
 .. code-block:: sh
@@ -43,31 +45,54 @@ If the NPU is not recognized with the command below, try again after rebooting -
   +------+------------------+-------+--------+--------------+---------+
   | NPU  | Name             | Temp. | Power  | PCI-BDF      | PCI-DEV |
   +------+------------------+-------+--------+--------------+---------+
-  | npu1 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
+  | npu0 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
   +------+------------------+-------+--------+--------------+---------+
 
-2. Installing Device Plugin, Node Labeller
-==============================================
-
-Once NPU node preparation is complete, install the device plugin and node labeller (daemonset) as follows.
+2. Installing Node Feature Discovery
+=========================================
+In order to make Kubernetes to recognize NPUs, you need to install Node Feature Discovery (nfd).
+By running the command as shown in the example below, if there is a node label that begins with ``feature.node.kubernetes.io/...``, Node Feature Discovery's DaemonSet has already been installed
 
 .. code-block:: sh
 
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/node-labeller.yaml
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.6.0/kubernetes/deployments/device-plugin.yaml
+  $ kubectl get no -o json | jq '.items[].metadata.labels'
+  {
+    "beta.kubernetes.io/arch": "amd64",
+    "beta.kubernetes.io/os": "linux",
+    "feature.node.kubernetes.io/cpu-cpuid.ADX": "true",
+    "feature.node.kubernetes.io/cpu-cpuid.AESNI": "true",
+    ...
+
+* If you do not have the Node Feature Discovery in your cluster, refer to the following document.
+
+   * `Node Feature Discovery - Quick start / Installation <https://kubernetes-sigs.github.io/node-feature-discovery/v0.11/get-started/quick-start.html#installation>`_
+
+* You can proceed to the next step even without Node Feature Discovery, but you must change the conditions of the nodeSelector when generating DaemonSet of each component.
+
+.. _InstallingDevicePluginAndNfd:
+
+3. Installing Device Plugin and NPU Feature Discovery
+==========================================================
+
+When the NPU node is ready, install Device Plugin and NPU Feature Discovery's DaemonSet as follows.
+
+.. code-block:: sh
+
+    kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/device-plugin.yaml
+    kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.7.0/kubernetes/deployments/npu-feature-discovery.yaml
 
 After executing the above command, you can check whether the installed daemonset is functioning normally with the ``kubectl get daemonset -n kube-system`` command.
-For reference, the device plugin (``furiosa-npu-plugin``) is only distributed to nodes equipped with NPUs, and uses
-``alpha.furiosa.ai/npu.family=warboy`` information that the node labeller (``furiosa-npu-labeller``) attaches to each node.
+For reference, the DaemonSet is distributed only to nodes equipped with NPUs, and uses
+``alpha.furiosa.ai/npu.family=warboy`` information that the Node Feature Discovery (``feature.node.kubernetes.io/pci-1ed2.present=true``) attaches to each node.
 
 .. code-block:: sh
 
   $ kubectl get daemonset -n kube-system
-  NAME                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                               AGE
-  furiosa-npu-labeller     6         6         6       6            6           kubernetes.io/os=linux                                      321d
-  furiosa-npu-plugin       2         2         2       2            2           alpha.furiosa.ai/npu.family=warboy,kubernetes.io/os=linux   159d
+ NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                      AGE
+  furiosa-device-plugin          3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   128m
+  furiosa-npu-feature-discovery  3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   162m
 
-The metadata attached by the node labeller (``furiosa-npu-labeller``) is shown in the following table.
+The metadata attached by the Node Feature Discovery is shown in the following table.
 
 .. _K8sNodeLabels:
 
@@ -78,38 +103,158 @@ The metadata attached by the node labeller (``furiosa-npu-labeller``) is shown i
    * - Label
      - Value
      - Description
-   * - alpha.furiosa.ai/npu.family
+   * - beta.furiosa.ai/npu.count
+     - 1
+     - The number of NPUs e x b number of NPUs attached to node
+   * - beta.furiosa.ai/npu.product
+     - warboy, warboyB0
+     - NPU Product Name (Code)
+   * - beta.furiosa.ai/npu.family
      - warboy, renegade
-     - Chip family
-   * - alpha.furiosa.ai/npu.hwtype
-     - haps (ASIC), u250 (FPGA sample)
-     - HW type
+     - NPU Architecture (Family)
+   * - beta.furiosa.ai/machine.vendor
+     - (depends on machine)
+     - Machine Manufacturer
+   * - beta.furiosa.ai/machine.name
+     - (depends on machine)
+     - The Nmae of Machine (Code)
+   * - beta.furiosa.ai/driver.version
+     - 1.3.0
+     - NPU Device Driver Version
+   * - beta.furiosa.ai/driver.version.major
+     - 1
+     - Major Version Number of NPU Device Driver Version
+   * - beta.furiosa.ai/driver.version.minor
+     - 3
+     - Minor Version Number of NPU Device Driver
+   * - beta.furiosa.ai/driver.version.patch
+     - 0
+     - Patch Version Number of NPU Device Driver
+   * - beta.furiosa.ai/driver.reference
+     - 57ac7b0
+     - Build Commit Hash of NPU Device Driver
 
-
-If you execute the ``kubectl get nodes --show-labels`` command to check node labels, and you see labels starting with ``alpha.furiosa.ai``
-as follows, you have successfully installed the node labeller.
+If you want to check node labels, then execute the ``kubectl get nodes --show-labels`` command. If you see labels which start with ``beta.furiosa.ai`` Node Feature Discovery is successfully installed.
 
 .. code-block:: sh
 
-  kubectl get nodes --show-labels
+    kubectl get nodes --show-labels
 
-  warboy-node01     Ready   <none>  65d   v1.20.10   alpha.furiosa.ai/npu.family=warboy,alpha.furiosa.ai/npu.hwtype=haps...,kubernetes.io/os=linux
-  warboy-node02     Ready   <none>  12d   v1.20.10   alpha.furiosa.ai/npu.family=warboy,alpha.furiosa.ai/npu.hwtype=haps...,kubernetes.io/os=linux
+    warboy-node01     Ready   <none>  65d   v1.20.10   beta.furiosa.ai/npu.count=1,beta.furiosa.ai/npu.product=warboy...,kubernetes.io/os=linux
+    warboy-node02     Ready   <none>  12d   v1.20.10   beta.furiosa.ai/npu.count=1,beta.furiosa.ai/npu.product=warboy...,kubernetes.io/os=linux
 
 
-3. Creating a Pod with NPUs
+Device Plugin Configuration
+--------------------------------------
+Execution options for Device Plugin can be set by the argument of command line or configuration file.
+
+1. Command Line Arguments
+
+The option can be set by the ``k8s-device-plugin`` command as follows.
+
+.. code-block:: sh
+
+  $ k8s-device-plugin --interval 10
+
+For the Pod or DaemonSet specification command line arguments can be set as follows.
+
+.. code-block:: yaml
+
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: furiosa-device-plugin
+    namespace: kube-system
+  spec:
+    containers:
+      - name: device-plugin
+        image: ghcr.io/furiosa-ai/k8s-device-plugin:latest
+        command: ["/usr/bin/k8s-device-plugin"]
+        args: ["--interval", "10"]
+  # (the reset is omitted)
+
+.. list-table:: arguments of k8s-device-plugin
+   :widths: 50 150 50
+   :header-rows: 1
+
+   * - Item
+     - Explanation
+     - Default Value
+   * - default-pe
+     - default core type when pod is allocated (Fusion/Single)
+     - Fusion
+   * - interval
+     - interval for searching device (seconds)
+     - 10
+   * - disabled-devices
+     - devices not for allocations (several devices can be designated using comma)
+     -
+   * - plugin-dir
+     - directory path of kubelet device-plugin
+     - /var/lib/kubelet/device-plugins
+   * - socket-name
+     - file name of socket created under <plugin-dir>
+     - furiosa-npu
+   * - resource-name
+     - name of NPU resource registered for k8s node
+     - beta.furiosa.ai/npu
+
+2. Setting Configuration File
+
+You may set configuration file by executing ``k8s-device-plugin`` command with argument ``config-file``.
+If ``config-file`` is set then the other arguments are not permitted.
+
+.. code-block:: sh
+
+  $ k8s-device-plugin --config-file /etc/furiosa/device-plugin.conf
+
+.. code-block:: yaml
+   :caption: /etc/furiosa/device-plugin.conf
+
+   interval: 10
+   defaultPe: Fusion
+   disabledDevices:             # device npu1 equipped in warboy-node01 will not be used
+     - devName: npu1
+       nodeName: warboy-node01
+   pluginDir: /var/lib/kubelet/device-plugins
+   socketName: furiosa-npu
+   resourceName: beta.furiosa.ai/npu
+
+Configuration file is a text file with Yaml format. The modification of file contents is applied to Device Plugin immediately. Updated configuration is recorded on log of Device Plugin.
+(but, modifications on ``pluginDir`` , ``socketName``, or ``resourceName`` require reboot.)
+
+:ref:`InstallingDevicePluginAndNfd` provides ``device-plugin.yaml`` which is default configuration file based on ConfigMap.
+If you want to modify execution options of Device Plugin, modify ConfigMap. Once modified ConfigMap is applied to Pod, Device Plugin reads the ConfigMap and then reflects modification.
+
+.. code-block:: sh
+
+  $ kubectl edit configmap npu-device-plugin -n kube-system
+
+.. code-block:: yaml
+   :caption: configmap/npu-device-plugin
+
+   apiVersion: v1
+   data:
+     config.yaml: |
+       defaultPe: Fusion
+       interval: 15
+       disabledDevices:
+         - devName: npu2
+           nodeName: npu-001
+   kind: ConfigMap
+
+4. Creating a Pod with NPUs
 ====================================
 
 To allocate NPU to a Pod, add as shown below to ``spec.containers[].resources.limits``.
 
 .. code-block:: yaml
 
-  resources:
-    limits:
-      alpha.furiosa.ai/npu: "1" # requesting 1 NPU
+    resources:
+        limits:
+            beta.furiosa.ai/npu: "1" # requesting 1 NPU
 
-
-`Full example <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.6.0/kubernetes/deployments/pod-example.yaml>`_ for Pod creation is as follows.
+`Full example <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.7.0/kubernetes/deployments/pod-example.yaml>`_ for Pod creation is as follows.
 
 .. code-block:: sh
 
@@ -126,11 +271,11 @@ To allocate NPU to a Pod, add as shown below to ``spec.containers[].resources.li
           limits:
             cpu: "4"
             memory: "8Gi"
-            alpha.furiosa.ai/npu: "1"
+            beta.furiosa.ai/npu: "1"
           requests:
             cpu: "4"
             memory: "8Gi"
-            alpha.furiosa.ai/npu: "1"
+            beta.furiosa.ai/npu: "1"
   EOL
 
   $ kubectl apply -f npu-pod.yaml
@@ -140,18 +285,18 @@ After Pod creation, you can check NPU allocation as follows.
 .. code-block:: sh
 
   $ kubectl get pods npu-pod -o yaml | grep alpha.furiosa.ai/npu
-      alpha.furiosa.ai/npu: "1"
-      alpha.furiosa.ai/npu: "1"
+      beta.furiosa.ai/npu: "1"
+      beta.furiosa.ai/npu: "1"
 
 
-If there are multiple NPU devices, you can check which devices are allocated as follows.
 The SDK application automatically recognizes the allocated NPU device.
+If there are multiple NPU devices on a node, you can check which device is allocated as follows:
 
 .. code-block:: sh
 
-  $ kubectl exec npu-pod -it -- /bin/bash
-  root@npu-pod:/# echo $NPU_DEVNAME
-  npu0pe0-1
+    $ kubectl exec npu-pod -it -- /bin/bash
+    root@npu-pod:/# echo $NPU_DEVNAME
+    npu0pe0-1
 
 
 If furiosa-toolkit is installed in the Pod, you can check for more detailed device information using the
@@ -161,22 +306,22 @@ See :ref:`SetupAptRepository` for installation guide using APT.
 
 .. code-block:: sh
 
-  root@npu-pod:/# furiosactl
-  furiosactl controls the FURIOSA NPU.
+    root@npu-pod:/# furiosactl
+    furiosactl controls the FURIOSA NPU.
 
-  Find more information at: https://furiosa.ai/
+    Find more information at: https://furiosa.ai/
 
-  Basic Commands:
-    version    Print the furiosactl version information
-    info       Show information one or many NPU(s)
-    config     Get/Set configuration for NPU environment
+    Basic Commands:
+        version    Print the furiosactl version information
+        info       Show information one or many NPU(s)
+        config     Get/Set configuration for NPU environment
 
-  Usage:
-    furiosactl COMMAND
+    Usage:
+        furiosactl COMMAND
 
-  root@npu-pod:/# furiosactl info
-  +------+------------------+-------+--------+--------------+---------+
-  | NPU  | Name             | Temp. | Power  | PCI-BDF      | PCI-DEV |
-  +------+------------------+-------+--------+--------------+---------+
-  | npu1 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
-  +------+------------------+-------+--------+--------------+---------+
+    root@npu-pod:/# furiosactl info
+    +------+------------------+-------+--------+--------------+---------+
+    | NPU  | Name             | Temp. | Power  | PCI-BDF      | PCI-DEV |
+    +------+------------------+-------+--------+--------------+---------+
+    | npu0 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
+    +------+------------------+-------+--------+--------------+---------+

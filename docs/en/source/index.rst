@@ -77,6 +77,7 @@ Other Links
    /software/cli
    /software/compiler
    /software/quantization
+   /software/profiler
    /software/kubernetes_support
    /software/serving
    /software/tutorials
@@ -88,6 +89,7 @@ Other Links
    :hidden:
    :caption: Release Notes
 
+   /releases/0.7.0.rst
    /releases/0.6.0.rst
    /releases/0.5.0.rst
 
@@ -109,6 +111,7 @@ Other Links
    :hidden:
    :caption: Previous Documents
 
+   v0.7.0 <https://furiosa-ai.github.io/docs/v0.7.0/en/>
    v0.6.0 <https://furiosa-ai.github.io/docs/v0.6.0/en/>
    v0.5.0 <https://furiosa-ai.github.io/docs/v0.5.0/en/>
    v0.2.0 <https://furiosa-ai.github.io/docs/v0.2.0/en/>

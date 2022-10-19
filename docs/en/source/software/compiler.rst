@@ -111,3 +111,65 @@ immediately generate the ``Session`` object.
 
   from furiosa.runtime import session
   sess = session.create("foo.enf")
+
+.. _CompilerCache:
+
+Compiler Cache
+-------------------------------------------
+Compiler cache allows to user applications to reuse once-compiled results.
+It's very helpful especially when you are developing applications because the compilation
+usually takes at least a couple of minutes.
+
+By default, the compiler cache uses a local file system (``$HOME/.cache/furiosa/compiler``) as a cache storage.
+If you specify a configuration, you can also use Redis as a remote and distributed cache storage.
+
+The compiler cache is enabled by default, but you can explicitly enable or disable the cache by setting ``FC_CACHE_ENABLED``.
+This setting is effective in CLI tools, Python SDK, and serving frameworks.
+
+.. code-block:: sh
+
+  # Enable Compiler Cache
+  export FC_CACHE_ENABLED=1
+  # Disable Compiler Cache
+  export FC_CACHE_ENABLED=0
+
+The default cache location is ``$HOME/.cache/furiosa/compiler``, but you can explicitly specify the cache storage
+by setting the shell environment variable ``FC_CACHE_STORE_URL``. If you want to Redis as a cache storage,
+you can specify some URLs starting with ``redis://`` or ``rediss://`` (over SSL).
+
+.. code-block:: sh
+
+  # When you want to specify a cache directory
+  export FC_CACHE_STORE_URL=/tmp/cache
+
+  # When you want to specify a Redis cluster as the cache storage
+  export FC_CACHE_STORE_URL=redis://:<PASSWORD>@127.0.0.1:6379
+  # When you want to specify a Redis cluster over SSL as the cache storage
+  export FC_CACHE_STORE_URL=rediss://:<PASSWORD>@127.0.0.1:25945
+
+The cache will be valid for 72 hours (3 days) by default, but you can explicitly specify the cache lifetime by setting
+seconds to the environment variable ``FC_CACHE_LIFETIME``.
+
+.. code-block:: sh
+
+  # 2 hours cache lifetime
+  export FC_CACHE_LIFETIME=7200
+
+Also, you can control more the cache behavior according to your purpose as following:
+
+.. list-table:: Cache behaviors according to ``FC_CACHE_LIFETIME``
+   :widths: 50 200 50
+   :header-rows: 1
+
+   * - Value (secs)
+     - Description
+     - Example
+   * - *N* > 0
+     - Cache will be alive for N secs
+     - 7200 (2 hours)
+   * - 0
+     - All previous cache will be invalidated. (When you want to compile the model without cache)
+     - 0
+   * - *N* < 0
+     - Cache will be alive forever without expiration. (it can be useful when you want read-only cache)
+     - -1
