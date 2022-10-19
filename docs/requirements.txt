@@ -2,3 +2,4 @@ sphinx
 sphinx_tabs
 sphinx_rtd_theme
 sphinxcontrib-napoleon
+docutils==0.16

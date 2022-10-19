@@ -70,7 +70,7 @@ Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필�
 
 .. _InstallingDevicePluginAndNfd:
 
-3. Device Plugin, NPU Feature Discovery 설치
+3. Device Plugin 및 NPU Feature Discovery 설치
 ==============================================
 
 NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 DaemonSet을 다음과 같이 설치한다.
