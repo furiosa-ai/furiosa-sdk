@@ -62,7 +62,7 @@ class PandasDataFrameConfig(BaseModel):
     """
 
     class Config:
-        extra = "forbid"
+        extra = "allow"
         arbitrary_types_allowed = True
 
     # Provide default value as default_factory because stdout itself is not pickle-able.
@@ -114,12 +114,12 @@ class profile:
             if 'file' in config.keys():
                 config['file'] = config['file'].fileno()
             else:
-                if sys.version_info[0] >= 3 and sys.version_info[1] >= 8:
+                if hasattr(os, 'memfd_create'):
                     config['file'] = os.memfd_create('profiling')
                 else:
                     import tempfile
 
-                    config['file'], config['filename'] = tempfile.mkstemp()
+                    config['file'], config['tempfile'] = tempfile.mkstemp()
 
         self.config = configs[format](**config).json()
 
@@ -180,9 +180,9 @@ class profile:
             )
             self.df['dur'] = self.df['end'] - self.df['start']
 
-            if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 8):
+            if 'tempfile' in config:
                 os.close(config['file'])
-                os.remove(config['filename'])
+                os.remove(config['tempfile'])
 
     @contextmanager
     def record(

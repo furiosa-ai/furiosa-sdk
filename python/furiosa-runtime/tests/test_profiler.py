@@ -25,7 +25,7 @@ class TestProfiler(unittest.TestCase):
             f.seek(0)
 
             records = json.loads(f.read())
-            self.assertTrue(len([record for record in records if record["name"] == "Run"]) == 2)
+            self.assertTrue(len([record for record in records if record["name"] == "Run"]) == 1)
 
     def test_profile_data_frame(self):
         # Record profile data to Pandas DataFrame
