@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from furiosa.runtime import session
-from furiosa.runtime.profiler import profile, RecordFormat
+from furiosa.runtime.profiler import RecordFormat, profile
 from tests.test_base import MNIST_TFLITE_QUANTIZED
 
 

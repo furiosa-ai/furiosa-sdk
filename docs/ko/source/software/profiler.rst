@@ -104,7 +104,7 @@ Pandas DataFrame으로 트레이스 분석
 .. code-block:: python
 
     from furiosa.runtime import session, tensor
-    from furiosa.runtime.profiler import profile, RecordFormat
+    from furiosa.runtime.profiler import RecordFormat, profile
 
     with profile(format=RecordFormat.PandasDataFrame) as profiler:
         with session.create("MNISTnet_uint8_quant_without_softmax.tflite") as sess:

@@ -118,6 +118,7 @@ class profile:
                     config['file'] = os.memfd_create('profiling')
                 else:
                     import tempfile
+
                     config['file'], config['filename'] = tempfile.mkstemp()
 
         self.config = configs[format](**config).json()
