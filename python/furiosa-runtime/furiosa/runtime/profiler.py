@@ -114,7 +114,11 @@ class profile:
             if 'file' in config.keys():
                 config['file'] = config['file'].fileno()
             else:
-                config['file'] = os.memfd_create('profiling')
+                if sys.version_info[0] >= 3 and sys.version_info[1] >= 8:
+                    config['file'] = os.memfd_create('profiling')
+                else:
+                    import tempfile
+                    config['file'], config['filename'] = tempfile.mkstemp()
 
         self.config = configs[format](**config).json()
 
@@ -175,6 +179,10 @@ class profile:
             )
             self.df['dur'] = self.df['end'] - self.df['start']
 
+            if not (sys.version_info[0] >= 3 and sys.version_info[1] >= 8):
+                os.close(config['file'])
+                os.remove(config['filename'])
+
     @contextmanager
     def record(
         self,
@@ -218,7 +226,7 @@ class profile:
             .rename(columns={'dur': 'average elapsed(ns)', 'span_id': 'count'})
         )
 
-    def print_npu_inference(self):
+    def print_npu_executions(self):
         if self.df.empty:
             print("DataFrame is empty.")
             return
