@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Tuple
 from urllib.parse import urlparse
@@ -18,8 +19,6 @@ from starlette.responses import Response
 from starlette.routing import Match
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 from starlette.types import ASGIApp
-
-from furiosa.common.utils import eprint
 
 INFO = Gauge(
     "fastapi_app_info",
@@ -135,14 +134,20 @@ def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool
     tracer = TracerProvider(resource=resource)
     trace.set_tracer_provider(tracer)
 
-    url = urlparse(endpoint)
-    if all([url.scheme, url.netloc]):
+    def is_valid_url(endpoint: str) -> bool:
+        try:
+            url = urlparse(endpoint)
+            return all([url.scheme, url.netloc])
+        except:
+            return False
+
+    if is_valid_url(endpoint):
         tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
         setup_logger(True)
     else:
         setup_logger(False)
         if endpoint is not None:
-            eprint(f"Invalid OpenTelemetry Endpoint URL: {endpoint}")
+            logging.warning(f"Invalid OpenTelemetry Endpoint URL: {endpoint}")
 
     FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer)
 
