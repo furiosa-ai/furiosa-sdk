@@ -282,6 +282,14 @@ class TensorArray:
 
         raise TypeError
 
+    def view(self) -> [np.ndarray]:
+        """Convert TensorArray to a list of numpy.ndarray view"""
+        array = []
+        for idx in range(self.len):
+            array.append(self[idx].view())
+
+        return array
+
     def numpy(self) -> [np.ndarray]:
         """Convert TensorArray to a list of numpy.ndarray"""
         array = []
