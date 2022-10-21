@@ -118,18 +118,18 @@ Pandas DataFrame으로 트레이스 분석
                 for _ in range(0, 2):
                     sess.run(tensor.rand(input_shape))
         
-        profiler.print_summary() # (1)
+    profiler.print_summary() # (1)
 
-        profiler.print_inferences() # (2)
+    profiler.print_inferences() # (2)
 
-        profiler.print_npu_executions() # (3)
+    profiler.print_npu_executions() # (3)
 
-        profiler.print_npu_operators() # (4)
+    profiler.print_npu_operators() # (4)
 
-        profiler.print_external_operators() # (5)
+    profiler.print_external_operators() # (5)
 
-        df = profiler.get_pandas_dataframe() # (6)
-        print(df[df["name"] == "trace"][["trace_id", "name", "thread.id", "dur"]])
+    df = profiler.get_pandas_dataframe() # (6)
+    print(df[df["name"] == "trace"][["trace_id", "name", "thread.id", "dur"]])
 
 
 위는 프로파일링 컨텍스트의 형식을 PandasDataFrame으로 지정한 코드 예제이다.
