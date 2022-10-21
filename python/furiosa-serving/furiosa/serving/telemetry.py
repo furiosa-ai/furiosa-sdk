@@ -138,7 +138,7 @@ def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool
         try:
             url = urlparse(endpoint)
             return all([url.scheme, url.netloc])
-        except:
+        except ValueError:
             return False
 
     if is_valid_url(endpoint):
