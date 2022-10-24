@@ -63,7 +63,7 @@ class TestAsyncSessionExceptions(unittest.TestCase):
                 worker_num=1,
                 input_queue_size=1,
                 output_queue_size=1,
-                compile_config={"split_after_lower": True},
+                compile_config={"allow_precision_error": True},
             )
         finally:
             if queue:
