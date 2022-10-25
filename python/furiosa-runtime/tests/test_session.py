@@ -109,7 +109,7 @@ class TestSessionClosed(unittest.TestCase):
 class TestSessionOptions(unittest.TestCase):
     def test_create(self):
         with session.create(
-            MNIST_ONNX, worker_num=1, compile_config={"split_after_lower": True}
+            MNIST_ONNX, worker_num=1, compile_config={"allow_precision_error": True}
         ) as _:
             pass
 
@@ -191,11 +191,6 @@ class TestSessionWithNames(unittest.TestCase):
 
 
 class TestCompilerConfig(unittest.TestCase):
-    def test_non_existence_config(self):
-        non_existence_config = {"non_existence_config": 1}
-        with session.create(MNIST_ONNX, compile_config=non_existence_config) as _:
-            pass
-
     def test_invalid_config(self):  # put an existing config but use a different type
         invalid_config = {"remove_lower": 1}  # the correct value type is boolean
         self.assertRaises(
