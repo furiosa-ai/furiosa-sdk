@@ -1,5 +1,7 @@
+import logging
 import time
 from typing import Tuple
+from urllib.parse import urlparse
 
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -68,6 +70,14 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         before_time = time.perf_counter()
         try:
             response = await call_next(request)
+        except RuntimeError as e:
+            # Workaround for client drops connection
+            # https://github.com/encode/starlette/discussions/1527
+            # fix in starlette 0.21.0 (https://github.com/encode/starlette/pull/1715)
+            if str(e) == 'No response returned.' and await request.is_disconnected():
+                status_code = 499
+                return Response(status_code=status_code)
+            raise e
         except BaseException as e:
             status_code = HTTP_500_INTERNAL_SERVER_ERROR
             EXCEPTIONS.labels(
@@ -124,9 +134,33 @@ def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool
     tracer = TracerProvider(resource=resource)
     trace.set_tracer_provider(tracer)
 
-    tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
+    def is_valid_url(endpoint: str) -> bool:
+        try:
+            url = urlparse(endpoint)
+            return all([url.scheme, url.netloc])
+        except ValueError:
+            return False
 
-    if log_correlation:
-        LoggingInstrumentor().instrument(set_logging_format=True)
+    if is_valid_url(endpoint):
+        tracer.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint)))
+        setup_logger(True)
+    else:
+        setup_logger(False)
+        if endpoint is not None:
+            logging.warning(f"Invalid OpenTelemetry Endpoint URL: {endpoint}")
 
     FastAPIInstrumentor.instrument_app(app, tracer_provider=tracer)
+
+
+def setup_logger(otlp_enabled: bool) -> None:
+    if otlp_enabled:
+        logging_format = "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s"
+    else:
+        logging_format = (
+            "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s"
+        )
+
+    LoggingInstrumentor().instrument(
+        set_logging_format=True,
+        logging_format=logging_format,
+    )

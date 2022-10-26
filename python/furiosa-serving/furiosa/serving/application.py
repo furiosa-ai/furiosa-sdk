@@ -76,8 +76,7 @@ class ServeAPI:
         app_name = os.environ.get("FURIOSA_SERVING_APP_NAME", "furiosa-serving")
         otlp_endpoint = os.environ.get("FURIOSA_SERVING_OTLP_ENDPOINT")
         setup_metrics(self._app, app_name)
-        if otlp_endpoint is not None:
-            setup_otlp(self._app, app_name, otlp_endpoint)
+        setup_otlp(self._app, app_name, otlp_endpoint)
 
     def _on_load(self, model: Model):
         """Apply callback function which expose API endpoints when model is loaded."""
