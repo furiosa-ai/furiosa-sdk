@@ -514,7 +514,7 @@ def create_async(
         use_enf = model.enf is not None and use_fusion
 
         if compile_config is not None and model.compiler_config is not None:
-            logging.warning("Got two compiler configs. Using parameter's instead of model's")
+            logging.warning("Model's compiler config is ignored because an explicit compiler config is passed to session.create_async()")
 
         return create_async(
             model=model.enf if use_enf else model.source,
