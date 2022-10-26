@@ -25,7 +25,7 @@ class TestProfiler(unittest.TestCase):
             f.seek(0)
 
             records = json.loads(f.read())
-            self.assertTrue(len([record for record in records if record["name"] == "Run"]) == 1)
+            self.assertEqual(len([record for record in records if record["name"] == "Run"]), 1)
 
     def test_profile_data_frame(self):
         # Record profile data to Pandas DataFrame
@@ -40,10 +40,10 @@ class TestProfiler(unittest.TestCase):
 
         # Test for DataFrame correctness
         df = profiler.get_pandas_dataframe()
-        self.assertTrue(len(df[df["name"] == "Run"].index) == 1)
+        self.assertEqual(len(df[df["name"] == "Run"].index), 1)
 
         # Test for exporting to [Chrome Trace Format]
         with tempfile.NamedTemporaryFile() as f:
             profiler.export_chrome_trace(f.name)
             records = json.loads(f.read())
-            self.assertTrue(len([record for record in records if record["name"] == "Run"]) == 1)
+            self.assertEqual(len([record for record in records if record["name"] == "Run"]), 1)
