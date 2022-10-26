@@ -5,7 +5,7 @@ from ctypes import byref, c_int, c_void_p
 import logging
 from pathlib import Path
 import typing
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import yaml
@@ -181,9 +181,7 @@ class Session(Model):
 
         return outputs
 
-    def run_with(
-        self, outputs: typing.List[str], inputs: Dict[str, Union[np.ndarray]]
-    ) -> TensorArray:
+    def run_with(self, outputs: typing.List[str], inputs: Dict[str, np.ndarray]) -> TensorArray:
         """
         Runs an inference task with `inputs`
 
@@ -263,7 +261,7 @@ class CompletionQueue:
         self,
         ref: c_void_p,
         context_ty: Optional[type],
-        output_descs: [TensorDesc],
+        output_descs: List[TensorDesc],
         profiler,
         profiler_file,
     ):
@@ -275,7 +273,7 @@ class CompletionQueue:
         self.profiler = profiler
         self.profiler_file = profiler_file
 
-    def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
+    def recv(self, timeout: Optional[int] = None) -> Tuple[object, TensorArray]:
         """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
@@ -490,7 +488,7 @@ def create_async(
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
     compile_config: Optional[Mapping[str, object]] = None,
-) -> (AsyncSession, CompletionQueue):
+) -> Tuple[AsyncSession, CompletionQueue]:
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:

@@ -49,7 +49,7 @@ class Model(ABC):
 
         return self._input(idx)
 
-    def inputs(self) -> [TensorDesc]:
+    def inputs(self) -> List[TensorDesc]:
         """Tensor descriptions of all input tensors of Model"""
         return [self._input(idx) for idx in range(self.input_num)]
 
@@ -63,7 +63,7 @@ class Model(ABC):
 
         return self._output(idx)
 
-    def outputs(self) -> [TensorDesc]:
+    def outputs(self) -> List[TensorDesc]:
         """Tensor descriptions of all output tensors of Model"""
         return [self._output(idx) for idx in range(self.output_num)]
 
