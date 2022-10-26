@@ -2,12 +2,15 @@
 
 import ctypes
 from ctypes import byref, c_int, c_void_p
+import logging
 from pathlib import Path
 import typing
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import yaml
+
+from furiosa import registry
 
 from . import envs
 from ._api import LIBNUX
@@ -178,9 +181,7 @@ class Session(Model):
 
         return outputs
 
-    def run_with(
-        self, outputs: typing.List[str], inputs: Dict[str, Union[np.ndarray]]
-    ) -> TensorArray:
+    def run_with(self, outputs: typing.List[str], inputs: Dict[str, np.ndarray]) -> TensorArray:
         """
         Runs an inference task with `inputs`
 
@@ -260,7 +261,7 @@ class CompletionQueue:
         self,
         ref: c_void_p,
         context_ty: Optional[type],
-        output_descs: [TensorDesc],
+        output_descs: List[TensorDesc],
         profiler,
         profiler_file,
     ):
@@ -272,7 +273,7 @@ class CompletionQueue:
         self.profiler = profiler
         self.profiler_file = profiler_file
 
-    def recv(self, timeout: Optional[int] = None) -> (object, TensorArray):
+    def recv(self, timeout: Optional[int] = None) -> Tuple[object, TensorArray]:
         """Receives the prediction results which are asynchronously coming from AsyncSession
 
         If there are already prediction outputs, it will return immediately.
@@ -429,7 +430,7 @@ class AsyncSession(Model):
 
 
 def create(
-    model: Union[bytes, str, Path],
+    model: Union[bytes, str, Path, registry.Model],
     device: str = None,
     worker_num: int = None,
     batch_size: int = None,
@@ -439,8 +440,8 @@ def create(
     """Creates a session for a model
 
     Args:
-        model (bytes, str, Path): a byte string containing a model image or \
-        a path string of a model image file
+        model (bytes, str, Path, Model): a byte string containing a model image or \
+        a path string of a model image file or `furiosa.registry.Model`
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
         batch_size: Batch size of input tensors
@@ -451,6 +452,24 @@ def create(
         the session for a given model, allowing to run predictions. \
         Session is a thread safe.
     """
+    if isinstance(model, registry.Model):
+        use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
+        use_enf = model.enf is not None and use_fusion
+
+        if compile_config is not None and model.compiler_config is not None:
+            logging.warning(
+                "Model's compiler config is ignored because an explicit compiler config is passed to session.create()"
+            )
+
+        return Session(
+            model=model.enf if use_enf else model.source,
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compile_config=compile_config or model.compiler_config,
+            compiler_hints=compiler_hints,
+        )
+
     return Session(
         model=model,
         device=device,
@@ -462,7 +481,7 @@ def create(
 
 
 def create_async(
-    model: Union[bytes, str, Path],
+    model: Union[bytes, str, Path, registry.Model],
     context_ty: Optional[type] = None,
     device: Optional[str] = None,
     worker_num: Optional[int] = None,
@@ -471,12 +490,12 @@ def create_async(
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
     compile_config: Optional[Mapping[str, object]] = None,
-) -> (AsyncSession, CompletionQueue):
+) -> Tuple[AsyncSession, CompletionQueue]:
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:
-        model (bytes, str, Path): a byte string containing a model image or \
-        a path string of a model image file
+        model (bytes, str, Path, Model): a byte string containing a model image or \
+        a path string of a model image file or `furiosa.registry.Model`
         context_ty (type): Type for passing context from AsyncSession to CompletionQueue
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
@@ -492,6 +511,26 @@ def create_async(
         the completion queue allows users to receive the prediction outputs \
         asynchronously.
     """
+    if isinstance(model, registry.Model):
+        use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
+        use_enf = model.enf is not None and use_fusion
+
+        if compile_config is not None and model.compiler_config is not None:
+            logging.warning(
+                "Model's compiler config is ignored because an explicit compiler config is passed to session.create_async()"
+            )
+
+        return create_async(
+            model=model.enf if use_enf else model.source,
+            context_ty=context_ty,
+            device=device,
+            worker_num=worker_num,
+            batch_size=batch_size,
+            compiler_hints=compiler_hints,
+            input_queue_size=input_queue_size,
+            output_queue_size=output_queue_size,
+            compile_config=compile_config or model.compiler_config,
+        )
 
     try:
         if device is None:
