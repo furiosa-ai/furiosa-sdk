@@ -153,7 +153,7 @@ class NuxModel(Model):
                 device=device,
                 batch_size=self._config.batch_size,  # type: ignore
                 worker_num=self._config.worker_num,  # type: ignore
-                compile_config=self._config.compiler_config,  # type: ignore
+                compiler_config=self._config.compiler_config,  # type: ignore
             )
             blocking.run = asynchronous(blocking.run)
             sessions.append(blocking)
@@ -242,7 +242,7 @@ class AsyncNuxModel(NuxModel):
                 device=device,
                 batch_size=self._config.batch_size,
                 worker_num=self._config.worker_num,
-                compile_config=self._config.compiler_config,
+                compiler_config=self._config.compiler_config,
             )
             sessions.append(unblocking)
 

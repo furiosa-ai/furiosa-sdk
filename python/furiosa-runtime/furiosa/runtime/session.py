@@ -72,7 +72,7 @@ def _create_session_options(
     worker_num: Optional[int] = None,
     batch_size: Optional[int] = None,
     compiler_hints: Optional[bool] = None,
-    compile_config: Optional[Mapping[str, object]] = None,
+    compiler_config: Optional[Mapping[str, object]] = None,
     compiler_log: Optional[Path] = None,
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
@@ -86,9 +86,9 @@ def _create_session_options(
         LIBNUX.nux_session_option_set_batch_size(options, batch_size)
     if compiler_hints:
         LIBNUX.nux_session_option_enable_compiler_hints(options, compiler_hints)
-    if compile_config:
-        compile_config = yaml.dump(compile_config).encode()
-        err = LIBNUX.nux_session_option_set_compiler_config(options, compile_config)
+    if compiler_config:
+        compiler_config = yaml.dump(compiler_config).encode()
+        err = LIBNUX.nux_session_option_set_compiler_config(options, compiler_config)
         if is_err(err):
             raise into_exception(err)
     if compiler_log:
@@ -112,7 +112,7 @@ class Session(Model):
         worker_num: Optional[int] = None,
         batch_size: Optional[int] = None,
         compiler_hints: bool = True,
-        compile_config: Optional[Mapping[str, object]] = None,
+        compiler_config: Optional[Mapping[str, object]] = None,
     ):
         profiler_path = envs.profiler_output()
         if profiler_path is not None:
@@ -129,7 +129,7 @@ class Session(Model):
             worker_num=worker_num,
             batch_size=batch_size,
             compiler_hints=compiler_hints,
-            compile_config=compile_config,
+            compiler_config=compiler_config,
             compiler_log=log_path,
         )
         model_image = _model_image(model)
@@ -434,7 +434,7 @@ def create(
     device: str = None,
     worker_num: int = None,
     batch_size: int = None,
-    compile_config: Mapping[str, object] = None,
+    compiler_config: Mapping[str, object] = None,
     compiler_hints: bool = True,
 ) -> Session:
     """Creates a session for a model
@@ -445,7 +445,7 @@ def create(
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
         batch_size: Batch size of input tensors
-        compile_config (Mapping[str, object]): Compile config
+        compiler_config (Mapping[str, object]): Compile config
         compiler_hints: Print compiler hints if True (default: True)
 
     Returns:
@@ -456,7 +456,7 @@ def create(
         use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
         use_enf = model.enf is not None and use_fusion
 
-        if compile_config is not None and model.compiler_config is not None:
+        if compiler_config is not None and model.compiler_config is not None:
             logging.warning(
                 "Model's compiler config is ignored because an explicit compiler config is passed to session.create()"
             )
@@ -466,7 +466,7 @@ def create(
             device=device,
             worker_num=worker_num,
             batch_size=batch_size,
-            compile_config=compile_config or model.compiler_config,
+            compiler_config=compiler_config or model.compiler_config,
             compiler_hints=compiler_hints,
         )
 
@@ -475,7 +475,7 @@ def create(
         device=device,
         worker_num=worker_num,
         batch_size=batch_size,
-        compile_config=compile_config,
+        compiler_config=compiler_config,
         compiler_hints=compiler_hints,
     )
 
@@ -489,7 +489,7 @@ def create_async(
     compiler_hints: Optional[bool] = True,
     input_queue_size: Optional[int] = None,
     output_queue_size: Optional[int] = None,
-    compile_config: Optional[Mapping[str, object]] = None,
+    compiler_config: Optional[Mapping[str, object]] = None,
 ) -> Tuple[AsyncSession, CompletionQueue]:
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
@@ -503,7 +503,7 @@ def create_async(
         compiler_hints: Print compiler hints if True (default: True)
         input_queue_size: The input queue size, and it must be > 0 and < 2^31.
         output_queue_size: The output queue size, and it must be be > 0 and < 2^31.
-        compile_config (Mapping[str, object]): Compile config
+        compiler_config (Mapping[str, object]): Compile config
 
     Returns:
         A pair of the asynchronous session and the completion queue. \
@@ -515,7 +515,7 @@ def create_async(
         use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
         use_enf = model.enf is not None and use_fusion
 
-        if compile_config is not None and model.compiler_config is not None:
+        if compiler_config is not None and model.compiler_config is not None:
             logging.warning(
                 "Model's compiler config is ignored because an explicit compiler config is passed to session.create_async()"
             )
@@ -529,7 +529,7 @@ def create_async(
             compiler_hints=compiler_hints,
             input_queue_size=input_queue_size,
             output_queue_size=output_queue_size,
-            compile_config=compile_config or model.compiler_config,
+            compiler_config=compiler_config or model.compiler_config,
         )
 
     try:
@@ -552,7 +552,7 @@ def create_async(
             device=device,
             worker_num=worker_num,
             batch_size=batch_size,
-            compile_config=compile_config,
+            compiler_config=compiler_config,
             compiler_hints=compiler_hints,
             compiler_log=log_path,
             input_queue_size=input_queue_size,

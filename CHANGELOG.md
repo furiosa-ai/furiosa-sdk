@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 ### Changed
+- Rename compile_config to compiler_config for better consistency #488
 
 ## [0.7.0]
 ### Added
