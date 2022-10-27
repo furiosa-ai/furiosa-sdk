@@ -101,11 +101,11 @@ class TestTensorNames(unittest.TestCase):
 class TestLoweredTensor(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        compile_config = {
+        compiler_config = {
             "remove_unlower": True,
         }
         cls.sess = SessionTester(
-            QUANTIZED_CONV_TRUNCATED_TEST, compile_config=compile_config
+            QUANTIZED_CONV_TRUNCATED_TEST, compiler_config=compiler_config
         ).session
 
     @classmethod
