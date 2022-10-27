@@ -1,10 +1,12 @@
 import asyncio
 import io
+import logging
 from typing import Dict, List
 
 from PIL import Image
 from fastapi import UploadFile
 import numpy as np
+from opentelemetry import trace
 import uvicorn
 
 from furiosa.common.thread import synchronous
@@ -15,6 +17,7 @@ serve = ServeAPI()
 
 # This is FastAPI instance
 app = serve.app
+tracer = trace.get_tracer(__name__)
 
 # Define model
 model: NPUServeModel = synchronous(serve.model("nux"))(
@@ -29,12 +32,16 @@ class Application:
         self.model = model
 
     async def process(self, image: Image.Image) -> int:
-        input_tensors = self.preprocess(image)
-        output_tensors = await self.inference(input_tensors)
-        return self.postprocess(output_tensors)
+        with tracer.start_as_current_span("preprocess"):
+            input_tensors = self.preprocess(image)
+        with tracer.start_as_current_span("inference"):
+            output_tensors = await self.inference(input_tensors)
+        with tracer.start_as_current_span("postprocess"):
+            return self.postprocess(output_tensors)
 
     @staticmethod
     def preprocess(image: Image.Image) -> List[np.ndarray]:
+        logging.info("in preprocessing")
         origin_tensor = np.array(image)
         number_count = int(origin_tensor.shape[1] / 28)
 
@@ -43,10 +50,12 @@ class Application:
         ]
 
     async def inference(self, tensors: List[np.ndarray]) -> List[np.ndarray]:
+        logging.info("in inferencing")
         return await asyncio.gather(*(self.model.predict(tensor) for tensor in tensors))
 
     @staticmethod
     def postprocess(tensors: List[np.ndarray]) -> str:
+        logging.info("in postprocessing")
         res = [str(np.argmax(tensor[0].reshape(1, 10))) for tensor in tensors]
         return "".join(res)
 
@@ -56,8 +65,13 @@ application: Application = Application(model)
 
 @app.post("/infer")
 async def infer(image: UploadFile) -> Dict:
-    image: Image.Image = Image.open(io.BytesIO(await image.read()))
-    return {"result": await application.process(image)}
+    logging.info("Start inference process.")
+    with tracer.start_as_current_span("Image.open"):
+        image: Image.Image = Image.open(io.BytesIO(await image.read()))
+    with tracer.start_as_current_span("application:process"):
+        result = await application.process(image)
+        logging.info(f"Result value: {result}")
+        return {"result": result}
 
 
 if __name__ == "__main__":
