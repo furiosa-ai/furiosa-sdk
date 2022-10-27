@@ -249,7 +249,7 @@ async def segment(tensors: List[np.ndarray] = Depends(classify)) -> Dict:
     return SegmentNet(tensor=segmentnet.inputs[0]).postprocess(tensors)
 ```
 
-### Example
+### Example 1
 
 You can find a complete example at `examples/image_classify.py`
 
@@ -292,6 +292,37 @@ examples$ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
   -F 'image=@assets/images/car.jpg'
+
+```
+
+### Example 2
+
+You can find a complete example at `examples/number_classify.py`
+(using async/await and gather for concurrency)
+
+```sh
+cd examples
+
+examples$ python number_classify.py
+INFO:     Started server process [7584]
+INFO:     Waiting for application startup.
+2022-10-27T08:43:53.672743Z  INFO nux::npu: Npu (npu0pe0) is being initialized
+2022-10-27T08:43:53.677344Z  INFO nux: NuxInner create with pes: [PeId(0)]
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
+```
+
+You can find available API in http://localhost:8000/docs#/
+
+Send image to classify a image from server you just launched.
+
+```sh
+examples$ curl -X 'POST' \
+  'http://127.0.0.1:8000/infer' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@assets/images/1234567890.jpg'
 
 ```
 
