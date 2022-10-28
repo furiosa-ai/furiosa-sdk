@@ -297,19 +297,23 @@ examples$ curl -X 'POST' \
 
 ### Example 2
 
-You can find a complete example at `examples/number_classify.py`
-(using async/await and gather for concurrency)
+In many user scenarios, for each request users may want to split a large image into a number of small images, and process all of them at a time.
+In this use cases, using multiple devices will be able to boost the throughput, eventually leading to lower latency.
+This example `examples/number_classify.py` shows how to implement this usecase with session pool and Python async/await/gather.
 
 ```sh
 cd examples
 
 examples$ python number_classify.py
-INFO:     Started server process [7584]
+INFO:     Started server process [57892]
 INFO:     Waiting for application startup.
-2022-10-27T08:43:53.672743Z  INFO nux::npu: Npu (npu0pe0) is being initialized
-2022-10-27T08:43:53.677344Z  INFO nux: NuxInner create with pes: [PeId(0)]
+2022-10-28T05:36:42.468215Z  INFO nux::npu: Npu (npu0pe0-1) is being initialized
+2022-10-28T05:36:42.473084Z  INFO nux: NuxInner create with pes: [PeId(0)]
+2022-10-28T05:36:42.503103Z  INFO nux::npu: Npu (npu1pe0-1) is being initialized
+2022-10-28T05:36:42.507724Z  INFO nux: NuxInner create with pes: [PeId(0)]
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
 
 ```
 

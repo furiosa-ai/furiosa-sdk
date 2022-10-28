@@ -1,6 +1,8 @@
 import asyncio
 import io
 import logging
+import os
+import re
 from typing import Dict, List
 
 from PIL import Image
@@ -19,10 +21,28 @@ serve = ServeAPI()
 app = serve.app
 tracer = trace.get_tracer(__name__)
 
+
+def detect_npu_devices(use_fusion: bool) -> List[str]:
+    if use_fusion:
+        PATTERN = re.compile("npu[0-9]+pe0-1")
+    else:
+        PATTERN = re.compile("npu[0-9]+pe[0|1]$")
+
+    results = sorted(entry.name for entry in os.scandir("/dev") if PATTERN.match(entry.name))
+
+    if not results:
+        raise RuntimeError("No NPU device detected.")
+
+    return results
+
+
 # Define model
 model: NPUServeModel = synchronous(serve.model("nux"))(
     "MNIST",
     location="./assets/models/MNISTnet_uint8_quant_without_softmax.tflite",
+    npu_device=",".join(
+        detect_npu_devices(True)
+    ),  # or specify device name: e.g., "npu0pe0,npu1pe0"
     worker_num=4,
 )
 
