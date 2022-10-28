@@ -26,8 +26,8 @@ def assert_tensors_equal(expected, result):
 
 
 class SessionTester:
-    def __init__(self, model_path, compile_config=None):
-        self.session = session.create(model=model_path, compile_config=compile_config)
+    def __init__(self, model_path, compiler_config=None):
+        self.session = session.create(model=model_path, compiler_config=compiler_config)
 
     def close(self):
         self.session.close()

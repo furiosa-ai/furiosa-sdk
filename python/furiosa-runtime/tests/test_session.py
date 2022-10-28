@@ -109,7 +109,7 @@ class TestSessionClosed(unittest.TestCase):
 class TestSessionOptions(unittest.TestCase):
     def test_create(self):
         with session.create(
-            MNIST_ONNX, worker_num=1, compile_config={"allow_precision_error": True}
+            MNIST_ONNX, worker_num=1, compiler_config={"allow_precision_error": True}
         ) as _:
             pass
 
@@ -195,7 +195,7 @@ class TestCompilerConfig(unittest.TestCase):
         invalid_config = {"remove_lower": 1}  # the correct value type is boolean
         self.assertRaises(
             errors.InvalidCompilerConfig,
-            lambda: session.create(MNIST_ONNX, compile_config=invalid_config),
+            lambda: session.create(MNIST_ONNX, compiler_config=invalid_config),
         )
 
 
