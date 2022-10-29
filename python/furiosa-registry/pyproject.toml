@@ -28,7 +28,7 @@ requires-python = "~=3.7"
 dependencies = [
     "PyYAML",
     "aiofiles",
-    "aiohttp",
+    "aiohttp ~= 3.8.3",
     "multipledispatch",
     "pydantic",
     "toml",
