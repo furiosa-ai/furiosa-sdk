@@ -47,6 +47,8 @@ APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음�
   | npu0 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
   +------+------------------+-------+--------+--------------+---------+
 
+.. _SetupNodeFeatureDiscovery:
+
 2. Node Feature Discovery 설치
 =========================================
 Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필요하다.
@@ -66,7 +68,33 @@ Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필�
 
   * `Quick start / Installation <https://kubernetes-sigs.github.io/node-feature-discovery/v0.11/get-started/quick-start.html#installation>`_ 
 
-* Node Feature Discovery가 없어도 다음 단계를 진행할 수 있지만, 각 컴포넌트의 DaemonSet 생성 시 nodeSelector 조건을 변경해야 정상 설치가 가능하다.
+* Node Feature Discovery 실행 시 다음 옵션이 적용되어 있어야 한다.
+
+  * ``nfd-master`` 의 ``--extra-label-ns`` 옵션에 ``beta.furiosa.ai`` 가 포함되어 있어야 함
+  * ``nfd-worker`` 의 config 파일에
+
+    * ``sources.pci.deviceLabelFields`` 의 값에 ``vendor`` 만 있어야 함
+    * ``sources.pci.deviceClassWhitelist`` 의 값 중 ``"12"`` 가 포함되어 있어야 함
+
+.. code-block::
+  :caption: nfd-worker.conf
+
+  sources:
+    pci:
+      deviceClassWhitelist:
+      - "02"
+      - "0200"
+      - "0207"
+      - "0300"
+      - "0302"
+      - "12"
+      deviceLabelFields:
+      - vendor
+
+.. note::
+
+  Node Feature Discovery는 필수 컴포넌트가 아니지만 설치를 권장한다. 미사용 시 수행해야 하는 추가 작업에 대해서는 다음 단계에서 설명한다.
+
 
 .. _InstallingDevicePluginAndNfd:
 
@@ -89,6 +117,20 @@ NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 Dae
   NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                      AGE
   furiosa-device-plugin          3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   128m
   furiosa-npu-feature-discovery  3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   162m
+
+만약 :ref:`단계 2<SetupNodeFeatureDiscovery>` 에서 Node Feature Discovery 설치를 생략하였다면 NPU Feature Discovery는 설치가 불필요하며, 나머지 컴포넌트는 다음 절차를 추가로 수행한 후 설치가 가능하다.
+
+* 위에서 제시한 YAML 파일을 수정하여 DaemonSet의 nodeSelector 조건을 변경하고 설치해야 함
+
+  * 컴포넌트를 클러스터 내의 모든 노드에 설치할 경우
+
+    * ``feature.node.kubernetes.io/pci-1ed2.present: "true"`` 를 제거
+
+  * 컴포넌트를 클러스터 내에서 NPU가 설치된 일부 노드에 설치할 경우
+
+    * 해당하는 노드에 label을 추가 (예, ``kubectl label node <nodename> furiosa=true`` )
+    * nodeSelector 조건을 변경 (예, ``feature.node.kubernetes.io/pci-1ed2.present: "true"`` 대신 ``furiosa: "true"`` )
+
 
 NPU Feature Discovery가 노드에 레이블로 붙여주는 메타데이터는 다음 표와 같다.
 
