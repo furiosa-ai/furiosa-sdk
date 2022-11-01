@@ -43,8 +43,9 @@ def calibrate(
             augmented_model_path = f.name
 
     calibrator = onnxruntime.quantization.calibrate.create_calibrator(
-        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime v1.12.1 has a side-effect or a bug
-        # that converts raw data as external data.
+        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime (>= 1.12.1) has a side-effect or a
+        # bug that converts raw data as external data. augument_graph invokes
+        # clone_model_with_shape_infer, which in turn invokes save_and_reload_model.
         copy.deepcopy(model),
         augmented_model_path=augmented_model_path,
         calibrate_method=onnxruntime.quantization.calibrate.CalibrationMethod.MinMax,
@@ -75,8 +76,9 @@ def calibrate_with_random_data(
             augmented_model_path = f.name
 
     calibrator = onnxruntime.quantization.calibrate.create_calibrator(
-        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime v1.12.1 has a side-effect or a bug
-        # that converts raw data as external data.
+        # HACK: MinMaxCalibrater.augument_graph in ONNX Runtime (>= 1.12.1) has a side-effect or a
+        # bug that converts raw data as external data. augument_graph invokes
+        # clone_model_with_shape_infer, which in turn invokes save_and_reload_model.
         copy.deepcopy(model),
         augmented_model_path=augmented_model_path,
         calibrate_method=onnxruntime.quantization.calibrate.CalibrationMethod.MinMax,
