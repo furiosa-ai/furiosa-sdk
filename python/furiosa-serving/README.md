@@ -249,7 +249,7 @@ async def segment(tensors: List[np.ndarray] = Depends(classify)) -> Dict:
     return SegmentNet(tensor=segmentnet.inputs[0]).postprocess(tensors)
 ```
 
-### Example
+### Example 1
 
 You can find a complete example at `examples/image_classify.py`
 
@@ -292,6 +292,41 @@ examples$ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
   -F 'image=@assets/images/car.jpg'
+
+```
+
+### Example 2
+
+In many user scenarios, for each request users may want to split a large image into a number of small images, and process all of them at a time.
+In this use cases, using multiple devices will be able to boost the throughput, eventually leading to lower latency.
+This example `examples/number_classify.py` shows how to implement this usecase with session pool and Python async/await/gather.
+
+```sh
+cd examples
+
+examples$ python number_classify.py
+INFO:     Started server process [57892]
+INFO:     Waiting for application startup.
+2022-10-28T05:36:42.468215Z  INFO nux::npu: Npu (npu0pe0-1) is being initialized
+2022-10-28T05:36:42.473084Z  INFO nux: NuxInner create with pes: [PeId(0)]
+2022-10-28T05:36:42.503103Z  INFO nux::npu: Npu (npu1pe0-1) is being initialized
+2022-10-28T05:36:42.507724Z  INFO nux: NuxInner create with pes: [PeId(0)]
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+
+
+```
+
+You can find available API in http://localhost:8000/docs#/
+
+Send image to classify a image from server you just launched.
+
+```sh
+examples$ curl -X 'POST' \
+  'http://127.0.0.1:8000/infer' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@assets/images/1234567890.jpg'
 
 ```
 

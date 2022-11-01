@@ -37,14 +37,4 @@ app.mount("/models", model.app)
 app.mount("/health", health.app)
 
 if __name__ == "__main__":
-    # update uvicorn access logger format
-    log_config = uvicorn.config.LOGGING_CONFIG
-    if os.environ.get("FURIOSA_SERVING_OTLP_ENDPOINT") is None:
-        log_config["formatters"]["access"][
-            "fmt"
-        ] = "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s"
-    else:
-        log_config["formatters"]["access"][
-            "fmt"
-        ] = "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s"
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_config=log_config)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
