@@ -9,14 +9,17 @@ Kubernetes 지원
 
 * FuriosaAI NPU Device Plugin (`Kubernetes Device Plugin 소개 <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/>`_)
 * FuriosaAI NPU Feature Discovery (`Node Feature Discovery 소개 <https://kubernetes-sigs.github.io/node-feature-discovery/stable/get-started/index.html>`_)
+* FuriosaAI NPU Metrics Exporter
 
-위 두 컴포넌트는 다음 기능을 제공한다.
+위의 컴포넌트는 다음 기능을 제공한다.
 
 * 노드에 가용한 NPU를 Kubernetes 클러스터가 인식하게 한다.
 * Kubernetes의 ``spec.containers[].resources.limits`` 를 통해 Pod 워크로드 배포 시 NPU를 함께 스케쥴링 하게 한다.
 * NPU가 장착된 머신의 NPU의 정보를 파악하여 노드의 레이블로 등록한다 (이 정보와 ``nodeSelector`` 등을 사용하면 Pod을 선택적으로 스케쥴링할 수 있다).
 
   * node-feature-discovery가 클러스터에 설치되어 있어야 하며, NPU가 장착된 노드에 ``nfd-worker`` Pod이 실행되고 있어야 한다.
+
+* 노드에 장착된 NPU의 상태 정보를 Prometheus에서 수집할 수 있게 한다.
 
 Kubernetes 지원을 위한 셋업 과정은 다음 순서를 따라 진행하면 된다.
 
@@ -98,15 +101,17 @@ Kubernetes에서 NPU를 활용하기 위해서는 Node Feature Discovery가 필�
 
 .. _InstallingDevicePluginAndNfd:
 
-3. Device Plugin 및 NPU Feature Discovery 설치
-==============================================
+3. Device Plugin, NPU Feature Discovery, NPU Metrics Exporter 설치
+=====================================================================
 
-NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 DaemonSet을 다음과 같이 설치한다.
+NPU 노드 준비가 완료되면, Device Plugin, NPU Feature Discovery와 NPU Metrics Exporter의 DaemonSet을 다음과 같이 설치한다.
 
 .. code-block:: sh
 
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/device-plugin.yaml
   kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/npu-feature-discovery.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/npu-metrics-exporter.yaml
+  
 
 위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 DaemonSet이 정상 동작하는지 확인할 수 있다.
 참고로 이 DaemonSet들은 NPU가 장착된 노드에만 배포되며 이를 위해 Node Feature Discovery가 각 node에 붙여주는 ``feature.node.kubernetes.io/pci-1ed2.present=true`` 정보를 사용한다.
@@ -117,6 +122,7 @@ NPU 노드 준비가 완료되면, Device Plugin과 NPU Feature Discovery의 Dae
   NAME                           DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR                                      AGE
   furiosa-device-plugin          3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   128m
   furiosa-npu-feature-discovery  3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   162m
+  furiosa-npu-metrics-exporter   3         3         3       3            3           feature.node.kubernetes.io/pci-1ed2.present=true   162m
 
 만약 :ref:`단계 2<SetupNodeFeatureDiscovery>` 에서 Node Feature Discovery 설치를 생략하였다면 NPU Feature Discovery는 설치가 불필요하며, 나머지 컴포넌트는 다음 절차를 추가로 수행한 후 설치가 가능하다.
 
@@ -368,3 +374,34 @@ Pod 안에 furiosa-toolkit을 설치하면 아래처럼 furiosactl 커맨드를 
   +------+------------------+-------+--------+--------------+---------+
   | npu0 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
   +------+------------------+-------+--------+--------------+---------+
+
+5. NPU 모니터링
+====================================
+
+``npu-metrics-exporter`` 를 설치하면 DaemonSet과 Service가 생성된다.
+DaemonSet을 통해 실행되는 Pod에서는 NPU의 각종 상태 정보를 지표로 출력하여 모니터링에 도움이 되는 정보를 제공한다.
+지표 정보는 Prometheus 형식으로 표현되며, Kubernetes 클러스터내에 service discovery가 활성화 된 Prometheus가 설치되어 있다면
+Prometheus가 Exporter를 통해 출력되는 데이터를 자동으로 수집한다.
+
+수집된 데이터는 Grafana 등의 시각화 도구를 통해 확인할 수 있다.
+
+.. list-table:: npu-metrics-exporter 수집 항목 목록
+   :widths: 250 250
+   :header-rows: 1
+
+   * - 이름
+     - 설명
+   * - furiosa_npu_alive
+     - NPU 동작 상태 (1:정상)
+   * - furiosa_npu_uptime
+     - NPU 동작 시간 (s)
+   * - furiosa_npu_error
+     - NPU에서 감지된 에러의 수
+   * - furiosa_npu_hw_temperature
+     - NPU의 컴포넌트 별 온도 (°mC)
+   * - furiosa_npu_hw_power
+     - NPU의 순간 전력사용량 (µW)
+   * - furiosa_npu_hw_voltage
+     - NPU의 순간 전압 (mV)
+   * - furiosa_npu_hw_current
+     - NPU의 순간 전류 (mA)
