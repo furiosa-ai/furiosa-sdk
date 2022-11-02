@@ -28,7 +28,7 @@ spec:
       nodeSelector:
         feature.node.kubernetes.io/pci-1ed2.present: "true"
       containers:
-      - image: ghcr.io/furiosa-ai/k8s-device-plugin:0.10.0
+      - image: ghcr.io/furiosa-ai/k8s-device-plugin:0.10.1
         name: furiosa-device-plugin
         imagePullPolicy: Always
         command: ["/usr/bin/k8s-device-plugin"]
