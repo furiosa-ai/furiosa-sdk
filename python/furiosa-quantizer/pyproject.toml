@@ -30,15 +30,10 @@ dependencies = [
 
     "numpy ~= 1.19",
     "onnx ~= 1.12.0",
-    "onnx-simplifier ~= 0.4.7",
-    "onnxoptimizer ~= 0.3.0",
+    "onnx-simplifier ~= 0.4.8",
+    "onnxoptimizer ~= 0.3.1",
     "onnxruntime ~= 1.12.1",
     "tqdm ~= 4.64",
-
-    # onnxruntime appears to miss specifying some dependencies. Refer to
-    # <https://github.com/microsoft/onnxruntime/issues/7527>.
-    "packaging ~= 21.3",
-    "sympy ~= 1.10.1",
 ]
 
 [project.optional-dependencies]
