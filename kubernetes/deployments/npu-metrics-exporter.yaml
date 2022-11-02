@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: furiosa-npu-metrics-exporter
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: furiosa-npu-metrics-exporter
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: furiosa-npu-metrics-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: furiosa-npu-metrics-exporter
+    spec:
+      nodeSelector:
+        feature.node.kubernetes.io/pci-1ed2.present: "true"
+      containers:
+      - image: ghcr.io/furiosa-ai/npu-metrics-exporter:0.1.0
+        name: furiosa-npu-metrics-exporter
+        ports:
+        - containerPort: 6254
+        env:
+        - name: RUST_LOG
+          value: info
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+          - name: sys
+            mountPath: /sys
+          - name: dev
+            mountPath: /dev
+      volumes:
+      - name: sys
+        hostPath:
+          path: /sys
+      - name: dev
+        hostPath:
+          path: /dev
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: furiosa-npu-metrics-exporter
+  namespace: kube-system
+  annotations:
+    prometheus.io/scrape: "true"
+  labels:
+    app.kubernetes.io/name: furiosa-npu-metrics-exporter
+spec:
+  selector:
+    app.kubernetes.io/name: furiosa-npu-metrics-exporter
+  ports:
+  - port: 6254
