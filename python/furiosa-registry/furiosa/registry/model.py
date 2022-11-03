@@ -53,7 +53,21 @@ class ModelTensor(BaseModel):
 
 
 class Model(BaseModel):
-    """Model for a Furiosa SDK."""
+    """Represent the artifacts and metadata of a neural network model
+
+    Attributes:
+        name: a name of this model
+        format: the binary format type of model source; e.g., ONNX, tflite
+        source: a source binary in ONNX or tflite. It can be used for compiling this model
+            with a custom compiler configuration.
+        dfg: an intermediate representation of furiosa-compiler. Native post processor implementation uses dfg binary.
+            Users don't need to use `dfg` directly.
+        enf: the executable binary for furiosa runtime and NPU
+        version: model version
+        inputs: data type and shape of input tensors
+        outputs: data type and shape of output tensors
+        compiler_config: a pre-defined compiler option
+    """
 
     # class Config(BaseConfig):
     #     # Non pydantic attribute allowed
