@@ -122,7 +122,6 @@ class CommandCompile:
             '-o',
             dest='output',
             type=str,
-            default='output.enf',
             help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)',
         )
         self.parser.add_argument(
@@ -187,7 +186,7 @@ class CommandCompile:
             ga_params = ga_options(self.args.genetic_optimization)
 
         if self.args.output is None:
-            output = f"output.{self.args.target_ir}"
+            output = f"output.{self.args.target_ir.lower()}"
         else:
             output = self.args.output
 
