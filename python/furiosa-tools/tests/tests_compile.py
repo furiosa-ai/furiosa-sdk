@@ -32,6 +32,19 @@ class CommandTests(unittest.TestCase):
         finally:
             shutil.rmtree(tmpdir)
 
+    def test_compile_with_default_output_and_target_ir(self):
+        tmpdir = tempfile.mkdtemp()
+        try:
+            output_file = f"{tmpdir}/output.ldfg"
+            os.chdir(tmpdir)
+            result = subprocess.run(
+                ['furiosa-compile', self.mnist_model, '--target-ir', 'ldfg'], capture_output=True
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assert_file_created(output_file)
+        finally:
+            shutil.rmtree(tmpdir)
+
     def test_compile_with_output(self):
         tmpdir = tempfile.mkdtemp()
         try:
