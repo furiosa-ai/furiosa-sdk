@@ -92,7 +92,9 @@ Python 코드에서 프로파일러 컨텍스트(Profiler Context)를 정의하�
   :align: center
   :width: 600
 
-Pandas DataFrame으로 트레이스 분석
+.. _PandasProfilingAnalysis:
+
+Pandas DataFrame을 이용한 트레이스 분석
 ============================================================
 측정한 트레이싱 데이터를 Chrome Trace Format으로 출력하여 시각화 하는 방법 외에도
 데이터 분석에 많이 사용되는 Pandas의 DataFrame으로 표현하고 사용할 수 있다.
@@ -117,7 +119,7 @@ Pandas DataFrame으로 트레이스 분석
             with profiler.record("trace") as record:
                 for _ in range(0, 2):
                     sess.run(tensor.rand(input_shape))
-        
+
     profiler.print_summary() # (1)
 
     profiler.print_inferences() # (2)
