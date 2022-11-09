@@ -1,3 +1,4 @@
+from ctypes import c_double, c_int32
 import random
 import unittest
 
@@ -36,6 +37,8 @@ class TestTensor(unittest.TestCase):
         self.assertEqual("NCHW", tensor.format)
         self.assertEqual((1, 1, 28, 28), tensor.shape)
         self.assertEqual(DataType.FLOAT32, tensor.dtype)
+        self.assertEqual(c_double(1.0).value, tensor.quantization_parameter[0].value)
+        self.assertEqual(c_int32(0).value, tensor.quantization_parameter[1].value)
         self.assertEqual(np.float32, numpy_dtype(tensor))
         self.assertEqual(784, tensor.length)
         self.assertEqual(3136, tensor.size)
