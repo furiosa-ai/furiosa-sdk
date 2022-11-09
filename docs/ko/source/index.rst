@@ -1,5 +1,5 @@
 ****************************************************
-FuriosaAI NPU 및 Software 0.8.0-dev 문서
+FuriosaAI NPU 및 Software 0.8.0 문서
 ****************************************************
 
 이 문서는 FuriosaAI NPU 소개와 NPU 활용에 필요한 Software 설치 및 사용 방법을 제공한다.
@@ -111,6 +111,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: 기존 버전 문서
 
+   0.7.0 문서 <https://furiosa-ai.github.io/docs/v0.7.0/ko/>
    0.6.3 문서 <https://furiosa-ai.github.io/docs/v0.6.3/ko/>
    0.6.0 문서 <https://furiosa-ai.github.io/docs/v0.6.0/ko/>
    0.5.0 문서 <https://furiosa-ai.github.io/docs/v0.5.0/ko/>
