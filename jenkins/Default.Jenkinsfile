@@ -8,7 +8,6 @@ sdk_modules = [
   'furiosa-quantizer',
   'furiosa-litmus',
   'furiosa-server',
-  'furiosa-models',
   'furiosa-serving',
   'furiosa-sdk',
 ]
@@ -20,7 +19,6 @@ format_applied = [
   'furiosa-runtime',
   'furiosa-server',
   'furiosa-tools',
-  'furiosa-models',
   'furiosa-serving'
 ]
 

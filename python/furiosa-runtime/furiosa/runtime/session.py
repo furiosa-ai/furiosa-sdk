@@ -454,7 +454,7 @@ def create(
     """
     if isinstance(model, registry.Model):
         use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
-        use_enf = model.enf is not None and use_fusion
+        use_enf = model.enf is not None and use_fusion and compiler_config is None
 
         if compiler_config is not None and model.compiler_config is not None:
             logging.warning(
@@ -513,7 +513,7 @@ def create_async(
     """
     if isinstance(model, registry.Model):
         use_fusion = (device or envs.current_npu_device()).endswith("pe0-1")
-        use_enf = model.enf is not None and use_fusion
+        use_enf = model.enf is not None and use_fusion and compiler_config is None
 
         if compiler_config is not None and model.compiler_config is not None:
             logging.warning(

@@ -122,7 +122,6 @@ class CommandCompile:
             '-o',
             dest='output',
             type=str,
-            default='output.enf',
             help='Writes output to <OUTPUT> (default: output.<TARGET_IR>)',
         )
         self.parser.add_argument(
@@ -186,9 +185,14 @@ class CommandCompile:
         if self.args.genetic_optimization:
             ga_params = ga_options(self.args.genetic_optimization)
 
+        if self.args.output is None:
+            output = f"output.{self.args.target_ir.lower()}"
+        else:
+            output = self.args.output
+
         return compile(
             self.args.source,
-            output_path=self.args.output,
+            output_path=output,
             target_ir=self.args.target_ir,
             dot_graph=self.args.dot_graph,
             analyze_memory=self.args.analyze_memory,
