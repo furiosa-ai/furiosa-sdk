@@ -43,6 +43,7 @@ dependencies = [
 test = [
     "datamodel-code-generator",
     "grpcio-tools",
+    "httpx",
     "mypy",
     "mypy-protobuf",
     "pytest >=2.7.3",
