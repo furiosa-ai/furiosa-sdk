@@ -131,7 +131,6 @@ class TensorDesc:
     @property
     def quantization_parameter(self) -> Tuple[ctypes.c_double, ctypes.c_int32]:
         """Return the quantization parameter for this tensor"""
-        err = ctypes.c_int(0)
         scale = ctypes.c_double(0.0)
         zero_point = ctypes.c_int32(0)
 
