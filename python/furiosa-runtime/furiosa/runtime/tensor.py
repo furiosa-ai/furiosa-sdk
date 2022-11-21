@@ -186,7 +186,7 @@ class Tensor:
     def quantization_parameter(self) -> Tuple[ctypes.c_double, ctypes.c_int32]:
         """Return the quantization parameter for this tensor"""
 
-        return self.desc.quantization_parameter()
+        return self.desc.quantization_parameter
 
     def copy_from(self, data: Union[np.ndarray, np.generic]):
         """Copy the contents of Numpy ndarray to this tensor"""
