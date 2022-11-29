@@ -1,7 +1,7 @@
 """C Native library binding"""
 
 import ctypes
-from ctypes import POINTER, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
+from ctypes import POINTER, c_bool, c_char_p, c_double, c_int, c_int32, c_ulonglong, c_void_p
 import logging
 import os
 from typing import List
@@ -96,6 +96,9 @@ LIBNUX.nux_tensor_axis.restype = c_int
 
 LIBNUX.nux_tensor_dtype.argtypes = [c_void_p]
 LIBNUX.nux_tensor_dtype.restype = c_int
+
+LIBNUX.nux_tensor_quantization_parameter.argtypes = [c_void_p, POINTER(c_double), POINTER(c_int32)]
+LIBNUX.nux_tensor_quantization_parameter.restype = c_int
 
 LIBNUX.nux_session_create.argtypes = [c_void_p, c_ulonglong, c_void_p, POINTER(c_void_p)]
 LIBNUX.nux_session_create.restype = c_int

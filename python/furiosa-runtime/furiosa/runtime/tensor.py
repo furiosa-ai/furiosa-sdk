@@ -3,13 +3,13 @@
 import ctypes
 from ctypes import POINTER, byref, c_uint8, c_uint64, c_void_p
 from enum import IntEnum
-from typing import Optional, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
 from ._api import LIBNUX
 from ._util import list_to_dict
-from .errors import UnsupportedTensorType
+from .errors import UnsupportedTensorType, is_err
 
 
 class Axis(IntEnum):
@@ -128,6 +128,17 @@ class TensorDesc:
         """Return numpy dtype"""
         return self.dtype.numpy_dtype
 
+    @property
+    def quantization_parameter(self) -> Tuple[ctypes.c_double, ctypes.c_int32]:
+        """Return the quantization parameter for this tensor"""
+        scale = ctypes.c_double(0.0)
+        zero_point = ctypes.c_int32(0)
+
+        err = LIBNUX.nux_tensor_quantization_parameter(self, byref(scale), byref(zero_point))
+        if is_err(err):
+            raise into_exception(err)
+        return (scale, zero_point)
+
     def __repr__(self) -> str:
         repr = self.__class__.__name__ + "("
         if self.name:
@@ -169,6 +180,12 @@ class Tensor:
     def numpy_dtype(self):
         """Return numpy dtype"""
         return self.desc.numpy_dtype
+
+    @property
+    def quantization_parameter(self) -> Tuple[ctypes.c_double, ctypes.c_int32]:
+        """Return the quantization parameter for this tensor"""
+
+        return self.desc.quantization_parameter
 
     def copy_from(self, data: Union[np.ndarray, np.generic]):
         """Copy the contents of Numpy ndarray to this tensor"""
