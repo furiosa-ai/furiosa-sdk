@@ -61,7 +61,7 @@ This section may be skipped if you are using the download center, and not the AP
     password xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   EOT
 
-  chmod 400 /etc/apt/auth.conf.d/furiosa.conf
+  sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf
 
 
 4. Configure the APT server according to the explanation given in the Linux distribution version tab.
