@@ -60,7 +60,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
     password xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   EOT
 
-  chmod 400 /etc/apt/auth.conf.d/furiosa.conf
+  sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf
 
 
 4. 리눅스 배포판 버전에 따른 탭을 선택하여 설명을 따라 APT 서버를 설정한다.
