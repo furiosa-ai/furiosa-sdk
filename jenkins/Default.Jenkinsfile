@@ -272,7 +272,7 @@ def publishPackages(pythonVersion, repo) {
     conda activate env-${pythonVersion};
     python --version
 
-    cd python/${it} && flit publish --repository ${repo}
+    cd python/${it} && flit publish --format wheel --repository ${repo}
     """
   }
 }
