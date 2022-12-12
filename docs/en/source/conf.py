@@ -27,10 +27,15 @@ sys.path.append(os.path.abspath('../../../python/furiosa-serving/'))
 project = 'Furiosa SDK Documentation'
 copyright = '2022 FuriosaAI, Inc.'
 author = 'FuriosaAI, Inc.'
+version = '0.9.0-dev'
 
 # The full version, including alpha/beta/rc tags
 release = 'furiosa-docs'
 
+# Replace |ProjectVersion| with version variable above
+rst_epilog = f"""
+.. |ProjectVersion| replace:: {version}
+"""
 
 # -- General configuration ---------------------------------------------------
 
