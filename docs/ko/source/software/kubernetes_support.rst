@@ -108,9 +108,9 @@ NPU 노드 준비가 완료되면, Device Plugin, NPU Feature Discovery와 NPU M
 
 .. code-block:: sh
 
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/device-plugin.yaml
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/npu-feature-discovery.yaml
-  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/v0.8.0/kubernetes/deployments/npu-metrics-exporter.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/0.8.0/kubernetes/deployments/device-plugin.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/0.8.0/kubernetes/deployments/npu-feature-discovery.yaml
+  kubectl apply -f https://raw.githubusercontent.com/furiosa-ai/furiosa-sdk/0.8.0/kubernetes/deployments/npu-metrics-exporter.yaml
   
 
 위 커맨드를 실행하고 난 뒤에 ``kubectl get daemonset -n kube-system`` 명령으로 설치한 DaemonSet이 정상 동작하는지 확인할 수 있다.
