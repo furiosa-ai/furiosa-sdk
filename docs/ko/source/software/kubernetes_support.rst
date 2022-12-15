@@ -305,7 +305,7 @@ NPU를 Pod에 할당하기 위해서는 ``spec.containers[].resources.limits`` �
       beta.furiosa.ai/npu: "1" # requesting 1 NPU
 
 
-Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.8.0/kubernetes/deployments/pod-example.yaml>`_ 는 다음과 같다.
+Pod 생성을 위한 `전체 예제 <https://github.com/furiosa-ai/furiosa-sdk/blob/0.8.0/kubernetes/deployments/pod-example.yaml>`_ 는 다음과 같다.
 
 .. code-block:: sh
 
