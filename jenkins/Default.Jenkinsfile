@@ -109,7 +109,7 @@ def ubuntuDistribName(full_name) {
 
 def installConda() {
   sh "wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh"
-  sh "sh /tmp/Miniconda3.sh -b -p ${MINICONDA_DIR}"
+  sh "bash /tmp/Miniconda3.sh -b -p ${MINICONDA_DIR}"
   sh "${MINICONDA_DIR}/bin/conda update --yes conda"
 }
 
