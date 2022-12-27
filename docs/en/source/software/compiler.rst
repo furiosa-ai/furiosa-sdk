@@ -3,7 +3,7 @@
 ****************************************
 Compiler 
 ****************************************
-The FuriosaAI compiler compiles models of formats `TFLite <https://www.tensorflow.org/lite>`_ and `Onnx <https://onnx.ai/>`_, thereby generating programs that execute inference using FuriosaAI NPU and resources (CPU, memory, etc) of the host machine.
+The FuriosaAI compiler compiles models of formats `TFLite <https://www.tensorflow.org/lite>`_ and `Onnx <https://onnx.ai/>`_ model ((`OpSet 13 <https://github.com/onnx/onnx/blob/main/docs/Changelog.md#version-13-of-the-default-onnx-operator-set>`_ or lower version), thereby generating programs that execute inference using FuriosaAI NPU and resources (CPU, memory, etc) of the host machine.
 In this process, the compiler analyses the model at the operator level, optimizes it, and generates a program so as to maximize NPU acceleration and host resources utilization. Even for models that are not well known,
 so long as supported operators are utilized well, you can design models that are optimized for the NPU . 
 
@@ -103,9 +103,13 @@ After the compilation process, the final output of the FuriosaAI compiler is ENF
 In general, the compilation process takes from a few seconds to several minutes depending on the model. 
 Once you have the ENF file, you can reuse it to omit this compilation process. 
 
-For example, when using ref:`PythonSDK <PythonSDK>` as shown below, 
-if you pass an ENF file as an argument to the ``session.create()`` function, you may skip the compiling process and 
-immediately generate the ``Session`` object. 
+This may be useful if you need to frequently create sessions or
+serve one model across several machines in an actual operation environment.
+
+For example, you can first create an ENF file by referring to :ref:`CompilerCli`.
+Then, with :ref:`PythonSDK <PythonSDK>` as shown below,
+you can instantly create a ``Session`` without compilation process by
+delivering the ENF file as an argument to the ``session.create()`` function
 
 .. code-block:: python
 

@@ -44,7 +44,7 @@ This section may be skipped if you are using the download center, and not the AP
   sudo apt update
   sudo apt install -y ca-certificates apt-transport-https gnupg
 
-2. Register the FuriosaAI public Singing key.
+2. Register the FuriosaAI public Signing key.
 
 .. code-block:: sh
 
@@ -112,6 +112,8 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
     Select the latest version of the packages below, download them,
     and install them in order as written in the command.
+    Update the ``x.y.z-?`` version portions in accordance with the downloaded files.
+
 
     * NPU Driver (furiosa-driver-pdma)
     * Firmware (furiosa-libnpu)
@@ -124,7 +126,6 @@ you will be able to install the required packages - NPU kernel driver, firmware,
       sudo apt-get install -y ./furiosa-libnpu-warboy-x.y.z-?.deb
       sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
       sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
-
 
 Holding/unholding installed version
 ------------------------------------
