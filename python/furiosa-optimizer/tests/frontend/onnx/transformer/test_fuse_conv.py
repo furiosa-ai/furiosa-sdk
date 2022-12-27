@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_conv import (  # Pattern_1_a,
+from furiosa.optimizer.frontend.onnx.transformer.fuse_conv import (  # Pattern_1_a,
     Pattern_1,
     Pattern_2,
     Pattern_3,

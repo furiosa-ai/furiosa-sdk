@@ -3,9 +3,9 @@ from typing import List
 
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class EliminateSSDDetectionPostprocess(Transformer):

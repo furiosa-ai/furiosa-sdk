@@ -3,8 +3,8 @@ from typing import Iterable, List
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer, utils
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer, utils
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class FuseGatherMatMul(Transformer):

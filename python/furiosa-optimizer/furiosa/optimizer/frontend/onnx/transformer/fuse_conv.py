@@ -3,8 +3,8 @@ from typing import AbstractSet, Dict, Iterable, List, Optional, Sequence, Tuple
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 OPSET_BOUND = [12, 13]
 

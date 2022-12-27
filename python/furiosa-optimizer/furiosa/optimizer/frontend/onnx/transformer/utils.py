@@ -5,9 +5,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar
 import onnx
 from onnx.helper import make_model
 
-from furiosa.quantizer.frontend.onnx.quantizer.utils import __PRODUCER__
-
-logger = logging.getLogger('Furiosa-Quantizer')
+logger = logging.getLogger('Furiosa-Optimizer')
 logging.basicConfig(level=logging.INFO)
 
 
@@ -116,7 +114,6 @@ def rebuild_model(
     # rename node.name
     if renaming:
         model = name_nodes(model)
-    model.producer_name = __PRODUCER__
     return model
 
 

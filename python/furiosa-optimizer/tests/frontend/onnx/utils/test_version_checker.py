@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx.utils.version_checker import CheckVersion
+from furiosa.optimizer.frontend.onnx.utils.version_checker import CheckVersion
 from tests.frontend.onnx.transformer import make_onnx_model
 
 

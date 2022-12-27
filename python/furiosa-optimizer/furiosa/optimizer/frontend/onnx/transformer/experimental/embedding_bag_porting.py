@@ -5,11 +5,11 @@ import onnx
 from onnx.helper import make_model
 import onnxoptimizer
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer, utils
-from furiosa.quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
-from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from furiosa.quantizer.frontend.onnx.utils.version_checker import CheckVersion
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer, utils
+from furiosa.optimizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
+from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
+from furiosa.optimizer.frontend.onnx.utils.version_checker import CheckVersion
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class EmbeddingBagPorting(Transformer):

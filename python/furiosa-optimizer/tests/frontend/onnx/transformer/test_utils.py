@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.utils import (
+from furiosa.optimizer.frontend.onnx.transformer.utils import (
     eliminate_unused_input,
     eliminate_unused_output,
 )

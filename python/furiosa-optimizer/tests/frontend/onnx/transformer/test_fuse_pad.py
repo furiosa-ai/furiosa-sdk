@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_pad import FusePad, Pattern_1, Pattern_2
+from furiosa.optimizer.frontend.onnx.transformer.fuse_pad import FusePad, Pattern_1, Pattern_2
 from tests.frontend.onnx.transformer import TestTransformer
 
 

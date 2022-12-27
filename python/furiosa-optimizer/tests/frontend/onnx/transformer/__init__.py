@@ -6,8 +6,8 @@ import numpy as np
 import onnx
 import onnxruntime as ort
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer, utils
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer, utils
+from furiosa.optimizer.interfaces.transformer import Transformer
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 
 

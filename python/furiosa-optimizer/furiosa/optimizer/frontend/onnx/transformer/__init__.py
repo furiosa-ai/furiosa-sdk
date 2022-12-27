@@ -5,8 +5,8 @@ import onnx
 from onnx import numpy_helper
 from onnx.helper import make_tensor, make_tensor_value_info
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
 
 
 class ONNXTransformer:

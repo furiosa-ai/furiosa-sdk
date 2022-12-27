@@ -2,10 +2,10 @@ import onnx
 from onnx import numpy_helper
 from onnx.helper import make_model
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.transformer.polish_model import PolishModel
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.transformer.polish_model import PolishModel
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class FuseDivForBert(Transformer):

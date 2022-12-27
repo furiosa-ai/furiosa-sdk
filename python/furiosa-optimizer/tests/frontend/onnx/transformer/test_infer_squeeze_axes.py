@@ -3,9 +3,9 @@ from typing import Dict, List, Sequence, Tuple
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
-from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
+from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
 from tests.frontend.onnx.transformer import TestTransformer
 

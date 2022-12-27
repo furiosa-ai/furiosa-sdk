@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_depth_to_space import Pattern_1
+from furiosa.optimizer.frontend.onnx.transformer.fuse_depth_to_space import Pattern_1
 from tests.frontend.onnx.transformer import TestTransformer
 
 

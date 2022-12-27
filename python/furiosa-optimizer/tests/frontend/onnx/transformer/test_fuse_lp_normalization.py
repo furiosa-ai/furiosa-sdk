@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import onnxruntime
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization import Pattern_1
+from furiosa.optimizer.frontend.onnx.transformer.fuse_lp_normalization import Pattern_1
 from tests.frontend.onnx.transformer import TestTransformer
 
 
@@ -80,4 +80,4 @@ class TestFuseLpNormalization(TestTransformer):
         self.check_attribute(p, trans_model.graph.node[1].attribute[1].i)
 
     # TODO Make test case for Pattern_2.
-    # See furiosa.quantizer.frontend.onnx.transformer.fuse_lp_normalization for the detailed description.
+    # See furiosa.optimizer.frontend.onnx.transformer.fuse_lp_normalization for the detailed description.

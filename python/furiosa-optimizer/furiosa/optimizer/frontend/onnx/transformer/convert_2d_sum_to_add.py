@@ -1,9 +1,9 @@
 import onnx
 from onnx.helper import make_node
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class Convert2dSumToAdd(Transformer):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.convert_negative_pads_to_slice import (
+from furiosa.optimizer.frontend.onnx.transformer.convert_negative_pads_to_slice import (
     ConvertNegativePadsToSlice,
 )
 from tests.frontend.onnx.transformer import TestTransformer

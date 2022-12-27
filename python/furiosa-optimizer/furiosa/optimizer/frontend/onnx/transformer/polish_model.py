@@ -3,11 +3,11 @@ from typing import Dict, List, Optional
 import onnx
 import onnxoptimizer
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
-from furiosa.quantizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
-from furiosa.quantizer.frontend.onnx.utils.inference_shape import InferenceShape
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
+from furiosa.optimizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
+from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class PolishModel(Transformer[onnx.ModelProto]):

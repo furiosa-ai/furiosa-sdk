@@ -1,7 +1,7 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import Pattern_1
-from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
+from furiosa.optimizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import Pattern_1
+from furiosa.optimizer.frontend.onnx.transformer.utils import get_attribute
 from tests.frontend.onnx.transformer import TestTransformer
 
 

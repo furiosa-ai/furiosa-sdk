@@ -3,9 +3,9 @@ from typing import Optional
 import onnx
 from onnx import version_converter
 
-from furiosa.quantizer.frontend.onnx import __OPSET_VERSION__
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx import __OPSET_VERSION__
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class CheckVersion(Transformer[onnx.ModelProto]):

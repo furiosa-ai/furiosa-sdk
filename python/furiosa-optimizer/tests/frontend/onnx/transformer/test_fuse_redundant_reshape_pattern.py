@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (
+from furiosa.optimizer.frontend.onnx.transformer.fuse_redundant_reshape_pattern import (
     FuseRedundantReshapePattern,
     Pattern_1,
     Pattern_2,

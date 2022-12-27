@@ -4,7 +4,7 @@ import numpy as np
 import onnx
 import onnxruntime as ort
 
-from furiosa.quantizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
+from furiosa.optimizer.frontend.onnx import __DOMAIN__, __OPSET_VERSION__
 
 
 def make_onnx_model_from_model_desc(

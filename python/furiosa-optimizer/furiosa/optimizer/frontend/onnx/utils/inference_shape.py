@@ -3,8 +3,8 @@ from typing import Dict, List, Optional
 import onnx
 import onnxsim
 
-from furiosa.quantizer.frontend.onnx.transformer import utils
-from furiosa.quantizer.frontend.onnx.utils.check_model import check_model
+from furiosa.optimizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
 
 
 class InferenceShape:

@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
+from furiosa.optimizer.frontend.onnx.transformer.eliminate_redundant_shape_pattern import (
     EliminateRedundantShapePattern,
     Pattern_1,
     Pattern_2,

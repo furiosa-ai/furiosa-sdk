@@ -1,6 +1,6 @@
 import numpy as np
 
-from furiosa.quantizer.frontend.onnx.transformer.fuse_batchnorm import (
+from furiosa.optimizer.frontend.onnx.transformer.fuse_batchnorm import (
     Pattern_1,
     Pattern_2,
     Pattern_3,

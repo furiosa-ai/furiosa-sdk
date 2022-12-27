@@ -3,11 +3,8 @@ import unittest
 import numpy as np
 import onnx
 
-from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
-from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
-from furiosa.quantizer.frontend.onnx.transformer import utils
+from furiosa.optimizer.frontend.onnx.transformer import utils
 from tests.frontend.onnx import make_onnx_model_from_model_desc as make_onnx_model
-from tests.frontend.onnx.transformer import TestTransformer
 
 
 class TestCheckValueInfo(unittest.TestCase):
@@ -29,21 +26,6 @@ class TestCheckValueInfo(unittest.TestCase):
         }
         model = make_onnx_model(model_desc)
         self.assertRaisesRegex(ValueError, r"shape of(\w)*", utils.check_value_info, model)
-
-    def test_warning_for_quantized_model(self):
-        input_channel = 1
-        output_channel = 2
-        model_desc = {
-            "input": {"x": (np.float32, [1, input_channel, 4, 4])},
-            "output": {"y": (np.float32, [1, output_channel, 3, 3])},
-            "initializer": {"w": (np.float32, [output_channel, input_channel, 2, 2])},
-            "node": [("Conv", ["x", "w"], ["y"])],
-        }
-        model = make_onnx_model(model_desc)
-        quant_model = post_training_quantization_with_random_calibration(
-            model, per_channel=True, static=True, mode=QuantizationMode.DFG
-        )
-        TestTransformer().check_value_info_with_warning(quant_model, num_warning=2)
 
     def test_no_shape_inference(self):
         model_desc = {

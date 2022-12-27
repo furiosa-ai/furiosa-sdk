@@ -1,8 +1,8 @@
 import onnx
 
-from furiosa.quantizer.frontend.onnx.transformer import ONNXTransformer
-from furiosa.quantizer.frontend.onnx.transformer.utils import get_attribute
-from furiosa.quantizer.interfaces.transformer import Transformer
+from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer
+from furiosa.optimizer.frontend.onnx.transformer.utils import get_attribute
+from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class FusePad(Transformer):
