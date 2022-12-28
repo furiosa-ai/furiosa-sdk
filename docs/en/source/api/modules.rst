@@ -9,7 +9,7 @@ Welcome! This is the Furiosa SDK Documentation for |ProjectVersion|.
 
    furiosa.common
    furiosa.runtime
-   furiosa.quantizer
+   furiosa.optimizer
    furiosa.registry
    furiosa.server
    furiosa.serving

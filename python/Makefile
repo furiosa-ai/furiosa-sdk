@@ -11,7 +11,7 @@ uninstall:
 install:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
 	for (( idx=$${#MODULES[@]}-1 ; idx>=0 ; idx-- )) ; do \
-		cd furiosa-$${MODULES[idx]}; pip install -e . ; cd .. ; \
+		cd furiosa-$${MODULES[idx]}; pip install  . ; cd .. ; \
 	done
 
 lint:

@@ -16,7 +16,7 @@ import sys
 sys.path.append(os.path.abspath('../../../python/furiosa-sdk/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-common/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-runtime/'))
-sys.path.append(os.path.abspath('../../../python/furiosa-quantizer/'))
+sys.path.append(os.path.abspath('../../../python/furiosa-optimizer/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-registry/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-server/'))
 sys.path.append(os.path.abspath('../../../python/furiosa-serving/'))
