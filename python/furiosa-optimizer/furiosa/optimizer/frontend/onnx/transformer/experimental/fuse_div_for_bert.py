@@ -16,14 +16,12 @@ class FuseDivForBert(Transformer):
     def __init__(self):
         self.nodes_by_output_name = None
         self.initializers = None
-        self.outputs_by_name = None
 
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
         model = PolishModel().transform(model)
 
         self.nodes_by_output_name = {node.output[0]: node for node in model.graph.node}
         self.initializers = {init.name: init for init in model.graph.initializer}
-        self.outputs_by_name = {oup.name: oup for oup in model.graph.output}
 
         model = self.transform_matmul_add(model)  # transform matmul + add --> conv
         check_model(model)

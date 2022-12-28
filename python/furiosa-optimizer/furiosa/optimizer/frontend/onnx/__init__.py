@@ -1,6 +1,4 @@
-from collections import defaultdict
-import itertools
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional
 
 import numpy as np
 import onnx
@@ -8,7 +6,6 @@ import onnx
 __DOMAIN__ = ''
 __OPSET_VERSION__ = 13
 
-from furiosa.optimizer.frontend.onnx import calibrate
 from furiosa.optimizer.frontend.onnx.transformer.convert_conv1d_to_conv2d import (
     ConvertConv1dToConv2d,
 )

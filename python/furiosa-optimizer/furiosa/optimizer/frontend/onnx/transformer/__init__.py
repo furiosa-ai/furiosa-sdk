@@ -26,7 +26,6 @@ class ONNXTransformer:
             for tensor in node.input:
                 self.consumer_map[tensor].append(node)
         self.optimizer_map = OrderedDict({node.name: node for node in model.graph.node})
-        self.node_input_map = {node.name: node.input for node in model.graph.node}
         self.initializer_map = {init.name: init for init in model.graph.initializer}
 
         self.initializer_vi_map = {
@@ -100,14 +99,6 @@ class ONNXTransformer:
 
         return model
 
-    def make_int64_initializer(self, name, target_name):
-        return make_tensor(
-            name,
-            onnx.TensorProto.INT64,
-            (len(self.get_value_info_shape(target_name)),),
-            self.get_value_info_shape(target_name),
-        )
-
     def copy_value_info(self, name):
         if name in self.graph_input_map:
             return self.graph_input_map[name]
@@ -156,10 +147,6 @@ class ONNXTransformer:
             data_node_input = node_input
 
         return data_node_input
-
-    def get_node_input_idx(self, node_input):
-        assert len(self.consumer_map[node_input]) == 1
-        return list(self.consumer_map[node_input][0].input).index(node_input)
 
     def find_next_node(self, node: onnx.NodeProto) -> List[onnx.NodeProto]:
         next_nodes = []
@@ -225,24 +212,6 @@ class ONNXTransformer:
     def pop_multiple_optimizer_map(self, nodes: List[onnx.NodeProto]):
         for node in nodes:
             self.pop_single_optimizer_map(node)
-
-    def pop_single_value_info_map(self, vi: onnx.NodeProto):
-        self.value_info_map.pop(vi.name)
-        if vi.name in self.graph_output_map:
-            self.value_info_map.pop(vi.name)
-        if vi.name in self.graph_input_map:
-            self.value_info_map.pop(vi.name)
-
-    def pop_multiple_value_info_map(self, vis: List[onnx.ValueInfoProto]):
-        for vi in vis:
-            self.pop_single_value_info_map(vi)
-
-    def pop_single_initializer_map(self, init: onnx.TensorProto):
-        self.initializer_map.pop(init.name)
-
-    def pop_multiple_initializer_map(self, nodes: List[onnx.TensorProto]):
-        for node in nodes:
-            self.pop_single_initializer_map(node)
 
     def bridge_disconnected_nodes(
         self, node_0: onnx.NodeProto, next_nodes: List[onnx.NodeProto], new_input
