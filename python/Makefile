@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-MODULES := litmus quantizer serving server sdk tools cli runtime registry common
+MODULES := litmus optimizer serving server sdk tools cli runtime registry common
 
 uninstall:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
