@@ -9,8 +9,7 @@ import onnx
 from furiosa.common.error import is_err
 from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer import __version__ as quantizer_ver
-from furiosa.quantizer.frontend.onnx import post_training_quantization_with_random_calibration
-from furiosa.quantizer.frontend.onnx.quantizer.utils import QuantizationMode
+from furiosa.quantizer import post_training_quantization_with_random_calibration
 from furiosa.tools.compiler.api import compile
 
 __version__ = get_sdk_version("furiosa.litmus")
@@ -40,9 +39,6 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         try:
             quantized_model = post_training_quantization_with_random_calibration(
                 model=onnx.load_model(model_path),
-                per_channel=True,
-                static=True,
-                mode=QuantizationMode.DFG,
                 num_data=10,
             )
         except Exception as e:
@@ -50,11 +46,12 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             raise e
         print("[Step 1] Passed", flush=True)
 
-        step1_output = f"{tmpdir}/step1.onnx"
+        step1_output = f"{tmpdir}/step1.dfg"
         step2_output = f"{tmpdir}/step2.enf"
 
         try:
-            onnx.save_model(quantized_model, step1_output)
+            with open(step1_output, "wb") as f:
+                f.write(bytes(quantized_model))
         except Exception as e:
             eprint("[ERROR] Fail to save the model\n")
             raise e
