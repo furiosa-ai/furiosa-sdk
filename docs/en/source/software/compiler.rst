@@ -108,8 +108,8 @@ serve one model across several machines in an actual operation environment.
 
 For example, you can first create an ENF file by referring to :ref:`CompilerCli`.
 Then, with :ref:`PythonSDK <PythonSDK>` as shown below,
-you can instantly create a ``Session`` without compilation process by
-delivering the ENF file as an argument to the ``session.create()`` function
+you can instantly create a ``Session`` without the compilation process by
+delivering the ENF file as an argument to the ``session.create()`` function.
 
 .. code-block:: python
 

@@ -88,7 +88,7 @@ The above is a code example using a profiling context. Once the above Python cod
 
 Trace analysis using Pandas DataFrame
 ============================================================
-With the measured tracing data, in addition to visualizing it with Chrome Trace Format, it can also be expressed and used in Pandas DataFrame, frequently used for data analysis. These are the advantages in comparison to Chrome Trace Format.
+With the measured tracing data, in addition to visualizing it with Chrome Trace Format, it can also be expressed and used in Pandas DataFrame, commonly used for data analysis. These are the advantages in comparison to Chrome Trace Format.
 
 * Can be used directly in Python Interpreter or Jupyter Notebook interactive shell
 * Users can directly access DataFrame for analysis, on top of the reporting function which is provided as default

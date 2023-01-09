@@ -148,7 +148,7 @@ Model의 ``location`` 에 S3 URL을 지정하면 된다.
 
 그리고 `OpenTelemetry Collector <https://opentelemetry.io/docs/collector/>`_ 의 지정은
 다음과 같이 ``FURIOSA_SERVING_OTLP_ENDPOINT`` 환경설정을
-통해 할 수 있다. 다음 그림은 Grafana를 통해 트레이닝 결과를 시각화한 결과의 예이다.
+통해 할 수 있다. 다음 그림은 Grafana를 통해 트레이싱 결과를 시각화한 결과의 예이다.
 
 .. code-block::sh
 

@@ -347,7 +347,7 @@ DaemonSet and Service are created once you install ``npu-metrics-exporter``.
 The Pod that is executed through DaemonSet outputs various NPU status information that may be
 useful for monitoring. The data is expressed in Prometheus format. If Prometheus
 is installed, and service discovery is active, Prometheus will automatically collect
-data through Exporter.
+data through the Exporter.
 
 The collected data may be reviewed with visualization tools such as Grafana.
 
