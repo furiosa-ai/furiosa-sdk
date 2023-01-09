@@ -28,8 +28,8 @@ dynamic = ["description"]
 requires-python = "~=3.7"
 dependencies = [
     "furiosa-runtime == 0.9.*",
-
-    "fastapi",
+    # Remove upper contraint when https://github.com/tiangolo/fastapi/issues/5857 is fixed
+    "fastapi < 0.89.0",
     "grpcio-tools",
     "mypy-extensions<0.5.0,>=0.4.3",
     # Protobuf major version change issue https://github.com/furiosa-ai/furiosa-sdk-private/issues/389

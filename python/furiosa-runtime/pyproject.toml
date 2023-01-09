@@ -30,7 +30,7 @@ dependencies = [
     "furiosa-registry == 0.9.*",
     "cffi ~= 1.14",
     "numpy ~= 1.19",
-    "pydantic ~= 1.9",
+    "pydantic",
     "pandas ~= 1.3",
 ]
 
