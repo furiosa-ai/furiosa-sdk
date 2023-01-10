@@ -1,4 +1,4 @@
-"""FuriosaAI qunatizer"""
+"""FuriosaAI optimizer"""
 
 from furiosa.common.utils import get_sdk_version
 from furiosa.optimizer.frontend.onnx import optimize_model

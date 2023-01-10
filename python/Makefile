@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-MODULES := litmus optimizer serving server sdk tools cli runtime registry common
+MODULES := litmus quantizer optimizer serving server sdk tools cli runtime registry common
 
 uninstall:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
@@ -11,7 +11,7 @@ uninstall:
 install:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
 	for (( idx=$${#MODULES[@]}-1 ; idx>=0 ; idx-- )) ; do \
-		cd furiosa-$${MODULES[idx]}; pip install  . ; cd .. ; \
+		cd furiosa-$${MODULES[idx]}; pip install -e . ; cd .. ; \
 	done
 
 lint:

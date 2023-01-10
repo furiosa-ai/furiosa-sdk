@@ -5,7 +5,7 @@ requires = ["flit_ext"]
 build-backend = "flit_ext:buildapi"
 
 [project]
-name = "furiosa-litmus"
+name = "furiosa-quantizer"
 version = "0.9.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
@@ -25,7 +25,18 @@ classifiers = [
 ]
 dynamic = ["description"]
 requires-python = "~=3.7"
-dependencies = ["furiosa-runtime == 0.9.*", "furiosa-quantizer == 0.9.*"]
+dependencies = [
+    "furiosa-common == 0.9.*",
+    "furiosa-optimizer == 0.9.*",
+    "furiosa_quantizer_impl == 0.9.*",
+
+    "numpy ~= 1.19",
+    "onnx ~= 1.12.0",
+    "onnx-simplifier ~= 0.4.8",
+    "onnxoptimizer ~= 0.3.1",
+    "onnxruntime ~= 1.13.1",
+    "tqdm ~= 4.64",
+]
 
 [project.optional-dependencies]
 test = []
@@ -37,10 +48,7 @@ Documentation = "https://furiosa-ai.github.io/docs"
 "Source Code" = "https://github.com/furiosa-ai/furiosa-sdk"
 
 [tool.flit.module]
-name = "furiosa.litmus"
-
-[project.scripts]
-furiosa-litmus = "furiosa.litmus:main"
+name = "furiosa.quantizer"
 
 [tool.black]
 skip-string-normalization = true
@@ -62,11 +70,11 @@ asyncio_mode = "auto"
 [tool.setuptools_scm]
 # https://github.com/pypa/setuptools_scm#configuration-parameters
 root = "../.."
-write_to = "python/furiosa-litmus/furiosa/litmus/git_version.txt"
+write_to = "python/furiosa-quantizer/furiosa/quantizer/git_version.txt"
 # SemVer with release branch: https://github.com/pypa/setuptools_scm#version-number-construction
 version_scheme = "release-branch-semver"
 # Custom local scheme to emit commit hash: https://github.com/ileixe/flit_ext/blob/main/pyproject.toml#L22
 local_scheme = "force-local-version"
 
 [tool.flit.sdist]
-include = ["furiosa/litmus/git_version.txt"]
+include = ["furiosa/quantizer/git_version.txt"]

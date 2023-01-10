@@ -43,7 +43,6 @@ tool = ["furiosa-tools == 0.9.*"]
 full = [
     "furiosa-cli == 0.9.*",
     "furiosa-litmus == 0.9.*",
-    "furiosa-optimizer == 0.9.*",
     "furiosa-registry == 0.9.*",
     "furiosa-server == 0.9.*",
     "furiosa-serving == 0.9.*",
