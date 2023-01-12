@@ -154,7 +154,7 @@ When ``(2)`` line is executed, duration of one inference query is shown.
     124  713e7a122436acbeeafd1339499a7bed  f4402ab5ea873f46         45  258540
     173  7e754c14f342d3eb3f4efbc615d15d8a  4f67a754e72e2211         45  270625
 
-When ``(3)`` line is executed, time data for NPU execution is shown.
+When ``(3)`` line is executed, elapsed times of NPU executions will be shown:
 
 .. code-block::
 
@@ -164,7 +164,7 @@ When ``(3)`` line is executed, time data for NPU execution is shown.
     2  05bfa81f1579ac8089ac75588f36a747  e7e847b44ce11d28         0                0      10997     8557        2440
     3  438df7d9beb7fb8c60daaeffbb2c7e76  d2c20e3d9daf21be         0                0      10900     8555        2345
 
-When ``(4)`` line is executed, time data for Operator is shown.
+When ``(4)`` line is executed, elapsed times of operators will be shown:
 
 .. code-block::
 

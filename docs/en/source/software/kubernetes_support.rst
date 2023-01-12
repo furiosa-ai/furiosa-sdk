@@ -343,7 +343,7 @@ See :ref:`SetupAptRepository` for installation guide using APT.
 5. NPU monitoring
 ====================================
 
-DaemonSet and Service are created once you install ``npu-metrics-exporter``.
+If you install ``npu-metrics-exporter``, its daemon set and service will be created in your kubernetes cluster.
 The Pod that is executed through DaemonSet outputs various NPU status information that may be
 useful for monitoring. The data is expressed in Prometheus format. If Prometheus
 is installed, and service discovery is active, Prometheus will automatically collect
