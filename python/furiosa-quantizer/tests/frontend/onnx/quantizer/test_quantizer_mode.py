@@ -130,41 +130,6 @@ class TestONNXRuntimeExecutable(TestTransformer):
         self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
 
     def test_case4(self):
-        input_shape = [1, 10, 2, 2]
-        output_shape = [1, 8, 2, 2]
-        orig_model = _make_conv(input_shape, output_shape)
-
-        per_channel = True
-        weight_qtype = onnx.TensorProto.UINT8
-        activation_qtype = onnx.TensorProto.UINT8
-        quant_model = _make_fake_quant_model(
-            orig_model, per_channel, weight_qtype, activation_qtype
-        )
-
-        self.check_graph_node(
-            quant_model,
-            op_types=[
-                'QuantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'Conv',
-                'QuantizeLinear',
-                'DequantizeLinear',
-            ],
-        )
-        # This should fail because conv filters are asymmetrically quantized when weight_qtype=UINT is given.
-        # https://github.com/furiosa-ai/furiosa-sdk-private/blob/715867969e9184ab440b87d5daeef4a22b95fc46/python/furiosa-quantizer/furiosa/quantizer/frontend/onnx/quantizer/utils.py#L179-L181
-        # So the per-channel zero-points DO NOT always have the same values.
-        # Meanwhile, onnxruntime requires per-channel zero-points to be identical.
-        # For details, refer to the error below:
-        # onnxruntime.capi.onnxruntime_pybind11_state.InvalidArgument: [ONNXRuntimeError] : 2 : INVALID_ARGUMENT \
-        # : Non-zero status code returned while running QLinearConv node. \
-        # Name:'Conv_4' Status Message: QLinearConv : filter zero point must be constant
-        self.assertFalse(
-            self.is_onnxruntime_executable(quant_model, [input_shape]),
-        )
-
-    def test_case5(self):
         input_shape = [3, 2, 5, 5]
         output_shape = [3, 4, 5, 5]
         orig_model = _make_conv(input_shape, output_shape)
@@ -189,33 +154,7 @@ class TestONNXRuntimeExecutable(TestTransformer):
         )
         self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
 
-    def test_case6(self):
-        input_shape = [1, 3, 5, 5]
-        output_shape = [1, 3, 5, 5]
-        orig_model = _make_conv(input_shape, output_shape)
-
-        per_channel = True
-        weight_qtype = onnx.TensorProto.UINT8
-        activation_qtype = onnx.TensorProto.INT8
-        quant_model = _make_fake_quant_model(
-            orig_model, per_channel, weight_qtype, activation_qtype
-        )
-
-        self.check_graph_node(
-            quant_model,
-            op_types=[
-                'QuantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'Conv',
-                'QuantizeLinear',
-                'DequantizeLinear',
-            ],
-        )
-        # Same goes for the comment in test_case4
-        self.assertFalse(self.is_onnxruntime_executable(quant_model, [input_shape]))
-
-    def test_case7(self):
+    def test_case5(self):
         input_shape = [3, 5, 7, 7]
         output_shape = [3, 2, 7, 7]
         orig_model = _make_conv(input_shape, output_shape)
@@ -240,7 +179,7 @@ class TestONNXRuntimeExecutable(TestTransformer):
         )
         self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
 
-    def test_case8(self):
+    def test_case6(self):
         input_shape = [1, 3, 4, 4]
         output_shape = [1, 5, 4, 4]
         orig_model = _make_conv(input_shape, output_shape)
@@ -265,59 +204,59 @@ class TestONNXRuntimeExecutable(TestTransformer):
         )
         self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
 
+    def test_case7(self):
+        input_shape = [1, 3, 3, 3]
+        output_shape = [1, 2, 3, 3]
+        orig_model = _make_conv(input_shape, output_shape, use_bias=True)
+
+        per_channel = True
+        weight_qtype = onnx.TensorProto.INT8
+        activation_qtype = onnx.TensorProto.UINT8
+        quant_model = _make_fake_quant_model(
+            orig_model, per_channel, weight_qtype, activation_qtype
+        )
+
+        self.check_graph_node(
+            quant_model,
+            op_types=[
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'DequantizeLinear',
+                'DequantizeLinear',
+                'Conv',
+                'QuantizeLinear',
+                'DequantizeLinear',
+            ],
+        )
+        self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
+
+    def test_case8(self):
+        input_shape = [1, 3, 3, 3]
+        output_shape = [1, 2, 3, 3]
+        orig_model = _make_conv(input_shape, output_shape, use_bias=True)
+
+        per_channel = True
+        weight_qtype = onnx.TensorProto.INT8
+        activation_qtype = onnx.TensorProto.UINT8
+        quant_model = _make_fake_quant_model(
+            orig_model, per_channel, weight_qtype, activation_qtype
+        )
+
+        self.check_graph_node(
+            quant_model,
+            op_types=[
+                'QuantizeLinear',
+                'DequantizeLinear',
+                'DequantizeLinear',
+                'DequantizeLinear',
+                'Conv',
+                'QuantizeLinear',
+                'DequantizeLinear',
+            ],
+        )
+        self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
+
     def test_case9(self):
-        input_shape = [1, 3, 3, 3]
-        output_shape = [1, 2, 3, 3]
-        orig_model = _make_conv(input_shape, output_shape, use_bias=True)
-
-        per_channel = True
-        weight_qtype = onnx.TensorProto.INT8
-        activation_qtype = onnx.TensorProto.UINT8
-        quant_model = _make_fake_quant_model(
-            orig_model, per_channel, weight_qtype, activation_qtype
-        )
-
-        self.check_graph_node(
-            quant_model,
-            op_types=[
-                'QuantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'Conv',
-                'QuantizeLinear',
-                'DequantizeLinear',
-            ],
-        )
-        self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
-
-    def test_case10(self):
-        input_shape = [1, 3, 3, 3]
-        output_shape = [1, 2, 3, 3]
-        orig_model = _make_conv(input_shape, output_shape, use_bias=True)
-
-        per_channel = True
-        weight_qtype = onnx.TensorProto.INT8
-        activation_qtype = onnx.TensorProto.UINT8
-        quant_model = _make_fake_quant_model(
-            orig_model, per_channel, weight_qtype, activation_qtype
-        )
-
-        self.check_graph_node(
-            quant_model,
-            op_types=[
-                'QuantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'DequantizeLinear',
-                'Conv',
-                'QuantizeLinear',
-                'DequantizeLinear',
-            ],
-        )
-        self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
-
-    def test_case11(self):
         input_shape = [1, 3, 5, 6]
         output_shape = [1, 4, 5, 6]
         orig_model = _make_convtranspose(input_shape, output_shape, use_bias=True)
@@ -343,7 +282,7 @@ class TestONNXRuntimeExecutable(TestTransformer):
         )
         self.assertTrue(self.is_onnxruntime_executable(quant_model, [input_shape]))
 
-    def test_case12(self):
+    def test_case10(self):
         input_shape = [1, 7, 9, 9]
         output_shape = [1, 14, 9, 9]
         orig_model = _make_convtranspose(input_shape, output_shape, use_bias=True)
