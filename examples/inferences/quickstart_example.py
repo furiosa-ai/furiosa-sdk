@@ -26,10 +26,10 @@ def run_example():
   print(input_meta)
   
   # Generate the random input tensor according to the input shape
-  input = np.random.randint(-128, 127, input_meta.shape(), dtype=np.int8)
+  input = np.random.randint(0, 255, input_meta.shape, dtype=np.uint8)
   
   # Run the inference
-  outputs = sess.run(input)
+  outputs = sess.run(input.astype(np.uint8))
   
   print("== Output ==")
   print(outputs)
