@@ -135,7 +135,8 @@ def buildPackages(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    cd python/${it} && pip install --root-user-action=ignore .
+    cd python/${it} && pip install --pre --root-user-action=ignore . --extra-index-url https://internal-pypi.furiosa.dev/simple
+
     """
   }
 
