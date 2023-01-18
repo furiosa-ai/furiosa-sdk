@@ -5,7 +5,7 @@ Driver, Firmware, and Runtime Installation
 ************************************************************
 
 Here, we explain how to install the packages necessary to use
-the various SW components provided by FuriosaAI. 
+the various SW components provided by FuriosaAI.
 
 These required packages are kernel drivers, firmware, and runtime library,
 and can be downloaded either directly through the download center,
@@ -105,8 +105,7 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
     .. code-block:: sh
 
-      sudo apt-get update && sudo apt-get install -y \
-      furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+      sudo apt-get update && sudo apt-get install -y furiosa-driver-pdma furiosa-libnux
 
   .. tab:: Installation using download center
 
@@ -116,14 +115,14 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
 
     * NPU Driver (furiosa-driver-pdma)
-    * Firmware (furiosa-libnpu)
+    * Firmware (furiosa-libhal)
     * Runtime library  (furiosa-libnux)
     * Onnxruntime  (libonnxruntime)
 
     .. code-block:: sh
 
       sudo apt-get install -y ./furiosa-driver-pdma-x.y.z-?.deb
-      sudo apt-get install -y ./furiosa-libnpu-warboy-x.y.z-?.deb
+      sudo apt-get install -y ./furiosa-libhal-warboy-x.y.z-?.deb
       sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
       sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
@@ -136,7 +135,7 @@ you will be able to hold the currently installed versions.
 
 .. code-block:: sh
 
-  sudo apt-mark hold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark hold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 In order to unhold and update the current package versions, designate the package
@@ -147,7 +146,7 @@ use the command ``apt-mark showhold``.
 
 .. code-block:: sh
 
-  sudo apt-mark unhold furiosa-driver-pdma furiosa-libnpu-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark unhold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 Installing a specific version
