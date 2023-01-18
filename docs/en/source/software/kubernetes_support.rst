@@ -50,7 +50,7 @@ If the NPU is not recognized with the command below, try again after rebooting -
 
 2. Installing Node Feature Discovery
 =========================================
-In order to make Kubernetes to recognize NPUs, you need to install Node Feature Discovery (nfd).
+In order to make Kubernetes to recognize NPUs, you need to install Node Feature Discovery.
 By running the command as shown in the example below, if there is a node label that begins with ``feature.node.kubernetes.io/...``, Node Feature Discovery's DaemonSet has already been installed
 
 .. code-block:: sh
@@ -65,9 +65,23 @@ By running the command as shown in the example below, if there is a node label t
 
 * If you do not have the Node Feature Discovery in your cluster, refer to the following document.
 
-   * `Node Feature Discovery - Quick start / Installation <https://kubernetes-sigs.github.io/node-feature-discovery/v0.11/get-started/quick-start.html#installation>`_
+   * `Quick start / Installation <https://kubernetes-sigs.github.io/node-feature-discovery/v0.11/get-started/quick-start.html#installation>`_
 
-* You can proceed to the next step even without Node Feature Discovery, but you must change the conditions of the nodeSelector when generating DaemonSet of each component.
+* The following options must be applied when executing Node Feature Discovery.
+
+  * ``beta.furiosa.ai`` needs to be included in the ``--extra-label-ns`` option of ``nfd-master``
+
+  * In the config file of ``nfd-worker``,
+    * Only ``vendor`` in the ``sources.pci.deviceLabelFields`` value
+    *  ``"12"`` must be included as a value in ``sources.pci.deviceClassWhitelist``
+
+
+.. note::
+
+  Installing Node Feature Discovery is not mandatory, but is recommended. The next step
+will explain the additional tasks that must be performed if you are not using
+Node Feature Discovery.
+
 
 .. _InstallingDevicePluginAndNfd:
 
@@ -325,3 +339,36 @@ See :ref:`SetupAptRepository` for installation guide using APT.
     +------+------------------+-------+--------+--------------+---------+
     | npu0 | FuriosaAI Warboy |  40°C | 1.37 W | 0000:01:00.0 | 509:0   |
     +------+------------------+-------+--------+--------------+---------+
+
+5. NPU monitoring
+====================================
+
+If you install ``npu-metrics-exporter``, its daemon set and service will be created in your kubernetes cluster.
+The Pod that is executed through DaemonSet outputs various NPU status information that may be
+useful for monitoring. The data is expressed in Prometheus format. If Prometheus
+is installed, and service discovery is active, Prometheus will automatically collect
+data through the Exporter.
+
+The collected data may be reviewed with visualization tools such as Grafana.
+
+
+.. list-table:: npu-metrics-exporter collection category list
+   :widths: 250 250
+   :header-rows: 1
+
+   * - Name
+     - Details
+   * - furiosa_npu_alive
+     - NPU operation status (1:normal)
+   * - furiosa_npu_uptime
+     - NPU operation time (s)
+   * - furiosa_npu_error
+     - Number of detected NPU errors
+   * - furiosa_npu_hw_temperature
+     - Temperature of each NPU components (°mC)
+   * - furiosa_npu_hw_power
+     - NPU instantaneous power usage (µW)
+   * - furiosa_npu_hw_voltage
+     - NPU instantaenous voltage (mV)
+   * - furiosa_npu_hw_current
+     - NPU instantaneous current (mA)

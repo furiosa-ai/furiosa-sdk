@@ -174,7 +174,7 @@ Pandas DataFrame을 이용한 트레이스 분석
     2  05bfa81f1579ac8089ac75588f36a747  e7e847b44ce11d28         0                0      10997     8557        2440
     3  438df7d9beb7fb8c60daaeffbb2c7e76  d2c20e3d9daf21be         0                0      10900     8555        2345
 
-``(4)`` 라인이 실행되면 아래와 같이 NPU의 Execution 단위로 소요된 시간 정보가 출력된다.
+``(4)`` 라인이 실행되면 아래와 같이 Operator 단위로 소요된 시간 정보가 출력된다.
 
 .. code-block::
 
