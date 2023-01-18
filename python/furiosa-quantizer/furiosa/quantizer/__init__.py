@@ -2,11 +2,9 @@
 
 from furiosa_quantizer_impl import CalibrationMethod, Calibrator, quantize
 
-from furiosa.common.utils import get_sdk_version
+import furiosa.common.utils
 
-__version__ = get_sdk_version(__name__)
-
-del get_sdk_version
+__version__ = furiosa.common.utils.get_sdk_version(__name__)
 
 __all__ = [
     "CalibrationMethod",
