@@ -25,10 +25,12 @@ format_applied = [
 ]
 
 lint_applied = [
+  'furiosa-quantizer',
   'furiosa-optimizer',
 ]
 
 test_modules = [
+  "furiosa-quantizer",
   "furiosa-optimizer",
   "furiosa-registry",
   "furiosa-runtime",
