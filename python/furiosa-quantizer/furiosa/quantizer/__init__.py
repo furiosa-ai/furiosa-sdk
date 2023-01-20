@@ -1,7 +1,13 @@
 """FuriosaAI qunatizer"""
 
-from furiosa.common.utils import get_sdk_version
+from furiosa_quantizer_impl import CalibrationMethod, Calibrator, quantize
 
-__version__ = get_sdk_version(__name__)
+import furiosa.common.utils
 
-__all__ = ["frontend", "interfaces"]
+__version__ = furiosa.common.utils.get_sdk_version(__name__)
+
+__all__ = [
+    "CalibrationMethod",
+    "Calibrator",
+    "quantize",
+]

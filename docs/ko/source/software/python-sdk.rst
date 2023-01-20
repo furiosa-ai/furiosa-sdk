@@ -213,14 +213,3 @@ Litmus
 
   pip install 'furiosa-sdk[litmus]'
 
-Quantizer
---------------------------------
-
-Quantizer 패키지는 모델을 양자화(quantization) 된 모델로 변환하기 위한 API 집합을 제공한다.
-FuriosaAI SDK와 NPU가 제공하는 양자화 기능에 대한 자세한 내용은 :ref:`ModelQuantization` 에서
-찾을 수 있다.
-
-.. code-block:: sh
-
-  pip install 'furiosa-sdk[quantizer]'
-

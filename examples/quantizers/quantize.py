@@ -8,7 +8,7 @@ import torch
 import torchvision
 from torchvision import transforms
 
-from furiosa.quantizer.frontend.onnx import post_training_quantize
+from furiosa.quantizer import post_training_quantize
 
 
 def main():
@@ -25,9 +25,11 @@ def main():
     calibration_dataloader = torch.utils.data.DataLoader(calibration_dataset, batch_size=1)
 
     model_quantized = post_training_quantize(
-        model, ({"input": image.numpy()} for image, _ in calibration_dataloader)
+        model, ([image.numpy()] for image, _ in calibration_dataloader)
     )
-    onnx.save_model(model_quantized, "mnist_quantized.onnx")
+
+    with open("mnist_quantized.dfg", "wb") as f:
+        f.write(bytes(model_quantized))
 
 
 if __name__ == "__main__":

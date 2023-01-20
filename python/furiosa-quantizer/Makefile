@@ -1,4 +1,4 @@
-default: install 
+default: install
 
 install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
@@ -13,10 +13,10 @@ upload:
 	flit publish
 
 test:
-	python -m unittest discover -v -s ./tests
+	python -m unittest
 
 doc:
-	pdoc3 --html --force --output-dir html_output furiosa	
+	pdoc3 --html --force --output-dir html_output furiosa
 
 clean:
 	rm -rf build dist/* *.egg-info

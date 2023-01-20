@@ -203,14 +203,3 @@ Here, we simulate execution of processes such as model quantization and compilat
 
   pip install 'furiosa-sdk[litmus]'
 
-Quantizer
---------------------------------
-
-The quantizer package provides a set of APIs for converting a model into a quantized model. 
-You can find more information about the quantization function provided by the Furiosa SDK and the NPU
-at :ref:`ModelQuantization`.
-
-.. code-block:: sh
-
-  pip install 'furiosa-sdk[quantizer]'
-

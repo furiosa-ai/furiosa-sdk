@@ -5,6 +5,7 @@ sdk_modules = [
   'furiosa-tools',
   'furiosa-registry',
   'furiosa-runtime',
+  'furiosa-optimizer',
   'furiosa-quantizer',
   'furiosa-litmus',
   'furiosa-server',
@@ -15,6 +16,7 @@ sdk_modules = [
 format_applied = [
   'furiosa-litmus',
   'furiosa-quantizer',
+  'furiosa-optimizer',
   'furiosa-registry',
   'furiosa-runtime',
   'furiosa-server',
@@ -24,10 +26,12 @@ format_applied = [
 
 lint_applied = [
   'furiosa-quantizer',
+  'furiosa-optimizer',
 ]
 
 test_modules = [
   "furiosa-quantizer",
+  "furiosa-optimizer",
   "furiosa-registry",
   "furiosa-runtime",
   "furiosa-server",
@@ -133,7 +137,8 @@ def buildPackages(pythonVersion) {
     conda activate env-${pythonVersion};
     python --version;
 
-    cd python/${it} && pip install --root-user-action=ignore .
+    cd python/${it} && pip install --pre --root-user-action=ignore . --extra-index-url https://internal-pypi.furiosa.dev/simple
+
     """
   }
 
