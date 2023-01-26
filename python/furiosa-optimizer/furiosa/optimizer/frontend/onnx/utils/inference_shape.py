@@ -23,6 +23,7 @@ class InferenceShape:
             self.model, check = onnxsim.simplify(
                 self.model,
                 skipped_optimizers=['eliminate_duplicate_initializer', 'fuse_add_bias_into_conv'],
+                skip_fuse_bn=True,
                 input_shapes=input_shapes,
             )
 
