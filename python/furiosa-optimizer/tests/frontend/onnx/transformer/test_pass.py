@@ -2,7 +2,7 @@ import unittest
 
 import onnxoptimizer
 
-# Allowed passes with followed package versions
+# Allowed passes with following package versions
 # onnx-simplifier   0.4.13
 # onnxoptimizer     0.3.6
 __ALLOWED_PASSES__ = set(
