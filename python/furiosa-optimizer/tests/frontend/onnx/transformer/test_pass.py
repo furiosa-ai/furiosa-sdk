@@ -2,6 +2,8 @@ import unittest
 
 import onnxoptimizer
 
+from furiosa.optimizer.frontend.onnx.utils.inference_shape import __SKIPPED_PASSES__
+
 # Allowed passes with following package versions
 # onnx-simplifier   0.4.13
 # onnxoptimizer     0.3.6
@@ -43,8 +45,8 @@ __ALLOWED_PASSES__ = set(
 class TestPass(unittest.TestCase):
     def test_onnx_optimizer_pass(self):
         passes = set(onnxoptimizer.get_fuse_and_elimination_passes()).difference(
-            set(['fuse_bn_into_conv', 'eliminate_duplicate_initializer', 'fuse_add_bias_into_conv'])
+            set(__SKIPPED_PASSES__)
         )
         added_passes = passes.difference(__ALLOWED_PASSES__)
         if len(added_passes) != 0:
-            raise RuntimeError(f'New onnx optimizer passes are found {added_passes}') from None
+            raise Exception(f'New onnx optimizer passes are found {added_passes}')

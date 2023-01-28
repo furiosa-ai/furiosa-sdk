@@ -6,6 +6,12 @@ import onnxsim
 from furiosa.optimizer.frontend.onnx.transformer import utils
 from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
 
+__SKIPPED_PASSES__ = [
+    'eliminate_duplicate_initializer',
+    'fuse_add_bias_into_conv',
+    'fuse_bn_into_conv',
+]
+
 
 class InferenceShape:
     """
@@ -22,8 +28,7 @@ class InferenceShape:
         try:
             self.model, check = onnxsim.simplify(
                 self.model,
-                skipped_optimizers=['eliminate_duplicate_initializer', 'fuse_add_bias_into_conv'],
-                skip_fuse_bn=True,
+                skipped_optimizers=__SKIPPED_PASSES__,
                 input_shapes=input_shapes,
             )
 
