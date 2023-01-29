@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import random
 import string
-from typing import Union
+from typing import SupportsBytes, Union
 
 from . import envs
 from ._util import eprint
@@ -17,13 +17,19 @@ def _read_file(path: Union[str, Path]):
         return contents
 
 
-def _model_image(model: Union[bytes, str, Path]) -> bytes:
+def _model_image(model: Union[bytes, SupportsBytes, str, Path]) -> bytes:
     if isinstance(model, bytes):
         model_image = model
     elif isinstance(model, (str, Path)):
         model_image = Path(model).read_bytes()
+    # isinstance(..., SupprotsBytes) must be checked after isinstance(..., Path) because Path has
+    # __bytes__.
+    elif isinstance(model, SupportsBytes):
+        model_image = bytes(model)
     else:
-        raise TypeError("'model' must be str or bytes, but it was " + repr(type(model)))
+        raise TypeError(
+            f"'model' must be bytes, SupportsBytes, str, or Path but was {type(model)!r}"
+        )
 
     return model_image
 
