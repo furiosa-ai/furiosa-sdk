@@ -44,9 +44,9 @@ __ALLOWED_PASSES__ = set(
 
 class TestPass(unittest.TestCase):
     def test_onnx_optimizer_pass(self):
-        passes = set(onnxoptimizer.get_fuse_and_elimination_passes()).difference(
-            set(__SKIPPED_PASSES__)
+        added_passes = (
+            set(onnxoptimizer.get_fuse_and_elimination_passes())
+            .difference(__SKIPPED_PASSES__)
+            .difference(__ALLOWED_PASSES__)
         )
-        added_passes = passes.difference(__ALLOWED_PASSES__)
-        if len(added_passes) != 0:
-            raise Exception(f'New onnx optimizer passes are found {added_passes}')
+        self.assertFalse(added_passes, f'New onnx optimizer passes are found {added_passes}')
