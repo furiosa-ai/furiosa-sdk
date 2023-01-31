@@ -5,7 +5,7 @@ from ctypes import byref, c_int, c_void_p
 import logging
 from pathlib import Path
 import typing
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Dict, List, Mapping, Optional, SupportsBytes, Tuple, Union
 
 import numpy as np
 import yaml
@@ -107,7 +107,7 @@ class Session(Model):
 
     def __init__(
         self,
-        model: Union[bytes, str, Path],
+        model: Union[bytes, SupportsBytes, str, Path],
         device: Optional[str] = None,
         worker_num: Optional[int] = None,
         batch_size: Optional[int] = None,
@@ -430,7 +430,7 @@ class AsyncSession(Model):
 
 
 def create(
-    model: Union[bytes, str, Path, registry.Model],
+    model: Union[bytes, SupportsBytes, str, Path, registry.Model],
     device: str = None,
     worker_num: int = None,
     batch_size: int = None,
@@ -440,8 +440,9 @@ def create(
     """Creates a session for a model
 
     Args:
-        model (bytes, str, Path, Model): a byte string containing a model image or \
-        a path string of a model image file or `furiosa.registry.Model`
+        model (bytes, SupportsBytes, str, Path, Model): a byte string
+            containing a model image, a path string of a model image
+            file, or furiosa.registry.Model
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
         batch_size: Batch size of input tensors
@@ -481,7 +482,7 @@ def create(
 
 
 def create_async(
-    model: Union[bytes, str, Path, registry.Model],
+    model: Union[bytes, SupportsBytes, str, Path, registry.Model],
     context_ty: Optional[type] = None,
     device: Optional[str] = None,
     worker_num: Optional[int] = None,
@@ -494,8 +495,9 @@ def create_async(
     """Creates a pair of the asynchronous session and the completion queue for a given model
 
     Args:
-        model (bytes, str, Path, Model): a byte string containing a model image or \
-        a path string of a model image file or `furiosa.registry.Model`
+        model (bytes, SupportsBytes, str, Path, Model): a byte string
+            containing a model image, a path string of a model image
+            file, or furiosa.registry.Model
         context_ty (type): Type for passing context from AsyncSession to CompletionQueue
         device: NPU device (str) (e.g., npu0pe0, npu0pe0-1)
         worker_num: Number of workers
