@@ -62,7 +62,7 @@ def _make_initializer_list(
     init_desc: Dict[str, Union[Tuple[np.dtype, List[Union[Text, int]]], np.array]]
 ) -> List[onnx.TensorProto]:
     initailizers = []
-    for (name, arg) in init_desc.items():
+    for name, arg in init_desc.items():
         if isinstance(arg, tuple):
             dtype, shape = arg
             initailizers.append(onnx.numpy_helper.from_array(_random_generator(dtype, shape), name))

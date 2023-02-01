@@ -227,7 +227,6 @@ class CPUServeModel(ServeModel):
 
 
 class OpenVINOServeModel(ServeModel):
-
     if TYPE_CHECKING:
         from openvino.runtime.ie_api import ConstOutput
 

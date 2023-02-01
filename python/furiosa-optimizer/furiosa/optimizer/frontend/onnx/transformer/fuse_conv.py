@@ -8,6 +8,7 @@ from furiosa.optimizer.interfaces.transformer import Transformer
 
 OPSET_BOUND = [12, 13]
 
+
 # TODO: consider (init, data) input case for MatMul
 # related issue: https://github.com/furiosa-ai/furiosa-sdk-private/issues/243
 class FuseConv(Transformer):

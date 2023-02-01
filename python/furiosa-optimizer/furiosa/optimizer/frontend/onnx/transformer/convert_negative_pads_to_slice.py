@@ -112,7 +112,7 @@ class Pattern_1(ONNXTransformer):
             ]
         )
         pads = [max(pad, 0) for pad in pads]
-        for (init_list, suffix) in (
+        for init_list, suffix in (
             (starts, '_starts'),
             (ends, '_ends'),
             (axes, '_axes'),

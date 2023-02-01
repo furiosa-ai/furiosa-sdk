@@ -79,7 +79,6 @@ def convert_ga_param(key: str, value: str) -> object:
 
 
 def ga_options(ga_params_str: str) -> Dict[str, object]:
-
     ga_params: Dict[str, object] = {}
 
     for kv in [part.strip() for part in ga_params_str.split(",")]:
