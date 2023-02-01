@@ -115,7 +115,6 @@ class ONNXTransformer:
         return self.value_info_all[tensor_name].type.tensor_type.elem_type
 
     def get_map_values(self, field):
-
         if any(field == word for word in ['input', 'output']):
             field_map = 'graph_' + field + '_map'
         elif field == 'node':
