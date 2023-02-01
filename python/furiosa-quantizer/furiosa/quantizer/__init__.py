@@ -42,7 +42,8 @@ class Calibrator:
         self,
         model: Union[onnx.ModelProto, bytes],
         calibration_method: CalibrationMethod,
-        percentage=99.99,
+        *,
+        percentage: float = 99.99,
     ):
         """
         Args:
@@ -50,9 +51,9 @@ class Calibrator:
                 calibrate.
             calibration_method (CalibrationMethod): A calibration
                 method.
-            percentage (float, optional): A percentage to use with
-                percentile calibration. Defaults to 99.99 (i.e.
-                99.99%-percentile calibration).
+            percentage (float): A percentage to use with percentile
+                calibration. Defaults to 99.99 (i.e. 99.99%-percentile
+                calibration).
         """
         if isinstance(model, onnx.ModelProto):
             model = model.SerializeToString()
@@ -85,7 +86,10 @@ class Calibrator:
 
 
 def quantize(
-    model: Union[onnx.ModelProto, bytes], tensor_name_to_range: Mapping[str, Sequence[float]]
+    model: Union[onnx.ModelProto, bytes],
+    tensor_name_to_range: Mapping[str, Sequence[float]],
+    *,
+    with_quantize: bool = True,
 ) -> Graph:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
@@ -94,6 +98,8 @@ def quantize(
         tensor_name_to_range (Mapping[str, Sequence[float]]):
             A mapping from a tensor name to a 2-tuple (or list) of the
             tensor's min and max.
+        with_quantize (bool): Whether to put a Quantize operator at the
+            beginning of the resulting model. Defaults to True.
 
     Returns:
         Graph: An intermediate representation (IR) of the quantized
@@ -101,4 +107,6 @@ def quantize(
     """
     if isinstance(model, onnx.ModelProto):
         model = model.SerializeToString()
-    return furiosa_quantizer_impl.quantize(model, tensor_name_to_range)  # pylint: disable=no-member
+    return furiosa_quantizer_impl.quantize(  # pylint: disable=no-member
+        model, tensor_name_to_range, with_quantize
+    )
