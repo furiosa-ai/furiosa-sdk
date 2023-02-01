@@ -90,7 +90,7 @@ class ONNXTransformer:
             elif isinstance(member, list):
                 new_nodes.extend(member)
             else:
-                raise Exception(member)
+                raise TypeError(member)
 
         model = utils.rebuild_model(model, new_nodes)
         if check:
@@ -104,7 +104,7 @@ class ONNXTransformer:
             return self.graph_input_map[name]
         if name in self.value_info_map:
             return self.value_info_map[name]
-        raise Exception(f'{name} not found.')
+        raise ValueError(f'{name} not found.')
 
     def get_value_info_shape(self, tensor_name: str) -> List[int]:
         return [

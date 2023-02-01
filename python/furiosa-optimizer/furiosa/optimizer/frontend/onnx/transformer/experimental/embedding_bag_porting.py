@@ -59,7 +59,9 @@ class EmbeddingBagPattern(ONNXTransformer):
                 subgraph_base_nodes.append(output_producer)
             elif output_producer.op_type in ['ReduceMean', 'ReduceMax']:
                 # TODO case when EmbeddingBag mode is mean or max
-                raise Exception("EmbeddingBagPorting of mean or max mode is not implemented")
+                raise NotImplementedError(
+                    "EmbeddingBagPorting of mean or max mode is not implemented"
+                )
 
         if len(subgraph_base_nodes) != 1:
             return base_node.input
