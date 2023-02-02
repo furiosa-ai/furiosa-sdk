@@ -94,7 +94,7 @@ def quantize(
     """Quantize an ONNX model on the basis of the range of its tensors.
 
     Args:
-        model (onnx.ModelProtoo or bytes): An ONNX model to quantize.
+        model (onnx.ModelProto or bytes): An ONNX model to quantize.
         tensor_name_to_range (Mapping[str, Sequence[float]]):
             A mapping from a tensor name to a 2-tuple (or list) of the
             tensor's min and max.
