@@ -6,7 +6,6 @@ from onnx.helper import make_model
 import onnxoptimizer
 
 from furiosa.optimizer.frontend.onnx.transformer import ONNXTransformer, utils
-from furiosa.optimizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
 from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa.optimizer.frontend.onnx.utils.version_checker import CheckVersion
 from furiosa.optimizer.interfaces.transformer import Transformer
@@ -30,7 +29,6 @@ class EmbeddingBagPorting(Transformer):
         model = utils.name_nodes(model)
         model = onnxoptimizer.optimize(model, passes=["extract_constant_to_initializer"])
         model = EmbeddingBagPattern(model).transform()
-        model = Convert2dSumToAdd().transform(model)
         model = InferenceShape(model).inference_shape(input_shapes)
         return model
 
