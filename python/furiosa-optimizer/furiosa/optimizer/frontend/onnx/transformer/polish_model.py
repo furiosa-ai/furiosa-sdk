@@ -4,7 +4,6 @@ import onnx
 import onnxoptimizer
 
 from furiosa.optimizer.frontend.onnx.transformer import utils
-from furiosa.optimizer.frontend.onnx.transformer.convert_2d_sum_to_add import Convert2dSumToAdd
 from furiosa.optimizer.frontend.onnx.transformer.infer_squeeze_axes import InferSqueezeAxes
 from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa.optimizer.interfaces.transformer import Transformer
@@ -25,7 +24,6 @@ class PolishModel(Transformer[onnx.ModelProto]):
         model = utils.fix_batch_size_as_one(model)
 
         model = onnxoptimizer.optimize(model, passes=["extract_constant_to_initializer"])
-        model = Convert2dSumToAdd().transform(model)
 
         model = utils.fixed_point(
             model,
