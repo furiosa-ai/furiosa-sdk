@@ -29,7 +29,7 @@ class InferenceShape:
             self.model, check = onnxsim.simplify(
                 self.model,
                 skipped_optimizers=__SKIPPED_PASSES__,
-                input_shapes=input_shapes,
+                overwrite_input_shapes=input_shapes,
             )
 
         except RuntimeError as e:
