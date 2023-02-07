@@ -28,7 +28,7 @@ requires-python = "~=3.7"
 dependencies = [
     "furiosa-common == 0.9.*",
     "furiosa-optimizer == 0.9.*",
-    "furiosa-quantizer_impl == 0.9.*",
+    "furiosa-quantizer-impl == 0.9.*",
 
     "numpy ~= 1.19",
     "onnx ~= 1.12.0",
