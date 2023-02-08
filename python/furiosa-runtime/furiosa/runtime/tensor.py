@@ -241,10 +241,13 @@ class Tensor:
     # > before the module itself is released. __del__ methods may be called in
     # > those precarious circumstances, and should not rely on any global
     # > state.
-    def __del__(self, _LIBNUX=LIBNUX):
+    def _close(self, _LIBNUX=LIBNUX):
         if self.allocated and self.ref:
             _LIBNUX.nux_tensor_destroy(self.ref)
             self.allocated = False
+
+    def __del__(self):
+        self._close()
 
     def __eq__(self, other):
         if isinstance(other, Tensor):
@@ -329,10 +332,13 @@ class TensorArray:
     # > before the module itself is released. __del__ methods may be called in
     # > those precarious circumstances, and should not rely on any global
     # > state.
-    def __del__(self, _LIBNUX=LIBNUX):
+    def _close(self, _LIBNUX=LIBNUX):
         if self.should_drop and self.ref:
             _LIBNUX.nux_tensor_array_destroy(self.ref)
             self.should_drop = False
+
+    def __del__(self):
+        self._close()
 
     def __repr__(self):
         return list_to_dict(self).__repr__()
