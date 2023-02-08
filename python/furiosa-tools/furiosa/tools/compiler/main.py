@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import pathlib
 import sys
 from typing import Dict
 
@@ -23,7 +24,7 @@ EXAMPLE: str = """example:
 
     # In addition to compilation, write the dot graph of the model graph into to bar.dot
     furiosa compile foo.onnx -o foo.enf --dot-graph bar.dot
-    
+
     # Set the genetic algorithm parameters for optimization
     furiosa compile foo.onnx -o foo.enf -ga population_size=100,generation_limit=500
 """
@@ -185,13 +186,14 @@ class CommandCompile:
             ga_params = ga_options(self.args.genetic_optimization)
 
         if self.args.output is None:
-            output = f"output.{self.args.target_ir.lower()}"
+            output_path = f"output.{self.args.target_ir.lower()}"
         else:
-            output = self.args.output
+            output_path = self.args.output
 
-        return compile(
-            self.args.source,
-            output_path=output,
+        input_bytes = pathlib.Path(self.args.source).read_bytes()
+
+        output_bytes = compile(
+            input_bytes,
             target_ir=self.args.target_ir,
             dot_graph=self.args.dot_graph,
             analyze_memory=self.args.analyze_memory,
@@ -201,6 +203,13 @@ class CommandCompile:
             target_npu=self.args.target_npu,
             verbose=self.args.verbose,
         )
+
+        # write to file if output_path is not None
+        with open(output_path, "wb") as output_path:
+            output_path.write(output_bytes)
+            print(f"The output has been saved to {output_path}", file=sys.stderr)
+
+        return 0
 
 
 def main():

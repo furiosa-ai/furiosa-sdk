@@ -194,8 +194,7 @@ def __check_target_ir(target_ir: str):
 
 
 def compile(
-    input_path: Union[str, Path],
-    output_path: Union[str, Path] = None,
+    input_bytes: bytes,
     target_ir: str = "enf",
     dot_graph: Optional[Union[str, Path]] = None,
     analyze_memory: Optional[Union[str, Path]] = None,
@@ -206,11 +205,12 @@ def compile(
     target_npu: str = DEFAULT_TARGET_NPU,
     cache_enabled: bool = True,
     verbose: bool = False,
-) -> int:
+) -> bytes:
+    """The compilation function. Takes an onnx/tflite/furiosa-ir and compiles it to target_ir."""
+
     if verbose:
         LIBCOMPILER.fc_enable_logging(LogLevel.INFO)
 
-    input_bytes = Path(input_path).read_bytes()
     input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))
 
     __check_target_ir(target_ir)
@@ -246,14 +246,9 @@ def compile(
         # it's ok because furiosa-compiler will print out the error message to stderr
         return errno.value if isinstance(errno, ctypes.c_int) else errno
 
-    try:
-        with open(output_path, "wb") as output:
-            array_type = ctypes.c_ubyte * output_buf.len
-            buffer = array_type.from_address(output_buf.data)
-            output.write(buffer)
-            print(f"The output has been saved to {output_path}", file=sys.stderr)
-    finally:
-        LIBCOMPILER.fc_destroy_buffer(byref(output_buf))
+    # Passing to `bytes` function makes copy
+    output_bytes = bytes((ctypes.c_ubyte * output_buf.len).from_address(output_buf.data))
+    # Destroy the buffer after copying it
+    LIBCOMPILER.fc_destroy_buffer(byref(output_buf))
 
-    # Happy return
-    return 0
+    return output_bytes
