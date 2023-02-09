@@ -204,7 +204,6 @@ class CommandCompile:
             verbose=self.args.verbose,
         )
 
-        # write to file if output_path is not None
         with open(output_path, "wb") as output_path:
             output_path.write(output_bytes)
             print(f"The output has been saved to {output_path}", file=sys.stderr)
