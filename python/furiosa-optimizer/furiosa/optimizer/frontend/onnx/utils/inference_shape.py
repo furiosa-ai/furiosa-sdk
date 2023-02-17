@@ -10,6 +10,7 @@ __SKIPPED_PASSES__ = [
     'eliminate_duplicate_initializer',
     'fuse_add_bias_into_conv',
     'fuse_bn_into_conv',
+    'fuse_qkv',
 ]
 
 

@@ -38,7 +38,6 @@ __ALLOWED_PASSES__ = set(
         'fuse_matmul_add_bias_into_gemm',
         'fuse_pad_into_conv',
         'fuse_pad_into_pool',
-        'fuse_qkv',
         'fuse_transpose_into_gemm',
         'nop',
     ]
