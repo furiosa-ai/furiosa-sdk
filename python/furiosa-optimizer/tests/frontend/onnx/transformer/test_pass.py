@@ -5,10 +5,11 @@ import onnxoptimizer
 from furiosa.optimizer.frontend.onnx.utils.inference_shape import __SKIPPED_PASSES__
 
 # Allowed passes with following package versions
-# onnx-simplifier   0.4.13
-# onnxoptimizer     0.3.6
+# onnx-simplifier   0.4.17
+# onnxoptimizer     0.3.8
 __ALLOWED_PASSES__ = set(
     [
+        'eliminate_common_subexpression',
         'eliminate_deadend',
         'eliminate_identity',
         'eliminate_if_with_const_cond',
@@ -31,6 +32,7 @@ __ALLOWED_PASSES__ = set(
         'fuse_consecutive_concats',
         'fuse_consecutive_log_softmax',
         'fuse_consecutive_reduce_unsqueeze',
+        'fuse_consecutive_slices',
         'fuse_consecutive_squeezes',
         'fuse_consecutive_transposes',
         'fuse_matmul_add_bias_into_gemm',
