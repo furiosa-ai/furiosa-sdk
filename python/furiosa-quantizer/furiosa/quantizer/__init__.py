@@ -60,6 +60,7 @@ class Calibrator:
         self._calibrator = furiosa_quantizer_impl.Calibrator(  # pylint: disable=no-member
             model, calibration_method, percentage
         )
+        self._collected_data = False
 
     def collect_data(self, calibration_dataset: Iterable[Sequence[np.ndarray]]):
         """Collect the values of tensors that will be used for range
@@ -72,7 +73,8 @@ class Calibrator:
                 An object that provides input data for the model one at
                 a time.
         """
-        return self._calibrator.collect_data(calibration_dataset)
+        self._calibrator.collect_data(calibration_dataset)
+        self._collected_data = True
 
     def compute_range(self, verbose=False):
         """Estimate the ranges of the tensors on the basis of the collected
@@ -82,6 +84,8 @@ class Calibrator:
             verbose (bool): Whether to show a progress bar, Defaults to
                 False.
         """
+        if not self._collected_data:
+            raise RuntimeError("collect_data must be called before compute_range")
         return self._calibrator.compute_range(verbose)
 
 
