@@ -9,9 +9,11 @@ uninstall:
 
 install:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
-	for (( idx=$${#MODULES[@]}-1 ; idx>=0 ; idx-- )) ; do \
-		cd furiosa-$${MODULES[idx]}; pip install --pre -e . ; cd .. ; \
-	done
+	INSTALL_CMD="pip install --pre"; \
+	for MODULE in "$${MODULES[@]}"; do \
+		INSTALL_CMD+=" -e furiosa-$${MODULE}"; \
+	done; \
+	$${INSTALL_CMD}
 
 lint:
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
