@@ -94,7 +94,7 @@ quantizes them automatically, and attempts to compile up to the final binary, in
 
 .. code-block:: sh
 
-  $ furiosa litmus yolov4.onxx
+  $ furiosa litmus yolov4.onnx
   [Step 1] Checking if the model can be transformed into a quantized model ...
   Quantization: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 67/67 [00:00<00:00, 85.33it/s]
   [Step 1] Passed
