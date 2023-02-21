@@ -56,7 +56,7 @@ The table below compares accuracies.
      - 76.002
      - 0.594
    * - SSD MobileNet 300x300
-     - 22.137
+     - 23.137
      - 22.815
      - 1.392
    * - SSD Resnet34 1200x1200
