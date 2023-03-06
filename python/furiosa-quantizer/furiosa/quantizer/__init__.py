@@ -1,7 +1,7 @@
 """A FuriosaAI qunatizer."""
 
 import enum
-from typing import Iterable, Mapping, Sequence, Union
+from typing import Iterable, List, Mapping, Sequence, Union
 
 import furiosa_quantizer_impl
 from furiosa_quantizer_impl import Graph  # pylint: disable=no-name-in-module
@@ -75,6 +75,28 @@ class Calibrator:
         """
         self._calibrator.collect_data(calibration_dataset)
         self._collected_data = True
+
+    def _collect_data_and_return_outputs(
+        self, calibration_dataset: Iterable[Sequence[np.ndarray]]
+    ) -> List[List[np.ndarray]]:
+        """Collect the values of tensors that will be used for range
+        computation, and return outputs.
+
+        This can be called multiple times.
+
+        Args:
+            calibration_dataset (Iterable[Sequence[numpy.ndarray]]):
+                An object that provides input data for the model one at
+                a time.
+
+        Returns:
+            List[List[numpy.ndarray]]: Outputs.
+        """
+        # pylint: disable-next=protected-access
+        outputs = self._calibrator._collect_data_and_return_outputs(calibration_dataset)
+        outputs = [[array.astype(typestr) for array, typestr in output] for output in outputs]
+        self._collected_data = True
+        return outputs
 
     def compute_range(self, verbose=False):
         """Estimate the ranges of the tensors on the basis of the collected
