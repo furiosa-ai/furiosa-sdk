@@ -99,7 +99,5 @@ FuriosaAI NPU와 SDK 에서는
      - 0.7.0 이상 버전 부터 지원
    * - `Transpose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Transpose>`_
      - 0.6.0 이상 버전 부터 지원
-   * - `Transpose <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Transpose>`_
-     - 0.6.0 이상 버전 부터 지원
    * - `Unsqueeze <https://github.com/onnx/onnx/blob/master/docs/Operators.md#unsqueeze>`_
      -
