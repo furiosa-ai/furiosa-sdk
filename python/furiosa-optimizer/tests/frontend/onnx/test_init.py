@@ -23,7 +23,7 @@ class ONNXTest(TestTransformer):
         model = optimize_model(model, opset_version=new_opset)
         self.check_opset_version(model, new_opset)
 
-    def check_opset_version(self, model: onnx.ModelProto, opset: int):
+    def check_opset_version(self, model: onnx.ModelProto, opset: int):  # pylint: disable=no-member
         self.assertEqual(model.opset_import[0].version, opset)
 
 
@@ -31,7 +31,7 @@ def _make_test_model(
     opset_version: int,
     input_shape: Optional[Sequence[int]] = None,
     output_shape: Optional[Sequence[int]] = None,
-) -> onnx.ModelProto:
+) -> onnx.ModelProto:  # pylint: disable=no-member
     if input_shape is None:
         input_shape = [2, 8]
     if output_shape is None:

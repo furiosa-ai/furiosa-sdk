@@ -53,7 +53,7 @@ class ONNXTransformer:
         outputs = list(self.graph_output_map.keys())
         # To prevent traversing cyclic connections
         visited: Set[str] = set()
-        visited_node: List[onnx.NodeProto] = []
+        visited_node: List[onnx.NodeProto] = []  # pylint: disable=no-member
 
         while len(outputs) > 0:
             output = outputs.pop(0)
@@ -85,7 +85,7 @@ class ONNXTransformer:
         model = self.update_graph_fields(model)
         new_nodes = []
         for member in self.get_map_values('node'):
-            if isinstance(member, onnx.NodeProto):
+            if isinstance(member, onnx.NodeProto):  # pylint: disable=no-member
                 new_nodes.append(member)
             elif isinstance(member, list):
                 new_nodes.extend(member)
@@ -147,7 +147,9 @@ class ONNXTransformer:
 
         return data_node_input
 
-    def find_next_node(self, node: onnx.NodeProto) -> List[onnx.NodeProto]:
+    def find_next_node(
+        self, node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
         next_nodes = []
         for v in self.optimizer_map.values():
             if not v:
@@ -160,7 +162,7 @@ class ONNXTransformer:
 
         return next_nodes
 
-    def find_prev_node(self, node_input: str) -> onnx.NodeProto:
+    def find_prev_node(self, node_input: str) -> onnx.NodeProto:  # pylint: disable=no-member
         if node_input not in self.producer_map:
             return None
 
@@ -180,40 +182,55 @@ class ONNXTransformer:
 
         return prev_node
 
-    def update_single_optimizer_map(self, node: onnx.NodeProto, dest_name):
+    def update_single_optimizer_map(
+        self, node: onnx.NodeProto, dest_name  # pylint: disable=no-member
+    ):
         self.optimizer_map[dest_name] = node
 
-    def update_multiple_optimizer_map(self, nodes: List[onnx.NodeProto], dest_name):
+    def update_multiple_optimizer_map(
+        self, nodes: List[onnx.NodeProto], dest_name  # pylint: disable=no-member
+    ):
         self.optimizer_map[dest_name] = nodes
 
-    def update_single_value_info_map(self, value_info: onnx.ValueInfoProto):
+    def update_single_value_info_map(
+        self, value_info: onnx.ValueInfoProto  # pylint: disable=no-member
+    ):
         if value_info.name in self.graph_input_map:
             self.graph_input_map[value_info.name] = value_info
         else:
             self.value_info_map[value_info.name] = value_info
 
-    def update_multiple_value_info_map(self, value_infos: List[onnx.ValueInfoProto]):
+    def update_multiple_value_info_map(
+        self, value_infos: List[onnx.ValueInfoProto]  # pylint: disable=no-member
+    ):
         for vi in value_infos:
             self.update_single_value_info_map(vi)
 
-    def update_single_initializer_map(self, initializer: onnx.TensorProto):
+    def update_single_initializer_map(
+        self, initializer: onnx.TensorProto  # pylint: disable=no-member
+    ):
         self.initializer_map[initializer.name] = initializer
 
-    def update_multiple_initializer_map(self, initializers: List[onnx.TensorProto]):
+    def update_multiple_initializer_map(
+        self, initializers: List[onnx.TensorProto]  # pylint: disable=no-member
+    ):
         for init in initializers:
             if not init:
                 continue
             self.update_single_initializer_map(init)
 
-    def pop_single_optimizer_map(self, node: onnx.NodeProto):
+    def pop_single_optimizer_map(self, node: onnx.NodeProto):  # pylint: disable=no-member
         self.optimizer_map[node.name] = []
 
-    def pop_multiple_optimizer_map(self, nodes: List[onnx.NodeProto]):
+    def pop_multiple_optimizer_map(self, nodes: List[onnx.NodeProto]):  # pylint: disable=no-member
         for node in nodes:
             self.pop_single_optimizer_map(node)
 
     def bridge_disconnected_nodes(
-        self, node_0: onnx.NodeProto, next_nodes: List[onnx.NodeProto], new_input
+        self,
+        node_0: onnx.NodeProto,  # pylint: disable=no-member
+        next_nodes: List[onnx.NodeProto],  # pylint: disable=no-member
+        new_input,
     ):
         """
         For a graph changed, for example,
@@ -238,7 +255,9 @@ class ONNXTransformer:
                     continue
                 self.graph_output_map[node_output] = self.copy_value_info(new_input)
 
-    def transform_to_eliminate(self, nodes_to_remove: List[onnx.NodeProto], new_input):
+    def transform_to_eliminate(
+        self, nodes_to_remove: List[onnx.NodeProto], new_input  # pylint: disable=no-member
+    ):
         """
         This function eliminates designated nodes and bridges the previous and next nodes of them.
 
@@ -251,10 +270,10 @@ class ONNXTransformer:
 
     def transform_to_fuse(
         self,
-        nodes_to_remove: List[onnx.NodeProto],
-        nodes_to_add: Optional[List[onnx.NodeProto]] = None,
-        inits_to_add: Optional[List[onnx.TensorProto]] = None,
-        vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,
+        nodes_to_remove: List[onnx.NodeProto],  # pylint: disable=no-member
+        nodes_to_add: Optional[List[onnx.NodeProto]] = None,  # pylint: disable=no-member
+        inits_to_add: Optional[List[onnx.TensorProto]] = None,  # pylint: disable=no-member
+        vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,  # pylint: disable=no-member
     ):
         # Pattern should be linear, and if pattern's last node has multiple outputs, they should be specified in the transformed node.
         assert len(nodes_to_remove[-1].output) == len(nodes_to_add[-1].output)

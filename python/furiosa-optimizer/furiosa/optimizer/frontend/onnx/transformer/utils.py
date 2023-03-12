@@ -84,7 +84,9 @@ def eliminate_unused_protos(model):
     return model
 
 
-def eliminate_initializer_from_graph_input(model: onnx.ModelProto) -> onnx.ModelProto:
+def eliminate_initializer_from_graph_input(
+    model: onnx.ModelProto,  # pylint: disable=no-member
+) -> onnx.ModelProto:  # pylint: disable=no-member
     initializer = set(init.name for init in model.graph.initializer)
     graph_input = [
         value_info for value_info in model.graph.input if value_info.name not in initializer
@@ -96,8 +98,8 @@ def eliminate_initializer_from_graph_input(model: onnx.ModelProto) -> onnx.Model
 
 
 def rebuild_model(
-    model: onnx.ModelProto,
-    new_nodes: List[onnx.NodeProto],
+    model: onnx.ModelProto,  # pylint: disable=no-member
+    new_nodes: List[onnx.NodeProto],  # pylint: disable=no-member
     eliminate: bool = True,
     renaming: bool = True,
 ):
@@ -147,7 +149,7 @@ def make_initializer_name_unique(model):
             if node_input not in initializer:
                 continue
 
-            tensor = onnx.TensorProto()
+            tensor = onnx.TensorProto()  # pylint: disable=no-member
             tensor.CopyFrom(initializer[node_input])
             # HACK: This attempts to give the initializer a new unique name.
             # Although it is unlikely, there is a possibility that the new
@@ -184,7 +186,7 @@ def is_op_type(op_type: str, target_op_types: Iterable[str]) -> bool:
     return op_type in target_op_types
 
 
-def check_value_info(model: onnx.ModelProto) -> None:
+def check_value_info(model: onnx.ModelProto) -> None:  # pylint: disable=no-member
     initializer = {init.name: init for init in model.graph.initializer}
     value_info = {
         vi.name: vi
@@ -277,12 +279,14 @@ def get_node_output_names(model):
 
 
 def get_attribute(
-    attrs: Iterable[onnx.AttributeProto], attr_name: str, default: Optional[Any] = None
+    attrs: Iterable[onnx.AttributeProto],  # pylint: disable=no-member
+    attr_name: str,
+    default: Optional[Any] = None,
 ) -> Any:
     return next(
         (onnx.helper.get_attribute_value(attr) for attr in attrs if attr.name == attr_name), default
     )
 
 
-def get_node_attributes(node: onnx.NodeProto) -> Dict[str, Any]:
+def get_node_attributes(node: onnx.NodeProto) -> Dict[str, Any]:  # pylint: disable=no-member
     return {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}

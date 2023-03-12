@@ -38,13 +38,13 @@ class TestCheckValueInfo(unittest.TestCase):
 
     def test_no_elem_type(self):
         def _make_y_value_info():
-            value_info_y = onnx.ValueInfoProto()
+            value_info_y = onnx.ValueInfoProto()  # pylint: disable=no-member
             value_info_y.name = "y"
-            type_proto_y = onnx.TypeProto()
-            type_proto_tensor_y = onnx.TypeProto.Tensor()
+            type_proto_y = onnx.TypeProto()  # pylint: disable=no-member
+            type_proto_tensor_y = onnx.TypeProto.Tensor()  # pylint: disable=no-member
             type_proto_y.tensor_type.CopyFrom(type_proto_tensor_y)
-            tensor_shape_proto_y = onnx.TensorShapeProto()
-            dim = onnx.TensorShapeProto.Dimension()
+            tensor_shape_proto_y = onnx.TensorShapeProto()  # pylint: disable=no-member
+            dim = onnx.TensorShapeProto.Dimension()  # pylint: disable=no-member
             dim.dim_value = 2
             tensor_shape_proto_y.dim.extend([dim, dim])
             type_proto_y.tensor_type.shape.CopyFrom(tensor_shape_proto_y)

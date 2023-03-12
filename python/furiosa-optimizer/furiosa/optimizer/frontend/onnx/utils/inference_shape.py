@@ -20,12 +20,12 @@ class InferenceShape:
     https://github.com/daquexian/onnx-simplifier
     """
 
-    def __init__(self, model: onnx.ModelProto) -> None:
+    def __init__(self, model: onnx.ModelProto) -> None:  # pylint: disable=no-member
         self.model = utils.rebuild_model(model, list(model.graph.node))
 
     def inference_shape(
         self, input_shapes: Optional[Dict[str, List[int]]] = None
-    ) -> onnx.ModelProto:
+    ) -> onnx.ModelProto:  # pylint: disable=no-member
         try:
             self.model, check = onnxsim.simplify(
                 self.model,

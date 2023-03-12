@@ -18,7 +18,7 @@ class TestTransformer(unittest.TestCase):
         transformer: Union[Transformer, Type[ONNXTransformer]],
     ):
         orig_model = make_onnx_model(model_desc)
-        copy_model = onnx.ModelProto()
+        copy_model = onnx.ModelProto()  # pylint: disable=no-member
         copy_model.CopyFrom(orig_model)
 
         if isinstance(transformer, Transformer):
@@ -30,15 +30,17 @@ class TestTransformer(unittest.TestCase):
 
         return orig_model, trans_model
 
-    def check_graph_node(self, model: onnx.ModelProto, op_types: List[str]):
+    def check_graph_node(
+        self, model: onnx.ModelProto, op_types: List[str]  # pylint: disable=no-member
+    ):
         assert len(model.graph.node) == len(op_types)
         for node, op_type in zip(model.graph.node, op_types):
             self.assertTrue(node.op_type == op_type)
 
     def check_output_value(
         self,
-        orig_model: onnx.ModelProto,
-        trans_model: onnx.ModelProto,
+        orig_model: onnx.ModelProto,  # pylint: disable=no-member
+        trans_model: onnx.ModelProto,  # pylint: disable=no-member
         input_shapes: Iterable[Sequence[int]],
         data: List[np.ndarray] = None,
     ):
@@ -65,7 +67,9 @@ class TestTransformer(unittest.TestCase):
             self.assertAlmostEqual(a, b, tol, msg=msg)
 
     @staticmethod
-    def run_onnx_model(model: onnx.ModelProto, input_arrays: List[np.ndarray]) -> List[np.ndarray]:
+    def run_onnx_model(
+        model: onnx.ModelProto, input_arrays: List[np.ndarray]  # pylint: disable=no-member
+    ) -> List[np.ndarray]:
         sess = ort.InferenceSession(model.SerializeToString())
         input_names = [inp.name for inp in sess.get_inputs()]
         output_names = [out.name for out in sess.get_outputs()]
@@ -75,7 +79,7 @@ class TestTransformer(unittest.TestCase):
         return outputs
 
     def run_onnx_model_flatten_output(
-        self, model: onnx.ModelProto, input_arrays: List[np.ndarray]
+        self, model: onnx.ModelProto, input_arrays: List[np.ndarray]  # pylint: disable=no-member
     ) -> List[List[float]]:
         outputs = self.run_onnx_model(model, input_arrays)
         return [val.flatten().tolist() for val in outputs]
