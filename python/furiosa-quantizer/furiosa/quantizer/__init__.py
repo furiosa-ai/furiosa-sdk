@@ -1,7 +1,7 @@
 """A FuriosaAI qunatizer."""
 
 import enum
-from typing import Iterable, List, Mapping, Sequence, Union
+from typing import Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 
 import furiosa_quantizer_impl
 from furiosa_quantizer_impl import Graph  # pylint: disable=no-name-in-module
@@ -62,7 +62,7 @@ class Calibrator:
         )
         self._collected_data = False
 
-    def collect_data(self, calibration_dataset: Iterable[Sequence[np.ndarray]]):
+    def collect_data(self, calibration_dataset: Iterable[Sequence[np.ndarray]]) -> None:
         """Collect the values of tensors that will be used for range
         computation.
 
@@ -98,13 +98,17 @@ class Calibrator:
         self._collected_data = True
         return outputs
 
-    def compute_range(self, verbose=False):
+    def compute_range(self, verbose: bool = False) -> Dict[str, Tuple[float, float]]:
         """Estimate the ranges of the tensors on the basis of the collected
         data.
 
         Args:
             verbose (bool): Whether to show a progress bar, Defaults to
                 False.
+
+        Returns:
+            Dict[str, Tuple[float, float]]: A dictionary that maps a
+                tensor name to a tuple of the tensor's min and max.
         """
         if not self._collected_data:
             raise RuntimeError("collect_data must be called before compute_range")
