@@ -16,7 +16,7 @@ class EmbeddingBagPorting(Transformer):
     def __init__(self, batch_size: Optional[int] = 128):
         self.batch_size = batch_size
 
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         dynamic_axes = {"batch_size": self.batch_size}
         input_shapes = {
             input.name: [
@@ -116,7 +116,9 @@ class EmbeddingBagPattern(ONNXTransformer):
 
         return base_node.input
 
-    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+    def pattern_condition_checker(
+        self, nodes_to_check: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> bool:
         (
             subgraph_base_node,
             gather_0,
@@ -136,13 +138,13 @@ class EmbeddingBagPattern(ONNXTransformer):
             and _check_condition_5(gather_1, gather_2)
         )
 
-    def check_condition_3(self, node: onnx.NodeProto) -> bool:
+    def check_condition_3(self, node: onnx.NodeProto) -> bool:  # pylint: disable=no-member
         axes = self.get_initializer_array(node.input[3])
 
         return np.array_equal(axes, [0])
 
 
-def _check_condition_1(node: onnx.NodeProto) -> bool:
+def _check_condition_1(node: onnx.NodeProto) -> bool:  # pylint: disable=no-member
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
     axes = attrs.get("axes")
     keepdims = attrs.get("keepdims", 1)
@@ -150,21 +152,23 @@ def _check_condition_1(node: onnx.NodeProto) -> bool:
     return axes is not None and axes == [0] and keepdims == 0
 
 
-def _check_condition_2(node: onnx.NodeProto) -> bool:
+def _check_condition_2(node: onnx.NodeProto) -> bool:  # pylint: disable=no-member
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
     axis = attrs.get("axis", 0)
 
     return axis == 0
 
 
-def _check_condition_4(node: onnx.NodeProto) -> bool:
+def _check_condition_4(node: onnx.NodeProto) -> bool:  # pylint: disable=no-member
     attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
     axes = attrs["axes"]
 
     return axes == [0]
 
 
-def _check_condition_5(node_1: onnx.NodeProto, node_2: onnx.NodeProto) -> bool:
+def _check_condition_5(
+    node_1: onnx.NodeProto, node_2: onnx.NodeProto  # pylint: disable=no-member
+) -> bool:
     for node in [node_1, node_2]:
         attrs = {attr.name: onnx.helper.get_attribute_value(attr) for attr in node.attribute}
         axis = attrs.get("axis", 0)
@@ -173,14 +177,18 @@ def _check_condition_5(node_1: onnx.NodeProto, node_2: onnx.NodeProto) -> bool:
     return node_1.input[1] == node_2.input[1]
 
 
-def _make_subgraph_new_init(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+def _make_subgraph_new_init(
+    matched_nodes: Iterable[onnx.NodeProto],  # pylint: disable=no-member
+) -> List[onnx.TensorProto]:  # pylint: disable=no-member
     _, gather, *_ = matched_nodes
     return [
         onnx.numpy_helper.from_array(np.array([1]), gather.output[0] + '_indice_1'),
     ]
 
 
-def _make_subgraph_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+def _make_subgraph_new_node(
+    matched_nodes: Iterable[onnx.NodeProto],  # pylint: disable=no-member
+) -> List[onnx.NodeProto]:  # pylint: disable=no-member
     subgraph_base_node, gather, *_ = matched_nodes
     return [
         onnx.helper.make_node(
@@ -228,7 +236,9 @@ def _make_subgraph_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onn
     ]
 
 
-def _make_new_node(base_node: onnx.NodeProto, subgraph: onnx.GraphProto) -> List[onnx.TensorProto]:
+def _make_new_node(
+    base_node: onnx.NodeProto, subgraph: onnx.GraphProto  # pylint: disable=no-member
+) -> List[onnx.TensorProto]:  # pylint: disable=no-member
     return [
         onnx.helper.make_node(
             base_node.op_type,

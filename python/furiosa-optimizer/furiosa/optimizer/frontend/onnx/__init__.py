@@ -17,10 +17,10 @@ from furiosa.optimizer.frontend.onnx.utils.version_checker import CheckVersion
 
 
 def optimize_model(
-    model: onnx.ModelProto,
+    model: onnx.ModelProto,  # pylint: disable=no-member
     input_shapes: Optional[Dict[str, List[int]]] = None,
     opset_version: int = __OPSET_VERSION__,
-) -> onnx.ModelProto:
+) -> onnx.ModelProto:  # pylint: disable=no-member
     model = _transform([CheckVersion(opset_version).transform], model)
     model = _transform([PolishModel(input_shapes).transform], model)
 
@@ -30,14 +30,15 @@ def optimize_model(
 
 
 def _transform(
-    transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]], model: onnx.ModelProto
-) -> onnx.ModelProto:
+    transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],  # pylint: disable=no-member
+    model: onnx.ModelProto,  # pylint: disable=no-member
+) -> onnx.ModelProto:  # pylint: disable=no-member
     for transform in transformers:
         model = transform(model)
     return model
 
 
-def _reify(model: onnx.ModelProto) -> onnx.ModelProto:
+def _reify(model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
     transformers = [
         ConvertNegativePadsToSlice().transform,
         FuseBatchNorm().transform,

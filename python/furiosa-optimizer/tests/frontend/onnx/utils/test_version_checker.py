@@ -50,5 +50,5 @@ class TestCheckVersion(unittest.TestCase):
         # if target opset > 13, CheckVersion should raise VlueError
         self.assertRaises(ValueError, CheckVersion, new_opset)
 
-    def check_opset_version(self, model: onnx.ModelProto, opset: int):
+    def check_opset_version(self, model: onnx.ModelProto, opset: int):  # pylint: disable=no-member
         self.assertEqual(model.opset_import[0].version, opset)

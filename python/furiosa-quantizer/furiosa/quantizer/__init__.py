@@ -40,7 +40,7 @@ class Calibrator:
 
     def __init__(
         self,
-        model: Union[onnx.ModelProto, bytes],
+        model: Union[onnx.ModelProto, bytes],  # pylint: disable=no-member
         calibration_method: CalibrationMethod,
         *,
         percentage: float = 99.99,
@@ -55,7 +55,7 @@ class Calibrator:
                 calibration. Defaults to 99.99 (i.e. 99.99%-percentile
                 calibration).
         """
-        if isinstance(model, onnx.ModelProto):
+        if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
             model = model.SerializeToString()
         self._calibrator = furiosa_quantizer_impl.Calibrator(  # pylint: disable=no-member
             model, calibration_method, percentage
@@ -112,7 +112,7 @@ class Calibrator:
 
 
 def quantize(
-    model: Union[onnx.ModelProto, bytes],
+    model: Union[onnx.ModelProto, bytes],  # pylint: disable=no-member
     tensor_name_to_range: Mapping[str, Sequence[float]],
     *,
     with_quantize: bool = True,
@@ -131,7 +131,7 @@ def quantize(
         Graph: An intermediate representation (IR) of the quantized
             model.
     """
-    if isinstance(model, onnx.ModelProto):
+    if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
     return furiosa_quantizer_impl.quantize(  # pylint: disable=no-member
         model, tensor_name_to_range, with_quantize

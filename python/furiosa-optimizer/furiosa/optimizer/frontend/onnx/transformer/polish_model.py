@@ -9,7 +9,7 @@ from furiosa.optimizer.frontend.onnx.utils.inference_shape import InferenceShape
 from furiosa.optimizer.interfaces.transformer import Transformer
 
 
-class PolishModel(Transformer[onnx.ModelProto]):
+class PolishModel(Transformer[onnx.ModelProto]):  # pylint: disable=no-member
     """
     Essential graph transformer/optimizers
     """
@@ -18,7 +18,7 @@ class PolishModel(Transformer[onnx.ModelProto]):
         super().__init__()
         self.input_shapes = input_shapes
 
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         model = utils.name_nodes(model)
         model = utils.make_initializer_name_unique(model)
         model = utils.fix_batch_size_as_one(model)

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class FuseBatchNorm(Transformer):
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         for transformer in [Pattern_1, Pattern_2, Pattern_3, Pattern_4]:
             model = transformer(model).transform()
 
@@ -28,7 +28,9 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Conv', 'BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -58,7 +60,9 @@ class Pattern_2(ONNXTransformer):
 
     pattern_to_match = ['ConvTranspose', 'BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -93,7 +97,9 @@ class Pattern_3(ONNXTransformer):
 
     pattern_to_match = ['Conv', 'Mul', 'Add']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -114,7 +120,9 @@ class Pattern_3(ONNXTransformer):
 
         return conv.input
 
-    def pattern_condition_checker(self, nodes_to_check: List[onnx.NodeProto]) -> bool:
+    def pattern_condition_checker(
+        self, nodes_to_check: List[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> bool:
         _, mul, add = nodes_to_check
 
         # This checks if a node has a initializer, \
@@ -135,7 +143,9 @@ class Pattern_4(ONNXTransformer):
 
     pattern_to_match = ['BatchNormalization']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -153,7 +163,9 @@ class Pattern_4(ONNXTransformer):
 
         return batch_norm.input
 
-    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+    def make_new_init(
+        self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> List[onnx.TensorProto]:  # pylint: disable=no-member
         (batch_norm,) = matched_nodes
         bn_params = _get_bn_params(batch_norm, self.get_initializer_array)
         multiplier, shifter = _get_multiplier_and_shifter(*bn_params)
@@ -172,19 +184,22 @@ class Pattern_4(ONNXTransformer):
             ),
         ]
 
-    def make_new_vi(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.ValueInfoProto]:
+    def make_new_vi(
+        self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> List[onnx.ValueInfoProto]:  # pylint: disable=no-member
         (batch_norm,) = matched_nodes
         return [
             onnx.helper.make_tensor_value_info(
                 batch_norm.output[0] + '_bn_multiplied',
-                onnx.TensorProto.FLOAT,
+                onnx.TensorProto.FLOAT,  # pylint: disable=no-member
                 shape=self.get_value_info_shape(batch_norm.output[0]),
             )
         ]
 
 
 def _get_bn_params(
-    node: onnx.NodeProto, get_init_arr_func: Callable[[str], np.ndarray]
+    node: onnx.NodeProto,  # pylint: disable=no-member
+    get_init_arr_func: Callable[[str], np.ndarray],
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     scale = get_init_arr_func(node.input[1])
     if all(v == 0.0 for v in scale):
@@ -218,7 +233,9 @@ def _get_multiplier_and_shifter(
     return multiplier, shifter
 
 
-def _make_bn_fused_node(node: onnx.NodeProto, output_tensor: str) -> List[onnx.NodeProto]:
+def _make_bn_fused_node(
+    node: onnx.NodeProto, output_tensor: str  # pylint: disable=no-member
+) -> List[onnx.NodeProto]:  # pylint: disable=no-member
     assert node.op_type in ['Conv', 'ConvTranspose'], repr(node)
     input_names = [node.input[0], node.input[1] + '_bn_fused']
     if len(node.input) == 3:
@@ -238,11 +255,11 @@ def _make_bn_fused_node(node: onnx.NodeProto, output_tensor: str) -> List[onnx.N
 
 
 def _make_bn_fused_init(
-    node: onnx.NodeProto,
+    node: onnx.NodeProto,  # pylint: disable=no-member
     multiplier: np.ndarray,
     shifter: np.ndarray,
     get_init_arr_func: Callable[[str], np.ndarray],
-) -> List[onnx.TensorProto]:
+) -> List[onnx.TensorProto]:  # pylint: disable=no-member
     assert node.op_type in ['Conv', 'ConvTranspose'], repr(node)
     weight = get_init_arr_func(node.input[1])
     fused_weight = _fuse_bn_weight(weight, multiplier, axis=0 if node.op_type == 'Conv' else 1)
@@ -262,7 +279,9 @@ def _make_bn_fused_init(
     ]
 
 
-def _make_new_node_pattern_4(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+def _make_new_node_pattern_4(
+    matched_nodes: Iterable[onnx.NodeProto],  # pylint: disable=no-member
+) -> List[onnx.NodeProto]:  # pylint: disable=no-member
     (batch_norm,) = matched_nodes
     return [
         onnx.helper.make_node(

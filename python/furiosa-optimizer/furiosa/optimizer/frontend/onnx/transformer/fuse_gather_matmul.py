@@ -8,7 +8,7 @@ from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class FuseGatherMatMul(Transformer):
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         for transformer in [
             Pattern_1,
         ]:
@@ -34,7 +34,9 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Gather', 'MatMul']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
 
         if not matched_nodes:
@@ -53,7 +55,9 @@ class Pattern_1(ONNXTransformer):
         return gather.input
 
     # pylint: disable=too-many-return-statements
-    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+    def pattern_condition_checker(
+        self, nodes_to_check: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> bool:
         gather, matmul = nodes_to_check
 
         if (matmul.input[0] in self.initializer_map) == (matmul.input[1] in self.initializer_map):
@@ -65,12 +69,14 @@ class Pattern_1(ONNXTransformer):
         if gather_data not in self.initializer_map:
             return False
 
+        # pylint: disable-next=no-member
         if self.get_value_info_dtype(matmul_weight) != onnx.TensorProto.FLOAT:
             return False
 
         if len(self.get_value_info_shape(matmul_weight)) != 2:
             return False
 
+        # pylint: disable-next=no-member
         if self.get_value_info_dtype(gather_data) != onnx.TensorProto.FLOAT:
             return False
 
@@ -86,7 +92,9 @@ class Pattern_1(ONNXTransformer):
         return True
 
     @staticmethod
-    def make_new_node(matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+    def make_new_node(
+        matched_nodes: Iterable[onnx.NodeProto],  # pylint: disable=no-member
+    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
         gather, matmul = matched_nodes
 
         return [
@@ -99,7 +107,9 @@ class Pattern_1(ONNXTransformer):
             )
         ]
 
-    def make_new_init(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.TensorProto]:
+    def make_new_init(
+        self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> List[onnx.TensorProto]:  # pylint: disable=no-member
         gather, matmul = matched_nodes
 
         table_tensor = gather.input[0]

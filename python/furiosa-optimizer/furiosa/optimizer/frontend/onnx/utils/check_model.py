@@ -2,7 +2,9 @@ import onnx
 import onnxruntime as ort
 
 
-def check_model(model: onnx.ModelProto, check_runnable: bool = True) -> None:
+def check_model(
+    model: onnx.ModelProto, check_runnable: bool = True  # pylint: disable=no-member
+) -> None:
     """
     Check if model's well-defined and executable on onnxruntime
     """

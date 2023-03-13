@@ -13,7 +13,7 @@ def make_onnx_model_from_model_desc(
     producer_name: str = "",
     check: bool = True,
     infer_shape: bool = True,
-) -> onnx.ModelProto:
+) -> onnx.ModelProto:  # pylint: disable=no-member
     """
     type hints for model_desc
 
@@ -49,7 +49,7 @@ def make_onnx_model_from_model_desc(
 
 def _make_value_info_list(
     vi_desc: Dict[str, Tuple[np.dtype, List[Union[Text, int]]]]
-) -> List[onnx.ValueInfoProto]:
+) -> List[onnx.ValueInfoProto]:  # pylint: disable=no-member
     return [
         onnx.helper.make_tensor_value_info(
             name, onnx.mapping.NP_TYPE_TO_TENSOR_TYPE[np.dtype(np_dtype)], shape
@@ -60,7 +60,7 @@ def _make_value_info_list(
 
 def _make_initializer_list(
     init_desc: Dict[str, Union[Tuple[np.dtype, List[Union[Text, int]]], np.array]]
-) -> List[onnx.TensorProto]:
+) -> List[onnx.TensorProto]:  # pylint: disable=no-member
     initailizers = []
     for name, arg in init_desc.items():
         if isinstance(arg, tuple):
@@ -77,26 +77,28 @@ def _make_initializer_list(
 
 def _make_node_list(
     node_desc: List[Tuple[str, List[str], List[str], Dict]]
-) -> List[onnx.NodeProto]:
+) -> List[onnx.NodeProto]:  # pylint: disable=no-member
     return [
         onnx.helper.make_node(op_type, inputs, outputs, name=f'{op_type}_{idx}', **attrs)
         for idx, (op_type, inputs, outputs, attrs) in enumerate(node_desc)
     ]
 
 
-def _make_opsetid_list(opsetids: List[Tuple[str, str]]) -> List[onnx.OperatorSetIdProto]:
+def _make_opsetid_list(
+    opsetids: List[Tuple[str, str]]
+) -> List[onnx.OperatorSetIdProto]:  # pylint:disable=no-member
     return [onnx.helper.make_opsetid(domain, version) for (domain, version) in opsetids]
 
 
 def _make_graph(
-    nodes: List[onnx.NodeProto],
-    inputs: List[onnx.ValueInfoProto],
-    outputs: List[onnx.ValueInfoProto],
-    initializer: Optional[List[onnx.TensorProto]] = None,
-    value_info: Optional[List[onnx.ValueInfoProto]] = None,
+    nodes: List[onnx.NodeProto],  # pylint: disable=no-member
+    inputs: List[onnx.ValueInfoProto],  # pylint: disable=no-member
+    outputs: List[onnx.ValueInfoProto],  # pylint: disable=no-member
+    initializer: Optional[List[onnx.TensorProto]] = None,  # pylint: disable=no-member
+    value_info: Optional[List[onnx.ValueInfoProto]] = None,  # pylint: disable=no-member
     name: str = "graph",
     doc_string: str = "",
-) -> onnx.GraphProto:
+) -> onnx.GraphProto:  # pylint: disable=no-member
     graph_def = onnx.helper.make_graph(
         nodes, name, inputs, outputs, initializer, doc_string, value_info
     )
@@ -104,11 +106,11 @@ def _make_graph(
 
 
 def _make_model(
-    graph: onnx.GraphProto,
-    opset_imports: List[onnx.OperatorSetIdProto],
+    graph: onnx.GraphProto,  # pylint: disable=no-member
+    opset_imports: List[onnx.OperatorSetIdProto],  # pylint: disable=no-member
     check: bool = True,
     producer_name: str = "",
-) -> onnx.ModelProto:
+) -> onnx.ModelProto:  # pylint: disable=no-member
     model = onnx.helper.make_model(graph, opset_imports=opset_imports, producer_name=producer_name)
     if check:
         onnx.checker.check_model(model)

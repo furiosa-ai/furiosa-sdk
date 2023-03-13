@@ -8,7 +8,7 @@ from furiosa.optimizer.interfaces.transformer import Transformer
 
 # TODO change name to express general objective of transformer.
 class InferSqueezeAxes(Transformer):
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         for transformer in [
             Pattern_1,
         ]:
@@ -32,7 +32,9 @@ class Pattern_1(ONNXTransformer):
 
     pattern_to_match = ['Squeeze']
 
-    def pattern_matching(self, base_node: onnx.NodeProto) -> Iterable[str]:
+    def pattern_matching(
+        self, base_node: onnx.NodeProto  # pylint: disable=no-member
+    ) -> Iterable[str]:
         matched_nodes = self.pattern_matcher(base_node, self.pattern_to_match)
         if not matched_nodes:
             return base_node.input
@@ -47,7 +49,9 @@ class Pattern_1(ONNXTransformer):
 
         return base_node.input
 
-    def pattern_condition_checker(self, nodes_to_check: Iterable[onnx.NodeProto]) -> bool:
+    def pattern_condition_checker(
+        self, nodes_to_check: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> bool:
         opset = next((opset for opset in self.model.opset_import if not opset.domain), None)
         if opset is None or opset.version >= 13:
             return False
@@ -59,7 +63,9 @@ class Pattern_1(ONNXTransformer):
             return False
         return all(attr.name != "axes" for attr in squeeze.attribute)
 
-    def make_new_node(self, matched_nodes: Iterable[onnx.NodeProto]) -> List[onnx.NodeProto]:
+    def make_new_node(
+        self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
+    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
         (squeeze,) = matched_nodes
         input_shape = self.get_value_info_shape(squeeze.input[0])
         axes = [i for (i, dim_value) in enumerate(input_shape) if dim_value == 1]

@@ -19,7 +19,7 @@ class EliminateSSDDetectionPostprocess(Transformer):
     def __init__(self, ssd_outputs: List):
         self.ssd_outputs = ssd_outputs
 
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         vi_by_names = {vi.name: vi for vi in model.graph.value_info}
 
         removed_nodes = _get_postprocess_nodes(model, self.ssd_outputs)

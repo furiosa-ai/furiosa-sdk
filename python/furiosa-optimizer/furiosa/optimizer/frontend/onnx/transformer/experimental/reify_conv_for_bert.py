@@ -20,7 +20,7 @@ class ReifyConvForBert(Transformer):
         self.nodes_by_output_name = None
         self.initializers = None
 
-    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:
+    def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         model = PolishModel().transform(model)
 
         self.nodes_by_output_name = {node.output[0]: node for node in model.graph.node}

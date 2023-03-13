@@ -63,7 +63,7 @@ class TestInferSqueezeAxes(TestTransformer):
 
 def _make_test_model(
     model_desc: Dict, input_shapes: List[Sequence[int]]
-) -> Tuple[onnx.ModelProto, onnx.ModelProto]:
+) -> Tuple[onnx.ModelProto, onnx.ModelProto]:  # pylint: disable=no-member
     orig_model = make_onnx_model(model_desc)
     trans_model = utils.fixed_point(
         orig_model,
