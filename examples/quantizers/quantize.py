@@ -7,8 +7,10 @@ import onnx
 import torch
 import torchvision
 from torchvision import transforms
+import tqdm
 
-from furiosa.quantizer import post_training_quantize
+from furiosa.optimizer import optimize_model
+from furiosa.quantizer import quantize, Calibrator, CalibrationMethod
 
 
 def main():
@@ -24,9 +26,16 @@ def main():
     )
     calibration_dataloader = torch.utils.data.DataLoader(calibration_dataset, batch_size=1)
 
-    model_quantized = post_training_quantize(
-        model, ([image.numpy()] for image, _ in calibration_dataloader)
-    )
+    model = optimize_model(model)
+
+    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX)
+
+    for calibration_data, _ in tqdm.tqdm(calibration_dataloader, desc="Calibration", unit="images", mininterval=0.5):
+        calibrator.collect_data([[calibration_data.numpy()]])
+
+    ranges = calibrator.compute_range()
+    
+    model_quantized = quantize(model, ranges)
 
     with open("mnist_quantized.dfg", "wb") as f:
         f.write(bytes(model_quantized))
