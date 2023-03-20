@@ -1,19 +1,98 @@
 """Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"""
 import argparse
-from pathlib import Path
+import numpy as np
 import sys
 import tempfile
+from typing import Dict, Optional, Tuple
+from pathlib import Path
 
 import onnx
 
-from furiosa.common.error import is_err
 from furiosa.common.utils import eprint, get_sdk_version
 from furiosa.quantizer import __version__ as quantizer_ver
-from furiosa.quantizer import post_training_quantization_with_random_calibration
 from furiosa.tools.compiler.api import compile
+from furiosa.optimizer import optimize_model
+from furiosa.quantizer import quantize, Calibrator, CalibrationMethod
 
 __version__ = get_sdk_version("furiosa.litmus")
 
+
+def calibrate_with_random_data(
+    model: onnx.ModelProto, dataset_size: int = 8, augmented_model_path: Optional[str] = None
+) -> Dict[str, Tuple[float, float]]:
+    """Estimates the range of tensors in a model, based on a random dataset.
+    Args:
+        model: An ONNX model to calibrate.
+        dataset_size: the size of a random dataset to use.
+        augmented_model_path: A path to save an augmented model to.
+    Returns:
+        A dict mapping tensors in the model to their minimum and maximum values.
+    """
+    if augmented_model_path is None:
+        with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
+            augmented_model_path = f.name
+
+    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX)
+    initializers = set(tensor.name for tensor in model.graph.initializer)
+    rng = np.random.default_rng()
+    for _ in range(dataset_size):
+        for value_info in model.graph.input:
+            if value_info.name in initializers:
+                continue
+            # https://github.com/onnx/onnx/blob/master/docs/IR.md#static-tensor-shapes
+            #
+            # > The static shape is defined by 'TensorShapeProto':
+            # >
+            # >     message TensorShapeProto {
+            # >       message Dimension {
+            # >         oneof value {
+            # >           int64 dim_value = 1;
+            # >           string dim_param = 2;
+            # >         };
+            # >       };
+            # >       repeated Dimension dim = 1;
+            # >     }
+            # >
+            # > Which is referenced by the Tensor type message:
+            # >
+            # >     message Tensor {
+            # >       optional TensorProto.DataType elem_type = 1;
+            # >       optional TensorShapeProto shape = 2;
+            # >     }
+            # >
+            # > The empty list of dimension sizes, [], is a valid tensor shape, denoting a
+            # > zero-dimension (scalar) value. A zero-dimension tensor is distinct from a tensor of
+            # > unknown dimensionality, which is indicated by an absent 'shape' property in the
+            # > Tensor message. When the shape property is absent in the type of a value (including
+            # > node input), it indicates that the corresponding runtime value may have any shape.
+            # > This sub-section describes how to interpret a missing-shape or a shape with missing
+            # > dimensions etc. However, specific usage contexts may impose further constraints on a
+            # > type and shape. For example, the inputs and outputs of a model (top-level graph) are
+            # > required to have a shape, indicating the rank of inputs and outputs, even though the
+            # > exact dimensions need not be specified.
+            shape = []
+            for dimension in value_info.type.tensor_type.shape.dim:
+                if dimension.HasField("dim_value"):
+                    shape.append(dimension.dim_value)
+                else:
+                    raise RuntimeError(
+                        f"The static shape of tensor '{value_info.name}' must be provided"
+                    )
+            np_dtype = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[value_info.type.tensor_type.elem_type]
+            if np.issubdtype(np_dtype, np.floating):
+                inputs = rng.standard_normal(size=shape, dtype=np_dtype)
+            elif np.issubdtype(np_dtype, np.integer):
+                iinfo = np.iinfo(np_dtype)
+                inputs = rng.integers(
+                    iinfo.min, iinfo.max, size=shape, dtype=np_dtype, endpoint=True
+                )
+            else:
+                elem_type = onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
+                raise NotImplementedError(
+                    f"tensor '{value_info.name}' is of {elem_type} but a model whose input tensor is of {elem_type} cannot be randomly calibrated yet"
+                )
+        calibrator.collect_data([[inputs]])
+    return calibrator.compute_range()
 
 def validate(model_path: Path, verbose: bool, target_npu: str):
     """
@@ -37,20 +116,18 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             flush=True,
         )
         try:
-            quantized_model = post_training_quantization_with_random_calibration(
-                model=onnx.load_model(model_path),
-                num_data=10,
-            )
+            onnx_model = optimize_model(onnx.load_model(model_path))
+            ranges = calibrate_with_random_data(onnx_model)
+            quantized_model = quantize(onnx_model, ranges)
         except Exception as e:
             eprint("[Step 1] Failed\n")
             raise e
         print("[Step 1] Passed", flush=True)
 
-        step1_output = f"{tmpdir}/step1.dfg"
-        step2_output = f"{tmpdir}/step2.enf"
+        output_path = f"{tmpdir}/output.enf"
 
         try:
-            with open(step1_output, "wb") as f:
+            with open(output_path, "wb") as f:
                 f.write(bytes(quantized_model))
         except Exception as e:
             eprint("[ERROR] Fail to save the model\n")
@@ -60,9 +137,13 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
             flush=True,
         )
-        errno = compile(step1_output, step2_output, verbose=verbose, target_npu=target_npu)
-        if is_err(errno):
-            raise Exception("[Step 2] Failed")
+
+        try:
+            _ = compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
+        except Exception as e:
+            eprint("[ERROR] Fail to compile the model\n")
+            raise e
+
         print("[Step 2] Passed")
 
 
