@@ -1,37 +1,33 @@
 """Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"""
 import argparse
-import numpy as np
+from pathlib import Path
 import sys
 import tempfile
-from typing import Dict, Optional, Tuple
-from pathlib import Path
+from typing import Dict, Tuple
 
+import numpy as np
 import onnx
 
 from furiosa.common.utils import eprint, get_sdk_version
-from furiosa.quantizer import __version__ as quantizer_ver
-from furiosa.tools.compiler.api import compile
 from furiosa.optimizer import optimize_model
-from furiosa.quantizer import quantize, Calibrator, CalibrationMethod
+from furiosa.quantizer import CalibrationMethod, Calibrator
+from furiosa.quantizer import __version__ as quantizer_ver
+from furiosa.quantizer import quantize
+from furiosa.tools.compiler.api import compile
 
 __version__ = get_sdk_version("furiosa.litmus")
 
 
 def calibrate_with_random_data(
-    model: onnx.ModelProto, dataset_size: int = 8, augmented_model_path: Optional[str] = None
+    model: onnx.ModelProto, dataset_size: int = 8
 ) -> Dict[str, Tuple[float, float]]:
     """Estimates the range of tensors in a model, based on a random dataset.
     Args:
         model: An ONNX model to calibrate.
         dataset_size: the size of a random dataset to use.
-        augmented_model_path: A path to save an augmented model to.
     Returns:
         A dict mapping tensors in the model to their minimum and maximum values.
     """
-    if augmented_model_path is None:
-        with tempfile.NamedTemporaryFile(suffix=".onnx", delete=False) as f:
-            augmented_model_path = f.name
-
     calibrator = Calibrator(model, CalibrationMethod.MIN_MAX)
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
@@ -78,7 +74,7 @@ def calibrate_with_random_data(
                     raise RuntimeError(
                         f"The static shape of tensor '{value_info.name}' must be provided"
                     )
-            np_dtype = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[value_info.type.tensor_type.elem_type]
+            np_dtype = onnx.helper.tensor_dtype_to_np_dtype(value_info.type.tensor_type.elem_type)
             if np.issubdtype(np_dtype, np.floating):
                 inputs = rng.standard_normal(size=shape, dtype=np_dtype)
             elif np.issubdtype(np_dtype, np.integer):
@@ -93,6 +89,7 @@ def calibrate_with_random_data(
                 )
         calibrator.collect_data([[inputs]])
     return calibrator.compute_range()
+
 
 def validate(model_path: Path, verbose: bool, target_npu: str):
     """
@@ -124,10 +121,10 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             raise e
         print("[Step 1] Passed", flush=True)
 
-        output_path = f"{tmpdir}/output.enf"
+        tmp_dfg_path = f"{tmpdir}/output.dfg"
 
         try:
-            with open(output_path, "wb") as f:
+            with open(tmp_dfg_path, "wb") as f:
                 f.write(bytes(quantized_model))
         except Exception as e:
             eprint("[ERROR] Fail to save the model\n")
@@ -139,7 +136,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         )
 
         try:
-            _ = compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
+            compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
             eprint("[ERROR] Fail to compile the model\n")
             raise e
