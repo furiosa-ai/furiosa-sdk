@@ -9,6 +9,7 @@ from typing import Dict, Optional, Union
 
 from furiosa.common.error import FuriosaError, is_err
 from furiosa.common.native import LogLevel, find_native_libs
+from furiosa.runtime.errors import into_exception
 
 LOG = logging.getLogger(__name__)
 
@@ -243,8 +244,7 @@ def compile(
     errno = LIBCOMPILER.fc_compile(options, None, None, byref(input_buf), byref(output_buf))
 
     if is_err(errno):
-        # it's ok because furiosa-compiler will print out the error message to stderr
-        return errno.value if isinstance(errno, ctypes.c_int) else errno
+        raise into_exception(errno)
 
     # Passing to `bytes` function makes copy
     output_bytes = bytes((ctypes.c_ubyte * output_buf.len).from_address(output_buf.data))

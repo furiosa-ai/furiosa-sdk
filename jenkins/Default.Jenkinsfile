@@ -30,6 +30,7 @@ lint_applied = [
 ]
 
 test_modules = [
+  "furiosa-litmus",
   "furiosa-quantizer",
   "furiosa-optimizer",
   "furiosa-registry",
