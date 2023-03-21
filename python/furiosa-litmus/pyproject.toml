@@ -25,7 +25,11 @@ classifiers = [
 ]
 dynamic = ["description"]
 requires-python = "~=3.7"
-dependencies = ["furiosa-runtime == 0.9.*", "furiosa-quantizer == 0.9.*"]
+dependencies = [
+    "furiosa-runtime == 0.9.*",
+    "furiosa-tools == 0.9.*", 
+    "furiosa-quantizer == 0.9.*"
+]
 
 [project.optional-dependencies]
 test = []
