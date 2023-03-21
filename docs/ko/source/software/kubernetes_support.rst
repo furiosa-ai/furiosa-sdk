@@ -35,7 +35,7 @@ APT 서버가 셋업되어 있다면 (:ref:`SetupAptRepository` 참고) 다음�
 
 .. code-block:: sh
 
-  apt-get update && apt install -y furiosa-driver-pdma furiosa-toolkit
+  apt-get update && apt install -y furiosa-driver-warboy furiosa-toolkit
 
 
 위 필수 패키지가 설치되면 furiosa-toolkit에 포함된 furiosactl 커맨드로 아래와 같이 NPU 인식을 확인해 볼 수 있다.

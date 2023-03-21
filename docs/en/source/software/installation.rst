@@ -105,7 +105,7 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
     .. code-block:: sh
 
-      sudo apt-get update && sudo apt-get install -y furiosa-driver-pdma furiosa-libnux
+      sudo apt-get update && sudo apt-get install -y furiosa-driver-warboy furiosa-libnux
 
   .. .. tab:: Installation using download center
 
@@ -135,7 +135,7 @@ you will be able to hold the currently installed versions.
 
 .. code-block:: sh
 
-  sudo apt-mark hold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark hold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 In order to unhold and update the current package versions, designate the package
@@ -146,7 +146,7 @@ use the command ``apt-mark showhold``.
 
 .. code-block:: sh
 
-  sudo apt-mark unhold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark unhold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 Installing a specific version

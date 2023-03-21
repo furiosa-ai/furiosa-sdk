@@ -32,7 +32,7 @@ If the APT server is set up (see :ref:`SetupAptRepository`), you can easily inst
 
 .. code-block:: sh
 
-  apt-get update && apt install -y furiosa-driver-pdma furiosa-toolkit
+  apt-get update && apt install -y furiosa-driver-warboy furiosa-toolkit
 
 
 Once the required package is installed as above, you can check for NPU recognition as follows, with the
