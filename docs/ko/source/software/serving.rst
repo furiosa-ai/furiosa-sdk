@@ -21,7 +21,7 @@
 
 * Ubuntu 18.04 LTS (Debian buster) 또는 상위 버전
 * :ref:`FuriosaAI SDK 필수 패키지 <RequiredPackages>`
-* Python 3.7 또는 상위 버전
+* Python 3.8 또는 상위 버전
 
 Python 실행환경 준비가 필요하다면 :ref:`SetupPython` 를 참고한다.
 

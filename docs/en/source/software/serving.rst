@@ -20,7 +20,7 @@ Its requirements are:
 
 * Ubuntu 18.04 LTS (Debian buster) or higher
 * :ref:`RequiredPackages`
-* Python 3.7 or higher version
+* Python 3.8 or higher version
 
 If you need Python environment, please refer to :ref:`SetupPython` first.
 

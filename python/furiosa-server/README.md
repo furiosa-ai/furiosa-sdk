@@ -17,7 +17,7 @@ specification and [Triton's Model Repository](https://github.com/triton-inferenc
 # Building for Development
 **Requirements**
 
-* Python >= 3.7
+* Python >= 3.8
 * libnpu
 * libnux
 
@@ -109,7 +109,7 @@ Done in 0.058442567s
 # Installing
 **Requirements**
 
-* Python >= 3.7
+* Python >= 3.8
 
 Download the latest release from https://github.com/furiosa-ai/furiosa-server/releases.
 ```
