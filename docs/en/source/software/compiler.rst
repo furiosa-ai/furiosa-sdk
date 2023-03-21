@@ -50,22 +50,22 @@ If you designate the output file name as below, it will generate a ``foo.enf`` f
      - Value
    * - Warboy
      - 1
-     - warboy
+     - warboy-b0
    * - Warboy
      - 2
-     - warboy-2pe
+     - warboy-b0-2pe
 
 If generated program's target NPU is Warboy that uses one PE independently, you can run the following command. 
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy
+  furiosa compile foo.onnx --target-npu warboy-b0
 
 When 2 PEs are fused, execute as follows.
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy-2pe
+  furiosa compile foo.onnx --target-npu warboy-b0-2pe
 
 The ``--batch-size`` option lets you specify `batch size`, the number of samples 
 to be passed as input when executing inference through the inference API. 

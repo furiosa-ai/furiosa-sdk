@@ -29,7 +29,7 @@ EXAMPLE: str = """example:
     furiosa compile foo.onnx -o foo.enf -ga population_size=100,generation_limit=500
 """
 
-NPU_IDS = ["warboy", "warboy-2pe"]
+NPU_IDS = ["warboy-b0", "warboy-b0-2pe"]
 
 
 class CommandArgError(Exception):
@@ -133,8 +133,8 @@ class CommandCompile:
         self.parser.add_argument(
             '--target-npu',
             type=str,
-            default='warboy-2pe',
-            help='Target NPU: warboy, warboy-2pe (default)',
+            default='warboy-b0-2pe',
+            help='Target NPU: warboy-b0, warboy-b0-2pe (default)',
         )
         self.parser.add_argument(
             '--analyze-memory',

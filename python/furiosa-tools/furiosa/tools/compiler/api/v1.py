@@ -14,7 +14,7 @@ from furiosa.runtime.errors import into_exception
 LOG = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
-DEFAULT_TARGET_NPU = "warboy-2pe"
+DEFAULT_TARGET_NPU = "warboy-b0-2pe"
 
 
 class FcBuffer(Structure):

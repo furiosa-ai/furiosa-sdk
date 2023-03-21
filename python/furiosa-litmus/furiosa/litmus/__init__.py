@@ -165,8 +165,8 @@ def main():
     parser.add_argument(
         '--target-npu',
         type=str,
-        default='warboy-2pe',
-        help='Target NPU: warboy, warboy-2pe',
+        default='warboy-b0-2pe',
+        help='Target NPU: warboy-b0, warboy-b0-2pe',
     )
     args = parser.parse_args()
     validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
