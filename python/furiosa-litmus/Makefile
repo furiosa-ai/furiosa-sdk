@@ -13,7 +13,7 @@ upload:
 	flit publish
 
 test:
-	pytest --capture=no
+	python -m unittest
 
 doc:
 	pdoc3 --html --force --output-dir html_output furiosa	
