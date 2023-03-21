@@ -30,7 +30,7 @@ dependencies = [
     "furiosa-optimizer == 0.9.*",
     "furiosa-quantizer-impl == 0.9.*",
 
-    "numpy ~= 1.19",
+    "numpy ~= 1.24",
     "onnx ~= 1.13.1",
     "onnx-simplifier ~= 0.4.8",
     "onnxoptimizer ~= 0.3.10",
