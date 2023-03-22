@@ -14,7 +14,7 @@ Python SDK는 다양한 모듈로 구성되며 추론 API, 양자화 API, 명령
 =======================================================================
 * Ubuntu 18.04 LTS (Debian buster) 또는 상위 버전
 * :ref:`FuriosaAI SDK 필수 패키지 <RequiredPackages>`
-* Python 3.7 또는 상위 버전 (Python 환경 구성은 :any:`SetupPython` 를 참고)
+* Python 3.8 또는 상위 버전 (Python 환경 구성은 :any:`SetupPython` 를 참고)
 * pip 최신 버전
 
 Python SDK 설치 및 사용을 위해서는 :ref:`필수 패키지 설치 <RequiredPackages>` 가이드를 따라
@@ -26,7 +26,7 @@ Python SDK 설치 및 사용을 위해서는 :ref:`필수 패키지 설치 <Requ
 Python 실행 환경 구성
 ================================================================
 
-Python SDK는 Python 3.7 또는 그 상위 버전의 실행 환경이 필요하고
+Python SDK는 Python 3.8 또는 그 상위 버전의 실행 환경이 필요하고
 이 섹션에서는 Python 실행 환경 구성을 설명한다.
 
 .. note::
@@ -42,7 +42,7 @@ Python SDK는 Python 3.7 또는 그 상위 버전의 실행 환경이 필요하�
   Python 3.8.10
 
 
-만약 Python 명령이 존재하지 않거나 3.7 미만의 Python을 사용하고 있다면
+만약 Python 명령이 존재하지 않거나 3.8 미만의 Python을 사용하고 있다면
 아래 방법 중에 하나를 선택하여 Python 환경을 구성할 수 있다.
 
 * :ref:`CondaInstall` (권장):

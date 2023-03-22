@@ -12,7 +12,7 @@ Requirements
 =======================================================================
 * Ubuntu 18.04 LTS (Debian buster) or higher
 * :ref:`FuriosaAI SDK required packages <RequiredPackages>`
-* Python 3.7 or higher (See :any:`SetupPython` for setup Python environment)
+* Python 3.8 or higher (See :any:`SetupPython` for setup Python environment)
 * Latest version of pip 
 
 To install and use Python SDK, follow the :ref:`Installing required packages <RequiredPackages>` guide. 
@@ -23,7 +23,7 @@ You need to install the required kernel driver, firmware, and runtime library.
 Python execution environment setup
 ================================================================
 
-Python SDK requires Python 3.7 or above. Here, we describe Python execution environment configuration. 
+Python SDK requires Python 3.8 or above. Here, we describe Python execution environment configuration.
 
 .. note::
 
@@ -37,8 +37,8 @@ You can check the Python version currently installed in your system with the com
   Python 3.8.10
 
 
-If the Python command does not exist, or if your Python version is below 3.7, configure the Python environment 
-by selecting one of the methods below. 
+If the Python command does not exist, or if your Python version is below 3.8, configure the Python environment
+by selecting one of the methods below.
 
 * :ref:`CondaInstall` (recommended):
   `Conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ allows you to 
