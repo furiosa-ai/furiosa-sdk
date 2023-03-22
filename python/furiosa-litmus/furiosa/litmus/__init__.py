@@ -5,6 +5,7 @@ import sys
 import tempfile
 from typing import Dict, Tuple
 
+from google.protobuf.message import DecodeError
 import numpy as np
 import onnx
 
@@ -111,9 +112,12 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
         try:
             onnx_model = optimize_model(onnx.load_model(model_path))
+        except DecodeError as de:
+            eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
+            raise SystemExit(de)
         except Exception as e:
-            eprint("[Step 1] ERROR: Litmus only supports onnx format\n")
-            raise SystemExit(e)
+            eprint("[Step 1] Failed\n")
+            raise e
         print("[Step 1] Passed", flush=True)
 
         print("[Step 2] Checking if the model can be quantized ...", flush=True)
