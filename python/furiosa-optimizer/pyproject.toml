@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -27,7 +28,7 @@ requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.9.*",
 
-    "numpy ~= 1.19",
+    "numpy ~= 1.24",
     "onnx ~= 1.13.1",
     "onnx-simplifier ~= 0.4.8",
     "onnxoptimizer ~= 0.3.10",
@@ -50,7 +51,7 @@ name = "furiosa.optimizer"
 [tool.black]
 skip-string-normalization = true
 line-length = 100
-target-version = ["py38", "py39"]
+target-version = ["py38", "py39", "py310"]
 extend-exclude = "/generated/"
 
 [tool.isort]
