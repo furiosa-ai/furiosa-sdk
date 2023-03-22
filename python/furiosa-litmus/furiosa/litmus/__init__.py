@@ -113,7 +113,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             onnx_model = optimize_model(onnx.load_model(model_path))
         except Exception as e:
             eprint("[Step 1] ERROR: Litmus only supports onnx format\n")
-            return e
+            raise SystemExit(e)
         print("[Step 1] Passed", flush=True)
 
         print("[Step 2] Checking if the model can be quantized ...", flush=True)
@@ -122,7 +122,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             quantized_model = quantize(onnx_model, ranges)
         except Exception as e:
             eprint("[Step 2] ERROR: Fail to quantize the model\n")
-            return e
+            raise SystemExit(e)
         print("[Step 2] Passed", flush=True)
 
         print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
@@ -132,7 +132,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
                 f.write(bytes(quantized_model))
         except Exception as e:
             eprint("[Step 3] ERROR: Fail to save the model\n")
-            return e
+            raise SystemExit(e)
         print("[Step 3] Passed", flush=True)
 
         print(
@@ -143,10 +143,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
             eprint("[Step 4] ERROR: Fail to compile the model\n")
-            return e
+            raise SystemExit(e)
         print("[Step 4] Passed")
-
-        return 0
 
 
 def main():
@@ -166,7 +164,7 @@ def main():
         help='Target NPU: warboy, warboy-2pe',
     )
     args = parser.parse_args()
-    sys.exit(validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu))
+    validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
 
 
 if __name__ == "__main__":
