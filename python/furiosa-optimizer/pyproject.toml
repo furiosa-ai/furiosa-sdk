@@ -33,7 +33,6 @@ dependencies = [
     "onnx-simplifier ~= 0.4.8",
     "onnxoptimizer ~= 0.3.10",
     "onnxruntime ~= 1.14.1",
-    "tqdm ~= 4.64",
 ]
 
 [project.optional-dependencies]
