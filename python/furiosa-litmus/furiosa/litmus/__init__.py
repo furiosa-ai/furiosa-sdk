@@ -108,40 +108,45 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             file=sys.stderr,
         )
         # Try quantization on input models
-        print(
-            "[Step 1] Checking if the model can be transformed into a quantized model ...",
-            flush=True,
-        )
+        print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
         try:
             onnx_model = optimize_model(onnx.load_model(model_path))
+        except Exception as e:
+            eprint("[Step 1] ERROR: Litmus only supports onnx format\n")
+            return e
+        print("[Step 1] Passed", flush=True)
+
+        print("[Step 2] Checking if the model can be quantized ...", flush=True)
+        try:
             ranges = calibrate_with_random_data(onnx_model)
             quantized_model = quantize(onnx_model, ranges)
         except Exception as e:
-            eprint("[Step 1] Failed\n")
-            raise e
-        print("[Step 1] Passed", flush=True)
+            eprint("[Step 2] ERROR: Fail to quantize the model\n")
+            return e
+        print("[Step 2] Passed", flush=True)
 
-        tmp_dfg_path = f"{tmpdir}/output.dfg"
-
+        print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
         try:
+            tmp_dfg_path = f"{tmpdir}/output.dfg"
             with open(tmp_dfg_path, "wb") as f:
                 f.write(bytes(quantized_model))
         except Exception as e:
-            eprint("[ERROR] Fail to save the model\n")
-            raise e
+            eprint("[Step 3] ERROR: Fail to save the model\n")
+            return e
+        print("[Step 3] Passed", flush=True)
 
         print(
-            f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
+            f"[Step 4] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
             flush=True,
         )
-
         try:
             compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
-            eprint("[ERROR] Fail to compile the model\n")
-            raise e
+            eprint("[Step 4] ERROR: Fail to compile the model\n")
+            return e
+        print("[Step 4] Passed")
 
-        print("[Step 2] Passed")
+        return 0
 
 
 def main():
@@ -161,7 +166,7 @@ def main():
         help='Target NPU: warboy, warboy-2pe',
     )
     args = parser.parse_args()
-    validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
+    sys.exit(validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu))
 
 
 if __name__ == "__main__":
