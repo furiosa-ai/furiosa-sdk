@@ -10,7 +10,7 @@ Python SDK consists of various modules and provides an inference API, a quantiza
 
 Requirements 
 =======================================================================
-* Ubuntu 18.04 LTS (Debian buster) or higher
+* Ubuntu 20.04 LTS (Debian bullseye) or higher
 * :ref:`FuriosaAI SDK required packages <RequiredPackages>`
 * Python 3.8 or higher (See :any:`SetupPython` for setup Python environment)
 * Latest version of pip 

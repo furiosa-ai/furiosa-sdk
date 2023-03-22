@@ -20,7 +20,7 @@
 
 SDK 설치를 위한 최소 요구사항
 =====================================================================
-* Ubuntu 18.04 LTS (Bionic Beaver) 또는 Debian buster
+* Ubuntu 20.04 LTS (Focal Fossa) 또는 Debian bullseye
   또는 상위 버전
 * 시스템의 관리자 권한 (root)
 * 인터넷 접근이 가능한 네트워크
@@ -68,16 +68,6 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 
 .. tabs::
 
-  .. tab:: Ubuntu 18.04 (Debian Buster)
-
-      아래 커맨드를 통해 APT 서버를 등록합니다.
-
-      .. code-block:: sh
-
-        sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu bionic restricted
-        EOT
-
   .. tab:: Ubuntu 20.04 (Debian Bullseye)
 
       아래 커맨드를 통해 APT 서버를 등록합니다.
@@ -86,6 +76,16 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
         deb [arch=amd64] https://archive.furiosa.ai/ubuntu focal restricted
+        EOT
+
+  .. tab:: Ubuntu 22.04 (Debian Bookworm)
+
+      아래 커맨드를 통해 APT 서버를 등록합니다.
+
+      .. code-block:: sh
+
+        sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
+        deb [arch=amd64] https://archive.furiosa.ai/ubuntu jammy restricted
         EOT
 
 
