@@ -27,15 +27,10 @@ dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.9.*",
-    "furiosa-optimizer == 0.9.*",
     "furiosa-quantizer-impl == 0.9.*",
 
     "numpy ~= 1.24",
     "onnx ~= 1.13.1",
-    "onnx-simplifier ~= 0.4.8",
-    "onnxoptimizer ~= 0.3.10",
-    "onnxruntime ~= 1.14.1",
-    "tqdm ~= 4.64",
 ]
 
 [project.optional-dependencies]
