@@ -111,7 +111,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         # Try quantization on input models
         print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
         try:
-            onnx_model = optimize_model(onnx.load_model(model_path))
+            onnx_model = onnx.load_model(model_path)
+            onnx_model = optimize_model(onnx_model)
         except DecodeError as de:
             eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
             raise SystemExit(de)
@@ -125,8 +126,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             ranges = calibrate_with_random_data(onnx_model)
             quantized_model = quantize(onnx_model, ranges)
         except Exception as e:
-            eprint("[Step 2] ERROR: Fail to quantize the model\n")
-            raise SystemExit(e)
+            eprint("[Step 2] Failed\n")
+            raise e
         print("[Step 2] Passed", flush=True)
 
         print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
@@ -135,8 +136,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             with open(tmp_dfg_path, "wb") as f:
                 f.write(bytes(quantized_model))
         except Exception as e:
-            eprint("[Step 3] ERROR: Fail to save the model\n")
-            raise SystemExit(e)
+            eprint("[Step 3] Failed\n")
+            raise e
         print("[Step 3] Passed", flush=True)
 
         print(
@@ -146,8 +147,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
         try:
             compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
-            eprint("[Step 4] ERROR: Fail to compile the model\n")
-            raise SystemExit(e)
+            eprint("[Step 4] Failed\n")
+            raise e
         print("[Step 4] Passed")
 
 
