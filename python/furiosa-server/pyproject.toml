@@ -18,14 +18,13 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dynamic = ["description"]
-requires-python = "~=3.7"
+requires-python = "~=3.8"
 dependencies = [
     "furiosa-runtime == 0.9.*",
     # Remove upper contraint when https://github.com/tiangolo/fastapi/issues/5857 is fixed
@@ -72,7 +71,7 @@ furiosa-server = "furiosa.server.api.cli:main"
 [tool.black]
 skip-string-normalization = true
 line-length = 100
-target-version = ["py37", "py38", "py39"]
+target-version = ["py38", "py39"]
 extend-exclude = "/generated/"
 
 [tool.mypy]

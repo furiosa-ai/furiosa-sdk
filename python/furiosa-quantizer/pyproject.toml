@@ -17,14 +17,13 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dynamic = ["description"]
-requires-python = "~=3.7"
+requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.9.*",
     "furiosa-optimizer == 0.9.*",
@@ -33,7 +32,7 @@ dependencies = [
     "numpy ~= 1.19",
     "onnx ~= 1.13.1",
     "onnx-simplifier ~= 0.4.8",
-    "onnxoptimizer ~= 0.3.1",
+    "onnxoptimizer ~= 0.3.10",
     "onnxruntime ~= 1.14.1",
     "tqdm ~= 4.64",
 ]
@@ -53,7 +52,7 @@ name = "furiosa.quantizer"
 [tool.black]
 skip-string-normalization = true
 line-length = 100
-target-version = ["py37", "py38", "py39"]
+target-version = ["py38", "py39"]
 extend-exclude = "/generated/"
 
 [tool.isort]
