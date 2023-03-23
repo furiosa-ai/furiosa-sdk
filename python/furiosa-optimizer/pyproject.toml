@@ -29,10 +29,10 @@ dependencies = [
     "furiosa-common == 0.9.*",
 
     "numpy ~= 1.24",
-    "onnx ~= 1.13.1",
+    "onnx ~= 1.12.0",
     "onnx-simplifier ~= 0.4.8",
     "onnxoptimizer ~= 0.3.10",
-    "onnxruntime ~= 1.14.1",
+    "onnxruntime ~= 1.13.1",
 ]
 
 [project.optional-dependencies]
