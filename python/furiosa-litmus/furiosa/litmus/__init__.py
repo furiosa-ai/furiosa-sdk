@@ -5,6 +5,7 @@ import sys
 import tempfile
 from typing import Dict, Tuple
 
+from google.protobuf.message import DecodeError
 import numpy as np
 import onnx
 
@@ -108,40 +109,47 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             file=sys.stderr,
         )
         # Try quantization on input models
-        print(
-            "[Step 1] Checking if the model can be transformed into a quantized model ...",
-            flush=True,
-        )
+        print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
         try:
-            onnx_model = optimize_model(onnx.load_model(model_path))
-            ranges = calibrate_with_random_data(onnx_model)
-            quantized_model = quantize(onnx_model, ranges)
+            onnx_model = onnx.load_model(model_path)
+            onnx_model = optimize_model(onnx_model)
+        except DecodeError as de:
+            eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
+            raise SystemExit(de)
         except Exception as e:
             eprint("[Step 1] Failed\n")
             raise e
         print("[Step 1] Passed", flush=True)
 
-        tmp_dfg_path = f"{tmpdir}/output.dfg"
-
+        print("[Step 2] Checking if the model can be quantized ...", flush=True)
         try:
+            ranges = calibrate_with_random_data(onnx_model)
+            quantized_model = quantize(onnx_model, ranges)
+        except Exception as e:
+            eprint("[Step 2] Failed\n")
+            raise e
+        print("[Step 2] Passed", flush=True)
+
+        print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
+        try:
+            tmp_dfg_path = f"{tmpdir}/output.dfg"
             with open(tmp_dfg_path, "wb") as f:
                 f.write(bytes(quantized_model))
         except Exception as e:
-            eprint("[ERROR] Fail to save the model\n")
+            eprint("[Step 3] Failed\n")
             raise e
+        print("[Step 3] Passed", flush=True)
 
         print(
-            f"[Step 2] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
+            f"[Step 4] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
             flush=True,
         )
-
         try:
             compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
-            eprint("[ERROR] Fail to compile the model\n")
+            eprint("[Step 4] Failed\n")
             raise e
-
-        print("[Step 2] Passed")
+        print("[Step 4] Passed")
 
 
 def main():
