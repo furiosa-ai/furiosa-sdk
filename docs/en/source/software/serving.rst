@@ -18,7 +18,7 @@ Installation
 
 Its requirements are:
 
-* Ubuntu 18.04 LTS (Debian buster) or higher
+* Ubuntu 20.04 LTS (Debian bullseye) or higher
 * :ref:`RequiredPackages`
 * Python 3.8 or higher version
 

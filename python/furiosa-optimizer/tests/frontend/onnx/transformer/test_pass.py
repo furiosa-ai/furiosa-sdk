@@ -5,7 +5,7 @@ import onnxoptimizer
 from furiosa.optimizer.frontend.onnx.utils.inference_shape import __SKIPPED_PASSES__
 
 # Allowed passes with following package versions
-# onnx-simplifier   0.4.17
+# onnx-simplifier   0.4.19
 # onnxoptimizer     0.3.10
 __ALLOWED_PASSES__ = set(
     [

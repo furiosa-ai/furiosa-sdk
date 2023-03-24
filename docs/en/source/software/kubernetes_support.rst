@@ -24,7 +24,7 @@ The setup process for Kubernetes support is as follows.
 ========================================
 Requirements for Kubernetes nodes are as follows.
 
-* Ubuntu 18.04, 20.04 or higher
+* Ubuntu 20.04 or higher
 * Intel compatible CPU
 
 You also need to install NPU driver and toolkit on each node of NPU-equipped Kubernetes.

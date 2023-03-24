@@ -392,7 +392,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libhal-xrt=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
-          libonnxruntime=1.14.\\*
+          libonnxruntime=1.13.\\*
           """
         }
       }

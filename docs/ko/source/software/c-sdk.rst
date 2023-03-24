@@ -18,7 +18,7 @@ C SDK 설치
 
 C SDK 설치를 위한 최소 요구사항은 다음과 같다.
 
-* Ubuntu 18.04 LTS (Debian buster) 또는 상위 버전
+* Ubuntu 20.04 LTS (Debian bullseye) 또는 상위 버전
 * 시스템의 관리자 권한 (root)
 * :ref:`FuriosaAI SDK 필수 패키지 <RequiredPackages>`
 

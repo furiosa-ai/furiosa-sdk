@@ -12,7 +12,7 @@ Python SDK는 다양한 모듈로 구성되며 추론 API, 양자화 API, 명령
 
 설치 사전 요구 사항
 =======================================================================
-* Ubuntu 18.04 LTS (Debian buster) 또는 상위 버전
+* Ubuntu 20.04 LTS (Debian bullseye) 또는 상위 버전
 * :ref:`FuriosaAI SDK 필수 패키지 <RequiredPackages>`
 * Python 3.8 또는 상위 버전 (Python 환경 구성은 :any:`SetupPython` 를 참고)
 * pip 최신 버전

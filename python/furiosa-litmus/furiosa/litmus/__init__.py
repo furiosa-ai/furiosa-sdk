@@ -75,7 +75,7 @@ def calibrate_with_random_data(
                     raise RuntimeError(
                         f"The static shape of tensor '{value_info.name}' must be provided"
                     )
-            np_dtype = onnx.helper.tensor_dtype_to_np_dtype(value_info.type.tensor_type.elem_type)
+            np_dtype = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[value_info.type.tensor_type.elem_type]
             if np.issubdtype(np_dtype, np.floating):
                 inputs = rng.standard_normal(size=shape, dtype=np_dtype)
             elif np.issubdtype(np_dtype, np.integer):

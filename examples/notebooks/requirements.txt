@@ -1,5 +1,5 @@
 furiosa-sdk
 matplotlib
 mnist
-onnxruntime ~= 1.14.1
+onnxruntime ~= 1.13.1
 pillow

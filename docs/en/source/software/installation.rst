@@ -21,7 +21,7 @@ or through the APT/PIP servers as issued on the developer site.
 
 Minimum requirements for SDK installation
 =====================================================================
-* Ubuntu 18.04 LTS (Bionic Beaver)/Debian buster
+* Ubuntu 20.04 LTS (Focal Fossa)/Debian bullseye
   or higher
 * Administrator privileges on system (root)
 * Internet-accessible network
@@ -69,16 +69,6 @@ This section may be skipped if you are using the download center, and not the AP
 
 .. tabs::
 
-  .. tab:: Ubuntu 18.04 (Debian Buster)
-
-      Register the APT server through the command below.
-
-      .. code-block:: sh
-
-        sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu bionic restricted
-        EOT
-
   .. tab:: Ubuntu 20.04 (Debian Bullseye)
 
       Register the APT server through the command below.
@@ -87,6 +77,16 @@ This section may be skipped if you are using the download center, and not the AP
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
         deb [arch=amd64] https://archive.furiosa.ai/ubuntu focal restricted
+        EOT
+
+  .. tab:: Ubuntu 22.04 (Debian Bookworm)
+
+      Register the APT server through the command below.
+
+      .. code-block:: sh
+
+        sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
+        deb [arch=amd64] https://archive.furiosa.ai/ubuntu jammy restricted
         EOT
 
 
