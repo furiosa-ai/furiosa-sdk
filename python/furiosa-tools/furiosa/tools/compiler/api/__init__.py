@@ -6,4 +6,5 @@ __all__ = [
     "VersionInfo",
     "compile",
     "version_string",
+    "version_dict",
 ]

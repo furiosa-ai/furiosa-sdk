@@ -44,6 +44,14 @@ else:
     del package_extras
 
 
+def version_dict() -> dict:
+    return {
+        "version": LIBNUX.version().decode('utf-8'),
+        "rev": LIBNUX.git_short_hash().decode('utf-8'),
+        "built": LIBNUX.build_timestamp().decode('utf-8'),
+    }
+
+
 __version__ = get_sdk_version(__name__)
 __full_version__ = full_version()
 

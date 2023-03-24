@@ -137,7 +137,7 @@ def __set_ga_param(options, key: str, value: object):
             raise CompilerApiError("pin_tensors must be a boolean value")
 
     elif key.lower() == "init_tactic":
-        if isinstance(value, str) and value.lower() in ['random', 'heuristic']:
+        if isinstance(value, str) and value.lower() in ["random", "heuristic"]:
             LIBCOMPILER.fc_options_ga_init_tactic(options, value.encode(DEFAULT_ENCODING))
         else:
             raise CompilerApiError("init_tactic must be either 'random' or 'heuristic'")
@@ -158,6 +158,11 @@ def version_string() -> str:
     return f"{info.version} " f"(rev: {info.git_hash} " f"built at {info.build_timestamp})"
 
 
+def version_dict() -> dict:
+    info = VersionInfo()
+    return {"version": info.version, "rev": info.git_hash, "built": info.build_timestamp}
+
+
 def __check_target_ir(target_ir: str):
     if target_ir.lower().strip() not in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
         raise InvalidTargetIrException(target_ir)
@@ -166,6 +171,7 @@ def __check_target_ir(target_ir: str):
 def compile(
     input_bytes: bytes,
     target_ir: str = "enf",
+    log_path: Optional[str] = None,
     dot_graph: Optional[Union[str, Path]] = None,
     analyze_memory: Optional[Union[str, Path]] = None,
     batch_size: Optional[int] = None,
@@ -184,6 +190,9 @@ def compile(
     input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))  # type: ignore
 
     __check_target_ir(target_ir)
+
+    if log_path is not None:
+        log_path = str(log_path).encode(DEFAULT_ENCODING)
 
     options = LIBCOMPILER.fc_create_options()
 

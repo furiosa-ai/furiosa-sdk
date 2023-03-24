@@ -1,5 +1,6 @@
 """Furiosa Litmus, which readily checks whether a given model can be compiled with Furiosa SDK"""
 import argparse
+import asyncio
 from pathlib import Path
 import sys
 import tempfile
@@ -16,7 +17,15 @@ from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer import quantize
 from furiosa.tools.compiler.api import compile
 
+from .reporter import Reporter
+
 __version__ = get_sdk_version("furiosa.litmus")
+
+
+def load_quantized_model(model_path):
+    with open(model_path, "rb") as f:
+        quantized_model = f.read()
+    return quantized_model
 
 
 def calibrate_with_random_data(
@@ -94,13 +103,16 @@ def calibrate_with_random_data(
     return calibrator.compute_range()
 
 
-def validate(model_path: Path, verbose: bool, target_npu: str) -> bool:
+def validate(
+    model_path: Path, dump_path: str, skip_quantization: bool, verbose: bool, target_npu: str
+):
     """
     Validate a given model
 
     :param model_path: Model path
     :return: boolean
     """
+    reporter = Reporter(dump_path)
     with tempfile.TemporaryDirectory() as tmpdir:
         if not model_path.exists():
             eprint(f"ERROR: {model_path} does not exist")
@@ -108,56 +120,92 @@ def validate(model_path: Path, verbose: bool, target_npu: str) -> bool:
         assert __version__ is not None
         assert quantizer_ver is not None
 
+        reporter.create_meta_yaml(model_path)
         print(
             f"furiosa-quantizer {quantizer_ver.version} (rev. {quantizer_ver.hash[0:9]})",
             f"furiosa-litmus {__version__.version} (rev. {__version__.hash[0:9]})",
             file=sys.stderr,
         )
         # Try quantization on input models
-        print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
-        try:
-            onnx_model = onnx.load_model(str(model_path))
-            onnx_model = optimize_model(onnx_model)
-        except DecodeError as de:
-            eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
-            raise SystemExit(de)
-        except Exception as e:
-            eprint("[Step 1] Failed\n")
-            raise e
-        print("[Step 1] Passed", flush=True)
+        if skip_quantization:
+            print("[Step 1] Skip model loading and optimization")
+            print("[Step 2] Skip model quantization")
+            print("[Step 3] Skip model saving")
+            quantized_model = load_quantized_model(model_path)
+        else:
+            print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
+            try:
+                onnx_model = onnx.load_model(model_path)
+                onnx_model = optimize_model(onnx_model)
+            except DecodeError as e:
+                eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
+                raise SystemExit(e)
+            except Exception as e:
+                eprint("[Step 1] Failed\n")
+                raise e
+            print("[Step 1] Passed", flush=True)
 
-        print("[Step 2] Checking if the model can be quantized ...", flush=True)
-        try:
-            ranges = calibrate_with_random_data(onnx_model)
-            quantized_model = quantize(onnx_model, ranges)
-        except Exception as e:
-            eprint("[Step 2] Failed\n")
-            raise e
-        print("[Step 2] Passed", flush=True)
+            print("[Step 2] Checking if the model can be quantized ...", flush=True)
+            try:
+                ranges = calibrate_with_random_data(onnx_model)
+                quantized_model = quantize(onnx_model, ranges)
+            except Exception as e:
+                eprint("[Step 2] Failed\n")
+                raise e
+            print("[Step 2] Passed", flush=True)
 
-        print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
-        try:
-            with open(f"{tmpdir}/output.onnx", "wb") as f:
-                f.write(quantized_model)
-
-            onnx.checker.check_model(quantized_model)
-        except Exception as e:
-            eprint("[Step 3] Failed\n")
-            raise e
-        print("[Step 3] Passed", flush=True)
+            # TODO: remove step 3
+            print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
+            try:
+                tmp_dfg_path = f"{tmpdir}/output.dfg"
+                with open(tmp_dfg_path, "wb") as f:
+                    f.write(bytes(quantized_model))
+            except Exception as e:
+                eprint("[Step 3] Failed\n")
+                raise e
+            print("[Step 3] Passed", flush=True)
 
         print(
             f"[Step 4] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
             flush=True,
         )
         try:
-            compile(quantized_model, target_ir="enf", verbose=verbose, target_npu=target_npu)
+            tmp_enf_path = f"{tmpdir}/output.enf"
+            enf = compile(
+                bytes(quantized_model),
+                target_ir="enf",
+                log_path=reporter.compiler_log_path,
+                dot_graph=reporter.dot_graph_path,
+                analyze_memory=reporter.memory_analysis_path,
+                verbose=verbose,
+                target_npu=target_npu,
+            )
+            with open(tmp_enf_path, "wb") as f:
+                f.write(enf)
         except Exception as e:
             eprint("[Step 4] Failed\n")
             raise e
         print("[Step 4] Passed")
 
-    return True
+        print("[Step 5] Perform inference once for data collection... (Optional)")
+        try:
+            from furiosa.runtime.bench import BenchConfig, BenchRunner
+
+            config = BenchConfig(tmp_enf_path, trace_output=str(reporter.trace_path))
+            bench = BenchRunner(config, "L")
+
+            async def bench_run():
+                await bench.run()
+
+            asyncio.run(bench_run())
+            print("[Step 5] Finished")
+        except RuntimeError as e:
+            eprint("[Step 5] Failed")
+            raise SystemExit(e)
+        except ModuleNotFoundError as e:
+            eprint("[Step 5] Skip, there is no furiosa-bench")
+
+        reporter.make_zip()
 
 
 def main():
@@ -169,15 +217,25 @@ def main():
         type=str,
         help="Path to Model file (tflite, onnx, and other model formats are supported)",
     )
+    parser.add_argument("--dump", type=str, help="dump file path")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument(
-        '--target-npu',
+        "--skip-quantization", action="store_true", help="skip model quantization phase"
+    )
+    parser.add_argument(
+        "--target-npu",
         type=str,
-        default='warboy-2pe',
-        help='Target NPU: warboy, warboy-2pe',
+        default="warboy-2pe",
+        help="Target NPU: warboy, warboy-2pe",
     )
     args = parser.parse_args()
-    validate(Path(args.model_path), verbose=args.verbose, target_npu=args.target_npu)
+    validate(
+        Path(args.model_path),
+        dump_path=args.dump,
+        skip_quantization=args.skip_quantization,
+        verbose=args.verbose,
+        target_npu=args.target_npu,
+    )
 
 
 if __name__ == "__main__":
