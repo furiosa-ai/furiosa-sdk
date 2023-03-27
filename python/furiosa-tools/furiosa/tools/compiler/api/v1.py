@@ -1,10 +1,8 @@
 """C Native library binding"""
 import ctypes
-from ctypes import CDLL, Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
-from enum import IntEnum
+from ctypes import Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 import logging
 from pathlib import Path
-import sys
 from typing import Dict, Optional, Union
 
 from furiosa.common.error import is_err
