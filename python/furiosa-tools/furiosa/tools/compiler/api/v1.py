@@ -241,7 +241,7 @@ def into_exception(err):
     err = err.value if isinstance(err, ctypes.c_int) else err
 
     if err == NativeError.SUCCESS:
-        return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
+        return RuntimeError(msg='CompilerErr.SUCCESS cannot be CompilerException')
 
     if err in _errors_to_exceptions:
         return _errors_to_exceptions[err]
