@@ -113,14 +113,14 @@ NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
   ..   아래 패키지들의 최신 버전을 선택하여 다운 받아 명령에 쓰여진 순서대로 설치한다.
   ..   ``x.y.z-?`` 버전 부분은 다운받은 파일의 버전에 맞게 변경한다.
 
-  ..   * NPU Driver (furiosa-driver-pdma)
+  ..   * NPU Driver (furiosa-driver-warboy)
   ..   * Hardware Abstraction Layer (furiosa-libhal)
   ..   * Runtime library  (furiosa-libnux)
   ..   * Onnxruntime  (libonnxruntime)
 
   ..   .. code-block:: sh
 
-  ..     sudo apt-get install -y ./furiosa-driver-pdma-x.y.z-?.deb
+  ..     sudo apt-get install -y ./furiosa-driver-warboy-x.y.z-?.deb
   ..     sudo apt-get install -y ./furiosa-libhal-warboy-x.y.z-?.deb
   ..     sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
   ..     sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb

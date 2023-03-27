@@ -50,22 +50,22 @@ FuriosaAI의 컴파일러는 `TFLite <https://www.tensorflow.org/lite>`_ 와 `On
      - Value
    * - Warboy
      - 1
-     - warboy-b0
+     - warboy
    * - Warboy
      - 2
-     - warboy-b0-2pe
+     - warboy-2pe
 
 생성한 프로그램이 동작할 NPU가 1개의 PE를 독립적으로 사용하는 Warboy라면 아래와 같이 명령을 실행하면 된다.
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy-b0
+  furiosa compile foo.onnx --target-npu warboy
 
 2개의 PE (Processing Element)를 Fusing 해서 사용하는 경우는 아래와 같이 실행한다.
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy-b0-2pe
+  furiosa compile foo.onnx --target-npu warboy-2pe
 
 ``--batch-size`` 옵션은 추론 API를 통해 추론을 실행할 때
 입력으로 전달할 샘플의 개수인 `배치 크기` 를 지정하게 한다.

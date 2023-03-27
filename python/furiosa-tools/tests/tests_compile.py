@@ -95,14 +95,7 @@ class CommandTests(unittest.TestCase):
             self.assertTrue(result.returncode != 0, result.stderr)
 
             result = subprocess.run(
-                [
-                    'furiosa-compile',
-                    self.mnist_model,
-                    '-o',
-                    output_file,
-                    '--target-npu',
-                    'warboy-b0',
-                ],
+                ['furiosa-compile', self.mnist_model, '-o', output_file, '--target-npu', 'warboy'],
                 capture_output=True,
             )
             self.assertTrue(result.returncode == 0, result.stderr)

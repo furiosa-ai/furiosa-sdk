@@ -14,7 +14,7 @@ from furiosa.runtime.errors import into_exception
 LOG = logging.getLogger(__name__)
 
 DEFAULT_ENCODING = "utf-8"
-DEFAULT_TARGET_NPU = "warboy-b0-2pe"
+DEFAULT_TARGET_NPU = "warboy-2pe"
 
 
 class FcBuffer(Structure):
@@ -219,7 +219,7 @@ def compile(
     options = LIBCOMPILER.fc_create_options()
 
     LIBCOMPILER.fc_options_target_ir(options, target_ir.encode(DEFAULT_ENCODING))
-    LIBCOMPILER.fc_options_target_npu(options, target_npu.encode(DEFAULT_ENCODING))
+    LIBCOMPILER.fc_options_target_npu(options, apply_b0(target_npu).encode(DEFAULT_ENCODING))
     LIBCOMPILER.fc_options_enable_cache(options, cache_enabled)
 
     if analyze_memory:
@@ -252,3 +252,16 @@ def compile(
     LIBCOMPILER.fc_destroy_buffer(byref(output_buf))
 
     return output_bytes
+
+
+def apply_b0(target_npu: str) -> str:
+    if target_npu == "warboy":
+        return "warboy-b0"
+    elif target_npu == "warboy-2pe":
+        return "warboy-b0-2pe"
+    elif target_npu == "warboy-a0":
+        return "warboy"
+    elif target_npu == "warboy-a0-2pe":
+        return "warboy-2pe"
+    else:
+        return target_npu
