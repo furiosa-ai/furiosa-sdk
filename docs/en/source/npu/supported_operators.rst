@@ -49,7 +49,7 @@ The names of the operators use `ONNX`_ as a reference.
    * - `LeakyRelu <https://github.com/onnx/onnx/blob/master/docs/Operators.md#leakyrelu>`_
      -
    * - `LpNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#lpnormalization>`_
-     -  Acceleration supported, only for p = 2
+     -  Acceleration supported, only for p = 2 and batch <= 2
    * - `MatMul <https://github.com/onnx/onnx/blob/master/docs/Operators.md#matmul>`_
      -
    * - `MaxPool <https://github.com/onnx/onnx/blob/master/docs/Operators.md#maxpool>`_
@@ -78,7 +78,7 @@ The names of the operators use `ONNX`_ as a reference.
    * - `Slice <https://github.com/onnx/onnx/blob/master/docs/Operators.md#slice>`_
      - Acceleration supported, only for height axis
    * - `Softmax <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softmax>`_
-     -
+     - Acceleration supported, only for batch <= 2
    * - `Softplus <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softplus>`_
      -
    * - `Sub <https://github.com/onnx/onnx/blob/master/docs/Operators.md#sub>`_

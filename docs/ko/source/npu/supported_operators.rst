@@ -56,7 +56,7 @@ FuriosaAI NPU와 SDK 에서는
    * - `Log <https://github.com/onnx/onnx/blob/main/docs/Operators.md#Log>`_
      -
    * - `LpNormalization <https://github.com/onnx/onnx/blob/master/docs/Operators.md#lpnormalization>`_
-     - p = 2 인 경우에 한하여 지원
+     - p = 2 이고 batch <=2 인 경우에 한하여 지원
    * - `MatMul <https://github.com/onnx/onnx/blob/master/docs/Operators.md#matmul>`_
      -
    * - `MaxPool <https://github.com/onnx/onnx/blob/master/docs/Operators.md#maxpool>`_
@@ -86,7 +86,7 @@ FuriosaAI NPU와 SDK 에서는
    * - `Slice <https://github.com/onnx/onnx/blob/master/docs/Operators.md#slice>`_
      - H axis 지원 (>= 0.6.0), C axis 지원 (>= 0.7.0)
    * - `Softmax <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softmax>`_
-     -
+     - batch <= 2 인 경우에 한해 지원
    * - `Softplus <https://github.com/onnx/onnx/blob/master/docs/Operators.md#Softplus>`_
      -
    * - `Sub <https://github.com/onnx/onnx/blob/master/docs/Operators.md#sub>`_
