@@ -105,26 +105,26 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
     .. code-block:: sh
 
-      sudo apt-get update && sudo apt-get install -y furiosa-driver-pdma furiosa-libnux
+      sudo apt-get update && sudo apt-get install -y furiosa-driver-warboy furiosa-libnux
 
-  .. tab:: Installation using download center
+  .. .. tab:: Installation using download center
 
-    Select the latest version of the packages below, download them,
-    and install them in order as written in the command.
-    Update the ``x.y.z-?`` version portions in accordance with the downloaded files.
+  ..   Select the latest version of the packages below, download them,
+  ..   and install them in order as written in the command.
+  ..   Update the ``x.y.z-?`` version portions in accordance with the downloaded files.
 
 
-    * NPU Driver (furiosa-driver-pdma)
-    * Firmware (furiosa-libhal)
-    * Runtime library  (furiosa-libnux)
-    * Onnxruntime  (libonnxruntime)
+  ..   * NPU Driver (furiosa-driver-warboy)
+  ..   * Firmware (furiosa-libhal)
+  ..   * Runtime library  (furiosa-libnux)
+  ..   * Onnxruntime  (libonnxruntime)
 
-    .. code-block:: sh
+  ..   .. code-block:: sh
 
-      sudo apt-get install -y ./furiosa-driver-pdma-x.y.z-?.deb
-      sudo apt-get install -y ./furiosa-libhal-warboy-x.y.z-?.deb
-      sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
-      sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
+  ..     sudo apt-get install -y ./furiosa-driver-warboy-x.y.z-?.deb
+  ..     sudo apt-get install -y ./furiosa-libhal-warboy-x.y.z-?.deb
+  ..     sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
+  ..     sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
 Holding/unholding installed version
 ------------------------------------
@@ -135,7 +135,7 @@ you will be able to hold the currently installed versions.
 
 .. code-block:: sh
 
-  sudo apt-mark hold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark hold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 In order to unhold and update the current package versions, designate the package
@@ -146,7 +146,7 @@ use the command ``apt-mark showhold``.
 
 .. code-block:: sh
 
-  sudo apt-mark unhold furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux libonnxruntime
+  sudo apt-mark unhold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
 
 Installing a specific version
