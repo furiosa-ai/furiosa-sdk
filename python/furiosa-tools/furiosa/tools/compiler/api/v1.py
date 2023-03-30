@@ -1,15 +1,14 @@
 """C Native library binding"""
 import ctypes
-from ctypes import CDLL, Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
-from enum import IntEnum
+from ctypes import Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 import logging
 from pathlib import Path
-import sys
 from typing import Dict, Optional, Union
 
-from furiosa.common.error import FuriosaError, is_err
+from furiosa.common.error import is_err
 from furiosa.common.native import LogLevel, find_native_libs
-from furiosa.runtime.errors import into_exception
+
+from .errors import CompilerApiError, InvalidTargetIrException, into_exception
 
 LOG = logging.getLogger(__name__)
 
@@ -106,36 +105,6 @@ LIBCOMPILER.fc_options_enable_cache.restype = None
 LIBCOMPILER.register_signal_handler()
 
 
-class NativeError(IntEnum):
-    """Python object correspondnig to nux_error_t in furiosa-libcompiler C API"""
-
-    SUCCESS = 0
-    COMPILATION_ERROR = 1
-    IO_ERROR = 2
-    CONFIGURATION_MISMATCH = 3
-    INVALID_FORMAT = 4
-    INVALID_MODEL = 5
-    INVALID_NPUID = 6
-    OUT_OF_DRAM = 7
-    OUT_OF_SRAM = 8
-    OUT_OF_INSTUCTION_MEMORY = 9
-    TFLITE_TO_DFG = 10
-    USER_COMMAND = 11
-    INVALID_CONFIG = 12
-    OTHER = 13
-
-
-class CompilerApiError(FuriosaError):
-    def __init__(self, message: str, err_code: Optional[NativeError] = None):
-        self.native_err = err_code
-        super().__init__(message)
-
-
-class InvalidTargetIrException(CompilerApiError):
-    def __init__(self, format: str = None):
-        super().__init__(f"invalid target ir '{format}'", NativeError.INVALID_FORMAT)
-
-
 def __set_ga_param(options, key: str, value: object):
     if key.lower() == "population_size":
         if isinstance(value, int):
@@ -147,7 +116,7 @@ def __set_ga_param(options, key: str, value: object):
         if isinstance(value, int):
             LIBCOMPILER.fc_options_ga_generation_limit(options, value)
         else:
-            CompilerApiError("generation_limit must be a positive integer")
+            raise CompilerApiError("generation_limit must be a positive integer")
 
     elif key.lower() == "max_prefetch_size":
         if isinstance(value, int):
