@@ -29,7 +29,7 @@ def calibrate_with_random_data(
     Returns:
         A dict mapping tensors in the model to their minimum and maximum values.
     """
-    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX)
+    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX_ASYM)
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
     for _ in range(dataset_size):
