@@ -28,7 +28,7 @@ def main():
 
     model = optimize_model(model)
 
-    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX)
+    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX_ASYM)
 
     for calibration_data, _ in tqdm.tqdm(calibration_dataloader, desc="Calibration", unit="images", mininterval=0.5):
         calibrator.collect_data([[calibration_data.numpy()]])
