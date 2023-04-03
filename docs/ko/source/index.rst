@@ -27,6 +27,7 @@ FuriosaAI Software
 * :doc:`SDK 명령행 도구 </software/cli>`
 * :doc:`컴파일러 </software/compiler>`
 * :doc:`모델 양자화 (Model quantization) </software/quantization>`
+* `FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>`_
 * :doc:`Kubernetes 지원 </software/kubernetes_support>`
 
 FuriosaAI SDK 튜토리얼 및 코드 예제
@@ -77,8 +78,9 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    /software/compiler
    /software/quantization
    /software/profiler
-   /software/kubernetes_support
+   FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>
    /software/serving
+   /software/kubernetes_support
    /software/tutorials
    /software/references
 

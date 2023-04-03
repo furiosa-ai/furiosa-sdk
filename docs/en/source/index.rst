@@ -27,6 +27,7 @@ FuriosaAI Software
 * :doc:`/software/cli`
 * :doc:`/software/compiler`
 * :doc:`/software/quantization`
+* `FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>`_
 * :doc:`/software/kubernetes_support`
 
 FuriosaAI SDK Tutorial and Examples
@@ -78,8 +79,9 @@ Other Links
    /software/compiler
    /software/quantization
    /software/profiler
-   /software/kubernetes_support
+   FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>
    /software/serving
+   /software/kubernetes_support
    /software/tutorials
    /software/references
 
