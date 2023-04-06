@@ -1,7 +1,7 @@
 """A FuriosaAI qunatizer."""
 
 import enum
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import furiosa_quantizer_impl
 from furiosa_quantizer_impl import Graph  # pylint: disable=no-name-in-module
@@ -120,6 +120,7 @@ def quantize(
     tensor_name_to_range: Mapping[str, Sequence[float]],
     *,
     with_quantize: bool = True,
+    without_dequantize: Optional[List[int]] = None,
 ) -> Graph:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
@@ -130,6 +131,12 @@ def quantize(
             tensor's min and max.
         with_quantize (bool): Whether to put a Quantize operator at the
             beginning of the resulting model. Defaults to True.
+        without_dequantize (Optional[List[int]]): Specify the output index
+            of the model and remove the Dequantize operator
+            at the output of the resulting model.
+            the output tensor will be turn into u8 type tensor
+            and its min max range will be set to (0. , 1.). 
+            Defaults to None.
 
     Returns:
         Graph: An intermediate representation (IR) of the quantized
@@ -138,5 +145,5 @@ def quantize(
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
     return furiosa_quantizer_impl.quantize(  # pylint: disable=no-member
-        model, tensor_name_to_range, with_quantize
+        model, tensor_name_to_range, with_quantize, without_dequantize
     )
