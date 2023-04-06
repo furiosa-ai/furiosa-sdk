@@ -135,7 +135,7 @@ def quantize(
             of the model and remove the Dequantize operator
             at the output of the resulting model.
             the output tensor will be turn into u8 type tensor
-            and its min max range will be set to (0. , 1.). 
+            and its min max range will be set to (0. , 1.).
             Defaults to None.
 
     Returns:
