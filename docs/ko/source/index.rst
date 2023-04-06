@@ -1,5 +1,5 @@
 ****************************************************
-FuriosaAI NPU 및 Software 0.8.0-dev 문서
+FuriosaAI NPU 및 Software |release| 문서
 ****************************************************
 
 이 문서는 FuriosaAI NPU 소개와 NPU 활용에 필요한 Software 설치 및 사용 방법을 제공한다.
