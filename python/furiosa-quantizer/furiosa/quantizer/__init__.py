@@ -131,11 +131,10 @@ def quantize(
             tensor's min and max.
         with_quantize (bool): Whether to put a Quantize operator at the
             beginning of the resulting model. Defaults to True.
-        without_dequantize (Optional[List[int]]): Specify the output index
-            of the model and remove the Dequantize operator
-            at the output of the resulting model.
-            the output tensor will be turn into u8 type tensor
-            and its min max range will be set to (0. , 1.).
+        without_dequantize (Optional[List[int]]): List of output indices
+            of the model to remove a 'Dequantize' operator from.
+            the output tensor will be turned into an u8 type tensor
+            whose min max range is (0. , 1.).
             Defaults to None.
 
     Returns:
