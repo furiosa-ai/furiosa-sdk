@@ -90,6 +90,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: SDK 릴리즈 노트
 
+   /releases/0.9.0.rst
    /releases/0.8.0.rst
    /releases/0.7.0.rst
    /releases/0.6.0.rst

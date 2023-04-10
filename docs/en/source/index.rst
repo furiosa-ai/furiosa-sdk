@@ -91,6 +91,7 @@ Other Links
    :hidden:
    :caption: Release Notes
 
+   /releases/0.9.0.rst
    /releases/0.8.0.rst
    /releases/0.7.0.rst
    /releases/0.6.0.rst
