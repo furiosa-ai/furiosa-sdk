@@ -120,7 +120,7 @@ def quantize(
     tensor_name_to_range: Mapping[str, Sequence[float]],
     *,
     with_quantize: bool = True,
-    without_dequantize: Optional[Sequence[int]] = None,
+    normalized_pixel_outputs: Optional[Sequence[int]] = None,
 ) -> Graph:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
@@ -131,11 +131,13 @@ def quantize(
             tensor's min and max.
         with_quantize (bool): Whether to put a Quantize operator at the
             beginning of the resulting model. Defaults to True.
-        without_dequantize (Optional[Sequence[int]]): List of output indices
-            of the model to remove a 'Dequantize' operator from.
-            the output tensor will be turned into an u8 type tensor
-            whose min max range is (0. , 1.).
-            Defaults to None.
+        normalized_pixel_outputs (Optional[Sequence[int]]):
+            A sequence of indices of output tensors in the ONNX model
+            that produce pixel values in a normalized format ranging
+            from 0.0 to 1.0. If specified, the corresponding output
+            tensors in the resulting quantized model will generate pixel
+            values in an unnormalized format from 0 to 255, represented
+            as unsigned 8-bit integers (uint8). Defaults to None.
 
     Returns:
         Graph: An intermediate representation (IR) of the quantized
@@ -144,5 +146,5 @@ def quantize(
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
     return furiosa_quantizer_impl.quantize(  # pylint: disable=no-member
-        model, tensor_name_to_range, with_quantize, without_dequantize
+        model, tensor_name_to_range, with_quantize, normalized_pixel_outputs
     )
