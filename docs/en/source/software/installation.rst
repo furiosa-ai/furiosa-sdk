@@ -126,6 +126,32 @@ you will be able to install the required packages - NPU kernel driver, firmware,
   ..     sudo apt-get install -y ./libonnxruntime-x.y.z-?.deb
   ..     sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
+
+.. _AddUserToFuriosaGroup:
+
+Adding a user to the furiosa Group
+------------------------------------
+
+Linux is a multi-user operating system that enables file and device access for both the owner and users within a specific group. The NPU device driver creates a group called ``furiosa`` and restricts access to NPU devices exclusively to users who are members of the ``furiosa`` group. To add a user to a member of ``furiosa`` group, please run as following:
+
+.. code-block:: sh
+
+  sudo usermod -aG furiosa <username>
+
+
+Replace <username> with the name of the user you want to add to the ``furiosa`` group.
+For example, in order to add the current user (i.e., ``$USER``) to the ``furiosa`` group, you can run as the following:
+
+.. code-block:: sh
+
+  sudo usermod -aG furiosa $USER
+
+
+Upon logging out and logging back in, the change to the group membership will take effect.
+
+
+.. _HoldingAptVersion:
+
 Holding/unholding installed version
 ------------------------------------
 
@@ -148,6 +174,8 @@ use the command ``apt-mark showhold``.
 
   sudo apt-mark unhold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
+
+.. _InstallSpecificVersion:
 
 Installing a specific version
 ------------------------------
