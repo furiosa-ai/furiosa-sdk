@@ -120,7 +120,7 @@ def quantize(
     tensor_name_to_range: Mapping[str, Sequence[float]],
     *,
     with_quantize: bool = True,
-    without_dequantize: Optional[List[int]] = None,
+    without_dequantize: Optional[Sequence[int]] = None,
 ) -> Graph:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
@@ -131,7 +131,7 @@ def quantize(
             tensor's min and max.
         with_quantize (bool): Whether to put a Quantize operator at the
             beginning of the resulting model. Defaults to True.
-        without_dequantize (Optional[List[int]]): List of output indices
+        without_dequantize (Optional[Sequence[int]]): List of output indices
             of the model to remove a 'Dequantize' operator from.
             the output tensor will be turned into an u8 type tensor
             whose min max range is (0. , 1.).
