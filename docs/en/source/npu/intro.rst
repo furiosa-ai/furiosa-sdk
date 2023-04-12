@@ -43,7 +43,6 @@ It also supports a maximum of 4266 for LPDDR4x. Warboy has a DRAM bandwidth of 6
   :align: center
   :width: 500
 
-  Warboy (rev. a0) Specification
 
 FuriosaAI Warboy Performance
 ------------------------------

@@ -77,7 +77,7 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 0.9.0 릴리즈는 다음 주요 개선 사항을 포함하고 있다.
 
 * furiosa-sdk의 ``quantizer`` extras 패키지가 제거되고 furiosa-sdk 패키지 설치 시 ``furiosa-quantizer`` 가 함께 설치되도록 변경되었다.
-* ``furiosa-quantizer`` 의 API의 사용성을 개선하고 기능이 추가되었다.
+* 더 유연하고 튼튼한 새로운 양자화 관련 API가 추가되었다. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
 .. code-block:: python
 
@@ -92,7 +92,7 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 
   * 컴파일러 옵션에서 ``without_quantize`` 가 제거된 대신, ``quantize`` 함수의 인자를 통해 ``with_quantize`` 사용 여부를 지정할 수 있다.
 
-* Asymmetric histogram calibration을 지원한다.
+* 보다 다양한 calibration 방법을 제공한다.
 
 .. list-table:: Supported Calibration Methods
    :widths: 300 50 50
@@ -121,6 +121,14 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 
 * `Python SDK 예제: 모델 생성부터 인퍼런스까지 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 
+
+컴파일러 개선
+=====================
+* Lower/Unlower 연산자 가속 지원
+* Dequantize 연산자 가속 지원
+* 하드웨어의 명령어 메모리보다 더 큰 크기의 바이너리의 실행 지원
+* 스케쥴러와 메모리 할당자를 개선하여 불필요한 I/O를 제거함
+* 다양한 개선으로 컴파일 최적화를 하여 실행 성능이 향상됨
 
 
 furiosa-toolkit 개선

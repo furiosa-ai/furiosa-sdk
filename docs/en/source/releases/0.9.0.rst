@@ -79,7 +79,7 @@ Quantization tool
 This release includes the following major updates.
 
 * Removed the ``quantizer`` extras package of furiosa-sdk and changed to install furiosa-quantizer together when installing the furiosa-sdk package.
-* Improved usability of furiosa-quantizer's API and added features.
+* Added new quantization-related APIs that are more flexible and solid. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
 .. code-block:: python
 
@@ -94,7 +94,7 @@ This release includes the following major updates.
 
   * Instead of ``without_quantize`` being removed from the compiler options, you can specify whether to use ``with_quantize`` through the arguments to the ``quantize`` function.
 
-* Support for asymmetric histogram calibration.
+* Provides more calibration methods.
 
 .. list-table:: Supported Calibration Methods
    :widths: 300 50 50
@@ -122,6 +122,15 @@ This release includes the following major updates.
 For more information on installing and using the new quantizer, you can refer to the following examples.
 
 * `Tutorial: How to use Furiosa SDK from Start to Finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
+
+
+Compiler
+==============
+* Added acceleration support for operators Lower, Unlower
+* Added acceleration support for operator Dequantize
+* Support for executing binaries that are larger than the hardware's instruction memory
+* Improved scheduler and memory allocator to eliminate unnecessary I/O
+* Various improvements optimize compilation for better execution performance
 
 
 furiosa-toolkit
