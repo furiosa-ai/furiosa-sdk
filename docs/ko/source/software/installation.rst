@@ -126,6 +126,32 @@ NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
   ..     sudo apt-get install -y ./furiosa-libnux-x.y.z-?.deb
 
 
+.. _AddUserToFuriosaGroup:
+
+유저를 ``furiosa`` 그룹에 추가
+------------------------------
+
+리눅스는 다중 사용자 운영체제로 소유자(owner)와 그룹에 속한 사용자만 파일과 장치 접근이 허용된다. NPU 디바이스 드라이버도 설치 시 자동으로 ``furiosa`` 그룹을 생성하고 이 그룹에 속한 사용자만 접근을 허용하고 있다.
+따라서 NPU를 사용하려는 유저는 자신을 ``furiosa`` 그룹에 추가해야 한다. 이를 위해 다음 명령어를 사용할 수 있다.
+
+.. code-block:: sh
+
+  sudo usermod -aG furiosa <username>
+
+
+위 명령어에서 <username> 부분에 ``furiosa`` 그룹에 추가하려는 사용자의 이름을 입력하면 된다.
+예를 들어, 현재 로그인된 사용자를 ``furiosa`` 그룹에 추가하려면, 다음 명령어를 입력한다.
+
+.. code-block:: sh
+
+  sudo usermod -aG furiosa $USER
+
+
+그룹 권한을 활성화하기 위해서는 로그아웃한 후 다시 로그인해야 한다.
+
+
+.. _HoldingAptVersion:
+
 설치된 버전 고정 및 해제
 ------------------------------
 
@@ -145,6 +171,8 @@ NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
 
   sudo apt-mark unhold furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux libonnxruntime
 
+
+.. _InstallSpecificVersion:
 
 특정 버전 설치 방법
 ------------------------------

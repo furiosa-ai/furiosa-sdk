@@ -1,7 +1,7 @@
-Furiosa SDK |ProjectVersion| API Documentation
+Furiosa SDK |release| API Documentation
 ================================================================
 
-Welcome! This is the Furiosa SDK Documentation for |ProjectVersion|.
+Welcome! This is the Furiosa SDK Documentation for |release|.
 
 
 .. toctree::

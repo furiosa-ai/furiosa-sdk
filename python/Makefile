@@ -52,4 +52,8 @@ endif
 	IFS=' ' read -a MODULES <<< '$(MODULES)'; \
 	for MODULE in "$${MODULES[@]}"; do \
 		sed -i.bak "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" furiosa-$${MODULE}/pyproject.toml ; rm -f furiosa-$${MODULE}/pyproject.toml.bak ; \
-	done
+	done; \
+	sed -i.bak "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" ../docs/ko/source/conf.py ; rm -f ../docs/ko/source/conf.py.bak ; \
+	sed -i.bak "s/release = \"[^\"]*\"/relase = \"${SDK_VERSION}\"/" ../docs/ko/source/conf.py ; rm -f ../docs/ko/source/conf.py.bak ; \
+	sed -i.bak "s/version = \"[^\"]*\"/version = \"${SDK_VERSION}\"/" ../docs/en/source/conf.py ; rm -f ../docs/en/source/conf.py.bak ; \
+	sed -i.bak "s/release = \"[^\"]*\"/release = \"${SDK_VERSION}\"/" ../docs/en/source/conf.py ; rm -f ../docs/en/source/conf.py.bak ;
