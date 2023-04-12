@@ -115,7 +115,7 @@ Other Links
    :hidden:
    :caption: Previous Documents
 
-   v0.7.0 <https://furiosa-ai.github.io/docs/v0.7.0/en/>
+   v0.8.0 <https://furiosa-ai.github.io/docs/v0.8.0/en/>
    v0.6.0 <https://furiosa-ai.github.io/docs/v0.6.0/en/>
    v0.5.0 <https://furiosa-ai.github.io/docs/v0.5.0/en/>
    v0.2.0 <https://furiosa-ai.github.io/docs/v0.2.0/en/>
