@@ -88,9 +88,13 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
   ranges = calibrator.compute_range()
   quantizated_graph = quantize(optimized_onnx_model, ranges)
 
-* 모델의 시작 또는 끝에서 quantize/dequantize 수행 여부를 결정할 수 있는 옵션이 추가되었다.
+* 모델의 시작에서 quantize 수행 여부를 결정할 수 있는 옵션이 추가되었다.
 
-  * 컴파일러 옵션에서 ``without_quantize`` 가 제거된 대신, ``quantize`` 함수의 인자를 통해 ``with_quantize`` 사용 여부를 지정할 수 있다.
+  * 컴파일러 옵션에서 ``without_quantize`` 가 제거된 대신, ``quantize`` 함수의 인자 ``with_quantize`` 를 통해 사용 여부를 지정할 수 있다.
+
+* ``quantize`` 함수의 인자 ``normalized_pixel_outputs`` 을 통해 모델 output을 fp32로 dequantize 하지 않고 uint8로 변환하도록 설정할 수 있다.
+
+  * 원소 범위가 ``(0. , 1.)`` 로 된 텐서를 uint8의 pixel 데이터로 받을 수 있도록 최적화 할 수 있다.
 
 * 보다 다양한 calibration 방법을 제공한다.
 

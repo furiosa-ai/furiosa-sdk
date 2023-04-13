@@ -90,9 +90,13 @@ This release includes the following major updates.
   ranges = calibrator.compute_range()
   quantizated_graph = quantize(optimized_onnx_model, ranges)
 
-* Added option to decide whether to perform quantize/dequantize at the beginning or end of the model.
+* Added an option to decide whether to perform quantize at the beginning of the model.
 
-  * Instead of ``without_quantize`` being removed from the compiler options, you can specify whether to use ``with_quantize`` through the arguments to the ``quantize`` function.
+  * Instead of ``without_quantize`` being removed from the compiler options, it can be specified via the argument ``with_quantize`` to the ``quantize`` function.
+
+* The ``normalized_pixel_outputs`` argument to the ``quantize`` function can be set to convert the model output to uint8 instead of dequantizing to fp32.
+
+  * A tensor with an element range of ``(0. , 1.)`` can be optimized to convert to pixel data in uint8.
 
 * Provides more calibration methods.
 
