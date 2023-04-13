@@ -18,10 +18,10 @@ The minimum requirements for C SDK are as follows.
 * System administrator privileges (root)
 * :ref:`FuriosaAI SDK required packages <RequiredPackages>`
 
-In order to install and use C SDK, you must install the driver, firmware, and runtime library in accordance with 
+In order to install and use C SDK, you must install the driver, firmware, and runtime library in accordance with
 the :ref:`Required Package Installation <RequiredPackages>` guide.
 
-Once you have installed the required packages, follow the instructions below to install C SDK. 
+Once you have installed the required packages, follow the instructions below to install C SDK.
 
 .. tabs::
 
@@ -35,7 +35,7 @@ Once you have installed the required packages, follow the instructions below to 
 
   .. tab:: Installation using download center
 
-    Log in to the download center and download the latest versions of the packages below. 
+    Log in to the download center and download the latest versions of the packages below.
 
     * NPU C SDK download (furiosa-libnux-dev-x.y.z-?.deb)
 

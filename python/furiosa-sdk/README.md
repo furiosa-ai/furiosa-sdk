@@ -14,15 +14,16 @@ You can install Furiosa SDK with pip.
 pip install furiosa-sdk
 ```
 
-You can install also furiosa-sdk with extra packages (e.g., litmus):
+You can install also furiosa-sdk with extra packages (e.g., litmus, quantizer):
 
 ```sh
-pip install 'furiosa-sdk[litmus]'
+pip install 'furiosa-sdk[litmus, quantizer]'
 ```
 
 The following are the extra packages:
-* models: Library which provides pre-tained models for Furiosa NPU
 * litmus: Command line tool to check if a model is compatible with furiosa-sdk
+* models: Library which provides pretained models for Furiosa NPU
+* quantizer: Library which quantizes and optimizes DNN models
 * server: Serving framework enabling a DNN model to provide HTTP/GRPC endpoints
 * serving: FastAPI-based Serving Library
 
@@ -40,7 +41,7 @@ The following are the extra packages:
 ## License
 
 ```
-Copyright 2022 FuriosaAI, Inc.
+Copyright 2023 FuriosaAI, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
