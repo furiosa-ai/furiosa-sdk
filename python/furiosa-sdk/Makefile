@@ -4,7 +4,7 @@ install:
 	MACOSX_DEPLOYMENT_TARGET=10.15 python -m pip install --editable .
 
 install_full:
-	pip install .[full]
+	pip install --pre --extra-index-url https://internal-pypi.furiosa.dev/simple .[full]
 
 lint:
 	isort --check --diff . && black --check --diff .

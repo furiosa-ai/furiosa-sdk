@@ -21,8 +21,8 @@ pip install 'furiosa-sdk[litmus]'
 ```
 
 The following are the extra packages:
-* models: Library which provides pre-tained models for Furiosa NPU
 * litmus: Command line tool to check if a model is compatible with furiosa-sdk
+* models: Library which provides pretained models for Furiosa NPU
 * server: Serving framework enabling a DNN model to provide HTTP/GRPC endpoints
 * serving: FastAPI-based Serving Library
 

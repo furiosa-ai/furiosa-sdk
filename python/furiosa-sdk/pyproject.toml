@@ -34,20 +34,18 @@ dependencies = [
 [project.optional-dependencies]
 test = []
 
-cli = ["furiosa-cli == 0.9.*"]
 litmus = ["furiosa-litmus == 0.9.*"]
+models= ["furiosa-models == 0.9.*"]
 registry = ["furiosa-registry == 0.9.*"]
 server = ["furiosa-server == 0.9.*"]
 serving = ["furiosa-serving == 0.9.*"]
-tool = ["furiosa-tools == 0.9.*"]
 
 full = [
-    "furiosa-cli == 0.9.*",
     "furiosa-litmus == 0.9.*",
+    "furiosa-models == 0.9.*",
     "furiosa-registry == 0.9.*",
     "furiosa-server == 0.9.*",
     "furiosa-serving == 0.9.*",
-    "furiosa-tools == 0.9.*",
 ]
 
 [project.urls]
