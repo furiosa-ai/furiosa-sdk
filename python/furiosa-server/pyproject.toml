@@ -6,7 +6,7 @@ build-backend = "flit_ext:buildapi"
 
 [project]
 name = "furiosa-server"
-version = "0.9.0.rc2"
+version = "0.9.0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
