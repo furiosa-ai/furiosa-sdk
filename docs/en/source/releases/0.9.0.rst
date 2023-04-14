@@ -13,7 +13,7 @@ The 0.9.0 release includes major improvements to the quantization tools, among o
    * - Package Name
      - Version
    * - NPU Driver
-     - 1.6.0
+     - 1.7.0
    * - NPU Firmware Tools
      - 1.4.0
    * - NPU Firmware Image
@@ -78,7 +78,6 @@ Quantization tool
 :ref:`ModelQuantization` is a tool that converts pre-trained models to quantized models.
 This release includes the following major updates.
 
-* Removed the ``quantizer`` extras package of furiosa-sdk and changed to install furiosa-quantizer together when installing the furiosa-sdk package.
 * Added new quantization-related APIs that are more flexible and solid. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
 .. code-block:: python
@@ -179,20 +178,3 @@ The ``furiosactl info`` command has been improved to display concise information
 
 More information about installing and using ``furiosactl`` can be found in :ref:`Toolkit`.
 
-
-Model Zoo API improvements, added models, and added native post-processing code
-=====================================================================================
-`furioa-models <https://furiosa-ai.github.io/furiosa-models>`_ is a public Model Zoo project,
-providing FuriosaAI NPU-optimized models.
-The 0.9.0 release includes the following major updates.
-
-
-**AAA models added**
-
-Support for ``AAA``, which are BBB models, have been added.
-The total list of available models can be found in
-`Model List <https://furiosa-ai.github.io/furiosa-models/v0.9.0/#model_list>`_.
-
-
-Other changes and updates can be found at `Furiosa Model - 0.9.0 Changelogs
-<https://furiosa-ai.github.io/furiosa-models/v0.9.0/changelog/>`_.

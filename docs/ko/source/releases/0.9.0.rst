@@ -12,7 +12,7 @@ Furiosa SDK 0.9.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추�
    * - 패키지 이름
      - 버전
    * - NPU Driver
-     - 1.6.0
+     - 1.7.0
    * - NPU Firmware Tools
      - 1.4.0
    * - NPU Firmware Image
@@ -76,7 +76,6 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 :ref:`ModelQuantization` 를 위해 제공되는 ``furiosa-quantizer`` 는 이미 트레이닝 된 모델을 양자화된 모델로 변환해주는 도구이다.
 0.9.0 릴리즈는 다음 주요 개선 사항을 포함하고 있다.
 
-* furiosa-sdk의 ``quantizer`` extras 패키지가 제거되고 furiosa-sdk 패키지 설치 시 ``furiosa-quantizer`` 가 함께 설치되도록 변경되었다.
 * 더 유연하고 튼튼한 새로운 양자화 관련 API가 추가되었다. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
 .. code-block:: python
@@ -176,18 +175,3 @@ furiosa-toolkit 0.11.0 릴리즈에 포함된 ``furiosactl`` 명령행 도구는
   +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
 
 ``furiosactl`` 의 설치 및 사용법에 대한 자세한 내용은 :ref:`Toolkit` 에서 찾을 수 있다.
-
-
-Model Zoo API 개선, 모델 추가, 네이티브 후처리 코드 추가
-================================================================
-`furioa-models <https://furiosa-ai.github.io/furiosa-models>`_ 는 FuriosaAI NPU에 최적화된 모델을 제공하는 공개 Model Zoo
-프로젝트이다. 0.9.0 릴리즈는 다음 주요 개선 사항을 포함한다.
-
-**ㅁㅁㅁ 모델 추가**
-
-ㅁㅁㅁ 모델인 ``ooo`` 가 추가되었다.
-사용 가능한 전체 모델은
-`모델 리스트 <https://furiosa-ai.github.io/furiosa-models/v0.9.0/#model_list>`_ 에서 찾아볼 수 있다.
-
-
-그 외의 변경 사항은 `Furiosa Model - 0.9.0 Changelogs <https://furiosa-ai.github.io/furiosa-models/v0.9.0/changelog/>`_ 에서 찾아볼 수 있다.
