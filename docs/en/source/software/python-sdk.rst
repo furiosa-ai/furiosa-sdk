@@ -203,6 +203,17 @@ You can install them with the following command.
   pip install 'furiosa-sdk[models]'
 
 
+Quantizer
+--------------------------------
+The quantizer package provides a set of APIs for converting a model into a quantized model.
+You can find more information about the quantization function provided by the Furiosa SDK and the NPU
+at :ref:`ModelQuantization`.
+
+.. code-block:: sh
+
+  pip install 'furiosa-sdk[quantizer]'
+
+
 Model Server
 --------------------------------
 Provides the function of accelerating DNN model with the NPU, and serving it with GRPC or Restful API.
