@@ -184,6 +184,26 @@ Python SDK 패키지 설치
 추가 패키지 목록
 ======================================================
 
+FuriosaAI Models
+--------------------------------
+NPU에서 바로 실행 가능하며 최적화된 DNN 모델 아키텍쳐와 사전에 훈련된 모델 이미지 등을
+Python 모듈 형태로 제공하는 패키지다. 설치는 다음 커맨드로 할 수 있다.
+
+.. code-block:: sh
+
+  pip install 'furiosa-sdk[models]'
+
+
+Model Server
+--------------------------------
+DNN 모델을 NPU로 가속하여 GRPC나 Restful API로 서빙하는 기능을 제공한다.
+설치는 다음 커맨드로 할 수 있다. 자세한 사용법은 :ref:`ModelServing` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  pip install 'furiosa-sdk[server]'
+
+
 Litmus
 --------------------------------
 지정한 모델이 FuriosaAI SDK와 호환되는지 여부를 검사하는 도구이다.
@@ -193,34 +213,3 @@ Litmus
 
   pip install 'furiosa-sdk[litmus]'
 
-
-FuriosaAI Model Zoo
---------------------------------
-NPU에서 바로 실행 가능하며 최적화된 DNN 모델 아키텍쳐와 사전에 훈련된 모델 이미지 등을
-Python 모듈 형태로 제공하는 패키지다.
-
-.. code-block:: sh
-
-  pip install 'furiosa-sdk[models]'
-
-
-Model Server
---------------------------------
-모델 서빙은 두 가지 구성요소를 통해 제공된다.
-
-1. Furiosa Server
-
-DNN 모델을 NPU로 가속하여 GRPC나 Restful API로 서빙하는 기능을 제공한다.
-자세한 사용법은 :ref:`ModelServing` 에서 찾을 수 있다.
-
-.. code-block:: sh
-
-  pip install 'furiosa-sdk[server]'
-
-2. Furiosa Serving
-
-`FastAPI <https://fastapi.tiangolo.com/>`_를 활용해 기본적인 서빙을 할 수 있게 도와주는 라이브러리이다.
-
-.. code-block:: sh
-
-  pip install 'furiosa-sdk[serving]'
