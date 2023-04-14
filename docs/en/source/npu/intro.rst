@@ -37,13 +37,37 @@ FuriosaAI Warboy HW Specifications
 The chip is built with 5 billion transistors, dimensions of 180mm^2, clock speed of 2GHz, and delivers peak performance of 64 TOPS of INT8.
 It also supports a maximum of 4266 for LPDDR4x. Warboy has a DRAM bandwidth of 66GB/s, and supports PCIe Gen4 8x.
 
-.. figure:: ../../../imgs/warboy_spec.png
-  :alt: Warboy Hardware Specification
-  :class: with-shadow
-  :align: center
-  :width: 500
+.. list-table:: Warboy Hardware Specification
+   :align: center
+   :widths: 200 300
 
-  Warboy (rev. a0) Specification
+   * - Peak Performance
+     - 64 TOPS
+   * - On-chip SRAM
+     - 32 MB
+   * - Host Interface
+     - PCIe Gen4 8-lane
+   * - Form Factor
+     - | Full-Height Half-Length (FHHL)
+       | Half-Height Half-Length (HHHL)
+   * - Thermal Solution
+     - | Passive Fan
+       | Active Fan
+   * - TDP
+     - 40 - 60W (Configurable)
+   * - Operating Temperature
+     - 0 ~ 50℃
+   * - Clock Speed
+     - 2.0 GHz
+   * - DDR Speed
+     - 4266 Mbps
+   * - Memory Type
+     - LPDDR4X
+   * - Memory Size
+     - 16 GB (max. 32 GB)
+   * - Peak Memory Bandwidth
+     - 66 GB/s
+
 
 FuriosaAI Warboy Performance
 ------------------------------

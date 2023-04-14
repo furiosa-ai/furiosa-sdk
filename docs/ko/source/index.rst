@@ -90,6 +90,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: SDK 릴리즈 노트
 
+   /releases/0.9.0.rst
    /releases/0.8.0.rst
    /releases/0.7.0.rst
    /releases/0.6.0.rst
@@ -113,6 +114,8 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: 기존 버전 문서
 
+   0.8.0 문서 <https://furiosa-ai.github.io/docs/v0.8.0/ko/>
+   0.7.0 문서 <https://furiosa-ai.github.io/docs/v0.7.0/ko/>
    0.6.3 문서 <https://furiosa-ai.github.io/docs/v0.6.3/ko/>
    0.6.0 문서 <https://furiosa-ai.github.io/docs/v0.6.0/ko/>
    0.5.0 문서 <https://furiosa-ai.github.io/docs/v0.5.0/ko/>

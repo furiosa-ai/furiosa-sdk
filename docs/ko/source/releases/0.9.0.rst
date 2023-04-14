@@ -1,0 +1,177 @@
+*********************************************************
+Release Notes - 0.9.0
+*********************************************************
+
+Furiosa SDK 0.9.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추가, 버그픽스를 포함한다.
+0.9.0 릴리즈는 특히 양자화 도구에 대한 주요한 개선을 포함한다.
+
+.. list-table:: 컴포넌트 버전 정보
+   :widths: 200 50
+   :header-rows: 1
+
+   * - 패키지 이름
+     - 버전
+   * - NPU Driver
+     - 1.7.0
+   * - NPU Firmware Tools
+     - 1.4.0
+   * - NPU Firmware Image
+     - 1.7.0
+   * - HAL (Hardware Abstraction Layer)
+     - 0.11.0
+   * - Furiosa Compiler
+     - 0.9.0
+   * - Python SDK (furiosa-runtime, furiosa-server, furiosa-serving, furiosa-quantizer, ..)
+     - 0.9.0
+   * - NPU Management CLI (furiosactl)
+     - 0.11.0
+   * - NPU Device Plugin
+     - 0.10.1
+   * - NPU Feature Discovery
+     - 0.2.0
+
+설치 또는 업그레이드 방법
+--------------------------------------------------------
+APT 저장소를 사용하고 있다면 다음과 같이 업그레이드할 수 있다.
+
+.. code-block:: sh
+
+  apt-get update && apt-get upgrade
+
+특정 패키지 지정해서 업그레이드 하고 싶다면 다음과 같이 실행 한다.
+APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`RequiredPackages` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  apt-get update && \
+  apt-get install -y furiosa-driver-warboy furiosa-libhal-warboy furiosa-libnux furiosa-toolkit
+
+펌웨어 업그레이드는 다음과 같이 실행한다.
+
+.. code-block:: sh
+
+    apt-get update && \
+    apt-get install -y furiosa-firmware-tools furiosa-firmware-image
+
+파이썬 패키지 업그레이드는 다음과 같이 실행한다. 새로 추가된 기능들을 사용하기 위해서는 패키지 설치와 관련된 도구들이 최신 버전으로 먼저 업데이트 되어야 한다.
+
+.. code-block:: sh
+
+    pip install --upgrade pip setuptools wheel
+    pip install --upgrade furiosa-sdk
+
+.. warning::
+  pip 등을 최신 버전으로 업데이트하지 않은 채로 furiosa-sdk를 설치 또는 업그레이드 시 아래와 같은 에러를 접할 수 있다.
+
+  .. code-block:: sh
+    
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+
+주요 변경 사항
+--------------------------------------------------------
+
+모델 양자화 도구 (quantization tool) 관련 개선
+================================================================
+:ref:`ModelQuantization` 를 위해 제공되는 ``furiosa-quantizer`` 는 이미 트레이닝 된 모델을 양자화된 모델로 변환해주는 도구이다.
+0.9.0 릴리즈는 다음 주요 개선 사항을 포함하고 있다.
+
+* 더 유연하고 튼튼한 새로운 양자화 관련 API가 추가되었다. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
+
+.. code-block:: python
+
+  optimized_onnx_model = optimize_model(source_onnx_model)
+  calibrator = Calibrator(optimized_onnx_model, CalibrationMethod.MIN_MAX_ASYM)
+  for calibration_data, _ in tqdm.tqdm(calibration_dataloader, desc="Calibration", unit="images", mininterval=0.5):
+    calibrator.collect_data([[calibration_data.numpy()]])
+  ranges = calibrator.compute_range()
+  quantizated_graph = quantize(optimized_onnx_model, ranges)
+
+* 모델의 시작에서 quantize 수행 여부를 결정할 수 있는 옵션이 추가되었다.
+
+  * 컴파일러 옵션에서 ``without_quantize`` 가 제거된 대신, ``quantize`` 함수의 인자 ``with_quantize`` 를 통해 사용 여부를 지정할 수 있다.
+
+* ``quantize`` 함수의 인자 ``normalized_pixel_outputs`` 을 통해 모델 output을 fp32로 dequantize 하지 않고 uint8로 변환하도록 설정할 수 있다.
+
+  * 원소 범위가 ``(0. , 1.)`` 로 된 텐서를 uint8의 pixel 데이터로 받을 수 있도록 최적화 할 수 있다.
+
+* 보다 다양한 calibration 방법을 제공한다.
+
+.. list-table:: Supported Calibration Methods
+   :widths: 300 50 50
+   :header-rows: 1
+
+   * - Calibration Method
+     - Asymmetric
+     - QuasiSymmetric
+   * - Min-Max
+     - MIN_MAX_ASYM
+     - MIN_MAX_SYM
+   * - Entropy
+     - ENTROPY_ASYM
+     - ENTROPY_SYM
+   * - Percentile
+     - PERCENTILE_ASYM
+     - PERCENTILE_SYM
+   * - Mean squared error
+     - MSE_ASYM
+     - MSE_SYM
+   * - Signal-to-quantization-noise ratio
+     - SQNR_ASYM
+     - SQNR_SYM
+
+새로운 quantizer의 설치 및 사용법에 대한 자세한 내용은 다음 예제를 참고할 수 있다.
+
+* `Python SDK 예제: 모델 생성부터 인퍼런스까지 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
+
+
+컴파일러 개선
+=====================
+* Lower/Unlower 연산자 가속 지원
+* Dequantize 연산자 가속 지원
+* 하드웨어의 명령어 메모리보다 더 큰 크기의 바이너리의 실행 지원
+* 스케쥴러와 메모리 할당자를 개선하여 불필요한 I/O를 제거함
+* 다양한 개선으로 컴파일 최적화를 하여 실행 성능이 향상됨
+
+
+furiosa-toolkit 개선
+================================================================
+furiosa-toolkit 0.11.0 릴리즈에 포함된 ``furiosactl`` 명령행 도구는
+다음과 주요 개선 내용을 포함한다.
+
+새로 추가된 ``furiosactl top`` 명령은 시간의 흐름에 따른 NPU 장치 별 사용률을 확인하는데 사용한다.
+
+.. code-block:: sh
+
+  $ furiosactl top --interval 200
+  NOTE: furiosa top is under development. Usage and output formats may change.
+  Please enter Ctrl+C to stop.
+  Datetime                        PID       Device        NPU(%)   Comp(%)   I/O(%)   Command
+  2023-03-21T09:45:56.699483936Z  152616    npu1pe0-1      19.06    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:56.906443888Z  152616    npu1pe0-1      51.09     93.05     6.95   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:57.110489333Z  152616    npu1pe0-1      46.40     97.98     2.02   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:57.316060982Z  152616    npu1pe0-1      51.43    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:57.521140588Z  152616    npu1pe0-1      54.28     94.10     5.90   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:57.725910558Z  152616    npu1pe0-1      48.93     98.93     1.07   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:57.935041998Z  152616    npu1pe0-1      47.91    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+  2023-03-21T09:45:58.13929122Z   152616    npu1pe0-1      49.06     94.94     5.06   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+
+``furiosactl info`` 명령은 각 장치의 정보가 간결하게 출력되도록 개선되었다. 전과 같이 장치의 상세 정보를 확인하고 싶을 때는 ``--full`` 옵션을 입력할 수 있다.
+
+.. code-block::
+
+  $ furiosactl info
+  +------+--------+----------------+-------+--------+--------------+
+  | NPU  | Name   | Firmware       | Temp. | Power  | PCI-BDF      |
+  +------+--------+----------------+-------+--------+--------------+
+  | npu1 | warboy | 1.6.0, 3c10fd3 |  54°C | 0.99 W | 0000:44:00.0 |
+  +------+--------+----------------+-------+--------+--------------+
+
+  $ furiosactl info --full
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+  | NPU  | Name   | UUID                                 | S/N               | Firmware       | Temp. | Power  | PCI-BDF      | PCI-DEV |
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+  | npu1 | warboy | 00000000-0000-0000-0000-000000000000 | WBYB0000000000000 | 1.6.0, 3c10fd3 |  54°C | 0.99 W | 0000:44:00.0 | 511:0   |
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+
+``furiosactl`` 의 설치 및 사용법에 대한 자세한 내용은 :ref:`Toolkit` 에서 찾을 수 있다.
