@@ -17,7 +17,7 @@ pip install furiosa-sdk
 You can install also furiosa-sdk with extra packages (e.g., litmus, quantizer):
 
 ```sh
-pip install 'furiosa-sdk[litmus, quantizer]'
+pip install 'furiosa-sdk[litmus,quantizer]'
 ```
 
 The following are the extra packages:
