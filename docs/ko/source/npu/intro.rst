@@ -39,12 +39,36 @@ FuriosaAI Warboy의 하드웨어 스펙
 5 billion transistor로 구성되어 있고, 180mm^2에 2GHz로 동작하고 INT8 기준 64 TOPS의 Peak Performance를 갖는다.
 또한 LPDDR4x에 대해 최대 4266을 지원하며 66GB/s의 DRAM Bandwidth를 갖으며, PCIe Gen4 8x을 지원한다.
 
-.. figure:: ../../../imgs/warboy_spec.png
-  :alt: Warboy Hardware Specification
-  :class: with-shadow
-  :align: center
-  :width: 400
+.. list-table:: Warboy Hardware Specification
+   :align: center
+   :widths: 200 300
 
+   * - Peak Performance
+     - 64 TOPS
+   * - On-chip SRAM
+     - 32 MB
+   * - Host Interface
+     - PCIe Gen4 8-lane
+   * - Form Factor
+     - | Full-Height Half-Length (FHHL)
+       | Half-Height Half-Length (HHHL)
+   * - Thermal Solution
+     - | Passive Fan
+       | Active Fan
+   * - TDP
+     - 40 - 60W (Configurable)
+   * - Operating Temperature
+     - 0 ~ 50℃
+   * - Clock Speed
+     - 2.0 GHz
+   * - DDR Speed
+     - 4266 Mbps
+   * - Memory Type
+     - LPDDR4X
+   * - Memory Size
+     - 16 GB (max. 32 GB)
+   * - Peak Memory Bandwidth
+     - 66 GB/s
 
 ..
   for bottom margin of the above image
