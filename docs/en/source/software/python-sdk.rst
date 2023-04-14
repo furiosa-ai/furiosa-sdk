@@ -124,6 +124,23 @@ Configuring Python environment using Linux packages
 Installing Python SDK package 
 =======================================
 
+Before installing the furiosa-sdk, you need to update Python's package installer to the latest version.
+
+.. code-block:: sh
+
+    pip install --upgrade pip setuptools wheel
+
+
+.. warning::
+
+  If you install the furiosa-sdk without updating to the latest version, you may encounter the following error.
+
+  .. code-block:: sh
+    
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+
+
 .. tabs::
 
   .. tab:: Installing with PIP

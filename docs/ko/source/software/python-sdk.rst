@@ -131,6 +131,24 @@ Linux 패키지를 이용한 Python 환경 구성
 Python SDK 패키지 설치
 =======================================
 
+furiosa-sdk를 설치하기에 앞서, Python의 패키지 설치 도구를 최신 버전으로 업데이트 해야한다.
+
+.. code-block:: sh
+
+    pip install --upgrade pip setuptools wheel
+
+
+.. warning::
+
+  최신 버전으로 업데이트하지 않은 채로 furiosa-sdk를 설치할 경우 아래와 같은 에러를 접할 수 있다.
+
+  .. code-block:: sh
+    
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+
+
+
 .. tabs::
 
   .. tab:: PIP를 이용한 설치
@@ -149,7 +167,7 @@ Python SDK 패키지 설치
 
     추가적인 기능은 Python Extra 패키지 형태로 제공하고 있으며 :ref:`PythonExtraPackages` 에서
     필요한 패키지를 골라 설치할 수 있다. 예를 들어, 모델 서빙을 위해 ``server`` 와 모델과 SDK 간에 호환여부를 확인하기
-    위해 ``litmus``를 설치해야 해야 한다면 아래와 같이 확장 패키지를 지정한다.
+    위해 ``litmus`` 를 설치해야 해야 한다면 아래와 같이 확장 패키지를 지정한다.
 
     .. code-block:: sh
 

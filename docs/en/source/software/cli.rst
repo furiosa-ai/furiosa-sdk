@@ -24,32 +24,112 @@ Subsequently, follow the instructions below to install furiosa-toolkit.
 
       sudo apt-get install -y furiosa-toolkit
 
-  .. tab:: Installation using download center
-
-    Select and download the latest versions of the packages listed below. Install them in order as written in the command.
-
-    * furiosactl
-
-    .. code-block:: sh
-
-      sudo apt-get install -y ./furiosa-toolkit-x.y.z-?.deb
 
 
 furiosactl instructions
 ----------------------------------------
+The furiosactl command provides a variety of subcommands and has the ability to obtain information or control the device.
 
+.. code-block:: sh
+
+    furiosactl <sub command> [option] ..
+
+
+``furiosactl info``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After installing the kernel driver, you can use the ``furiosactl`` command to check whether the NPU device is recognized.
-Currently, this command provides the ``furiosactl info`` command to output the Device ID, temperature, power consumption and PCI information of the NPU device.
+Currently, this command provides the ``furiosactl info`` command to output temperature, power consumption and PCI information of the NPU device.
+If the device is not visible with this command after mounting it on the machine, :ref:`RequiredPackages` to install the driver.
+If you add the ``--full`` option to the ``info`` command, you can see the device's UUID and serial number information together.
 
 
 .. code-block:: sh
 
-  furiosactl info
-  +------+------------------+-------+--------+--------------+---------+
-  | NPU  | Name             | Temp. | Power  | PCI-BDF      | PCI-DEV |
-  +------+------------------+-------+--------+--------------+---------+
-  | npu1 | FuriosaAI Warboy |  40°C | 0.00 W | 0000:01:00.0 | 509:0   |
-  +------+------------------+-------+--------+--------------+---------+
+  $ furiosactl info
+  +------+--------+----------------+-------+--------+--------------+
+  | NPU  | Name   | Firmware       | Temp. | Power  | PCI-BDF      |
+  +------+--------+----------------+-------+--------+--------------+
+  | npu1 | warboy | 1.6.0, 3c10fd3 |  54°C | 0.99 W | 0000:44:00.0 |
+  +------+--------+----------------+-------+--------+--------------+
+
+  $ furiosactl info --full
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+  | NPU  | Name   | UUID                                 | S/N               | Firmware       | Temp. | Power  | PCI-BDF      | PCI-DEV |
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+  | npu1 | warboy | 00000000-0000-0000-0000-000000000000 | WBYB0000000000000 | 1.6.0, 3c10fd3 |  54°C | 0.99 W | 0000:44:00.0 | 511:0   |
+  +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
+
+``furiosactl list``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``list`` subcommand provides information about the device files available on the NPU device.
+You can also check whether each core present in the NPU is in use or idle.
+
+.. code-block:: sh
+
+  furiosactl list
+  +------+------------------------------+-----------------------------------+
+  | NPU  | Cores                        | DEVFILES                          |
+  +------+------------------------------+-----------------------------------+
+  | npu1 | 0 (available), 1 (available) | npu1, npu1pe0, npu1pe1, npu1pe0-1 |
+  +------+------------------------------+-----------------------------------+
+
+
+``furiosactl ps``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``ps`` subcommand prints information about the OS process currently occupying the NPU device.
+
+.. code-block:: sh
+
+    $ furiosactl ps
+    +-----------+--------+------------------------------------------------------------+
+    | NPU       | PID    | CMD                                                        |
+    +-----------+--------+------------------------------------------------------------+
+    | npu0pe0-1 | 132529 | /usr/bin/python3 /usr/local/bin/uvicorn image_classify:app |
+    +-----------+--------+------------------------------------------------------------+
+
+
+``furiosactl top`` (experimental)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The ``top`` subcommand is used to view utilization by NPU unit over time.
+The output has the following meaning
+By default, utilization is calculated every 1 second, but you can set the calculation interval yourself with the ``--interval`` option. (unit: ms)
+
+.. list-table:: furiosa top fields
+   :widths: 100 400
+   :header-rows: 1
+
+   * - Item
+     - Description
+   * - Datetime
+     - Observation time
+   * - PID
+     - Process ID that is using the NPU
+   * - Device
+     - NPU device in use
+   * - NPU(%)
+     - Percentage of time the NPU was used during the observation time.
+   * - Comp(%)
+     - Percentage of time the NPU was used for computation during the observation time
+   * - I/O (%)
+     - Percentage of time the NPU was used for I/O out of the time the NPU was used
+   * - Command
+     - Executed command line of the process
+
+
+.. code-block:: sh
+
+    $ furiosactl top --interval 200
+    NOTE: furiosa top is under development. Usage and output formats may change.
+    Please enter Ctrl+C to stop.
+    Datetime                        PID       Device        NPU(%)   Comp(%)   I/O(%)   Command
+    2023-03-21T09:45:56.699483936Z  152616    npu1pe0-1      19.06    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:56.906443888Z  152616    npu1pe0-1      51.09     93.05     6.95   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:57.110489333Z  152616    npu1pe0-1      46.40     97.98     2.02   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:57.316060982Z  152616    npu1pe0-1      51.43    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:57.521140588Z  152616    npu1pe0-1      54.28     94.10     5.90   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:57.725910558Z  152616    npu1pe0-1      48.93     98.93     1.07   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:57.935041998Z  152616    npu1pe0-1      47.91    100.00     0.00   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
+    2023-03-21T09:45:58.13929122Z   152616    npu1pe0-1      49.06     94.94     5.06   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
 
 
 furiosa
