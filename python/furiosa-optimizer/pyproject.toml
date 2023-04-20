@@ -6,7 +6,7 @@ build-backend = "flit_ext:buildapi"
 
 [project]
 name = "furiosa-optimizer"
-version = "0.9.0.dev0"
+version = "0.10.0.dev0"
 authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
 readme = "README.md"
 license = { text = "Apache License 2.0" }
@@ -26,7 +26,7 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
-    "furiosa-common == 0.9.*",
+    "furiosa-common == 0.10.*",
 
     "numpy ~= 1.24",
     "onnx ~= 1.12.0",
