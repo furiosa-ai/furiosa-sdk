@@ -38,31 +38,57 @@ In the calibration process, the data used to train the model is required in orde
 Accuracy of Quantized Models
 ========================================
 
-Models - with their respective validation datasets - were quantized using min-max calibration with the Furiosa SDK quantizer.
-The table below compares accuracies.
+The table below compares the accuracy of the original floating-point models with that of the quantized models obtained using the quantizer and various calibration methods provided by Furiosa SDK:
 
 .. _QuantizationAccuracyTable:
 
 .. list-table:: Quantization Accuracy
-   :widths: 50 50 50 50
    :header-rows: 1
 
    * - Model
-     - FP Accuracy (%)
-     - INT8 Accuracy (%)
-     - Accuracy Drop (%)
-   * - ResNet50 v1.0
-     - 76.456
-     - 76.002
-     - 0.594
-   * - SSD MobileNet 300x300
-     - 23.137
-     - 22.815
-     - 1.392
-   * - SSD Resnet34 1200x1200
-     - 22.308
-     - 22.069
-     - 1.071
+     - FP Accuracy
+     - INT8 Accuracy (Calibration Method)
+     - INT8 Accuracy ÷ FP Accuracy
+   * - ConvNext-B
+     - 85.8%
+     - 80.376% (Asymmetric MSE)
+     - 93.678%
+   * - EfficientNet-B0
+     - 77.698%
+     - 73.556% (Asymmetric 99.99%-Percentile)
+     - 94.669%
+   * - EfficientNetV2-S
+     - 84.228%
+     - 83.566% (Asymmetric 99.99%-Percentile)
+     - 99.214%
+   * - ResNet50 v1.5
+     - 76.456%
+     - 76.228% (Asymmetric MSE)
+     - 99.702%
+   * - RetinaNet
+     - mAP 0.3757
+     - mAP 0.37373 (Symmetric Entropy)
+     - 99.476%
+   * - SSD MobileNet
+     - mAP 0.23
+     - mAP 0.23215 (Symmetric Min-Max)
+     - 100.93%
+   * - SSD ResNet34
+     - mAP 0.20
+     - mAP 0.21626 (Asymmetric Min-Max)
+     - 108.13%
+   * - YOLOX-l
+     - mAP 0.497
+     - mAP 0.48524 (Asymmetric 99.99%-Percentile)
+     - 97.634%
+   * - YOLOv5-l
+     - mAP 0.490
+     - mAP 0.47443 (Asymmetric MSE)
+     - 96.822%
+   * - YOLOv5-m
+     - mAP 0.454
+     - mAP 0.43963 (Asymmetric SQNR)
+     - 96.835%
 
 
 Model Quantization APIs

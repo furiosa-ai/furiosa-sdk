@@ -39,31 +39,57 @@ FuriosaAI SDK가 지원하는 양자화 방식은  *post-training 8-bit quantiza
 양자화 모델의 정확도
 ========================================
 
-아래 표는 FuriosaAI SDK에서 제공하는 Quantizer를 이용해 각 모델의 검증용 데이터 셋으로
-최소/최대 값보정 (Min-max calibration)을 이용하여 모델을 양자화 하고 정확도를 비교한 것이다.
+아래 표는 FuriosaAI SDK에서 제공하는 Quantizer와 다양한 보정 방법을 이용해 여러 모델을 양자화하고 원본 소수점 모델과 정확도를 비교한 것이다.
 
 .. _QuantizationAccuracyTable:
 
 .. list-table:: Quantization Accuracy
-   :widths: 50 50 50 50
    :header-rows: 1
 
    * - Model
-     - FP Accuracy (%)
-     - INT8 Accuracy (%)
-     - Accuracy Drop (%)
-   * - ResNet50 v1.0
-     - 76.456
-     - 76.002
-     - 0.594
-   * - SSD MobileNet 300x300
-     - 23.137
-     - 22.815
-     - 1.392
-   * - SSD Resnet34 1200x1200
-     - 22.308
-     - 22.069
-     - 1.071
+     - FP Accuracy
+     - INT8 Accuracy (Calibration Method)
+     - INT8 Accuracy ÷ FP Accuracy
+   * - ConvNext-B
+     - 85.8%
+     - 80.376% (Asymmetric MSE)
+     - 93.678%
+   * - EfficientNet-B0
+     - 77.698%
+     - 73.556% (Asymmetric 99.99%-Percentile)
+     - 94.669%
+   * - EfficientNetV2-S
+     - 84.228%
+     - 83.566% (Asymmetric 99.99%-Percentile)
+     - 99.214%
+   * - ResNet50 v1.5
+     - 76.456%
+     - 76.228% (Asymmetric MSE)
+     - 99.702%
+   * - RetinaNet
+     - mAP 0.3757
+     - mAP 0.37373 (Symmetric Entropy)
+     - 99.476%
+   * - SSD MobileNet
+     - mAP 0.23
+     - mAP 0.23215 (Symmetric Min-Max)
+     - 100.93%
+   * - SSD ResNet34
+     - mAP 0.20
+     - mAP 0.21626 (Asymmetric Min-Max)
+     - 108.13%
+   * - YOLOX-l
+     - mAP 0.497
+     - mAP 0.48524 (Asymmetric 99.99%-Percentile)
+     - 97.634%
+   * - YOLOv5-l
+     - mAP 0.490
+     - mAP 0.47443 (Asymmetric MSE)
+     - 96.822%
+   * - YOLOv5-m
+     - mAP 0.454
+     - mAP 0.43963 (Asymmetric SQNR)
+     - 96.835%
 
 
 모델 양자화 APIs
