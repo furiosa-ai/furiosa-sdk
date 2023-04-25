@@ -33,6 +33,7 @@ def calibrate_with_random_data(
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
     for _ in range(dataset_size):
+        inputs = []
         for value_info in model.graph.input:
             if value_info.name in initializers:
                 continue
@@ -77,18 +78,18 @@ def calibrate_with_random_data(
                     )
             np_dtype = onnx.mapping.TENSOR_TYPE_TO_NP_TYPE[value_info.type.tensor_type.elem_type]
             if np.issubdtype(np_dtype, np.floating):
-                inputs = rng.standard_normal(size=shape, dtype=np_dtype)
+                inputs.append(rng.standard_normal(size=shape, dtype=np_dtype))
             elif np.issubdtype(np_dtype, np.integer):
                 iinfo = np.iinfo(np_dtype)
-                inputs = rng.integers(
-                    iinfo.min, iinfo.max, size=shape, dtype=np_dtype, endpoint=True
+                inputs.append(
+                    rng.integers(iinfo.min, iinfo.max, size=shape, dtype=np_dtype, endpoint=True)
                 )
             else:
                 elem_type = onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
                 raise NotImplementedError(
                     f"tensor '{value_info.name}' is of {elem_type} but a model whose input tensor is of {elem_type} cannot be randomly calibrated yet"
                 )
-        calibrator.collect_data([[inputs]])
+        calibrator.collect_data([inputs])
     return calibrator.compute_range()
 
 
