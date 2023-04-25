@@ -42,7 +42,7 @@ test_modules = [
 LINUX_DISTRIB = "ubuntu:focal"
 NPU_TOOLS_STAGE = "nightly"
 
-def officeFpgaPodYaml(image, cpu, memory) {
+def officeWarboyPodYaml(image, cpu, memory) {
   return """apiVersion: v1
 kind: Pod
 metadata:
@@ -50,12 +50,8 @@ metadata:
     app: jenkins-worker
     jenkins: npu-tools
 spec:
-  nodeSelector:
-    alpha.furiosa.ai/npu.family: warboy
-    alpha.furiosa.ai/npu.hwtype: u250
-    role: fpga
   tolerations:
-  - key: "fpga"
+  - key: "npu"
     operator: "Exists"
     effect: "NoSchedule"
   - key: "node.kubernetes.io/unschedulable"
@@ -100,8 +96,8 @@ spec:
 """
 }
 
-def officeFpgaPod(cpu, memory) {
-  return officeFpgaPodYaml(
+def officeWarboyPod(cpu, memory) {
+  return officeWarboyPodYaml(
     "${LINUX_DISTRIB}",
     cpu,
     memory
@@ -235,7 +231,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install --root-user-action=ignore -r ./requirements.txt && \
     pip install --root-user-action=ignore nbmake && \
-    pytest --nbmake \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' \\))
+    pytest --nbmake --nbmake-timeout=500 \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' \\))
     """
 }
 
@@ -252,6 +248,8 @@ def getDistribVersion() {
     return "1"
   } else if ("${LINUX_DISTRIB}" == "ubuntu:focal") {
     return "2"
+  } else if ("${LINUX_DISTRIB}" == "ubuntu:jammy") {
+    return "3"
   } else {
     throw new Exception("Unsupported Linux Distribution: ${LINUX_DISTRIB}")
   }
@@ -333,7 +331,7 @@ pipeline {
     kubernetes {
     cloud "k8s-office"
     defaultContainer "default"
-    yaml officeFpgaPod("2", "4Gi")
+    yaml officeWarboyPod("2", "4Gi")
   } }
 
   parameters {
@@ -359,7 +357,7 @@ pipeline {
 
     // Dynamic CI Parameters
     UBUNTU_DISTRIB = ubuntuDistribName("${LINUX_DISTRIB}")
-    FIRMWARE_VERSION = "0.10.\\*"
+    FIRMWARE_VERSION = "0.11.\\*"
     NUX_VERSION = "0.9.\\*"
   }
 
@@ -390,7 +388,7 @@ pipeline {
         container('default') {
           sh """
           apt-get install -y build-essential cmake git \
-          furiosa-libhal-xrt=${env.FIRMWARE_VERSION} \
+          furiosa-libhal-warboy=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
           libonnxruntime=1.13.\\*
           """
