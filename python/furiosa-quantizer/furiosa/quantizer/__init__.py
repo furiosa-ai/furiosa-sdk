@@ -12,6 +12,8 @@ import furiosa.common.utils
 
 __version__ = furiosa.common.utils.get_sdk_version(__name__)
 
+__full_version__ = f"Furiosa SDK Quantizer {__version__} (furiosa_quantizer_impl {furiosa_quantizer_impl.__version__} {furiosa_quantizer_impl.__git_short_hash__} {furiosa_quantizer_impl.__build_timestamp__})"  # pylint: disable=no-member
+
 __all__ = ["CalibrationMethod", "Calibrator", "Graph", "quantize"]
 
 
