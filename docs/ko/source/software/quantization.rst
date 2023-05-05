@@ -100,4 +100,4 @@ SDK가 제공하는 API와 명령행 도구를 사용하여 ONNX 모델을 8bit 
 
 * `Python SDK 예제: 모델 생성 부터 인퍼런스 까지 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 * `Python SDK Quantization 예제 <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_
-* `Python 레퍼런스 - furiosa.quantizer <https://furiosa-ai.github.io/docs/v0.6.0/en/api/python/furiosa.quantizer.html>`_
+* `Python 레퍼런스 - furiosa.quantizer <https://furiosa-ai.github.io/docs/latest/en/api/python/furiosa.quantizer.html>`_

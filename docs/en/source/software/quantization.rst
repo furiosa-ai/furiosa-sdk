@@ -100,4 +100,4 @@ Refer to the links below for further instructions.
 
 * `Python SDK example: How to use Furiosa SDK from start to finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 * `Python SDK Quantization example <https://github.com/furiosa-ai/furiosa-sdk/tree/main/examples/quantizers>`_
-* `Python reference - furiosa.quantizer <https://furiosa-ai.github.io/docs/v0.6.0/en/api/python/furiosa.quantizer.html>`_
+* `Python reference - furiosa.quantizer <https://furiosa-ai.github.io/docs/latest/en/api/python/furiosa.quantizer.html>`_
