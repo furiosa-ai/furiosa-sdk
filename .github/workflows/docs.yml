@@ -26,7 +26,7 @@ jobs:
       - name: make docs
         env:
           BODY: ${{ github.event.comment.body }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           ISSUE: ${{ github.event.issue.html_url }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: make docs
         env:
           BODY: ${{ github.event.comment.body }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           ISSUE: ${{ github.event.issue.html_url }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
