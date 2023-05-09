@@ -115,6 +115,7 @@ you can use a configuration file based on Yaml.
     - name: mnist
         path: "samples/data/MNISTnet_uint8_quant.tflite"
         version: 1
+        platform: nux
         npu_device: npu0pe0
         compiler_config:
             keep_unsignedness: true
@@ -122,6 +123,7 @@ you can use a configuration file based on Yaml.
     - name: ssd
         path: "samples/data/tflite/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
         version: 1
+        platform: nux
         npu_device: npu0pe1
 
 When you run a model sever with a configuration file,
@@ -133,20 +135,19 @@ You can find the model files described in the above example from
 
     $ cd furiosa-sdk/python/furiosa-server
     $ furiosa server --model-config samples/model_config_example.yaml
-
-    Saving the compilation log into /Users/hyunsik/.local/state/furiosa/logs/compile-20211126143917-2731kz.log
-    Using furiosa-compiler 0.5.0 (rev: 407c0c51f built at 2021-11-26 12:05:30)
-    2021-11-26T22:39:17.819518Z  INFO Npu (npu0pe0) is being initialized
-    2021-11-26T22:39:17.823511Z  INFO NuxInner create with pes: [PeId(0)]
-    ...
-    INFO:     Started server process [62087]
-    INFO:uvicorn.error:Started server process [62087]
+    libfuriosa_hal.so --- v0.11.0, built @ 43c901f
+    Saving the compilation log into /root/.local/state/furiosa/logs/compile-20230509151914-axpfej.log
+    Using furiosa-compiler 0.9.0 (rev: e626c458c built at 2023-04-19T13:49:26Z)
+    2023-05-09T06:19:14.560585Z  INFO nux::npu: Npu (npu0pe0) is being initialized
+    2023-05-09T06:19:14.565216Z  INFO nux: NuxInner create with pes: [PeId(0)]
+    Saving the compilation log into /root/.local/state/furiosa/logs/compile-20230509151914-d063sw.log
+    Using furiosa-compiler 0.9.0 (rev: e626c458c built at 2023-04-19T13:49:26Z)
+    2023-05-09T06:19:14.591795Z  INFO nux::npu: Npu (npu0pe1) is being initialized
+    2023-05-09T06:19:14.595298Z  INFO nux: NuxInner create with pes: [PeId(0)]
+    INFO:     Started server process [1184080]
     INFO:     Waiting for application startup.
-    INFO:uvicorn.error:Waiting for application startup.
     INFO:     Application startup complete.
-    INFO:uvicorn.error:Application startup complete.
     INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-    INFO:uvicorn.error:Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 
 Once a model server starts up, you can call the inference request through HTTP protocol.
 If the model name is ``mnist`` and its version ``1``, the endpoint of the model will be
