@@ -31,7 +31,7 @@ With 0.5.0, you can designate NPU device when generating a session, whereas prev
 device to be used through the environment variable ``NPU_DEVNAME``.
 If not explicitly stated, designated device in the environment variable ``NPU_DEVNAME`` will be used, as was done before.
 
-.. code-block:: python3
+.. code-block:: python
 
   from furiosa.runtime import session
 
@@ -46,7 +46,7 @@ API Improvement 2 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/co
 The existing API was limited in that it could only identify the order of the tensor built into the model, and pass it as an input parameter to `session.run()`.
 From 0.5.0, you can explicitly designate name of input and output tensors as shown below.
 
-.. code-block:: python3
+.. code-block:: python
 
   np1 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
   np2 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)

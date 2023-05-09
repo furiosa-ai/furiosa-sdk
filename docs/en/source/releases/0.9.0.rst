@@ -4,7 +4,7 @@ Release Notes - 0.9.0
 
 Furiosa SDK 0.9.0 is a major release, including many performance enhancements,
 additional functions, and bug fixes.
-The 0.9.0 release includes major improvements to the quantization tools, among others.
+In partcular, 0.9.0 release includes the significant improvements of the quantization tools.
 
 .. list-table:: Component Version Information
    :widths: 200 50
@@ -66,7 +66,7 @@ You can upgrade Python package as following:
   When installing or upgrading the furiosa-sdk without updating pip to the latest version, you may encounter the following errors.
 
   .. code-block:: sh
-    
+
       ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
       ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
 
@@ -75,8 +75,10 @@ Major changes
 
 Quantization tool
 ================================================================
-:ref:`ModelQuantization` is a tool that converts pre-trained models to quantized models.
-This release includes the following major updates.
+Quantization tool is a library that converts a pre-trained model to a quantized model.
+You can refer to more details at :ref:`ModelQuantization`
+0.9.0 release includes the API improvement and new calibration methods,
+possibly leading to better accuracy.
 
 * Added new quantization-related APIs that are more flexible and solid. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
@@ -122,9 +124,17 @@ This release includes the following major updates.
      - SQNR_ASYM
      - SQNR_SYM
 
+To ensure the effectiveness of new calibration methods,
+we measured the accuracy of 10 popular models with the new calibration methods.
+Among them, 8 models showed better accuracy than the existing calibration methods.
+For example, the accuracy of EfficientNet-B0 increased by 57.452%.
+With the min-max calibration method, EfficientNet-B0 had an accuracy of 16.104%.
+In contrast, with the percentile calibration method, the accuracy was 73.556%.
+The details of the experiment results can be found at :ref:`QuantizationAccuracyTable`.
+
 For more information on installing and using the new quantizer, you can refer to the following examples.
 
-* `Tutorial: How to use Furiosa SDK from Start to Finish <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
+* `Tutorial: How to use Furiosa SDK from Start to Finish <https://github.com/furiosa-ai/furiosa-sdk/blob/v0.9.0/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
 
 
 Compiler

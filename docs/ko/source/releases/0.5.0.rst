@@ -31,7 +31,7 @@ Session API에서 NPU 장치를 지정할 수 있다.
 Session을 생성할 때 NPU 장치를 지정할 수 있다.
 명시적으로 지정하지 않으면 기존과 같이 ``NPU_DEVNAME`` 환경변수에 지정한 장치를 사용한다.
 
-.. code-block:: python3
+.. code-block:: python
 
   from furiosa.runtime import session
 
@@ -46,7 +46,7 @@ Session을 생성할 때 NPU 장치를 지정할 수 있다.
 은 텐서 이름 (tensor name) 지원이다. 기존 API는 모델에 내장된 텐서 순서를 파악하여 `session.run()` 에
 입력 파라메터로 전달하는 방법만 했다. 0.5.0 부터는 아래 처럼 명시적으로 입력, 출력 텐서를 위해 이름을 지정할 수 있다.
 
-.. code-block:: python3
+.. code-block:: python
 
   np1 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
   np2 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)

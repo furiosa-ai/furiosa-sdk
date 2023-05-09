@@ -2,8 +2,8 @@
 Release Notes - 0.9.0
 *********************************************************
 
-Furiosa SDK 0.9.0은 메이저 릴리즈로 다수의 성능 개선, 기능 추가, 버그픽스를 포함한다.
-0.9.0 릴리즈는 특히 양자화 도구에 대한 주요한 개선을 포함한다.
+Furiosa SDK 0.9.0은 메이저 릴리스로 다수의 성능 개선, 기능 추가, 버그픽스를 포함한다.
+특히 양자화 도구의 기능 및 정확도 개선이 주요 변경 사항이다.
 
 .. list-table:: 컴포넌트 버전 정보
    :widths: 200 50
@@ -64,7 +64,7 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
   pip 등을 최신 버전으로 업데이트하지 않은 채로 furiosa-sdk를 설치 또는 업그레이드 시 아래와 같은 에러를 접할 수 있다.
 
   .. code-block:: sh
-    
+
       ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
       ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
 
@@ -73,8 +73,8 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 
 모델 양자화 도구 (quantization tool) 관련 개선
 ================================================================
-:ref:`ModelQuantization` 를 위해 제공되는 ``furiosa-quantizer`` 는 이미 트레이닝 된 모델을 양자화된 모델로 변환해주는 도구이다.
-0.9.0 릴리즈는 다음 주요 개선 사항을 포함하고 있다.
+``furiosa-quantizer`` 는 이미 트레이닝 된 모델을 양자화된 모델로 변환해주는 도구이다. (자세한 내용은 :ref:`ModelQuantization` 에서 찾아볼 수 있다.)
+0.9.0 릴리스는 양자와 도구 관련하여 API 개선, 다양한 캘리브레이션 방법 포함하며 자세한 내용은 다음과 같다.
 
 * 더 유연하고 튼튼한 새로운 양자화 관련 API가 추가되었다. (``furiosa.quantizer`` , ``furiosa.optimizer`` )
 
@@ -120,10 +120,15 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
      - SQNR_ASYM
      - SQNR_SYM
 
+새로운 캘리브레이션 방법의 유용성을 확인하기 위해, 인기있는 10개 모델에 대해 새로운 캘리브레이션들을 적용하여 정확도를
+측정하였다. 10개 모델 중 8개에서 새로운 캘리브레이션 방법이 더 나은 정확도를 보였다.
+그 중 EfficientNet-B0처럼 극적인 정확도 향상을 보인 경우도 있었다.
+기존 최소최대(min/max) 캘리브레이션 기반 정확도는 16.104%이었는데, 새 퍼센타일 캘리브레이션 기반 정확도는 73.556% 이다.
+자세한 실험 결과는 :ref:`QuantizationAccuracyTable` 에서 볼 수 있다.
+
 새로운 quantizer의 설치 및 사용법에 대한 자세한 내용은 다음 예제를 참고할 수 있다.
 
 * `Python SDK 예제: 모델 생성부터 인퍼런스까지 <https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/HowToUseFuriosaSDKFromStartToFinish.ipynb>`_
-
 
 컴파일러 개선
 =====================
@@ -136,7 +141,7 @@ APT 저장소 설정 및 설치 방법에 대한 자세한 설명은 :ref:`Requi
 
 furiosa-toolkit 개선
 ================================================================
-furiosa-toolkit 0.11.0 릴리즈에 포함된 ``furiosactl`` 명령행 도구는
+furiosa-toolkit 0.11.0 릴리스에 포함된 ``furiosactl`` 명령행 도구는
 다음과 주요 개선 내용을 포함한다.
 
 새로 추가된 ``furiosactl top`` 명령은 시간의 흐름에 따른 NPU 장치 별 사용률을 확인하는데 사용한다.
