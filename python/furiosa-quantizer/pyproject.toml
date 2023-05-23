@@ -26,8 +26,8 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
-    "furiosa-common == 0.10.*",
-    "furiosa-quantizer-impl == 0.10.*",
+    "furiosa-common == 0.9.*",
+    "furiosa-quantizer-impl == 0.9.*",
 
     "numpy ~= 1.24",
     "onnx ~= 1.12.0",

@@ -27,7 +27,7 @@ classifiers = [
 dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
-    "furiosa-runtime == 0.10.*",
+    "furiosa-runtime == 0.9.*",
     # Remove upper contraint when https://github.com/tiangolo/fastapi/issues/5857 is fixed
     "fastapi < 0.89.0",
     "grpcio-tools",
