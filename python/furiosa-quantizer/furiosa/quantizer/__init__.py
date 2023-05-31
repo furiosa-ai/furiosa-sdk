@@ -123,7 +123,7 @@ def quantize(
     *,
     with_quantize: bool = True,
     normalized_pixel_outputs: Optional[Sequence[int]] = None,
-) -> Graph:
+) -> bytes:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
     Args:
@@ -142,8 +142,8 @@ def quantize(
             as unsigned 8-bit integers (uint8). Defaults to None.
 
     Returns:
-        Graph: An intermediate representation (IR) of the quantized
-            model.
+        model (bytes): An ONNX model with the quantization results
+            annotated.
     """
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
