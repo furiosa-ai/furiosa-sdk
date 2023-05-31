@@ -42,7 +42,7 @@ extensions = [
   'sphinx.ext.autosectionlabel',
   'sphinx.ext.autodoc',  # Core library for html generation from docstrings
   'sphinx.ext.autosummary',  # Create neat summary tables
-  'sphinxcontrib.napoleon',
+  'sphinx.ext.napoleon',
   'sphinx_tabs.tabs',
   'sphinx_rtd_theme',
 ]
@@ -86,3 +86,6 @@ html_theme_options = {
 
 sphinx_tabs_valid_builders = ['linkcheck']
 sphinx_tabs_disable_tab_closing = True
+
+# this module is not documented, and will cause imports to fail due to missing libnux
+autodoc_mock_imports = ['furiosa.runtime._api']
