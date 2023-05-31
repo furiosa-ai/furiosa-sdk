@@ -60,7 +60,10 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = [
+  # copied to `api/python/modules.rst`
+  'api/modules.rst',
+]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -86,6 +89,8 @@ html_theme_options = {
 
 sphinx_tabs_valid_builders = ['linkcheck']
 sphinx_tabs_disable_tab_closing = True
+
+toc_object_entries = False
 
 # this module is not documented, and will cause imports to fail due to missing libnux
 autodoc_mock_imports = ['furiosa.runtime._api']

@@ -1,6 +1,8 @@
 Furiosa SDK |release| API Documentation
 ================================================================
 
+.. title:: Python SDK
+
 Welcome! This is the Furiosa SDK Documentation for |release|.
 
 
