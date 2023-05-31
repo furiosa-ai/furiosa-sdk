@@ -13,10 +13,11 @@ The following information should be included in a bug report.
 #. Compilation log, if model compilation failed 
 
 By default, when an error happens furiosa-sdk outputs the following message. 
-If you see the following message, file a report with 
-1) the information given below the ``Information Dump``, and 
-2) the compilation log file (this would be ``/home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log``in the following example) outputted in the message,
-in the `Bug Report` section of `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_
+If you see the following message, file a report
+to the `Bug Report` section of `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ with:
+
+1. The information given below the ``Information Dump``, and
+2. The compilation log file (this would be ``/home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log`` in the following example) outputted in the message.
 
 .. code-block::
 
@@ -42,7 +43,7 @@ in the `Bug Report` section of `FuriosaAI customer service center <https://furio
 
 
 If you do not see a message as shown above, refer to the instructions below to collect the necessary information yourself 
-to file a bug report at `FuriosaAI customer service center`_
+to file a bug report at `FuriosaAI customer service center`_.
 
 You can find the Python runtime version information as shown. 
 
