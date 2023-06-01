@@ -82,6 +82,7 @@ The above is a code example using a profiling context. Once the above Python cod
   :class: with-shadow
   :align: center
   :width: 600
+
 \
 
 .. _PandasProfilingAnalysis:
@@ -206,4 +207,5 @@ With line ``(6)``, you can access DataFrame from the code and perform direct ana
 
                                 trace_id   name  thread.id     dur
     150  ec3dd3d28baf03adc6a1ddd5efe319bc  trace         44  778887
+
 \

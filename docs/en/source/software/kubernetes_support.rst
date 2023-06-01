@@ -79,8 +79,8 @@ By running the command as shown in the example below, if there is a node label t
 .. note::
 
   Installing Node Feature Discovery is not mandatory, but is recommended. The next step
-will explain the additional tasks that must be performed if you are not using
-Node Feature Discovery.
+  will explain the additional tasks that must be performed if you are not using
+  Node Feature Discovery.
 
 
 .. _InstallingDevicePluginAndNfd:

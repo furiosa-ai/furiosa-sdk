@@ -35,11 +35,11 @@ If not explicitly stated, designated device in the environment variable ``NPU_DE
 
   from furiosa.runtime import session
 
-  sess1 = session.create(“model1.onnx”, device=”npu0pe0”)
-  sess2 = session.create(“model2.onnx”, device=”npu0pe1”)
+  sess1 = session.create("model1.onnx", device="npu0pe0")
+  sess2 = session.create("model2.onnx", device="npu0pe1")
 
   # Asynchronous API
-  async_sess, queue = session.create_async(“model2.onnx”, device=”npu1pe2”)
+  async_sess, queue = session.create_async("model2.onnx", device="npu1pe2")
 
 
 API Improvement 2 (`commit 4f1f114 <https://github.com/furiosa-ai/furiosa-sdk/commit/4f1f1149d137a58ada31df57de6e1234881ccf5b>`_) is support for tensor name.
@@ -50,9 +50,9 @@ From 0.5.0, you can explicitly designate name of input and output tensors as sho
 
   np1 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
   np2 = np.random.randint(0, 255, session_input.shape, dtype=np.uint8)
-  sess1.run_with(outputs=[“output1”], inputs={
-    “input2”: np2,
-    “input1”: np1,
+  sess1.run_with(outputs=["output1"], inputs={
+    "input2": np2,
+    "input1": np1,
   }
 
 
@@ -65,7 +65,7 @@ You can find more information about reporting issues and customer service at :re
 .. code-block:: python
 
   >>> from furiosa.runtime import session
-  >>> session.create("mnist-8.onnx)
+  >>> session.create("mnist-8.onnx")
   Saving the compilation log into /home/furiosa/.local/state/furiosa/logs/compile-20211121223028-l5w4g6.log
   ...
   2021-11-22T06:30:28.423371Z ERROR fail to compile the model: the static shape of tensor 'input' contains an unsupported dimension value: Some(DimParam("batch_size"))
