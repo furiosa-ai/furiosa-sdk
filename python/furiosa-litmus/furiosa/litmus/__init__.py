@@ -136,6 +136,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             temp_path = f"{tmpdir}/output.onnx"
             with open(temp_path, "wb") as f:
                 f.write(quantized_model)
+
             temp_model = onnx.load_model(temp_path)
             onnx.checker.check_model(temp_model)
         except Exception as e:
