@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["mnist", "onnxruntime ~= 1.13.1"]
+test = ["mnist", "onnxruntime ~= 1.15.0"]
 
 [project.urls]
 Home = "https://furiosa.ai"

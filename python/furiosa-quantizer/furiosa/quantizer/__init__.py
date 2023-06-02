@@ -4,7 +4,6 @@ import enum
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import furiosa_quantizer_impl
-from furiosa_quantizer_impl import Graph  # pylint: disable=no-name-in-module
 import numpy as np
 import onnx
 
@@ -14,7 +13,7 @@ __version__ = furiosa.common.utils.get_sdk_version(__name__)
 
 __full_version__ = f"Furiosa SDK Quantizer {__version__} (furiosa_quantizer_impl {furiosa_quantizer_impl.__version__} {furiosa_quantizer_impl.__git_short_hash__} {furiosa_quantizer_impl.__build_timestamp__})"  # pylint: disable=no-member
 
-__all__ = ["CalibrationMethod", "Calibrator", "Graph", "quantize"]
+__all__ = ["CalibrationMethod", "Calibrator", "quantize"]
 
 
 CalibrationMethod = enum.IntEnum(
@@ -123,7 +122,7 @@ def quantize(
     *,
     with_quantize: bool = True,
     normalized_pixel_outputs: Optional[Sequence[int]] = None,
-) -> Graph:
+) -> bytes:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
     Args:
@@ -142,8 +141,8 @@ def quantize(
             as unsigned 8-bit integers (uint8). Defaults to None.
 
     Returns:
-        Graph: An intermediate representation (IR) of the quantized
-            model.
+        bytes: A serialized ONNX model that incorporates quantization
+            information.
     """
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()

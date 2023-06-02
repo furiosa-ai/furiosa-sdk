@@ -133,9 +133,10 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
 
         print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
         try:
-            tmp_dfg_path = f"{tmpdir}/output.dfg"
-            with open(tmp_dfg_path, "wb") as f:
-                f.write(bytes(quantized_model))
+            with open(f"{tmpdir}/output.onnx", "wb") as f:
+                f.write(quantized_model)
+
+            onnx.checker.check_model(quantized_model)
         except Exception as e:
             eprint("[Step 3] Failed\n")
             raise e
@@ -146,7 +147,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             flush=True,
         )
         try:
-            compile(bytes(quantized_model), target_ir="enf", verbose=verbose, target_npu=target_npu)
+            compile(quantized_model, target_ir="enf", verbose=verbose, target_npu=target_npu)
         except Exception as e:
             eprint("[Step 4] Failed\n")
             raise e
