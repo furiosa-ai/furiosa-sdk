@@ -141,8 +141,8 @@ def quantize(
             as unsigned 8-bit integers (uint8). Defaults to None.
 
     Returns:
-        model (bytes): An ONNX model with the quantization results
-            annotated.
+        bytes: A serialized ONNX model that incorporates quantization
+            information.
     """
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
