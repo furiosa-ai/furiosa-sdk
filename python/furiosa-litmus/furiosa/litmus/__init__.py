@@ -133,12 +133,10 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
 
         print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
         try:
-            temp_path = f"{tmpdir}/output.onnx"
-            with open(temp_path, "wb") as f:
+            with open(f"{tmpdir}/output.onnx", "wb") as f:
                 f.write(quantized_model)
 
-            temp_model = onnx.load_model(temp_path)
-            onnx.checker.check_model(temp_model)
+            onnx.checker.check_model(quantized_model)
         except Exception as e:
             eprint("[Step 3] Failed\n")
             raise e
