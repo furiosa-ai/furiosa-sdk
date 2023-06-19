@@ -30,7 +30,7 @@ dependencies = [
     "furiosa-quantizer-impl == 0.10.*",
 
     "numpy ~= 1.23",
-    "onnx ~= 1.13.1",
+    "onnx ~= 1.14.0",
 ]
 
 [project.optional-dependencies]
