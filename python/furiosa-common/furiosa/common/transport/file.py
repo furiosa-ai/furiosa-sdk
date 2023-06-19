@@ -5,7 +5,7 @@ import shutil
 import aiofiles
 from multipledispatch import dispatch
 
-from ...utils import removeprefix
+from ..utils import removeprefix
 from .base import Transport
 
 
@@ -34,7 +34,7 @@ class FileTransport(Transport):
             return await f.read()
 
     async def download(self, uri: str) -> str:
-        """Download a registry directory into local destination.
+        """Download a directory into local destination.
 
         FileTransport download is just to copy local directory into the cache.
         """

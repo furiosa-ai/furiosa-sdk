@@ -35,3 +35,11 @@ def get_sdk_version(module) -> Optional[FuriosaVersionInfo]:
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
+
+def removeprefix(word: str, prefix: str) -> str:
+    """Python 3.9 removeprefix().
+
+    See https://docs.python.org/3/library/stdtypes.html#str.removeprefix
+    """
+    return word[len(prefix) :] if word.startswith(prefix) else word  # noqa: E203

@@ -193,7 +193,6 @@ furiosa-sdk를 설치하기에 앞서, Python의 패키지 설치 도구를 최�
     .. code-block:: sh
 
       cd furiosa-sdk/python
-      pip install furiosa-registry
       pip install furiosa-server
 
 

@@ -5,14 +5,14 @@ from multipledispatch import dispatch
 
 
 class Transport(ABC):
-    """Base transport class to read/download from various registry sources."""
+    """Base transport class to read/download from various sources."""
 
     @staticmethod
     def is_supported(uri: str) -> bool:
         """Decide whether this transport supports the specified URI.
 
         Args:
-            uri (str): Registry URI to locate the models.
+            uri (str): URI to locate the models.
 
         Returns:
             bool: This transport supports the URI or not.
@@ -21,12 +21,12 @@ class Transport(ABC):
 
     @dispatch(str, str)
     async def read(self, uri: str, path: str) -> bytes:
-        """Read a file binary data from the specified registry URI and path.
+        """Read a file binary data from the specified URI and path.
 
         This is a high level function to use `read(location)` internally.
 
         Args:
-            uri (str): Registry URI to locate the models.
+            uri (str): URI to locate the models.
             path (str): Relative file path in the repositry to read.
 
         Returns:
@@ -48,10 +48,10 @@ class Transport(ABC):
 
     @abstractmethod
     async def download(self, uri: str) -> str:
-        """Download a registry directory into local destination.
+        """Download a directory into local destination.
 
         Args:
-            uri (str): Registry URI to download the data.
+            uri (str): URI to download the data.
 
         Returns:
             str: Destination directory name. This directory will be located in `cache` directory.
@@ -63,7 +63,7 @@ class Transport(ABC):
         """Cache directory to save downloaded files."""
         return os.path.expanduser(
             os.getenv(
-                "FURIOSA_REGISTRY_HOME",
+                "FURIOSA_TRANSPORT_HOME",
                 os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "furiosa"),
             )
         )

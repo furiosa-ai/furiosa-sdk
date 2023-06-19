@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
-    from .client.transport import Transport
+    from .transport import Transport
 
 
-class RegistryError(Exception):
+class TransportError(Exception):
     def __init__(self, msg):
         super().__init__(msg)
 
 
-class TransportNotFound(RegistryError):
+class TransportNotFound(TransportError):
     def __init__(self, uri: str, transports: List["Transport"]):
         msg = f"Transport for {uri} not found. Available transports:\n\n"
 

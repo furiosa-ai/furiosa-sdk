@@ -1,12 +1,12 @@
-"""FuriosaAI registry transport"""
+"""Transport utilities to fetch files from various sources."""
 
 from contextlib import contextmanager
 from typing import Iterator
 
 from multipledispatch import dispatch
 
-from ...errors import TransportNotFound
 from .base import Transport
+from .error import TransportNotFound
 from .file import FileTransport
 from .github import GithubTransport
 from .http import HTTPTransport
@@ -43,10 +43,10 @@ def supported(uri: str) -> Iterator[Transport]:
 
 @dispatch(str, str)
 async def read(uri: str, path: str) -> bytes:
-    """Read a file binary data from the registry URI and path with a transport which supports the URI.
+    """Read a file binary data from the URI and path with a transport which supports the URI.
 
     Args:
-        uri (str): Registry URI to locate the models.
+        uri (str): URI to locate the models.
         path (str): Relative file path in the repositry to read.
 
     Returns:
@@ -77,10 +77,10 @@ async def read(location: str) -> bytes:  # noqa: F811
 
 
 async def download(uri: str) -> str:
-    """Download a registry directory into local destination with a transport which supports the URI.
+    """Download a directory into local destination with a transport which supports the URI.
 
     Args:
-        uri (str): Registry URI to download the data.
+        uri (str): URI to download the data.
 
     Returns:
         str: Destination directory name. This directory will be located in `cache` directory.
@@ -96,6 +96,6 @@ def is_relative(path: str) -> bool:
     """Is this path relative path?
 
     If all the available transports are not supporting the path, we assume that it's a relative
-    path. You should find the path from the registry URI if it's a relative path.
+    path. You should find the path from the URI if it's a relative path.
     """
     return all(not transport.is_supported(path) for transport in transports)

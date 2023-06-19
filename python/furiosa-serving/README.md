@@ -7,7 +7,6 @@ Furiosa serving depends on followings:
 
 - Furiosa NPU
 - [furiosa-server](https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-server)
-- [furiosa-registry](https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-registry)
 
 ## Installation
 `furiosa-serving` can be installed from PyPI using `pip` (note that the package name is different from the importable name)::

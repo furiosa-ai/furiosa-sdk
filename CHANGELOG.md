@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 ## [Unreleased]
-### Added
+### Changed
+- Remove furiosa-registry and relocate transport codes #650
 
+## [0.8.0]
 ### Changed
 - Rename compile_config to compiler_config for better consistency #488
 

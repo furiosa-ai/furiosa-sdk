@@ -5,7 +5,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
 from fastapi import FastAPI
 import numpy as np
 
-from furiosa.registry import TransportNotFound, transport
+from furiosa.common import transport
 from furiosa.server.model import Model
 from furiosa.server.registry import InMemoryRegistry
 from furiosa.server.repository import Repository
@@ -97,7 +97,7 @@ def fallback(location: str) -> str:
     try:
         with transport.supported(location):
             return location
-    except TransportNotFound:
+    except transport.TransportNotFound:
         return "file://" + location
 
 
