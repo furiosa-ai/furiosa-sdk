@@ -130,7 +130,6 @@ def validate(
         if skip_quantization:
             print("[Step 1] Skip model loading and optimization")
             print("[Step 2] Skip model quantization")
-            print("[Step 3] Skip model saving")
             quantized_model = load_quantized_model(model_path)
         else:
             print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
@@ -154,19 +153,8 @@ def validate(
                 raise e
             print("[Step 2] Passed", flush=True)
 
-            # TODO: remove step 3
-            print("[Step 3] Checking if the model can be saved as a file ...", flush=True)
-            try:
-                tmp_dfg_path = f"{tmpdir}/output.dfg"
-                with open(tmp_dfg_path, "wb") as f:
-                    f.write(bytes(quantized_model))
-            except Exception as e:
-                eprint("[Step 3] Failed\n")
-                raise e
-            print("[Step 3] Passed", flush=True)
-
         print(
-            f"[Step 4] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
+            f"[Step 3] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
             flush=True,
         )
         try:
@@ -183,11 +171,11 @@ def validate(
             with open(tmp_enf_path, "wb") as f:
                 f.write(enf)
         except Exception as e:
-            eprint("[Step 4] Failed\n")
+            eprint("[Step 3] Failed\n")
             raise e
-        print("[Step 4] Passed")
+        print("[Step 3] Passed")
 
-        print("[Step 5] Perform inference once for data collection... (Optional)")
+        print("[Step 4] Perform inference once for data collection... (Optional)")
         try:
             from furiosa.runtime.bench import BenchConfig, BenchRunner
 
@@ -198,12 +186,12 @@ def validate(
                 await bench.run()
 
             asyncio.run(bench_run())
-            print("[Step 5] Finished")
+            print("[Step 4] Finished")
         except RuntimeError as e:
-            eprint("[Step 5] Failed")
+            eprint("[Step 4] Failed")
             raise SystemExit(e)
         except ModuleNotFoundError as e:
-            eprint("[Step 5] Skip, there is no furiosa-bench")
+            eprint("[Step 4] Skip, there is no furiosa-bench")
 
         reporter.make_zip()
 
