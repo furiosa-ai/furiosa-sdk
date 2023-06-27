@@ -171,7 +171,7 @@ def validate(
                 f.write(enf)
         except Exception as e:
             eprint("[Step 3] Failed\n")
-            raise e
+            return e
         print("[Step 3] Passed")
 
         print("[Step 4] Perform inference once for data collection... (Optional)")
@@ -202,7 +202,13 @@ def main():
         type=str,
         help="Path to Model file (only onnx model format is supported)",
     )
-    parser.add_argument("--dump", type=str, help="dump file path")
+    parser.add_argument(
+        "--dump",
+        type=str,
+        metavar="OUTPUT_PREFIX",
+        help="Collect compiler log and environment information and save them into \
+                            an archive file. A unix epoch timestamp and '.zip' extension will be added to OUTPUT_PREFIX automatically.",
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument(
         "--skip-quantization", action="store_true", help="skip model quantization phase"
@@ -227,7 +233,6 @@ def main():
 
     if isinstance(err, BaseException):
         raise err
-
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from .v1 import LIBCOMPILER, CompilerApiError, VersionInfo, compile, version_string
+from .v1 import LIBCOMPILER, CompilerApiError, VersionInfo, compile, version_string, version_dict
 
 __all__ = [
     "CompilerApiError",
@@ -6,5 +6,4 @@ __all__ = [
     "VersionInfo",
     "compile",
     "version_string",
-    "version_dict",
 ]
