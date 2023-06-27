@@ -169,7 +169,7 @@ Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 furiosa litmus (Checking for model compatibility)
 ----------------------------------------------------------------------
 
-The ``litmus`` command takes the `TFLite`_ and `ONNX`_ models as arguments,
+The ``litmus`` command takes the `ONNX`_ model as arguments,
 quantizes them automatically, and attempts to compile up to the final binary, in order to check whether the given model is compatible with the SDK.
 
 .. code-block:: sh

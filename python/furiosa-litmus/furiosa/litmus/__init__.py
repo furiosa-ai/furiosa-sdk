@@ -203,7 +203,7 @@ def main():
     parser.add_argument(
         "model_path",
         type=str,
-        help="Path to Model file (tflite, onnx, and other model formats are supported)",
+        help="Path to Model file (only onnx model format is supported)",
     )
     parser.add_argument("--dump", type=str, help="dump file path")
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
