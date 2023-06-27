@@ -29,6 +29,7 @@ class Reporter:
             self.dot_graph_path = self.compiler_dir / 'model.dot'
             self.trace_path = self.compiler_dir / 'trace.json'
             self.profiling_path = self.compiler_dir / 'profiling.json'
+            os.makedirs(self.compiler_dir, exist_ok=True)
         else:
             self.dump_path = None
             self.meta_path = None
@@ -49,8 +50,6 @@ class Reporter:
     def create_meta_yaml(self, model_path):
         if self.dump_path is None:
             return
-
-        os.makedirs(self.compiler_dir, exist_ok=True)
 
         sdk_meta = {
             'compiler': compiler_version(),

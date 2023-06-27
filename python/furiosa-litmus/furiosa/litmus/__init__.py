@@ -104,7 +104,7 @@ def calibrate_with_random_data(
 
 
 def validate(
-    model_path: Path, dump_path: str, skip_quantization: bool, verbose: bool, target_npu: str
+    model_path: Path, reporter: Reporter, skip_quantization: bool, verbose: bool, target_npu: str
 ):
     """
     Validate a given model
@@ -112,7 +112,6 @@ def validate(
     :param model_path: Model path
     :return: boolean
     """
-    reporter = Reporter(dump_path)
     with tempfile.TemporaryDirectory() as tmpdir:
         if not model_path.exists():
             eprint(f"ERROR: {model_path} does not exist")
@@ -138,10 +137,10 @@ def validate(
                 onnx_model = optimize_model(onnx_model)
             except DecodeError as e:
                 eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
-                raise SystemExit(e)
+                return SystemExit(e)
             except Exception as e:
                 eprint("[Step 1] Failed\n")
-                raise e
+                return e
             print("[Step 1] Passed", flush=True)
 
             print("[Step 2] Checking if the model can be quantized ...", flush=True)
@@ -150,7 +149,7 @@ def validate(
                 quantized_model = quantize(onnx_model, ranges)
             except Exception as e:
                 eprint("[Step 2] Failed\n")
-                raise e
+                return e
             print("[Step 2] Passed", flush=True)
 
         print(
@@ -189,11 +188,9 @@ def validate(
             print("[Step 4] Finished")
         except RuntimeError as e:
             eprint("[Step 4] Failed")
-            raise SystemExit(e)
+            return SystemExit(e)
         except ModuleNotFoundError as e:
             eprint("[Step 4] Skip, there is no furiosa-bench")
-
-        reporter.make_zip()
 
 
 def main():
@@ -217,13 +214,20 @@ def main():
         help="Target NPU: warboy, warboy-2pe",
     )
     args = parser.parse_args()
-    validate(
+
+    reporter = Reporter(args.dump)
+    err = validate(
         Path(args.model_path),
-        dump_path=args.dump,
+        reporter=reporter,
         skip_quantization=args.skip_quantization,
         verbose=args.verbose,
         target_npu=args.target_npu,
     )
+    reporter.make_zip()
+
+    if isinstance(err, BaseException):
+        raise err
+
 
 
 if __name__ == "__main__":
