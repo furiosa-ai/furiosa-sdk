@@ -165,7 +165,7 @@ def get_output(session, outputs, score_threshold, image_scale=(1.0, 1.0)):
 
 
 def get_padded_image(sess, image):
-    w_scale, h_scale, resized_image = resize_image(sess, image.size, lambda size: image.resize(size, Image.ANTIALIAS))
+    w_scale, h_scale, resized_image = resize_image(sess, image.size, lambda size: image.resize(size, Image.Resampling.LANCZOS))
     data = np.zeros((300,300, 3), np.uint8)
     data[:resized_image.shape[0],:resized_image.shape[1],:resized_image.shape[2]] = resized_image
     return w_scale, h_scale, np.reshape(data, (1, 300, 300, 3))
