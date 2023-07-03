@@ -1,0 +1,561 @@
+kind: Pipeline
+apiVersion: tekton.dev/v1
+metadata:
+  name: sdk-ci
+  namespace: ci-furiosa-sdk
+spec:
+  description: >-
+    This Pipeline runs Furiosa SDK CI/CD
+
+  workspaces:
+  - name: source
+    description: Workspace for SDK source
+  - name: conda
+    description: Workspace for Miniconda environment
+  - name: apt-credential
+    description: Internal Apt repository credential (furiosa.conf)
+  - name: pypi-credential
+    description: Internal Pypi credential (.netrc)
+
+  params:
+  - name: repository
+    description: Git repository of furiosa-sdk
+    type: string
+    default: https://github.com/ileixe/furiosa-sdk-private
+  - name: revision
+    description: Git revision of furiosa-sdk
+    type: string
+    default: migrate-ci
+  - name: image
+    description: SDK container image to run tests
+    type: string
+    default: asia-northeast3-docker.pkg.dev/next-gen-infra/tekton/warboy/furiosa-sdk:latest
+  # Environment matrix
+  - name: ubuntu-distro
+    description: Ubuntu distribution where debian packages build (e.g. focal, jammy)
+    type: string
+    default: jammy
+  - name: stage
+    description: Release stage (e.g. nightly, rc, pre, release)
+    type: string
+    default: nightly
+  # Constants
+  - name: tekton-dashboard
+    description: "URL of Tekton dashboard (default: https://tekton.office.furiosa.in/)"
+    type: string
+    default: https://tekton.office.furiosa.in/
+  - name: archive
+    description: Ubuntu internal archive repository URL
+    type: string
+    default: https://archive.furiosa.dev
+  - name: pypi
+    description: Internal Pypi URL
+    type: string
+    default: https://internal-pypi.furiosa.dev
+  # Dependency versions
+  - name: firmware-version
+    description: Version of furiosa-libhal-warboy
+    type: string
+    default: "0.12.*"
+  - name: nux-version
+    description: Version of furiosa-libnux
+    type: string
+    default: "0.10.*"
+  - name: onnx-version
+    description: Version of libonnxruntime
+    type: string
+    default: "1.15.*"
+  # Boolean flags
+  - name: upload-packages
+    description: "Upload packages to Pypi if true (default: false)"
+    type: string
+    default: false
+
+  tasks:
+  - name: clone
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/tektoncd/catalog.git
+      - name: pathInRepo
+        value: task/git-clone/0.9/git-clone.yaml
+    retries: 3
+
+    workspaces:
+      - name: output
+        workspace: source
+    params:
+    - name: url
+      value: $(params.repository)
+    - name: revision
+      value: $(params.revision)
+
+  - name: build
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/ileixe/catalog.git
+      - name: pathInRepo
+        value: task/buildkit-daemonless/0.2/buildkit-daemonless.yaml
+
+    params:
+    - name: IMAGE
+      value: $(params.image)
+    - name: SECRET_MOUNT_PATH
+      value: /etc/apt/auth.conf.d
+    - name: EXTRA_ARGS
+      value:
+        - --secret id=furiosa.conf,src=/etc/apt/auth.conf.d/furiosa.conf
+    workspaces:
+    - name: source
+      workspace: source
+    - name: secret
+      workspace: apt-credential
+
+    runAfter:
+    - clone
+
+  - name: prepare
+    taskSpec:
+      description: Prepare SDK tests. Install required packages (black, isort, pylint..)
+      params:
+        - name: prepare-image
+        - name: python-version
+      steps:
+        - name: conda
+          image: $(params.prepare-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            # Note that we use "workspaces" variable for workspace propagation
+            # See https://github.com/tektoncd/community/blob/main/teps/0111-propagating-workspaces.md
+
+            wget --no-verbose https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/Miniconda3.sh
+            # Setup conda per Python.
+            # Note that we setup Conda independently as a Conda does not support parallel execution
+            bash /tmp/Miniconda3.sh -u -b -p $(workspaces.conda.path)/$(params.python-version)
+
+            $(workspaces.conda.path)/$(params.python-version)/bin/conda update --yes conda
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+
+            conda create --name $(params.python-version) python=$(params.python-version)
+          computeResources:
+            requests:
+              memory: 32Gi
+              cpu: 32
+
+        - name: dependency
+          image: $(params.prepare-image)
+          env:
+          - name: PIP_ROOT_USER_ACTION
+            value: ignore
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            # Create virtual environment per Python
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)
+
+            cd $(workspaces.source.path)
+
+            pip install --upgrade pip setuptools wheel
+            pip install --upgrade flit gitpython papermill pytest black isort pylint pylint-protobuf
+
+    params:
+    # XXX(Yan): It can't be be just "image" as global subsitution happens first
+    - name: prepare-image
+      value: "$(tasks.build.results.IMAGE_URL)"
+    matrix:
+      params:
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - clone
+
+  - name: install
+    taskSpec:
+      description: Install a SDK package for test
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: install-image
+        - name: python-version
+        - name: pypi
+        - name: package
+      steps:
+        - name: install
+          image: $(params.install-image)
+          env:
+          - name: PIP_ROOT_USER_ACTION
+            value: ignore
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+
+            # Create virtual environment per components from Python environments
+            conda create --name $(params.python-version)-$(params.package) --clone $(params.python-version)
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            git config --global --add safe.directory $(workspaces.source.path)
+
+            pip install --pre --extra-index-url $(params.pypi)/simple 'python/$(params.package)[test]'
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: install-image
+        value: $(tasks.build.results.IMAGE_URL)
+      - name: pypi
+        value: $(params.pypi)
+    matrix:
+      params:
+        - name: package
+          value:
+          - furiosa-common
+          - furiosa-cli
+          - furiosa-tools
+          - furiosa-registry
+          - furiosa-runtime
+          - furiosa-optimizer
+          - furiosa-quantizer
+          - furiosa-litmus
+          - furiosa-server
+          - furiosa-serving
+          - furiosa-sdk
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - prepare
+
+  - name: format
+    taskSpec:
+      description: Check format via isort and black
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: test-image
+        - name: python-version
+        - name: package
+      steps:
+        - name: black
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            black --check --diff python/$(params.package)
+
+        - name: isort
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            isort --check --diff python/$(params.package)
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: test-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: package
+          value:
+          - furiosa-litmus
+          - furiosa-quantizer
+          - furiosa-optimizer
+          - furiosa-registry
+          - furiosa-runtime
+          - furiosa-server
+          - furiosa-tools
+          - furiosa-serving
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - install
+
+  - name: lint
+    taskSpec:
+      description: Lint via pylint
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: test-image
+        - name: python-version
+        - name: package
+      steps:
+        - name: pylint
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            pylint --verbose --rcfile=python/$(params.package)/.pylintrc $(find python/$(params.package) -type f -name '*.py')
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: test-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: package
+          value:
+          - furiosa-quantizer
+          - furiosa-optimizer
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - format
+
+  - name: test
+    taskSpec:
+      description: Test via pytest
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: test-image
+        - name: python-version
+        - name: package
+      steps:
+        - name: pytest
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)/python/$(params.package)
+
+            make test
+          computeResources:
+            limits:
+              alpha.furiosa.ai/npu: "1"
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: test-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: package
+          value:
+          - furiosa-litmus
+          - furiosa-quantizer
+          - furiosa-optimizer
+          - furiosa-registry
+          - furiosa-runtime
+          - furiosa-server
+          - furiosa-tools
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - lint
+
+  - name: doctest
+    taskSpec:
+      description: Doc test via sample code and pytest nbmake
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: test-image
+        - name: python-version
+      steps:
+        - name: pytest
+          image: $(params.test-image)
+          onError: continue # TODO: Delete when on office cluster
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            # From furiosa-runtime env
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-furiosa-runtime
+
+            # Run sample code examples
+            cd $(workspaces.source.path)
+
+            pip install -r examples/inferences/requirements.txt
+            tests/test_examples.sh
+
+            # Run notebook examples
+            cd examples/notebooks/
+            pip install -r ./requirements.txt nbmake
+
+            pytest --nbmake --nbmake-timeout=500 $(find . -type f -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' )
+          computeResources:
+            limits:
+              alpha.furiosa.ai/npu: "1"
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: test-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - test
+
+  - name: upload
+    taskSpec:
+      description: Upload packages into internal Pypi
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: publish-image
+        - name: python-version
+        - name: package
+      steps:
+        - name: publish
+          image: $(params.publish-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eux
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            git config user.name "FuriosaAI Package Manager"
+            git config user.email "pkg@furiosa.ai"
+
+            VERSION=$(grep -Po "version = (\\K[^']+)" python/furiosa-sdk/pyproject.toml)
+            SDK_VERSION=$(echo $VERSION | sed "s/dev[0-9]/dev$(date +'%y%m%d')/")
+
+            make set-version
+
+            git commit -a -m "Set the nightly version to $SDK_VERSION"
+
+    workspaces:
+    - name: pypi-credential
+      workspace: pypi-credential
+      subPath: .netrc
+    params:
+      - name: publish-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: package
+          value:
+          - furiosa-common
+          - furiosa-cli
+          - furiosa-tools
+          - furiosa-registry
+          - furiosa-runtime
+          - furiosa-optimizer
+          - furiosa-quantizer
+          - furiosa-litmus
+          - furiosa-server
+          - furiosa-serving
+          - furiosa-sdk
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    when:
+      - input: $(params.upload-packages)
+        operator: in
+        values:
+          - "true"
+    runAfter:
+      - test
+
+  finally:
+  - name: notify
+    when:
+      - input: $(params.upload-packages)
+        operator: in
+        values:
+          - "true"
+      - input: $(tasks.status)
+        operator: in
+        values: ["Failed"]
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/tektoncd/catalog.git
+      - name: pathInRepo
+        value: task/send-to-channel-slack/0.1/send-to-channel-slack.yaml
+
+    params:
+    - name: token-secret
+      value: slack-credential
+    - name: channel
+      value: daily-build
+    - name: message
+      value: "*$(tasks.status):* Job $(context.pipeline.name) build\n More info at: $(params.tekton-dashboard)/#/namespaces/ci-sdk-release/pipelineruns/$(context.pipelineRun.name)"

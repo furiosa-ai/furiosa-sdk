@@ -1,0 +1,8 @@
+spec:
+  # On AWS cluster
+  #storageClassName: efs-aws-k8s
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi

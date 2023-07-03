@@ -1,0 +1,46 @@
+presubmits:
+  - name: sdk-ci
+    spec:
+      serviceAccountName: prow-pipeline
+      automountServiceAccountToken: true
+      volumes:
+      - name: entrypoint
+        configMap:
+          defaultMode: 0700
+          name: entrypoint
+      containers:
+        # See https://github.com/ileixe/tkn-watch/blob/withlog/Dockerfile
+        - image: ileixe/tkn-watch:853974f-v941edb36a
+          command:
+            - /bin/entrypoint.sh
+          volumeMounts:
+          - name: entrypoint
+            mountPath: /bin/entrypoint.sh
+            readOnly: true
+            subPath: entrypoint.sh
+          args:
+            - /usr/bin/tkn
+            - pipeline
+            - start
+            - --serviceaccount
+            - build-bot
+            - --filename
+            - tekton/pipeline.yaml
+            - --workspace
+            - name=apt-credential,secret=apt-credential
+            - --workspace
+            - name=pypi-credential,secret=pypi-credential
+            - --workspace
+            - name=source,volumeClaimTemplateFile=tekton/workspace-template.yaml
+            - --workspace
+            - name=conda,volumeClaimTemplateFile=tekton/workspace-template.yaml
+            - --pod-template
+            - tekton/pod-template.yaml
+            - --use-param-defaults
+            - --namespace
+            - ci-furiosa-sdk
+            - --pipeline-timeout
+            - 1h30m
+
+    rerun_command: "/test this"
+    trigger: "(?m)^/test (all|this),?(\\s+|$)"

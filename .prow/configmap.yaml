@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: entrypoint
+data:
+  entrypoint.sh: |-
+    #!/usr/bin/env bash
+
+    # OUTPUT: PipelineRun started: sdk-ci-run-qfzw6 In order to track the PipelineRun progress run: tkn pipelinerun logs sdk-ci-run-qfzw6 -f -n ci-furiosa-sdk
+    OUTPUT="$("$@")"
+    # PR: sdk-ci-run-qfzw6
+    PR=$(echo $OUTPUT | cut -d' ' -f3)
+    # NAMESPACE: ci-furiosa-sdk
+    NAMESPACE=$(echo $OUTPUT | rev | cut -d' ' -f1 | rev)
+
+    echo "https://tekton.office.furiosa.in/#/namespaces/ci-furiosa-sdk/pipelineruns/$PR"
+    echo "tkn pipelinerun describe $PR -n $NAMESPACE"
+
+    function cleanup() {
+        # Try to cancel PipelineRun to cleanup
+        code=$?
+        tkn pipelinerun cancel $PR -n $NAMESPACE &>/dev/null
+        exit $code
+    }
+
+    trap cleanup EXIT
+
+    /usr/local/bin/tkn-watch --refresh-seconds 60 $PR -n $NAMESPACE
