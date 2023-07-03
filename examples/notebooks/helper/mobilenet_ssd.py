@@ -17,7 +17,8 @@ def draw_objects(draw, objs, labels):
     draw.rectangle([(bbox.xmin, bbox.ymin), (bbox.xmax, bbox.ymax)], outline=color, width=5)
     font = ImageFont.truetype(font_path('DejaVuSansMono.ttf'), 20)
 
-    text_width, text_height = font.getsize(text)
+    left, top, right, bottom = font.getbbox(text)
+    text_width, text_height = right - left, bottom - top
     draw.rectangle((bbox.xmin, bbox.ymin, bbox.xmin + text_width + 20, bbox.ymin + text_height + 20), fill=color)
     draw.text((bbox.xmin + 10, bbox.ymin + 10),
               text, font=font, fill='black')
