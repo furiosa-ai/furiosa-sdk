@@ -73,7 +73,7 @@ class GithubTransport(HTTPTransport):
 
         directory = self.cache_directory
         if not os.path.exists(directory):
-            os.mkdir(directory)
+            os.makedirs(directory)
 
         owner, repo, branch = self.parse(uri)
 

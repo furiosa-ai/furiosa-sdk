@@ -43,7 +43,7 @@ class FileTransport(Transport):
 
         directory = self.cache_directory
         if not os.path.exists(directory):
-            os.mkdir(directory)
+            os.makedirs(directory)
 
         location = removeprefix(uri, self.scheme)
 
