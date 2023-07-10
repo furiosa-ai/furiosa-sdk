@@ -2,7 +2,7 @@
 
 mkdir -p python
 
-for MODULE in "common" "runtime" "optimizer" "quantizer" "registry" "serving" "server"; do
+for MODULE in "common" "runtime" "optimizer" "quantizer" "serving" "server"; do
   sphinx-apidoc -f --implicit-namespaces --extensions 'sphinx.ext.napoleon' --no-toc -o python ../../../../python/furiosa-${MODULE}/furiosa
 done
 

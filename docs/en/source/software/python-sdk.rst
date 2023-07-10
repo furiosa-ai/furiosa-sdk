@@ -183,7 +183,6 @@ Before installing the furiosa-sdk, you need to update Python's package installer
     .. code-block:: sh
 
       cd furiosa-sdk/python
-      pip install furiosa-registry
       pip install furiosa-server
 
 

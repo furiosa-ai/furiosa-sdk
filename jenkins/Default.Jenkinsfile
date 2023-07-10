@@ -3,7 +3,6 @@ sdk_modules = [
   'furiosa-common',
   'furiosa-cli',
   'furiosa-tools',
-  'furiosa-registry',
   'furiosa-runtime',
   'furiosa-optimizer',
   'furiosa-quantizer',
@@ -17,7 +16,6 @@ format_applied = [
   'furiosa-litmus',
   'furiosa-quantizer',
   'furiosa-optimizer',
-  'furiosa-registry',
   'furiosa-runtime',
   'furiosa-server',
   'furiosa-tools',
@@ -33,7 +31,6 @@ test_modules = [
   "furiosa-litmus",
   "furiosa-quantizer",
   "furiosa-optimizer",
-  "furiosa-registry",
   "furiosa-runtime",
   "furiosa-server",
   "furiosa-tools"

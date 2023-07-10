@@ -6,7 +6,7 @@ import zipfile
 
 from multipledispatch import dispatch
 
-from ...utils import removeprefix
+from ..utils import removeprefix
 from .http import HTTPTransport
 
 
@@ -24,7 +24,7 @@ class GithubTransport(HTTPTransport):
 
     @dispatch(str, str)
     async def read(self, uri: str, path: str) -> bytes:
-        """Read a file binary data from the specified registry URI and path.
+        """Read a file binary data from the specified URI and path.
 
         Note that Github downloadable URL is different from the URI itself. So We are replacing the
         URI and path into the valid URL and calling `read(location)` of `HTTPTransport` here.

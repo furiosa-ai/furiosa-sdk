@@ -13,6 +13,5 @@ Welcome! This is the Furiosa SDK Documentation for |release|.
    furiosa.runtime
    furiosa.optimizer
    furiosa.quantizer
-   furiosa.registry
    furiosa.server
    furiosa.serving

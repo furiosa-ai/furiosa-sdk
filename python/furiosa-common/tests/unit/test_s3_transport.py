@@ -1,9 +1,9 @@
-# Comment out S3 tests as moto does not support aiobotocore. I don't want to make mock
+# TODO: Comment out S3 tests as moto does not support aiobotocore. I don't want to make mock
 # server just to verify basic S3 API, so wait for pytest plugin now.
 
 # import boto3
 # import pytest
-# from furiosa.registry.client.transport import S3Transport
+# from furiosa.comon.transport import S3Transport
 # from moto import mock_s3
 
 

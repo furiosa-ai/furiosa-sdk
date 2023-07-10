@@ -34,7 +34,6 @@ test = []
 
 cli = ["furiosa-cli == 0.10.*"]
 litmus = ["furiosa-litmus == 0.10.*"]
-registry = ["furiosa-registry == 0.10.*"]
 quantizer = ["furiosa-optimizer == 0.10.*", "furiosa-quantizer == 0.10.*",]
 server = ["furiosa-server == 0.10.*"]
 serving = ["furiosa-serving == 0.10.*"]
@@ -43,7 +42,6 @@ tool = ["furiosa-tools == 0.10.*"]
 full = [
     "furiosa-cli == 0.10.*",
     "furiosa-litmus == 0.10.*",
-    "furiosa-registry == 0.10.*",
     "furiosa-optimizer == 0.10.*",
     "furiosa-quantizer == 0.10.*",
     "furiosa-server == 0.10.*",

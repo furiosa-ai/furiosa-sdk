@@ -27,7 +27,6 @@ dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.10.*",
-    "furiosa-registry == 0.10.*",
     "cffi ~= 1.14",
     "numpy ~= 1.23",
     "pydantic",
