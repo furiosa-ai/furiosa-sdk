@@ -1,5 +1,6 @@
 import argparse
 import os
+import signal
 import subprocess
 import sys
 from typing import Dict
@@ -62,7 +63,11 @@ def execute(registry: CommandRegistry, args, remainings) -> int:
     process = subprocess.Popen(
         command, env=envs, stdout=sys.stdout, stderr=sys.stderr, close_fds=True
     )
-    exitcode = process.wait()
+    try:
+        exitcode = process.wait()
+    except KeyboardInterrupt:
+        process.send_signal(signal.SIGINT)
+        exitcode = process.wait()
     return exitcode
 
 
