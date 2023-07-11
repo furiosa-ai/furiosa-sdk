@@ -32,8 +32,7 @@ dependencies = [
     "fastapi < 0.89.0",
     "grpcio-tools",
     "mypy-extensions<0.5.0,>=0.4.3",
-    # Protobuf major version change issue https://github.com/furiosa-ai/furiosa-sdk-private/issues/389
-    "protobuf < 4.0",
+    "protobuf",
     "toml",
     "typer",
     "uvicorn",
