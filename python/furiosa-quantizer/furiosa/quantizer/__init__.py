@@ -119,9 +119,6 @@ class Calibrator:
 def quantize(
     model: Union[onnx.ModelProto, bytes],  # pylint: disable=no-member
     tensor_name_to_range: Mapping[str, Sequence[float]],
-    *,
-    with_quantize: bool = True,
-    normalized_pixel_outputs: Optional[Sequence[int]] = None,
 ) -> bytes:
     """Quantize an ONNX model on the basis of the range of its tensors.
 
@@ -130,15 +127,6 @@ def quantize(
         tensor_name_to_range (Mapping[str, Sequence[float]]):
             A mapping from a tensor name to a 2-tuple (or list) of the
             tensor's min and max.
-        with_quantize (bool): Whether to put a Quantize operator at the
-            beginning of the resulting model. Defaults to True.
-        normalized_pixel_outputs (Optional[Sequence[int]]):
-            A sequence of indices of output tensors in the ONNX model
-            that produce pixel values in a normalized format ranging
-            from 0.0 to 1.0. If specified, the corresponding output
-            tensors in the resulting quantized model will generate pixel
-            values in an unnormalized format from 0 to 255, represented
-            as unsigned 8-bit integers (uint8). Defaults to None.
 
     Returns:
         bytes: A serialized ONNX model that incorporates quantization
@@ -146,6 +134,4 @@ def quantize(
     """
     if isinstance(model, onnx.ModelProto):  # pylint: disable=no-member
         model = model.SerializeToString()
-    return furiosa_quantizer_impl.quantize(  # pylint: disable=no-member
-        model, tensor_name_to_range, with_quantize, normalized_pixel_outputs
-    )
+    return furiosa_quantizer_impl.quantize(model, tensor_name_to_range)  # pylint: disable=no-member
