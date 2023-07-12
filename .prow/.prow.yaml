@@ -44,3 +44,5 @@ presubmits:
 
     rerun_command: "/test this"
     trigger: "(?m)^/test (all|this),?(\\s+|$)"
+    rerun_auth_config:
+      allow_anyone: true
