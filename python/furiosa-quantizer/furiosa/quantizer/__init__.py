@@ -224,7 +224,7 @@ class Processor:
             output (Union[numpy.ndarray, List[Any]]):
                 Output tensor result by pre_process function
         """
-        self._processor.pre_process(input_data)
+        return self._processor.pre_process(input_data)
 
     def post_process(
         self,
@@ -240,7 +240,7 @@ class Processor:
         Returns:
             output (List[Any]): Output tensor result by post_process function
         """
-        self._processor.post_process(input_data)
+        return self._processor.post_process(input_data)
 
 
 def quantize(
