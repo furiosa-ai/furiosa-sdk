@@ -196,7 +196,7 @@ class Processor:
             output_name (str): Output tensor name to apply post_process
             func (Callable[[numpy.ndarray], Any): post_process function
         """
-        self._processor.use_i8_for_output(output_name, func)
+        self._processor.apply_post_process(output_name, func)
 
     def apply_pre_process(self, input_name: str, func: Callable[[Any], Any]):
         """
@@ -207,7 +207,7 @@ class Processor:
             func (Callable[[Any], Any]):
                 pre_process function
         """
-        self._processor.use_i8_for_output(input_name, func)
+        self._processor.apply_pre_process(input_name, func)
 
     def pre_process(
         self,
