@@ -230,7 +230,6 @@ spec:
           - furiosa-common
           - furiosa-cli
           - furiosa-tools
-          - furiosa-registry
           - furiosa-runtime
           - furiosa-optimizer
           - furiosa-quantizer
@@ -298,7 +297,6 @@ spec:
           - furiosa-litmus
           - furiosa-quantizer
           - furiosa-optimizer
-          - furiosa-registry
           - furiosa-runtime
           - furiosa-server
           - furiosa-tools
@@ -399,7 +397,6 @@ spec:
           - furiosa-litmus
           - furiosa-quantizer
           - furiosa-optimizer
-          - furiosa-registry
           - furiosa-runtime
           - furiosa-server
           - furiosa-tools
@@ -512,7 +509,6 @@ spec:
           - furiosa-common
           - furiosa-cli
           - furiosa-tools
-          - furiosa-registry
           - furiosa-runtime
           - furiosa-optimizer
           - furiosa-quantizer
