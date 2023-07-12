@@ -1,6 +1,5 @@
 spec:
-  # On AWS cluster
-  #storageClassName: efs-aws-k8s
+  storageClassName: cephfs-ci
   accessModes:
     - ReadWriteMany
   resources:
