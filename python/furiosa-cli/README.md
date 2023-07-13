@@ -1,4 +1,4 @@
-# Package `furiosa.cli`
+# Furiosa CLI
 
 This is a part of [Furiosa SDK] and provides a top-level command-line interface
 to it.

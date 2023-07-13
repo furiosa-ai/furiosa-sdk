@@ -1,22 +1,16 @@
-import os
-import subprocess
-import unittest
+import pytest
+
+from furiosa.litmus import validate
 
 
-class LitmusTests(unittest.TestCase):
-    data_path = os.path.dirname(__file__) + '/../../../tests/data'
-    test_model = data_path + '/test.onnx'
-    mnist_model = data_path + '/mnist-8.onnx'
-    tflite_model = data_path + '/MNISTnet_uint8_quant_without_softmax.tflite'
+def test_test_model(test_onnx):
+    assert validate(test_onnx, False, "warboy-2pe")
 
-    def test_test_model(self):
-        result = subprocess.run(['furiosa-litmus', self.test_model], capture_output=True)
-        self.assertTrue(result.returncode == 0, result.stderr)
 
-    def test_mnist_model(self):
-        result = subprocess.run(['furiosa-litmus', self.mnist_model], capture_output=True)
-        self.assertTrue(result.returncode == 0, result.stderr)
+def test_mnist_model(mnist_onnx):
+    assert validate(mnist_onnx, False, "warboy-2pe")
 
-    def test_tflite_model(self):
-        result = subprocess.run(['furiosa-litmus', self.tflite_model], capture_output=True)
-        self.assertTrue(result.returncode != 0, result.stderr)
+
+def test_tflite_model(mnist_tflite):
+    with pytest.raises(SystemExit):
+        validate(mnist_tflite, False, "warboy-2pe")

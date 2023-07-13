@@ -36,7 +36,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["mnist", "onnxruntime ~= 1.15.1"]
+test = ["pytest", "mnist", "onnxruntime ~= 1.15.1"]
 legacy = ["package-extras"]
 
 [project.urls]

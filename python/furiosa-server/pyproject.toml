@@ -48,6 +48,7 @@ test = [
     "pytest >=2.7.3",
     "pytest",
     "pytest-asyncio ~= 0.17.2",
+    "pytest-cov",
     "requests",
     "types-PyYAML",
     "types-protobuf"

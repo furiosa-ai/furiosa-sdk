@@ -6,6 +6,7 @@ resources:
 - sealed-secret-04.yaml
 - sealed-secret-05.yaml
 - sealed-secret-06.yaml
+- sealed-secret-07.yaml
 - serviceaccount.yaml
 
 namespace: ci-furiosa-sdk

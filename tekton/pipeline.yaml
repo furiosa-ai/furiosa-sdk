@@ -228,17 +228,17 @@ spec:
       params:
         - name: package
           value:
-          - furiosa-common
           - furiosa-cli
-          - furiosa-tools
+          - furiosa-common
           - furiosa-device
-          - furiosa-runtime
+          - furiosa-litmus
           - furiosa-optimizer
           - furiosa-quantizer
-          - furiosa-litmus
+          - furiosa-runtime
+          - furiosa-sdk
           - furiosa-server
           - furiosa-serving
-          - furiosa-sdk
+          - furiosa-tools
         - name: python-version
           value:
           - "3.8"
@@ -298,12 +298,12 @@ spec:
           value:
           - furiosa-device
           - furiosa-litmus
-          - furiosa-quantizer
           - furiosa-optimizer
+          - furiosa-quantizer
           - furiosa-runtime
           - furiosa-server
-          - furiosa-tools
           - furiosa-serving
+          - furiosa-tools
         - name: python-version
           value:
           - "3.8"
@@ -361,7 +361,7 @@ spec:
 
   - name: test
     taskSpec:
-      description: Test via pytest
+      description: Test via pytest and measure coverage via Codecov
       workspaces:
       - name: pypi-credential
         mountPath: /root/.netrc
@@ -372,6 +372,7 @@ spec:
       steps:
         - name: pytest
           image: $(params.test-image)
+          env:
           script: |
             #!/usr/bin/env bash
             set -eu
@@ -397,12 +398,13 @@ spec:
       params:
         - name: package
           value:
+          - furiosa-common
           - furiosa-device
           - furiosa-litmus
-          - furiosa-quantizer
           - furiosa-optimizer
           - furiosa-runtime
           - furiosa-server
+          - furiosa-serving
           - furiosa-tools
         - name: python-version
           value:
@@ -412,6 +414,27 @@ spec:
 
     runAfter:
     - lint
+
+  - name: coverage
+    taskRef:
+      resolver: git
+      params:
+      - name: url
+        value: https://github.com/tektoncd/catalog.git
+      - name: pathInRepo
+        value: task/codecov/0.1/codecov.yaml
+
+    workspaces:
+      - name: source
+        workspace: source
+    params:
+    - name: codecov-token-secret
+      value: codecov-credential
+    - name: codecov-token-secret-key
+      value: codecov
+
+    runAfter:
+    - test
 
   - name: doctest
     taskSpec:
@@ -472,15 +495,21 @@ spec:
     taskSpec:
       description: Upload packages into internal Pypi
       workspaces:
-      - name: pypi-credential
+      - name: netrc
         mountPath: /root/.netrc
+      - name: pypirc
+        mountPath: /root/.pypirc
       params:
         - name: publish-image
         - name: python-version
         - name: package
+        - name: pypi
       steps:
         - name: publish
           image: $(params.publish-image)
+          env:
+          - name: PIP_ROOT_USER_ACTION
+            value: ignore
           script: |
             #!/usr/bin/env bash
             set -eux
@@ -490,6 +519,7 @@ spec:
 
             cd $(workspaces.source.path)
 
+            # Bumup nightly version
             git config user.name "FuriosaAI Package Manager"
             git config user.email "pkg@furiosa.ai"
 
@@ -500,28 +530,40 @@ spec:
 
             git commit -a -m "Set the nightly version to $SDK_VERSION"
 
+            # Install
+            cd python/$(params.package)
+            pip install --pre . --extra-index-url $(params.pypi)/simple
+
+            # Publish
+            flit publish --format wheel --repository testpypi # FiXME: Replace testpypi with furiosa when test is done
+
     workspaces:
-    - name: pypi-credential
+    - name: netrc
       workspace: pypi-credential
       subPath: .netrc
+    - name: pypirc
+      workspace: pypi-credential
+      subPath: .pypirc
     params:
       - name: publish-image
         value: $(tasks.build.results.IMAGE_URL)
+      - name: pypi
+        value: $(params.pypi)
     matrix:
       params:
         - name: package
           value:
-          - furiosa-common
           - furiosa-cli
-          - furiosa-tools
+          - furiosa-common
           - furiosa-device
-          - furiosa-runtime
+          - furiosa-litmus
           - furiosa-optimizer
           - furiosa-quantizer
-          - furiosa-litmus
+          - furiosa-runtime
+          - furiosa-sdk
           - furiosa-server
           - furiosa-serving
-          - furiosa-sdk
+          - furiosa-tools
         - name: python-version
           value:
           - "3.8"

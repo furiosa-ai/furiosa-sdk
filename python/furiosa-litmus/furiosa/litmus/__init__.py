@@ -93,12 +93,12 @@ def calibrate_with_random_data(
     return calibrator.compute_range()
 
 
-def validate(model_path: Path, verbose: bool, target_npu: str):
+def validate(model_path: Path, verbose: bool, target_npu: str) -> bool:
     """
     Validate a given model
 
     :param model_path: Model path
-    :return: None
+    :return: boolean
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         if not model_path.exists():
@@ -152,6 +152,8 @@ def validate(model_path: Path, verbose: bool, target_npu: str):
             eprint("[Step 4] Failed\n")
             raise e
         print("[Step 4] Passed")
+
+    return True
 
 
 def main():

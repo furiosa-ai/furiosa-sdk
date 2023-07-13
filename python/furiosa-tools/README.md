@@ -1,6 +1,5 @@
-# Package `furiosa.tools`
+# Furiosa Tools (Deprecated)
 
-This is a part of [Furiosa SDK] and provides a command-line interface to
-FuriosaAI's compiler.
+This package is deprecated and will be removed in a future release. Use `furiosa-compiler` instead.
 
 [Furiosa SDK]: https://pypi.org/project/furiosa-sdk/

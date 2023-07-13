@@ -29,11 +29,15 @@ dependencies = [
     "furiosa-optimizer == 0.10.*",
     "furiosa-quantizer == 0.10.*",
     "furiosa-runtime == 0.10.*",
-    "furiosa-tools == 0.10.*",
+    "furiosa-tools == 0.10.*"
 ]
 
 [project.optional-dependencies]
-test = []
+test = [
+    "pytest",
+    "pytest-cov",
+    "mnist"
+]
 
 [project.urls]
 Home = "https://furiosa.ai"

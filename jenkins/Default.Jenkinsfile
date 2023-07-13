@@ -31,7 +31,6 @@ lint_applied = [
 
 test_modules = [
   "furiosa-litmus",
-  "furiosa-quantizer",
   "furiosa-optimizer",
   "furiosa-runtime",
   "furiosa-server",
@@ -122,7 +121,7 @@ def setupPythonEnv(pythonVersion) {
 
   python --version;
   pip install --upgrade pip setuptools wheel;
-  pip install --root-user-action=ignore --upgrade flit gitpython papermill black isort pylint pylint-protobuf;
+  pip install --root-user-action=ignore --upgrade flit gitpython papermill black isort pylint pylint-protobuf pytest;
   """
 }
 
@@ -143,7 +142,7 @@ def buildPackages(pythonVersion) {
   conda activate env-${pythonVersion};
 
   pip list | grep furiosa;
-  cd python/furiosa-sdk && make install_full
+  cd python/furiosa-sdk && pip install '.[full]'
   """
 }
 
@@ -389,7 +388,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libhal-warboy=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
-          furiosa-compiler-bridge \
+          furiosa-compiler \
           libonnxruntime=1.15.\\*
           """
         }
