@@ -46,7 +46,7 @@ def __register_compiler_apis(ciface):
 
 ## Definition of Compiler Native C API
 LIBCOMPILER = find_native_libs("furiosa_compiler", register_hook=__register_compiler_apis)
-LIBCOMPILER.fc_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p]
+LIBCOMPILER.fc_compile.argtypes = [c_void_p, c_char_p, c_char_p, c_void_p, c_void_p, c_void_p]
 LIBCOMPILER.fc_compile.restype = c_int
 
 LIBCOMPILER.fc_destroy_buffer.argtypes = [c_void_p]
@@ -210,7 +210,10 @@ def compile(
             __set_ga_param(options, key, value)
 
     output_buf = FcBuffer()
-    errno = LIBCOMPILER.fc_compile(options, None, None, byref(input_buf), byref(output_buf))
+    summary_buf = FcBuffer()
+    errno = LIBCOMPILER.fc_compile(
+        options, None, None, byref(input_buf), byref(output_buf), byref(summary_buf)
+    )
 
     if is_err(errno):
         raise into_exception(errno)
@@ -219,6 +222,7 @@ def compile(
     output_bytes = bytes((ctypes.c_ubyte * output_buf.len).from_address(output_buf.data))
     # Destroy the buffer after copying it
     LIBCOMPILER.fc_destroy_buffer(byref(output_buf))
+    LIBCOMPILER.fc_destroy_buffer(byref(summary_buf))  # Currently unused
 
     return output_bytes
 
