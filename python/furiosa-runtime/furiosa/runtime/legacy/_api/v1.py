@@ -7,7 +7,8 @@ import os
 from typing import List
 
 from furiosa.common.native import LogLevel, find_native_libs
-from furiosa.runtime import consts
+
+from .. import consts
 
 LOG = logging.getLogger(__name__)
 
