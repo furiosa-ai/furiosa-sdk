@@ -18,7 +18,8 @@ data:
       --use-param-defaults \
       --pipeline-timeout 1h30m \
       --namespace ci-furiosa-sdk \
-      --param revision=$PULL_PULL_SHA
+      --param revision=$PULL_PULL_SHA \
+      --param upload-package=true
     )
 
     # PR: sdk-ci-run-qfzw6

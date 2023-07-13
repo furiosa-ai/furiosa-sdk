@@ -9,7 +9,6 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
-    Iterator,
     List,
     Optional,
     Sequence,

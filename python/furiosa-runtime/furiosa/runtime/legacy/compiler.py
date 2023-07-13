@@ -40,7 +40,7 @@ def _generate_suffix(length: int) -> str:
 
 
 def _generate_unique_log_filename(log_dir: Path) -> Path:
-    log_time = datetime.now().strftime(f"%Y%m%d%H%M%S")
+    log_time = datetime.now().strftime("%Y%m%d%H%M%S")
     while True:
         log_filename = f"compile-{log_time}-{_generate_suffix(6)}.log"
         path = Path(f"{log_dir}/{log_filename}")

@@ -29,7 +29,7 @@ class RepositoryHandler:
 
             return item.state == State.READY
 
-        return RepositoryIndexResponse(__root__=list(filter(returnable, items)))
+        return RepositoryIndexResponse(list(filter(returnable, items)))
 
     async def _to_item(self, config: ModelConfig) -> RepositoryIndexResponseItem:
         item = RepositoryIndexResponseItem(

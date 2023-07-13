@@ -1,1 +1,9 @@
 from .v1 import LIBCOMPILER, CompilerApiError, VersionInfo, compile, version_string
+
+__all__ = [
+    "CompilerApiError",
+    "LIBCOMPILER",
+    "VersionInfo",
+    "compile",
+    "version_string",
+]

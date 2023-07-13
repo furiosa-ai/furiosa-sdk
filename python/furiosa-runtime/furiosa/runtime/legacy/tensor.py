@@ -9,7 +9,7 @@ import numpy as np
 
 from ._api import LIBNUX
 from ._util import list_to_dict
-from .errors import UnsupportedTensorType, is_err
+from .errors import UnsupportedTensorType, into_exception, is_err
 
 
 class Axis(IntEnum):

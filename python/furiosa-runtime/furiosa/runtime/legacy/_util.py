@@ -26,7 +26,7 @@ def dump_info(log_path: Optional[str] = None):
     width = 100  # default
     try:
         width, _ = os.get_terminal_size()
-    except:
+    except OSError:
         pass
 
     eprint("=" * width)

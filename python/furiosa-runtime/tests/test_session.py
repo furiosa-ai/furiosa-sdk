@@ -54,7 +54,7 @@ def test_run_invalid_input(mnist_onnx):
 
 @pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
 def test_device_busy(mnist_onnx):
-    runner = session.create(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
+    _runner = session.create(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
     # FIXME: Add specific error variants to furiosa-native-runtime
     with pytest.raises(Exception):

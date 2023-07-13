@@ -32,7 +32,8 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest", 
-    "pytest-asyncio ~= 0.17.2"
+    "pytest-asyncio ~= 0.17.2",
+    "ruff"
 ]
 
 [project.urls]
@@ -56,6 +57,12 @@ known_first_party = ["furiosa"]
 line_length = 100
 profile = "black"
 extend_skip_glob = ["**/generated/**"]
+
+[tool.ruff]
+line-length = 100
+ignore = [
+    "F403",
+]
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

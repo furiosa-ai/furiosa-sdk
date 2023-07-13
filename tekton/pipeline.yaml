@@ -164,7 +164,7 @@ spec:
 
             cd $(workspaces.source.path)
 
-            pip install --upgrade pip setuptools wheel
+            pip install --upgrade pip setuptools wheel build
             pip install --upgrade flit gitpython papermill pytest black isort pylint pylint-protobuf
 
     params:
@@ -182,6 +182,30 @@ spec:
     runAfter:
     - clone
 
+  - name: bump
+    taskSpec:
+      description: Bump up version for local packages
+      params:
+        - name: bump-image
+      steps:
+        - name: build
+          image: $(params.bump-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            cd $(workspaces.source.path)/python
+
+            VERSION=$(grep -Po "version = (\\K[^']+)" furiosa-sdk/pyproject.toml)
+            # Add nghtly version (+ hour: %H) to prioritize local installed package
+            SDK_VERSION=$(echo $VERSION | sed "s/dev[0-9]\+/dev$(date +'%y%m%d%H')/") make set-version
+    params:
+      - name: bump-image
+        value: $(tasks.build.results.IMAGE_URL)
+
+    runAfter:
+    - prepare
+
   - name: install
     taskSpec:
       description: Install a SDK package for test
@@ -194,7 +218,7 @@ spec:
         - name: pypi
         - name: package
       steps:
-        - name: install
+        - name: build
           image: $(params.install-image)
           env:
           - name: PIP_ROOT_USER_ACTION
@@ -209,11 +233,30 @@ spec:
             conda create --name $(params.python-version)-$(params.package) --clone $(params.python-version)
             conda activate $(params.python-version)-$(params.package)
 
-            cd $(workspaces.source.path)
-
             git config --global --add safe.directory $(workspaces.source.path)
 
-            pip install --pre --extra-index-url $(params.pypi)/simple 'python/$(params.package)[test]'
+            cd $(workspaces.source.path)/python
+
+            python -m build $(params.package) --wheel --outdir dist
+
+        - name: install
+          image: $(params.install-image)
+          env:
+          - name: PIP_ROOT_USER_ACTION
+            value: ignore
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)/python
+
+            # Install local packages first via --find-links (Here SDK_VERSION is higher than Pypi)
+            pip install --pre --extra-index-url $(params.pypi)/simple \
+                              --find-links dist '$(params.package)[test]'
 
     workspaces:
     - name: pypi-credential
@@ -227,6 +270,8 @@ spec:
     matrix:
       params:
         - name: package
+          # TODO: Use array parameter here after Tekton pipeline v0.48
+          # https://github.com/tektoncd/pipeline/pull/6516
           value:
           - furiosa-cli
           - furiosa-common
@@ -246,7 +291,7 @@ spec:
           - "3.10"
 
     runAfter:
-    - prepare
+    - bump
 
   - name: format
     taskSpec:
@@ -296,11 +341,14 @@ spec:
       params:
         - name: package
           value:
+          - furiosa-cli
+          - furiosa-common
           - furiosa-device
           - furiosa-litmus
           - furiosa-optimizer
           - furiosa-quantizer
           - furiosa-runtime
+          - furiosa-sdk
           - furiosa-server
           - furiosa-serving
           - furiosa-tools
@@ -315,7 +363,7 @@ spec:
 
   - name: lint
     taskSpec:
-      description: Lint via pylint
+      description: Lint via ruff and pylint
       workspaces:
       - name: pypi-credential
         mountPath: /root/.netrc
@@ -324,11 +372,31 @@ spec:
         - name: python-version
         - name: package
       steps:
+        - name: ruff
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eu
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)
+
+            ruff check python/$(params.package)
+
         - name: pylint
           image: $(params.test-image)
           script: |
             #!/usr/bin/env bash
             set -eu
+
+            whitelist=("furiosa-quantizer" "furiosa-optimizer")
+
+            if [[ ! " ${whitelist[*]} " =~ " $(params.package) " ]]; then
+              echo "Skip pylint for $(params.package)"
+              exit 0
+            fi
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
@@ -348,8 +416,17 @@ spec:
       params:
         - name: package
           value:
-          - furiosa-quantizer
+          - furiosa-cli
+          - furiosa-common
+          - furiosa-device
+          - furiosa-litmus
           - furiosa-optimizer
+          - furiosa-quantizer
+          - furiosa-runtime
+          - furiosa-sdk
+          - furiosa-server
+          - furiosa-serving
+          - furiosa-tools
         - name: python-version
           value:
           - "3.8"
@@ -398,11 +475,14 @@ spec:
       params:
         - name: package
           value:
+          - furiosa-cli
           - furiosa-common
           - furiosa-device
           - furiosa-litmus
           - furiosa-optimizer
+          - furiosa-quantizer
           - furiosa-runtime
+          - furiosa-sdk
           - furiosa-server
           - furiosa-serving
           - furiosa-tools
@@ -517,21 +597,19 @@ spec:
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
 
-            cd $(workspaces.source.path)
+            cd $(workspaces.source.path)/python
 
             # Bumup nightly version
             git config user.name "FuriosaAI Package Manager"
             git config user.email "pkg@furiosa.ai"
 
-            VERSION=$(grep -Po "version = (\\K[^']+)" python/furiosa-sdk/pyproject.toml)
-            SDK_VERSION=$(echo $VERSION | sed "s/dev[0-9]/dev$(date +'%y%m%d')/")
-
-            make set-version
+            VERSION=$(grep -Po "version = (\\K[^']+)" furiosa-sdk/pyproject.toml)
+            SDK_VERSION=$(echo $VERSION | sed "s/dev[0-9]\+/dev$(date +'%y%m%d')/") make set-version
 
             git commit -a -m "Set the nightly version to $SDK_VERSION"
 
             # Install
-            cd python/$(params.package)
+            cd $(params.package)
             pip install --pre . --extra-index-url $(params.pypi)/simple
 
             # Publish

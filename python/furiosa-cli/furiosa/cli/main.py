@@ -48,7 +48,7 @@ def _register_commands(allow_commands: Dict[str, str], check_existence=True):
 
 
 def _register_subcommands(parser: argparse.ArgumentParser, registry: CommandRegistry):
-    subparsers = parser.add_subparsers(dest='subcommand', help=f'sub-command help')
+    subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
 
     for subcmd in registry.commands.keys():
         cmd = registry.commands[subcmd]

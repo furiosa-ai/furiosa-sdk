@@ -29,7 +29,8 @@ class Pattern_1(ONNXTransformer):
        4. rank(MatMul weight) == 2
        5. Gather.data's data_type == onnx.TensorProto.FLOAT
        6. rank(Gather.data) == 2
-       7. (Gather.axis == 0 and Matmul.input[1] is initializer) or (Gather.axis == 1 and Matmul.input[0] is initializer)
+       7. (Gather.axis == 0 and Matmul.input[1] is initializer) or
+          (Gather.axis == 1 and Matmul.input[0] is initializer)
     """
 
     pattern_to_match = ['Gather', 'MatMul']

@@ -3,7 +3,7 @@ from typing import List, Optional, Set
 
 import onnx
 from onnx import numpy_helper
-from onnx.helper import make_tensor, make_tensor_value_info
+from onnx.helper import make_tensor_value_info
 
 from furiosa.optimizer.frontend.onnx.transformer import utils
 from furiosa.optimizer.frontend.onnx.utils.check_model import check_model
@@ -16,7 +16,8 @@ class ONNXTransformer:
         if name_nodes:
             self.model = utils.name_nodes(model)
         else:
-            # When transformer is applied to the subgraph in attribute, prevent renaming of nodes inside the subgraph.
+            # When transformer is applied to the subgraph in attribute, prevent renaming of
+            # nodes inside the subgraph.
             self.model = model
         self.producer_map = {
             node_output: node for node in model.graph.node for node_output in node.output
@@ -63,7 +64,8 @@ class ONNXTransformer:
 
             node = self.producer_map[output]
 
-            # prevent duplicate specs from being created from nodes that have multiple outputs like Split.
+            # Prevent duplicate specs from being created from nodes that have multiple outputs like
+            # Split.
             if node in visited_node:
                 continue
             inputs = self.pattern_matching(node)
@@ -94,7 +96,8 @@ class ONNXTransformer:
 
         model = utils.rebuild_model(model, new_nodes)
         if check:
-            # if the model is a subgraph attribute model, inputs may be defined outside subgraph, so disable check option.
+            # If the model is a subgraph attribute model, inputs may be defined outside subgraph,
+            # so disable check option.
             check_model(model, self.check_runnable)
 
         return model
@@ -261,7 +264,8 @@ class ONNXTransformer:
         """
         This function eliminates designated nodes and bridges the previous and next nodes of them.
 
-        For example, if [B, C] is given to be removed, then removes [B, C] in A - B - C - D and connects [A, D] to make A - D.
+        For example, if [B, C] is given to be removed, then removes [B, C] in A - B - C - D and
+        connects [A, D] to make A - D.
         """
         self.pop_multiple_optimizer_map(nodes_to_remove)
         self.bridge_disconnected_nodes(
@@ -275,7 +279,8 @@ class ONNXTransformer:
         inits_to_add: Optional[List[onnx.TensorProto]] = None,  # pylint: disable=no-member
         vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,  # pylint: disable=no-member
     ):
-        # Pattern should be linear, and if pattern's last node has multiple outputs, they should be specified in the transformed node.
+        # Pattern should be linear, and if pattern's last node has multiple outputs, they should
+        # be specified in the transformed node.
         assert len(nodes_to_remove[-1].output) == len(nodes_to_add[-1].output)
 
         # remove nodes after the last node with multiple output receiver(except for the last node).

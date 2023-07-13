@@ -1,6 +1,7 @@
 """APIs that offer FuriosaAI NPU devices' information and allow to control the devices"""
 
 from furiosa_native_device import *
+from furiosa_native_device import __build_timestamp__, __git_short_hash__, __version__
 
 from furiosa.common.utils import get_sdk_version
 

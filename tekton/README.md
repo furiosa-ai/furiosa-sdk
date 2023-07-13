@@ -24,7 +24,7 @@ You can run the Pipeline manually use `tkn` CLI.
 
 ```sh
 tkn pipeline start \
-    --filename ./pipeline.yaml \
+    --filename pipeline.yaml \
     --serviceaccount build-bot \
     --showlog \
     --workspace name=source,volumeClaimTemplateFile=workspace-template.yaml \

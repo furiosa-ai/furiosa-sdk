@@ -4,7 +4,7 @@ install:
 	python -m pip install --editable .
 
 lint:
-	isort --check --diff . && black --check --diff .
+	isort --check --diff . && black --check --diff . && ruff check .
 
 upload:
 	flit publish

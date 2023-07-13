@@ -1,0 +1,3 @@
+def test_commands():
+    # TODO: Add CLI tests
+    ...

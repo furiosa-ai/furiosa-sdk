@@ -159,7 +159,7 @@ def version_string() -> str:
 
 
 def __check_target_ir(target_ir: str):
-    if not target_ir.lower().strip() in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
+    if target_ir.lower().strip() not in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
         raise InvalidTargetIrException(target_ir)
 
 

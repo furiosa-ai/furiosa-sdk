@@ -4,7 +4,8 @@ Configuration settings via Pydantic
 
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseSettings, StrictBytes, StrictStr
+from pydantic import StrictBytes, StrictStr
+from pydantic_settings import BaseSettings
 
 from furiosa.common.utils import get_sdk_version
 

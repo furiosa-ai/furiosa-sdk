@@ -87,7 +87,8 @@ def calibrate_with_random_data(
             else:
                 elem_type = onnx.TensorProto.DataType.Name(value_info.type.tensor_type.elem_type)
                 raise NotImplementedError(
-                    f"tensor '{value_info.name}' is of {elem_type} but a model whose input tensor is of {elem_type} cannot be randomly calibrated yet"
+                    f"tensor '{value_info.name}' is of {elem_type} but a model whose input tensor "
+                    "is of {elem_type} cannot be randomly calibrated yet"
                 )
         calibrator.collect_data([inputs])
     return calibrator.compute_range()
