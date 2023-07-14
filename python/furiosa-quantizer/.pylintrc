@@ -37,6 +37,8 @@ disable=
     too-many-locals, # R0914
     too-many-public-methods, # R0904
 
+[TYPECHECK]
+generated-members=furiosa_quantizer_impl.*
 
 [FORMAT]
 
