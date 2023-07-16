@@ -22,7 +22,7 @@ import numpy as np
 
 from furiosa.common.thread import asynchronous
 from furiosa.runtime import envs, session
-from furiosa.runtime.errors import QueueWaitTimeout
+from furiosa.runtime.errors import NativeException
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
@@ -87,8 +87,8 @@ class NuxModel(Model):
         super().__init__(config)
 
         # Uninitialized session pool. Will be loaded in load().
-        self.pool: Optional[Iterator[Union[session.Session, session.AsyncSession]]] = None
         self.sessions: Optional[List[Union[session.Session, session.AsyncSession]]] = None
+        self.runners = []
 
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
@@ -118,13 +118,13 @@ class NuxModel(Model):
             return tensors
 
     async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
-        assert self.pool is not None
+        assert self.runners is not None
 
-        session = next(self.pool)
+        run = next(iter(self.runners))
 
-        assert session is not None
+        assert run is not None
 
-        return await session.run(inputs)  # type: ignore
+        return await run(inputs)  # type: ignore
 
     async def load(self) -> bool:
         if self.ready:
@@ -155,8 +155,8 @@ class NuxModel(Model):
                 worker_num=self._config.worker_num,  # type: ignore
                 compiler_config=self._config.compiler_config,  # type: ignore
             )
-            blocking.run = asynchronous(blocking.run)
             sessions.append(blocking)
+            self.runners.append(asynchronous(blocking.run))
 
         return sessions
 
@@ -167,6 +167,7 @@ class NuxModel(Model):
         for s in self.sessions:
             s.close()
 
+        self.runners = []
         await super().unload()
 
     @property
@@ -200,7 +201,7 @@ class AsyncNuxModel(NuxModel):
     def completed(self, receiver: session.CompletionQueue, id: uuid.UUID, future: Future):
         try:
             context, value = receiver.recv(1)
-        except QueueWaitTimeout:
+        except NativeException:
             context, value = None, None
             pass
 
