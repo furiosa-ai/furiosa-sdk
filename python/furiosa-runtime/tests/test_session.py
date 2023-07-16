@@ -35,8 +35,6 @@ class TestSession(unittest.TestCase):
         # {0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""",
         #         )
 
-        sess.model
-
         items = 50
         for _ in range(0, items):
             idx = random.randrange(0, 9999, 1)
@@ -51,6 +49,12 @@ class TestSession(unittest.TestCase):
             # FIXME: Named tensor not yet available at furiosa-native-python
             # result3 = sess.run_with(["Plus214_Output_0"], {"Input3": ndarray_value})
             # self.assertTrue(np.array_equal(result1.numpy(), result3.numpy()))
+
+        # Try to unpack TensorArray to validate Tensor, TensorArray lifetime
+        if not furiosa.runtime.is_legacy():
+            # Note that legacy had segfault here
+            input1, *_ = sess.run(ndarray_value)
+            input1.view()
 
     def test_run_invalid_input(self):
         sess = self.tester.session
