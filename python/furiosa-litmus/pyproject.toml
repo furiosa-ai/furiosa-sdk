@@ -28,8 +28,11 @@ requires-python = "~=3.8"
 dependencies = [
     "furiosa-optimizer == 0.10.*",
     "furiosa-quantizer == 0.10.*",
+    "furiosa-quantizer == 0.10.*",
+    "furiosa-runtime == 0.10.*",
     "furiosa-runtime == 0.10.*",
     "furiosa-tools == 0.10.*"
+    "furiosa-tools == 0.10.*",
 ]
 
 [project.optional-dependencies]
