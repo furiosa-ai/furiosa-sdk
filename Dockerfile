@@ -5,6 +5,7 @@ ARG DIST=focal
 
 FROM ubuntu:$DIST
 
+ARG DIST=focal
 ARG HAL_VERSION="0.12.*"
 ARG NUX_VERSION="0.10.*"
 ARG ONNX_RUNTIME_VERSION="1.15.*"
@@ -35,8 +36,8 @@ EOF
 
 # Install internal dependencies
 COPY <<EOF /etc/apt/sources.list.d/furiosa.list
-    deb [arch=amd64] $ARCHIVE/ubuntu focal restricted
-    deb [arch=amd64] $ARCHIVE/ubuntu focal-nightly restricted
+    deb [arch=amd64] $ARCHIVE/ubuntu $DIST restricted
+    deb [arch=amd64] $ARCHIVE/ubuntu $DIST-nightly restricted
 EOF
 
 RUN --mount=type=secret,id=furiosa.conf,dst=/etc/apt/auth.conf.d/furiosa.conf,required <<EOF
