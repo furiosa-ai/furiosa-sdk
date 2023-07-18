@@ -1,0 +1,72 @@
+[build-system]
+# Custom backend from https://gitlab.com/ileixe/flit_ext to use setuptools-scm
+# Upstream flit does not support it. See https://github.com/pypa/flit/issues/257
+requires = ["flit_ext"]
+build-backend = "flit_ext:buildapi"
+
+[project]
+name = "furiosa-device"
+version = "0.10.0.dev0"
+authors = [{ name = "FurioaAI, Inc.", email = "pkg@furiosa.ai" }]
+readme = "README.md"
+license = { text = "Apache License 2.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dynamic = ["description"]
+requires-python = "~=3.8"
+dependencies = [
+    "furiosa-common == 0.10.*",
+    "furiosa-native-device == 0.2.1.*"
+]
+
+[project.optional-dependencies]
+test = []
+
+[project.urls]
+Home = "https://furiosa.ai"
+Documentation = "https://furiosa-ai.github.io/docs"
+"Bug Tracker" = "https://github.com/furiosa-ai/furiosa-sdk/issues"
+"Source Code" = "https://github.com/furiosa-ai/furiosa-sdk"
+
+[tool.flit.module]
+name = "furiosa.device"
+
+[tool.black]
+skip-string-normalization = true
+line-length = 100
+target-version = ["py38", "py39", "py310"]
+extend-exclude = "/generated/"
+
+[tool.isort]
+force_sort_within_sections = true
+known_first_party = ["furiosa"]
+line_length = 100
+profile = "black"
+extend_skip_glob = ["**/generated/**"]
+
+[tool.pytest.ini_options]
+# https://github.com/pytest-dev/pytest-asyncio#auto-mode
+asyncio_mode = "auto"
+
+[tool.setuptools_scm]
+# https://github.com/pypa/setuptools_scm#configuration-parameters
+root = "../.."
+write_to = "python/furiosa-device/furiosa/device/git_version.txt"
+# SemVer with release branch: https://github.com/pypa/setuptools_scm#version-number-construction
+version_scheme = "release-branch-semver"
+# Custom local scheme to emit commit hash: https://github.com/ileixe/flit_ext/blob/main/pyproject.toml#L22
+local_scheme = "force-local-version"
+
+[tool.flit.sdist]
+include = ["furiosa/device/git_version.txt"]
