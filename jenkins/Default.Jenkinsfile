@@ -387,6 +387,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libhal-warboy=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
+          furiosa-compiler-bridge \
           libonnxruntime=1.15.\\*
           """
         }
