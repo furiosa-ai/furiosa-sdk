@@ -5,7 +5,7 @@ import unittest
 import mnist
 import numpy as np
 
-from furiosa.runtime import errors, session
+from furiosa.runtime import errors, session, is_legacy
 from tests.test_base import MNIST_ONNX, NAMED_TENSORS_ONNX, SessionTester, ensure_test_device
 
 NPU_DEVICE_READY = ensure_test_device()
@@ -51,7 +51,7 @@ class TestSession(unittest.TestCase):
             # self.assertTrue(np.array_equal(result1.numpy(), result3.numpy()))
 
         # Try to unpack TensorArray to validate Tensor, TensorArray lifetime
-        if not furiosa.runtime.is_legacy():
+        if not is_legacy:
             # Note that legacy had segfault here
             input1, *_ = sess.run(ndarray_value)
             input1.view()
