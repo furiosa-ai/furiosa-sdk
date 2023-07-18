@@ -47,7 +47,8 @@ RUN --mount=type=secret,id=furiosa.conf,dst=/etc/apt/auth.conf.d/furiosa.conf,re
     apt install --no-install-recommends --assume-yes \
         furiosa-libhal-warboy=$HAL_VERSION \
         furiosa-libnux=$NUX_VERSION \
-        libonnxruntime=$ONNX_RUNTIME_VERSION
+        libonnxruntime=$ONNX_RUNTIME_VERSION \
+        furiosa-compiler-bridge
 
     rm -rf /var/lib/apt/lists/*
 EOF

@@ -5,7 +5,7 @@ import unittest
 import mnist
 import numpy as np
 
-from furiosa.runtime import errors, session, is_legacy
+from furiosa.runtime import errors, is_legacy, session
 from tests.test_base import MNIST_ONNX, NAMED_TENSORS_ONNX, SessionTester, ensure_test_device
 
 NPU_DEVICE_READY = ensure_test_device()
