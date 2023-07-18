@@ -1,0 +1,7 @@
+spec:
+  storageClassName: cephfs-ci
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi

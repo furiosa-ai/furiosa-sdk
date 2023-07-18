@@ -3,4 +3,4 @@ ipython < 8.13
 matplotlib
 mnist
 onnxruntime ~= 1.15.1
-pillow
+pillow ~= 9.5.0

@@ -25,7 +25,10 @@ classifiers = [
 ]
 dynamic = ["description"]
 requires-python = "~=3.8"
-dependencies = ["pyyaml~=6.0.0"]
+dependencies = [
+    "furiosa-common == 0.10.*",
+    "pyyaml~=6.0.0"
+]
 
 [project.optional-dependencies]
 test = []

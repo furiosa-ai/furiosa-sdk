@@ -43,15 +43,7 @@ class ChromeTraceConfig(BaseModel):
         extra = "forbid"
         arbitrary_types_allowed = True
 
-        # Custom encoder for File like type.
-        # See https://pydantic-docs.helpmanual.io/usage/exporting_models/#json_encoders
-        # Here we uses C module "_io" as actual type which pydantic will use is "_io._IOBase".
-        import _io
-
-        json_encoders = {_io._IOBase: lambda f: f.fileno()}
-
-    # Provide default value as default_factory because stdout itself is not pickle-able.
-    file: io.IOBase = Field(default_factory=lambda: sys.stdout)
+    file: int = 1  # stdout
 
 
 class PandasDataFrameConfig(BaseModel):
@@ -65,8 +57,7 @@ class PandasDataFrameConfig(BaseModel):
         extra = "allow"
         arbitrary_types_allowed = True
 
-    # Provide default value as default_factory because stdout itself is not pickle-able.
-    file: int
+    file: int = 1  # stdout
 
 
 # Format specific configs
@@ -110,16 +101,16 @@ class profile:
         self.resource = resource
         self.format = format
 
-        if format == RecordFormat.PandasDataFrame:
-            if 'file' in config.keys():
-                config['file'] = config['file'].fileno()
-            else:
-                if hasattr(os, 'memfd_create'):
-                    config['file'] = os.memfd_create('profiling')
-                else:
-                    import tempfile
+        if 'file' in config.keys():
+            config['file'] = config['file'].fileno()
 
-                    config['file'], config['tempfile'] = tempfile.mkstemp()
+        if format == RecordFormat.PandasDataFrame:
+            if hasattr(os, 'memfd_create'):
+                config['file'] = os.memfd_create('profiling')
+            else:
+                import tempfile
+
+                config['file'], config['tempfile'] = tempfile.mkstemp()
 
         self.config = configs[format](**config).json()
 

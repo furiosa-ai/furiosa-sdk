@@ -1,0 +1,11 @@
+resources:
+- sealed-secret-00.yaml
+- sealed-secret-01.yaml
+- sealed-secret-02.yaml
+- sealed-secret-03.yaml
+- sealed-secret-04.yaml
+- sealed-secret-05.yaml
+- sealed-secret-06.yaml
+- serviceaccount.yaml
+
+namespace: ci-furiosa-sdk

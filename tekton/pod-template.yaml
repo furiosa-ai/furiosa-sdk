@@ -1,0 +1,18 @@
+# TODO: Apply this template per task when Tekton supports it
+tolerations:
+- key: "npu"
+  operator: "Exists"
+  effect: "NoSchedule"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      # https://furiosa-ai.slack.com/archives/G015SB13080/p1688361343534089
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: NotIn
+          values:
+          - fpga-002
+          - fpga-003
+          - npu-001
