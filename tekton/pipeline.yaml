@@ -21,11 +21,11 @@ spec:
   - name: repository
     description: Git repository of furiosa-sdk
     type: string
-    default: https://github.com/ileixe/furiosa-sdk-private
+    default: https://github.com/furiosa-ai/furiosa-sdk-private
   - name: revision
     description: Git revision of furiosa-sdk
     type: string
-    default: migrate-ci
+    default: main
   - name: image
     description: SDK container image to run tests
     type: string

@@ -5,9 +5,22 @@ metadata:
 data:
   entrypoint.sh: |-
     #!/usr/bin/env bash
-
     # OUTPUT: PipelineRun started: sdk-ci-run-qfzw6 In order to track the PipelineRun progress run: tkn pipelinerun logs sdk-ci-run-qfzw6 -f -n ci-furiosa-sdk
-    OUTPUT="$("$@")"
+    # $PULL_PULL_SHA is passed by Prow
+    OUTPUT=$(tkn pipeline start \
+      --filename ./tekton/pipeline.yaml \
+      --serviceaccount build-bot \
+      --workspace name=source,volumeClaimTemplateFile=tekton/workspace-template.yaml \
+      --workspace name=conda,volumeClaimTemplateFile=tekton/workspace-template.yaml \
+      --workspace name=apt-credential,secret=apt-credential \
+      --workspace name=pypi-credential,secret=pypi-credential \
+      --pod-template tekton/pod-template.yaml \
+      --use-param-defaults \
+      --pipeline-timeout 1h30m \
+      --namespace ci-furiosa-sdk \
+      --param revision=$PULL_PULL_SHA
+    )
+
     # PR: sdk-ci-run-qfzw6
     PR=$(echo $OUTPUT | cut -d' ' -f3)
     # NAMESPACE: ci-furiosa-sdk

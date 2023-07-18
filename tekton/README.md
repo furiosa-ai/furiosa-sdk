@@ -31,8 +31,10 @@ tkn pipeline start \
     --workspace name=conda,volumeClaimTemplateFile=workspace-template.yaml \
     --workspace name=apt-credential,secret=apt-credential \
     --workspace name=pypi-credential,secret=pypi-credential \
+    --pod-template tekton/pod-template.yaml \
     --use-param-defaults \
-    --pipeline-timeout 1h30m
+    --pipeline-timeout 1h30m \
+    --namespace ci-furiosa-sdk
 ```
 
 - --*serviceaccount*: To inject secrets
@@ -41,3 +43,4 @@ tkn pipeline start \
 - --*use-param-defaults*: To use default parameter if not specified
 - --*param key=value*: To specify parameters
 - --*pipeline-timeout*: To specify pipeline level timeout 
+- --*pod-template**: To specify NPU Pod affinity
