@@ -6,6 +6,12 @@ import onnx
 
 
 class TensorType(enum.IntEnum):
+    """TensorType.
+
+    TensorType which specifies type of the data.
+    It is used for ModelEditor.retype_as
+    """
+
     U8 = 1
     I8 = 2
 
