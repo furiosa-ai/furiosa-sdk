@@ -5,14 +5,14 @@ import onnx
 import furiosa_quantizer_impl
 
 import furiosa.common.utils
-from furiosa.quantizer.processor import Processor
+from furiosa.quantizer.processor import TensorType, retype_as
 from furiosa.quantizer.calibrator import CalibrationMethod, Calibrator
 
 __version__ = furiosa.common.utils.get_sdk_version(__name__)
 
 __full_version__ = f"Furiosa SDK Quantizer {__version__} (furiosa_quantizer_impl {furiosa_quantizer_impl.__version__} {furiosa_quantizer_impl.__git_short_hash__} {furiosa_quantizer_impl.__build_timestamp__})"  # pylint: disable=no-member
 
-__all__ = ["CalibrationMethod", "Calibrator", "Processor", "quantize"]
+__all__ = ["CalibrationMethod", "Calibrator", "TensorType", "retype_as", "quantize"]
 
 
 def quantize(
