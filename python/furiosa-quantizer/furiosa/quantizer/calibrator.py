@@ -1,10 +1,9 @@
 import enum
 from typing import Dict, Iterable, List, Sequence, Tuple, Union
-import onnx
-import numpy as np
-
 
 import furiosa_quantizer_impl
+import numpy as np
+import onnx
 
 CalibrationMethod = enum.IntEnum(
     "CalibrationMethod",

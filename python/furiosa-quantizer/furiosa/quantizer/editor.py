@@ -1,8 +1,8 @@
 import enum
 from typing import Optional, Tuple
-import onnx
 
 import furiosa_quantizer_impl
+import onnx
 
 
 class TensorType(enum.IntEnum):

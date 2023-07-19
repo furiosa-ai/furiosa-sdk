@@ -1,12 +1,13 @@
 """A FuriosaAI qunatizer."""
 
 from typing import Mapping, Sequence, Union
-import onnx
+
 import furiosa_quantizer_impl
+import onnx
 
 import furiosa.common.utils
-from furiosa.quantizer.editor import TensorType, ModelEditor
 from furiosa.quantizer.calibrator import CalibrationMethod, Calibrator
+from furiosa.quantizer.editor import ModelEditor, TensorType
 
 __version__ = furiosa.common.utils.get_sdk_version(__name__)
 
