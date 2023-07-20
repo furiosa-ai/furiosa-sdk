@@ -35,7 +35,9 @@ class SessionTester:
 
 class AsyncSessionTester:
     def __init__(self, model_path):
-        (self.session, self.queue) = session.create_async(model=Path(model_path))
+        (self.session, self.queue) = session.create_async(
+            model=Path(model_path), input_queue_size=50
+        )
 
     def close(self):
         self.queue.close()

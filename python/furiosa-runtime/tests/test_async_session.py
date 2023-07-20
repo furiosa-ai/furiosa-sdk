@@ -24,14 +24,15 @@ class TestAsyncSession(unittest.TestCase):
     def test_run_async(self):
         async_sess = self.tester.session
 
-        self.assertEqual(
-            async_sess.summary(),
-            """\
-Inputs:
-{0: TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)}
-Outputs:
-{0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""",
-        )
+        # FIXME: Named tensor not yet available at furiosa-native-python
+        #         self.assertEqual(
+        #             async_sess.summary(),
+        #             """\
+        # Inputs:
+        # {0: TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)}
+        # Outputs:
+        # {0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}""",
+        #         )
 
         items = 50
         for i in range(0, items):
@@ -76,12 +77,16 @@ class TestAsyncSessionExceptions(unittest.TestCase):
         nux_queue = None
         try:
             nux_sess, nux_queue = session.create_async(model=MNIST_ONNX)
-            self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=100))
-            self.assertRaises(errors.QueueWaitTimeout, lambda: nux_queue.recv(timeout=int(0)))
+            self.assertRaises(errors.NativeException, lambda: nux_queue.recv(timeout=100))
+            self.assertRaises(errors.NativeException, lambda: nux_queue.recv(timeout=int(0)))
             nux_sess.close()
-            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
-            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=0))
-            self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
+            # FIXME: Add specific error variants to furiosa-native-runtime
+            # self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv())
+            # self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=0))
+            # self.assertRaises(errors.SessionTerminated, lambda: nux_queue.recv(timeout=100))
+            self.assertRaises(errors.NativeException, lambda: nux_queue.recv())
+            self.assertRaises(errors.NativeException, lambda: nux_queue.recv(timeout=0))
+            self.assertRaises(errors.NativeException, lambda: nux_queue.recv(timeout=100))
         except:
             if nux_sess:
                 nux_sess.close()
@@ -96,7 +101,9 @@ class TestDeviceBusy(unittest.TestCase):
         queue = None
         try:
             sess, queue = session.create_async(MNIST_ONNX)
-            self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_ONNX))
+            # FIXME: Add specific error variants to furiosa-native-runtime
+            # self.assertRaises(errors.DeviceBusy, lambda: session.create_async(MNIST_ONNX))
+            self.assertRaises(errors.NativeException, lambda: session.create_async(MNIST_ONNX))
         finally:
             if sess:
                 sess.close()

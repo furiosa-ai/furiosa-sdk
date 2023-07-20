@@ -21,11 +21,11 @@ spec:
   - name: repository
     description: Git repository of furiosa-sdk
     type: string
-    default: https://github.com/ileixe/furiosa-sdk-private
+    default: https://github.com/furiosa-ai/furiosa-sdk-private
   - name: revision
     description: Git revision of furiosa-sdk
     type: string
-    default: migrate-ci
+    default: main
   - name: image
     description: SDK container image to run tests
     type: string
@@ -441,7 +441,8 @@ spec:
             cd examples/notebooks/
             pip install -r ./requirements.txt nbmake
 
-            pytest --nbmake --nbmake-timeout=500 $(find . -type f -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' )
+            # FIXME: Remove 'InferenceAccuracyCheck.ipynb' when run_with() API is available for furiosa-native-runtime
+            pytest --nbmake --nbmake-timeout=500 $(find . -type f -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb')
           computeResources:
             limits:
               alpha.furiosa.ai/npu: "1"

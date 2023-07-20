@@ -228,7 +228,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install --root-user-action=ignore -r ./requirements.txt && \
     pip install --root-user-action=ignore nbmake && \
-    pytest --nbmake --nbmake-timeout=600 \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' \\))
+    pytest --nbmake --nbmake-timeout=600 \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb' \\))
     """
 }
 
@@ -387,6 +387,7 @@ pipeline {
           apt-get install -y build-essential cmake git \
           furiosa-libhal-warboy=${env.FIRMWARE_VERSION} \
           furiosa-libnux=${env.NUX_VERSION} \
+          furiosa-compiler-bridge \
           libonnxruntime=1.15.\\*
           """
         }

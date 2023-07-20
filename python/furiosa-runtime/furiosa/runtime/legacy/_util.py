@@ -4,7 +4,9 @@ import sys
 from typing import Optional
 
 from furiosa.common.native import find_native_lib_path
-from furiosa.runtime import __version__, runtime_version
+from furiosa.runtime import __version__
+
+from ._api import runtime_version
 
 
 def list_to_dict(items: list) -> dict:
