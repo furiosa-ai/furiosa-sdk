@@ -231,6 +231,7 @@ spec:
           - furiosa-common
           - furiosa-cli
           - furiosa-tools
+          - furiosa-device
           - furiosa-runtime
           - furiosa-optimizer
           - furiosa-quantizer
@@ -295,6 +296,7 @@ spec:
       params:
         - name: package
           value:
+          - furiosa-device
           - furiosa-litmus
           - furiosa-quantizer
           - furiosa-optimizer
@@ -395,6 +397,7 @@ spec:
       params:
         - name: package
           value:
+          - furiosa-device
           - furiosa-litmus
           - furiosa-quantizer
           - furiosa-optimizer
@@ -511,6 +514,7 @@ spec:
           - furiosa-common
           - furiosa-cli
           - furiosa-tools
+          - furiosa-device
           - furiosa-runtime
           - furiosa-optimizer
           - furiosa-quantizer
