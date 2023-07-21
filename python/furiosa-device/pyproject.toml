@@ -31,7 +31,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = []
+test = [
+    "pytest", 
+    "pytest-asyncio ~= 0.17.2",
+    "pytest-cov"
+]
 
 [project.urls]
 Home = "https://furiosa.ai"
