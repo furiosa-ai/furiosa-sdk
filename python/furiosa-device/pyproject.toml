@@ -27,7 +27,7 @@ dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.10.*",
-    "furiosa-native-device == 0.2.1.*"
+    "furiosa-native-device == 0.2.0.*"
 ]
 
 [project.optional-dependencies]
