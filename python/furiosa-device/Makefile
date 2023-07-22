@@ -6,9 +6,6 @@ install:
 lint:
 	isort --check --diff . && black --check --diff .
 
-upload_test:
-	flit publish --repository testpypi
-
 upload:
 	flit publish
 
