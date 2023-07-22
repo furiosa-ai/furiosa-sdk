@@ -2,6 +2,7 @@ sdk_modules = [
   // FIXME(yan): Note that this order matters now. Fix each module to build successfully.
   'furiosa-common',
   'furiosa-cli',
+  'furiosa-device',
   'furiosa-tools',
   'furiosa-runtime',
   'furiosa-optimizer',
@@ -13,6 +14,7 @@ sdk_modules = [
 ]
 
 format_applied = [
+  'furiosa-device',
   'furiosa-litmus',
   'furiosa-quantizer',
   'furiosa-optimizer',

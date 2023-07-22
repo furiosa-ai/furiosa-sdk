@@ -31,7 +31,7 @@ tkn pipeline start \
     --workspace name=conda,volumeClaimTemplateFile=workspace-template.yaml \
     --workspace name=apt-credential,secret=apt-credential \
     --workspace name=pypi-credential,secret=pypi-credential \
-    --pod-template tekton/pod-template.yaml \
+    --pod-template ./pod-template.yaml \
     --use-param-defaults \
     --pipeline-timeout 1h30m \
     --namespace ci-furiosa-sdk

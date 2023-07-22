@@ -38,6 +38,7 @@ quantizer = ["furiosa-optimizer == 0.10.*", "furiosa-quantizer == 0.10.*",]
 server = ["furiosa-server == 0.10.*"]
 serving = ["furiosa-serving == 0.10.*"]
 tool = ["furiosa-tools == 0.10.*"]
+device = ["furiosa-device == 0.10.*"]
 
 full = [
     "furiosa-cli == 0.10.*",
@@ -47,6 +48,7 @@ full = [
     "furiosa-server == 0.10.*",
     "furiosa-serving == 0.10.*",
     "furiosa-tools == 0.10.*",
+    "furiosa-device == 0.10.*",
 ]
 
 [project.urls]
