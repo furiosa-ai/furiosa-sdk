@@ -7,7 +7,7 @@ from furiosa.common.utils import get_sdk_version
 sdk_version = get_sdk_version(__name__)
 
 
-__full_version__ = "Furiosa SDK Device {} (furiosa_native_device {} {} {})".format(
+__full_version__ = "Furiosa SDK Device {} (native {} {} {})".format(
     sdk_version,
     __version__,
     __git_short_hash__,
