@@ -10,7 +10,7 @@ upload:
 	flit publish
 
 test:
-	pytest --capture=no --cov=furiosa --cov-report=xml:coverage.xml
+	pytest --capture=no
 
 clean:
 	rm -rf build dist/* *.egg-info
