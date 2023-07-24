@@ -1,5 +1,5 @@
-Furiosa Serving
--------------
+# Furiosa Serving
+
 Furiosa serving is a lightweight library based on [FastAPI](https://fastapi.tiangolo.com/) to make a model server running on a Furiosa NPU.
 
 ## Dependency

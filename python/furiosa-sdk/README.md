@@ -1,4 +1,4 @@
-# FuriosaAI SDK
+# Furiosa SDK
 
 Furiosa™ SDK is a software development kit (SDK) for running deep-neural network inference using FuriosaAI NPU chips. It is a collection of libraries and command line tools including compiler and profiler. It also provides Python bindings that allow users to develop their application easily with abundant Python ecosystem, such as NumPy, Jupyter notebooks and scientific Python packages.
 

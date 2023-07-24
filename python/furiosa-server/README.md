@@ -1,4 +1,5 @@
-# Furiosa Model Server (Alpha)
+# Furiosa Server (Alpha)
+
 Furiosa Model Server is a framework for serving Tflite/ONNX models through a REST API, using Furiosa NPUs.
 
 Furiosa Model server API supoorts a REST and gRPC interface, compliant with [KFServing's V2

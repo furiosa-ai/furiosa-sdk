@@ -1,6 +1,6 @@
 # SDK CI
 
-Furiosa SDK uses [Tekton](https://tekton.dev/) for CI. This directory contains related manifests to install and run CI.
+Furiosa SDK uses [Tekton](https://tekton.dev/) for CI. This directory contains related manifests to install and run CI. You should have NPU environment to run this CI.
 
 ### Installation
 
@@ -31,7 +31,7 @@ tkn pipeline start \
     --workspace name=conda,volumeClaimTemplateFile=workspace-template.yaml \
     --workspace name=apt-credential,secret=apt-credential \
     --workspace name=pypi-credential,secret=pypi-credential \
-    --pod-template ./pod-template.yaml \
+    --pod-template pod-template.yaml \
     --use-param-defaults \
     --pipeline-timeout 1h30m \
     --namespace ci-furiosa-sdk

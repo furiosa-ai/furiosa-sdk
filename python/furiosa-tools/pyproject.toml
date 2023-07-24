@@ -31,7 +31,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = []
+test = [
+    "pytest",
+    "mnist"
+]
 
 [project.urls]
 Home = "https://furiosa.ai"
@@ -41,9 +44,6 @@ Documentation = "https://furiosa-ai.github.io/docs"
 
 [tool.flit.module]
 name = "furiosa.tools"
-
-[project.scripts]
-furiosa-compile = "furiosa.tools.compiler.main:main"
 
 [tool.black]
 skip-string-normalization = true

@@ -1,4 +1,4 @@
-# Package `furiosa.litmus`
+# Furiosa Litmus
 
 This is a part of [Furiosa SDK] and provides a tool that readily checks whether
 a given model can be quantized and compiled with Furiosa SDK.

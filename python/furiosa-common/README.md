@@ -1,4 +1,4 @@
-# Package `furiosa.common`
+# Furiosa Common
 
 This is a part of [Furiosa SDK] and provides common utilites.
 
