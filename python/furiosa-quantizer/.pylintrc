@@ -4,7 +4,8 @@
 # usually to register additional checkers.
 load-plugins=
     pylint_protobuf
-
+extension-pkg-allow-list=
+    furiosa_quantizer_impl
 
 [MESSAGES CONTROL]
 
@@ -36,7 +37,6 @@ disable=
     too-many-instance-attributes, # R0902
     too-many-locals, # R0914
     too-many-public-methods, # R0904
-
 
 [FORMAT]
 
