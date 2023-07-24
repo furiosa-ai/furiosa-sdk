@@ -28,9 +28,9 @@ requires-python = "~=3.8"
 dependencies = [
     "furiosa-common == 0.10.*",
 
-    "numpy ~= 1.23",
+    "numpy ~= 1.24",
     "onnx ~= 1.14.0",
-    "onnx-simplifier ~= 0.4.22",
+    "onnx-simplifier ~= 0.4.33",
     "onnxoptimizer ~= 0.3.13",
     "onnxruntime ~= 1.15.1",
 ]
