@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Mapping, Union
 
 import numpy as np
 import onnx
@@ -50,7 +50,7 @@ class Pattern_1(ONNXTransformer):
         self.transform_to_fuse(
             matched_nodes,
             nodes_to_add=self.make_new_node(matched_nodes),
-            **self.make_new_init_and_vi(matched_nodes),
+            **self.make_new_init_and_vi(matched_nodes),  # type: ignore
         )
 
         return base_node.input
@@ -109,7 +109,9 @@ class Pattern_1(ONNXTransformer):
 
     def make_new_init_and_vi(
         self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
-    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
+    ) -> Mapping[
+        str, Union[List[onnx.NodeProto], List[onnx.ValueInfoProto], List[onnx.TensorProto]]
+    ]:  # pylint: disable=no-member
         (pad,) = matched_nodes
         input_shape = self.get_value_info_shape(pad.input[0])
         new_inits = []

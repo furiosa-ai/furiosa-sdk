@@ -4,7 +4,7 @@ from fastapi import UploadFile
 import numpy as np
 import pytest
 
-from furiosa.serving import ServeAPI, ServeModel
+from furiosa.serving import ServeAPI
 from furiosa.serving.processors import ImageNet
 
 
@@ -12,7 +12,7 @@ from furiosa.serving.processors import ImageNet
 async def test_imagenet():
     serve = ServeAPI()
 
-    model: ServeModel = await serve.model("nux")(
+    model = await serve.model("nux")(
         "imagenet", location="./examples/assets/models/image_classification.onnx"
     )
 

@@ -98,7 +98,7 @@ def _make_value_info_list(
 
 
 def _make_initializer_list(
-    init_desc: Dict[str, Union[Tuple[np.dtype, List[Union[Text, int]]], np.array]]
+    init_desc: Dict[str, Union[Tuple[np.dtype, List[Union[Text, int]]], np.ndarray]]
 ) -> List[onnx.TensorProto]:  # pylint: disable=no-member
     initailizers = []
     for name, arg in init_desc.items():
@@ -124,7 +124,7 @@ def _make_node_list(
 
 
 def _make_opsetid_list(
-    opsetids: List[Tuple[str, str]]
+    opsetids: List[Tuple[str, int]]
 ) -> List[onnx.OperatorSetIdProto]:  # pylint:disable=no-member
     return [onnx.helper.make_opsetid(domain, version) for (domain, version) in opsetids]
 

@@ -1,4 +1,3 @@
-from fastapi import FastAPI
 import pytest
 from starlette.routing import Mount
 
@@ -11,7 +10,7 @@ async def test_app_mount():
     # Create ServeAPI with Repository instance. This repository maintains models
     serve = ServeAPI(repository.repository)
 
-    app: FastAPI = serve.app
+    app = serve.app
 
     app.mount("/repository", repository.app)
     app.mount("/models", model.app)

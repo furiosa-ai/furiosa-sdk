@@ -9,9 +9,10 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
+    Generic,
     List,
     Optional,
-    Sequence,
+    TypeVar,
     Union,
     overload,
 )
@@ -33,11 +34,13 @@ from .types import (
     ResponseOutput,
 )
 
+T = TypeVar("T", bound=ModelConfig)
 
-class Model(ABC):
+
+class Model(ABC, Generic[T]):
     """Base model class for every runtime."""
 
-    def __init__(self, config: ModelConfig):
+    def __init__(self, config: T):
         self.ready = False
         self._config = config
 
@@ -74,12 +77,16 @@ class Model(ABC):
     async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
         ...
 
+    @overload
+    async def predict(self, payload: np.ndarray) -> List[np.ndarray]:
+        ...
+
     @abstractmethod
     async def predict(self, payload):
         pass
 
 
-class NuxModel(Model):
+class NuxModel(Model[NuxModelConfig]):
     """Model Nux runtime."""
 
     def __init__(self, config: NuxModelConfig):
@@ -87,7 +94,7 @@ class NuxModel(Model):
 
         # Uninitialized session pool. Will be loaded in load().
         self.sessions: Optional[List[Union[session.Session, session.AsyncSession]]] = None
-        self.runners = []
+        self.runners: List[Callable] = []
 
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
@@ -97,7 +104,7 @@ class NuxModel(Model):
                 for tensor, request in zip(self.session.inputs(), payload.inputs)
             ]
         else:
-            inputs: List[np.ndarray] = payload
+            inputs = payload
 
         # Infer from Nux
         tensors = [tensor.numpy() for tensor in await self.run(inputs)]
@@ -116,7 +123,7 @@ class NuxModel(Model):
         else:
             return tensors
 
-    async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
+    async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
         assert self.runners is not None
 
         run = next(iter(self.runners))
@@ -217,7 +224,7 @@ class AsyncNuxModel(NuxModel):
         loop = asyncio.get_event_loop()
         loop.call_soon(self.completed, receiver, id, future)
 
-    async def run(self, inputs: Sequence[np.ndarray]) -> TensorArray:
+    async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
         sender, receiver = next(self.pool)  # type: ignore
 
         id = uuid.uuid1()

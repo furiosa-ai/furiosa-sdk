@@ -59,7 +59,7 @@ async def read(uri: str, path: str) -> bytes:
         return await transport.read(uri, path)
 
 
-@dispatch(str)
+@dispatch(str)  # type: ignore
 async def read(location: str) -> bytes:  # noqa: F811
     """Read a file binary data from the specified location with a transport which supports the URI.
 

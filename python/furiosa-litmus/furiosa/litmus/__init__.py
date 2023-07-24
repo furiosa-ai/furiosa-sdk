@@ -29,7 +29,7 @@ def calibrate_with_random_data(
     Returns:
         A dict mapping tensors in the model to their minimum and maximum values.
     """
-    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX_ASYM)
+    calibrator = Calibrator(model, CalibrationMethod.MIN_MAX_ASYM)  # type: ignore
     initializers = set(tensor.name for tensor in model.graph.initializer)
     rng = np.random.default_rng()
     for _ in range(dataset_size):
@@ -105,6 +105,9 @@ def validate(model_path: Path, verbose: bool, target_npu: str) -> bool:
         if not model_path.exists():
             eprint(f"ERROR: {model_path} does not exist")
 
+        assert __version__ is not None
+        assert quantizer_ver is not None
+
         print(
             f"furiosa-quantizer {quantizer_ver.version} (rev. {quantizer_ver.hash[0:9]})",
             f"furiosa-litmus {__version__.version} (rev. {__version__.hash[0:9]})",
@@ -113,7 +116,7 @@ def validate(model_path: Path, verbose: bool, target_npu: str) -> bool:
         # Try quantization on input models
         print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
         try:
-            onnx_model = onnx.load_model(model_path)
+            onnx_model = onnx.load_model(str(model_path))
             onnx_model = optimize_model(onnx_model)
         except DecodeError as de:
             eprint("[Step 1] ERROR: The input file should be a valid ONNX file")

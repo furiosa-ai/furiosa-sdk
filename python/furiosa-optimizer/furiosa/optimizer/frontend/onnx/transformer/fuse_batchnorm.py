@@ -151,7 +151,9 @@ class Pattern_4(ONNXTransformer):
             return base_node.input
 
         batch_norm = matched_nodes[0]
-        if utils.is_op_type(self.find_prev_node(batch_norm.input[0]), ['Conv']):
+        prev = self.find_prev_node(batch_norm.input[0])
+        assert prev is not None
+        if utils.is_op_type(prev.op_type, ['Conv']):
             return base_node.input
 
         self.transform_to_fuse(
@@ -200,7 +202,7 @@ class Pattern_4(ONNXTransformer):
 def _get_bn_params(
     node: onnx.NodeProto,  # pylint: disable=no-member
     get_init_arr_func: Callable[[str], np.ndarray],
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float]:
     scale = get_init_arr_func(node.input[1])
     if all(v == 0.0 for v in scale):
         logger.warning('BatchNormalization.scale is a zero tensor: %s', node.input[1])

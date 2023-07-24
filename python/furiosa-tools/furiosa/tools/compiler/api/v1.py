@@ -181,7 +181,7 @@ def compile(
     if verbose:
         LIBCOMPILER.fc_enable_logging(LogLevel.INFO)
 
-    input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))
+    input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))  # type: ignore
 
     __check_target_ir(target_ir)
 

@@ -54,6 +54,7 @@ done
 for api in "predict" "model_repository"
 do
     datamodel-codegen \
+    --output-model-type pydantic_v2.BaseModel \
     --input "./openapi/$api.yaml" \
     --output "./furiosa/server/types/$api.py"
 done

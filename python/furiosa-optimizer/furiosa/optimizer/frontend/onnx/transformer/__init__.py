@@ -1,5 +1,5 @@
 from collections import Counter, OrderedDict, defaultdict
-from typing import List, Optional, Set
+from typing import List, Optional
 
 import onnx
 from onnx import numpy_helper
@@ -53,8 +53,8 @@ class ONNXTransformer:
     def transform(self):
         outputs = list(self.graph_output_map.keys())
         # To prevent traversing cyclic connections
-        visited: Set[str] = set()
-        visited_node: List[onnx.NodeProto] = []  # pylint: disable=no-member
+        visited = set()
+        visited_node = []  # pylint: disable=no-member
 
         while len(outputs) > 0:
             output = outputs.pop(0)
@@ -165,7 +165,9 @@ class ONNXTransformer:
 
         return next_nodes
 
-    def find_prev_node(self, node_input: str) -> onnx.NodeProto:  # pylint: disable=no-member
+    def find_prev_node(
+        self, node_input: str
+    ) -> Optional[onnx.NodeProto]:  # pylint: disable=no-member # noqa: E501
         if node_input not in self.producer_map:
             return None
 
@@ -275,7 +277,7 @@ class ONNXTransformer:
     def transform_to_fuse(
         self,
         nodes_to_remove: List[onnx.NodeProto],  # pylint: disable=no-member
-        nodes_to_add: Optional[List[onnx.NodeProto]] = None,  # pylint: disable=no-member
+        nodes_to_add: List[onnx.NodeProto],  # pylint: disable=no-member
         inits_to_add: Optional[List[onnx.TensorProto]] = None,  # pylint: disable=no-member
         vis_to_add: Optional[List[onnx.ValueInfoProto]] = None,  # pylint: disable=no-member
     ):

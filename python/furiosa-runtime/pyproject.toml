@@ -38,9 +38,11 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "mnist",
+    "mypy",
     "onnxruntime ~= 1.15.1",
     "pytest",
-    "ruff"
+    "ruff",
+    "types-PyYAML"
 ]
 legacy = ["package-extras"]
 
@@ -73,6 +75,23 @@ ignore = [
     "F401",
     "F403",
 ]
+
+[tool.mypy]
+explicit_package_bases = true
+# TODO: Remove when legacy is removed
+disable_error_code = "assignment"
+
+[[tool.mypy.overrides]]
+module = "package_extras"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "furiosa.runtime.legacy.*"
+ignore_errors  = true
+
+[[tool.mypy.overrides]]
+module = "mnist"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

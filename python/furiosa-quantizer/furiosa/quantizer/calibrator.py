@@ -5,7 +5,7 @@ import furiosa_quantizer_impl
 import numpy as np
 import onnx
 
-CalibrationMethod = enum.IntEnum(
+CalibrationMethod = enum.IntEnum(  # type: ignore
     "CalibrationMethod",
     # pylint: disable=no-member
     [

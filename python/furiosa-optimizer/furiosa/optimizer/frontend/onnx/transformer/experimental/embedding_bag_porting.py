@@ -241,7 +241,7 @@ def _make_subgraph_new_node(
 
 def _make_new_node(
     base_node: onnx.NodeProto, subgraph: onnx.GraphProto  # pylint: disable=no-member
-) -> List[onnx.TensorProto]:  # pylint: disable=no-member
+) -> List[onnx.NodeProto]:  # pylint: disable=no-member
     return [
         onnx.helper.make_node(
             base_node.op_type,

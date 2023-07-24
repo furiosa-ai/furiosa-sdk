@@ -3,6 +3,7 @@ import time
 from typing import Tuple
 from urllib.parse import urlparse
 
+from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -18,7 +19,6 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Match
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
-from starlette.types import ASGIApp
 
 INFO = Gauge(
     "fastapi_app_info",
@@ -53,7 +53,7 @@ REQUESTS_IN_PROGRESS = Gauge(
 
 
 class PrometheusMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app: ASGIApp, app_name: str = "fastapi-app") -> None:
+    def __init__(self, app: FastAPI, app_name: str = "fastapi-app") -> None:
         super().__init__(app)
         self.app_name = app_name
         INFO.labels(app_name=self.app_name).inc()
@@ -120,12 +120,12 @@ def metrics(request: Request) -> Response:
     return Response(generate_latest(REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 
-def setup_metrics(app: ASGIApp, app_name: str, metric_path: str = "/metrics") -> None:
+def setup_metrics(app: FastAPI, app_name: str, metric_path: str = "/metrics") -> None:
     app.add_middleware(PrometheusMiddleware, app_name=app_name)
     app.add_route(metric_path, metrics)
 
 
-def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool = True) -> None:
+def setup_otlp(app: FastAPI, app_name: str, endpoint: str, log_correlation: bool = True) -> None:
     # Setting OpenTelemetry
     # set the service name to show in traces
     resource = Resource.create(attributes={"service.name": app_name, "app": app_name})

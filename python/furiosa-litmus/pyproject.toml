@@ -35,9 +35,11 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "mnist",
+    "mypy",
     "pytest",
     "pytest-cov",
     "ruff",
+    "types-protobuf",
 ]
 
 [project.urls]
@@ -67,6 +69,14 @@ extend_skip_glob = ["**/generated/**"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+# TODO: Remove when furiosa.quantizer is ready
+module = "furiosa.quantizer"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

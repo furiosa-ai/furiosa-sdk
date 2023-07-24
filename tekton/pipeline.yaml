@@ -29,7 +29,7 @@ spec:
   - name: image
     description: SDK container image to run tests
     type: string
-    default: asia-northeast3-docker.pkg.dev/next-gen-infra/tekton/warboy/furiosa-sdk:latest
+    default: asia-northeast3-docker.pkg.dev/next-gen-infra/tekton/warboy/furiosa-sdk
   # Environment matrix
   - name: ubuntu-distro
     description: Ubuntu distribution where debian packages build (e.g. focal, jammy)
@@ -102,7 +102,7 @@ spec:
 
     params:
     - name: IMAGE
-      value: $(params.image)
+      value: $(params.image)/$(params.revision)
     - name: SECRET_MOUNT_PATH
       value: /etc/apt/auth.conf.d
     - name: EXTRA_ARGS
@@ -129,7 +129,7 @@ spec:
           image: $(params.prepare-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             # Note that we use "workspaces" variable for workspace propagation
             # See https://github.com/tektoncd/community/blob/main/teps/0111-propagating-workspaces.md
@@ -156,7 +156,7 @@ spec:
             value: ignore
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             # Create virtual environment per Python
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
@@ -192,7 +192,7 @@ spec:
           image: $(params.bump-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             cd $(workspaces.source.path)/python
 
@@ -225,7 +225,7 @@ spec:
             value: ignore
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
 
@@ -246,7 +246,7 @@ spec:
             value: ignore
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
 
@@ -308,7 +308,7 @@ spec:
           image: $(params.test-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
@@ -321,7 +321,7 @@ spec:
           image: $(params.test-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
@@ -363,7 +363,7 @@ spec:
 
   - name: lint
     taskSpec:
-      description: Lint via ruff and pylint
+      description: Lint via ruff, pylint and mypy
       workspaces:
       - name: pypi-credential
         mountPath: /root/.netrc
@@ -376,20 +376,20 @@ spec:
           image: $(params.test-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
 
-            cd $(workspaces.source.path)
+            cd $(workspaces.source.path)/python/$(params.package)
 
-            ruff check python/$(params.package)
+            ruff check .
 
         - name: pylint
           image: $(params.test-image)
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             whitelist=("furiosa-quantizer" "furiosa-optimizer")
 
@@ -401,9 +401,23 @@ spec:
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
 
-            cd $(workspaces.source.path)
+            cd $(workspaces.source.path)/python/$(params.package)
 
-            pylint --verbose --rcfile=python/$(params.package)/.pylintrc $(find python/$(params.package) -type f -name '*.py')
+            pylint --verbose --rcfile=.pylintrc $(find . -type f -name '*.py')
+
+        - name: mypy
+          image: $(params.test-image)
+          script: |
+            #!/usr/bin/env bash
+            set -eux
+
+            source $(workspaces.conda.path)/$(params.python-version)/bin/activate
+            conda activate $(params.python-version)-$(params.package)
+
+            cd $(workspaces.source.path)/python/$(params.package)
+
+            mypy .
+
 
     workspaces:
     - name: pypi-credential
@@ -452,7 +466,7 @@ spec:
           env:
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate
             conda activate $(params.python-version)-$(params.package)
@@ -531,7 +545,7 @@ spec:
           onError: continue # TODO: Delete when on office cluster
           script: |
             #!/usr/bin/env bash
-            set -eu
+            set -eux
 
             # From furiosa-runtime env
             source $(workspaces.conda.path)/$(params.python-version)/bin/activate

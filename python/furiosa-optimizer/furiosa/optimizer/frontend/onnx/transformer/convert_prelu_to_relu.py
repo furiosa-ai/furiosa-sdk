@@ -90,7 +90,7 @@ class Pattern_1(ONNXTransformer):
 
     def make_new_init(
         self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
-    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
+    ) -> List[onnx.TensorProto]:  # pylint: disable=no-member
         (prelu,) = matched_nodes
 
         slope = self.get_initializer_array(prelu.input[1])
@@ -101,7 +101,7 @@ class Pattern_1(ONNXTransformer):
 
     def make_new_vi(
         self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
-    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
+    ) -> List[onnx.ValueInfoProto]:  # pylint: disable=no-member
         (prelu,) = matched_nodes
         input_shape = self.get_value_info_shape(prelu.input[0])
         input_dtype = self.get_value_info_dtype(prelu.input[0])
@@ -207,7 +207,7 @@ class Pattern_2(ONNXTransformer):
 
     def make_new_init(
         self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
-    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
+    ) -> List[onnx.TensorProto]:  # pylint: disable=no-member
         (prelu,) = matched_nodes
 
         slope_shape = self.get_value_info_shape(prelu.input[1])
@@ -222,7 +222,7 @@ class Pattern_2(ONNXTransformer):
 
     def make_new_vi(
         self, matched_nodes: Iterable[onnx.NodeProto]  # pylint: disable=no-member
-    ) -> List[onnx.NodeProto]:  # pylint: disable=no-member
+    ) -> List[onnx.ValueInfoProto]:  # pylint: disable=no-member
         (prelu,) = matched_nodes
         input_shape = self.get_value_info_shape(prelu.input[0])
         slope_shape = self.get_value_info_shape(prelu.input[1])

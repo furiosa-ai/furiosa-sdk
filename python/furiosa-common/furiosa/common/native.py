@@ -14,7 +14,7 @@ DEFAULT_ENCODING: str = "utf-8"
 
 def find_user_lib_path(libname: str):
     libpath = None
-    for lib_path in os.getenv('LD_LIBRARY_PATH').split(":"):
+    for lib_path in os.getenv("LD_LIBRARY_PATH", "").split(":"):
         if platform == "linux":
             for name in glob.glob(f"{lib_path}/lib{libname}.so*"):
                 libpath = name

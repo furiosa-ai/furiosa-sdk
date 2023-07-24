@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import List, Mapping, Optional
 
 import onnx
 import onnxsim
@@ -24,7 +24,7 @@ class InferenceShape:
         self.model = utils.rebuild_model(model, list(model.graph.node))
 
     def inference_shape(
-        self, input_shapes: Optional[Dict[str, List[int]]] = None
+        self, input_shapes: Optional[Mapping[str, List[Optional[int]]]] = None
     ) -> onnx.ModelProto:  # pylint: disable=no-member
         try:
             self.model, check = onnxsim.simplify(

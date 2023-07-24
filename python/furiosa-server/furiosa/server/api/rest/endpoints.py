@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import status
 from fastapi.responses import Response
 
@@ -28,14 +30,14 @@ class ModelEndpoints:
     async def ready(self) -> Response:
         return BooleanResponse(await self._handler.ready())
 
-    async def model_ready(self, model_name: str, model_version: str = None) -> Response:
+    async def model_ready(self, model_name: str, model_version: Optional[str] = None) -> Response:
         return BooleanResponse(await self._handler.model_ready(model_name, model_version))
 
     async def metadata(self) -> MetadataServerResponse:
         return await self._handler.metadata()
 
     async def model_metadata(
-        self, model_name: str, model_version: str = None
+        self, model_name: str, model_version: Optional[str] = None
     ) -> MetadataModelResponse:
         return await self._handler.model_metadata(model_name, model_version)
 
@@ -43,7 +45,7 @@ class ModelEndpoints:
         self,
         payload: InferenceRequest,
         model_name: str,
-        model_version: str = None,
+        model_version: Optional[str] = None,
     ) -> InferenceResponse:
         return await self._handler.infer(payload, model_name, model_version)
 

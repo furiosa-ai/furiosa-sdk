@@ -1,4 +1,4 @@
-from typing import Dict, List, Sequence, Tuple
+from typing import Dict, List, Mapping, Optional, Tuple
 
 import numpy as np
 import onnx
@@ -62,7 +62,7 @@ def test_case2(make_model, check_output_value):
 
 
 def _make_test_model(
-    make_model, model_desc: Dict, input_shapes: List[Sequence[int]]
+    make_model, model_desc: Dict, input_shapes: Mapping[str, List[Optional[int]]]
 ) -> Tuple[onnx.ModelProto, onnx.ModelProto]:  # pylint: disable=no-member
     orig_model = make_model(model_desc)
     trans_model = fixed_point(

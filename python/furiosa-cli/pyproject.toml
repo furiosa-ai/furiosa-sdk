@@ -32,6 +32,7 @@ furiosa = "furiosa.cli.main:main"
 
 [project.optional-dependencies]
 test = [
+    "mypy",
     "pytest",
     "ruff"
 ]
@@ -60,6 +61,9 @@ extend_skip_glob = ["**/generated/**"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

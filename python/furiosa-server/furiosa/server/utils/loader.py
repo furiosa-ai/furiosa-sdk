@@ -10,10 +10,11 @@ from ..settings import ModelConfig, NuxModelConfig, ServerConfig
 def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
     """Load model configs from opened file (file-like object) or Python dictionary."""
     source = stream if isinstance(stream, MutableMapping) else yaml.safe_load(stream)
-    return [
-        (NuxModelConfig if model["platform"] == "nux" else ModelConfig).parse_obj(model)
-        for model in source["model_config_list"]
-    ]
+
+    def config(model):
+        return NuxModelConfig if model["platform"] == "nux" else ModelConfig
+
+    return [config(model).parse_obj(model) for model in source["model_config_list"]]
 
 
 def load_server_config(stream: Union[TextIOWrapper, Dict]) -> ServerConfig:
