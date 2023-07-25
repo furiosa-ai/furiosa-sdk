@@ -206,19 +206,15 @@ spec:
     runAfter:
     - prepare
 
-  - name: install
+  - name: wheel
     taskSpec:
-      description: Install a SDK package for test
-      workspaces:
-      - name: pypi-credential
-        mountPath: /root/.netrc
+      description: Build a SDK wheel package for local distribution
       params:
         - name: install-image
         - name: python-version
-        - name: pypi
         - name: package
       steps:
-        - name: build
+        - name: wheel
           image: $(params.install-image)
           env:
           - name: PIP_ROOT_USER_ACTION
@@ -239,6 +235,47 @@ spec:
 
             python -m build $(params.package) --wheel --outdir dist
 
+    params:
+      - name: install-image
+        value: $(tasks.build.results.IMAGE_URL)
+    matrix:
+      params:
+        - name: package
+          # TODO: Use array parameter here after Tekton pipeline v0.48
+          # https://github.com/tektoncd/pipeline/pull/6516
+          value:
+          - furiosa-cli
+          - furiosa-common
+          - furiosa-device
+          - furiosa-litmus
+          - furiosa-optimizer
+          - furiosa-quantizer
+          - furiosa-runtime
+          - furiosa-sdk
+          - furiosa-server
+          - furiosa-serving
+          - furiosa-tools
+        - name: python-version
+          value:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    runAfter:
+    - bump
+
+  - name: install
+    taskSpec:
+      description: Install a SDK package for test
+      workspaces:
+      - name: pypi-credential
+        mountPath: /root/.netrc
+      params:
+        - name: install-image
+        - name: python-version
+        - name: pypi
+        - name: package
+      steps:
         - name: install
           image: $(params.install-image)
           env:
@@ -291,7 +328,7 @@ spec:
           - "3.10"
 
     runAfter:
-    - bump
+    - wheel
 
   - name: format
     taskSpec:
