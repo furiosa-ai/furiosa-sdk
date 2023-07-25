@@ -189,7 +189,7 @@ def validate(
         except RuntimeError as e:
             eprint("[Step 4] Failed")
             return SystemExit(e)
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError as _:
             eprint("[Step 4] Skip, there is no furiosa-bench")
 
 
@@ -207,7 +207,8 @@ def main():
         type=str,
         metavar="OUTPUT_PREFIX",
         help="Collect compiler log and environment information and save them into \
-                            an archive file. A unix epoch timestamp and '.zip' extension will be added to OUTPUT_PREFIX automatically.",
+                an archive file. A unix epoch timestamp and '.zip' extension will be \
+                added to OUTPUT_PREFIX automatically.",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
     parser.add_argument(

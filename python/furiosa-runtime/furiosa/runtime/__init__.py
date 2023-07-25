@@ -52,9 +52,9 @@ else:
         from .legacy._api import LIBNUX as rt
 
         return {
-            "version": LIBNUX.version().decode("utf-8"),
-            "rev": LIBNUX.git_short_hash().decode("utf-8"),
-            "built": LIBNUX.build_timestamp().decode("utf-8"),
+            "version": rt.version().decode("utf-8"),
+            "rev": rt.git_short_hash().decode("utf-8"),
+            "built": rt.build_timestamp().decode("utf-8"),
         }
 
     is_legacy = True
