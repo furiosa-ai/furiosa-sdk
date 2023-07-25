@@ -31,6 +31,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "mypy",
     "pytest", 
     "pytest-asyncio ~= 0.17.2",
     "ruff"
@@ -63,6 +64,16 @@ line-length = 100
 ignore = [
     "F403",
 ]
+
+[tool.mypy]
+explicit_package_bases = true
+# TODO: Remove when furiosa_native_device is ready
+disable_error_code = "attr-defined"
+
+[[tool.mypy.overrides]]
+# TODO: Remove when furiosa_native_device is ready
+module = "furiosa_native_device.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

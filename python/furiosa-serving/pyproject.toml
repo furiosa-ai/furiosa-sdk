@@ -42,10 +42,12 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "mypy",
     "pytest",
-    "pytest-cov",
     "pytest-asyncio ~= 0.17.2",
-    "ruff"
+    "pytest-cov",
+    "ruff",
+    "types-Pillow"
 ]
 openvino = [
     "furiosa-server[openvino] == 0.10.*",
@@ -76,6 +78,13 @@ extend_skip_glob = ["**/generated/**"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = "openvino.runtime.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

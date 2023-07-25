@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
-    from .transport import Transport
+    from .base import Transport
 
 
 class TransportError(Exception):

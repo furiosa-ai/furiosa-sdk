@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Callable, List, Mapping, Optional, Sequence
 
 import onnx
 
@@ -17,7 +17,7 @@ from furiosa.optimizer.frontend.onnx.utils.version_checker import CheckVersion
 
 def optimize_model(
     model: onnx.ModelProto,  # pylint: disable=no-member
-    input_shapes: Optional[Dict[str, List[int]]] = None,
+    input_shapes: Optional[Mapping[str, List[Optional[int]]]] = None,
     opset_version: int = __OPSET_VERSION__,
 ) -> onnx.ModelProto:  # pylint: disable=no-member
     model = _transform([CheckVersion(opset_version).transform], model)
@@ -29,7 +29,9 @@ def optimize_model(
 
 
 def _transform(
-    transformers: List[Callable[[onnx.ModelProto], onnx.ModelProto]],  # pylint: disable=no-member
+    transformers: Sequence[
+        Callable[[onnx.ModelProto], onnx.ModelProto]
+    ],  # pylint: disable=no-member
     model: onnx.ModelProto,  # pylint: disable=no-member
 ) -> onnx.ModelProto:  # pylint: disable=no-member
     for transform in transformers:

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import List, Mapping, Optional
 
 import onnx
 import onnxoptimizer
@@ -14,7 +14,7 @@ class PolishModel(Transformer[onnx.ModelProto]):  # pylint: disable=no-member
     Essential graph transformer/optimizers
     """
 
-    def __init__(self, input_shapes: Optional[Dict[str, List[int]]] = None) -> None:
+    def __init__(self, input_shapes: Optional[Mapping[str, List[Optional[int]]]] = None) -> None:
         super().__init__()
         self.input_shapes = input_shapes
 

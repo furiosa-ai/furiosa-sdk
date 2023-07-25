@@ -36,12 +36,14 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
+    "mypy",
     "pytest",
     "pytest-aiohttp",
     "pytest-asyncio ~= 0.17.2",
     "pytest-cov",
     "ruff",
     "types-aiofiles",
+    "types-tqdm",
 ]
 
 [project.urls]
@@ -68,6 +70,17 @@ extend_skip_glob = ["**/generated/**"]
 
 [tool.ruff]
 line-length = 100
+
+[tool.mypy]
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = "multipledispatch"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "aioboto3"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

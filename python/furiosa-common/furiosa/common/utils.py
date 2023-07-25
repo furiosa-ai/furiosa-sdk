@@ -12,6 +12,7 @@ class FuriosaVersionInfo:
     def __init__(self, version: Version):
         self.version = version.base_version
         self.stage = "dev" if version.is_devrelease else "release"
+        assert version.local is not None
         self.hash = version.local.split(".")[0][1:]
 
     def __str__(self):
@@ -24,8 +25,12 @@ class FuriosaVersionInfo:
 def get_sdk_version(module) -> Optional[FuriosaVersionInfo]:
     """Returns the git commit hash representing the current version of the application."""
     sdk_version = None
+    git_version = pkgutil.get_data(module, 'git_version.txt')
+
+    assert git_version is not None
+
     try:
-        version_string = str(pkgutil.get_data(module, 'git_version.txt'), encoding="UTF-8")
+        version_string = str(git_version, encoding="UTF-8")
         sdk_version = FuriosaVersionInfo(Version(version_string))
     except Exception as e:  # pylint: disable=broad-except
         log.warn(e)

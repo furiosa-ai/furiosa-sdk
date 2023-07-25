@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, List, Sequence, Type, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Type, Union
 
 import numpy as np
 import onnx
@@ -47,7 +47,7 @@ def check_output_value():
         orig_model: onnx.ModelProto,  # pylint: disable=no-member
         trans_model: onnx.ModelProto,  # pylint: disable=no-member
         input_shapes: Iterable[Sequence[int]],
-        data: List[np.ndarray] = None,
+        data: Optional[List[np.ndarray]] = None,
     ):
         if data is None:
             rng = np.random.default_rng()

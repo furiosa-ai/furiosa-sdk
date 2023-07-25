@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..repository import Repository
 from ..settings import ServerConfig
 from ..types import (
@@ -20,7 +22,7 @@ class PredictHandler:
         models = await self._repository.get_models()
         return all(model.ready for model in models)
 
-    async def model_ready(self, name: str, version: str = None) -> bool:
+    async def model_ready(self, name: str, version: Optional[str] = None) -> bool:
         model = await self._repository.get_model(name, version)
         return model.ready
 
@@ -31,12 +33,14 @@ class PredictHandler:
             extensions=self._config.extensions,
         )
 
-    async def model_metadata(self, name: str, version: str = None) -> MetadataModelResponse:
+    async def model_metadata(
+        self, name: str, version: Optional[str] = None
+    ) -> MetadataModelResponse:
         model = await self._repository.get_model(name, version)
         return await model.metadata()
 
     async def infer(
-        self, payload: InferenceRequest, name: str, version: str = None
+        self, payload: InferenceRequest, name: str, version: Optional[str] = None
     ) -> InferenceResponse:
         model = await self._repository.get_model(name, version)
 

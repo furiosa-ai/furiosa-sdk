@@ -27,7 +27,7 @@ class NativeError(IntEnum):
 class NativeException(FuriosaError):
     _native_err: Optional[NativeError]
 
-    def __init__(self, message: str, native_err: NativeError = None):
+    def __init__(self, message: str, native_err: Optional[NativeError] = None):
         self._native_err = native_err
         super().__init__(message)
 
@@ -51,7 +51,7 @@ class CompilerApiError(FuriosaError):
 
 
 class InvalidTargetIrException(CompilerApiError):
-    def __init__(self, format: str = None):
+    def __init__(self, format: Optional[str] = None):
         super().__init__(f"invalid target ir '{format}'", NativeError.INVALID_FORMAT)
 
 

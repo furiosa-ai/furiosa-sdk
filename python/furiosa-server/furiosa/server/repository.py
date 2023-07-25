@@ -63,7 +63,7 @@ class Repository:
                 self.on_unload(model)
         return True
 
-    async def get_model(self, name: str, version: str = None) -> Model:
+    async def get_model(self, name: str, version: Optional[str] = None) -> Model:
         """
         Get a specified loaded model with name and version
         """

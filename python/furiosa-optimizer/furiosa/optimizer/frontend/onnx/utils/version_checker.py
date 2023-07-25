@@ -14,14 +14,13 @@ class CheckVersion(Transformer[onnx.ModelProto]):  # pylint: disable=no-member
     opset_bound = [12, 13]
 
     def __init__(self, opset_version: Optional[int] = None) -> None:
-        if opset_version < self.opset_bound[0] or opset_version > self.opset_bound[1]:
+        self.opset_version = opset_version or __OPSET_VERSION__
+
+        if self.opset_version < self.opset_bound[0] or self.opset_version > self.opset_bound[1]:
             raise ValueError(
                 f"Unsupported opset_version: {opset_version}. "
                 "Choose {self.opset_bound[0]} <= opset_version <= {self.opset_bound[1]}."
             )
-        if opset_version is None:
-            self.opset_version = __OPSET_VERSION__
-        self.opset_version = opset_version
 
     def transform(self, model: onnx.ModelProto) -> onnx.ModelProto:  # pylint: disable=no-member
         version = int(model.opset_import[0].version)

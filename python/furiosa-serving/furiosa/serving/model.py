@@ -161,7 +161,7 @@ class NPUServeModel(ServeModel):
 
         self._model = (NuxModel if blocking else AsyncNuxModel)(self._config)
 
-    async def predict(self, payload: List[np.ndarray]) -> List[np.ndarray]:
+    async def predict(self, payload: Union[np.ndarray, List[np.ndarray]]) -> List[np.ndarray]:
         with tracer.start_as_current_span("{}:predict".format(self._name)):
             return await self._model.predict(payload)
 
@@ -175,11 +175,11 @@ class NPUServeModel(ServeModel):
 
     @property
     def inputs(self) -> List[TensorDesc]:
-        return self._model.session.inputs()
+        return self._model.session.model.inputs()
 
     @property
     def outputs(self) -> List[TensorDesc]:
-        return self._model.session.outputs()
+        return self._model.session.model.outputs()
 
 
 class CPUServeModel(ServeModel):

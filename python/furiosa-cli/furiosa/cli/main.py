@@ -3,7 +3,7 @@ import os
 import signal
 import subprocess
 import sys
-from typing import Dict
+from typing import Dict, Optional
 
 from furiosa.cli.utils import which
 from furiosa.common import __version__
@@ -16,7 +16,7 @@ COMMAND_LIST = {
 
 
 class Command(object):
-    def __init__(self, command: str, path: str, descriptor: str):
+    def __init__(self, command: str, path: Optional[str] = None, descriptor: Optional[str] = None):
         self.command = command
         self.subcommands = [x.replace("_", "-") for x in command.split("-")][1:]
         self.path = path
@@ -33,8 +33,7 @@ class CommandRegistry(object):
 
 
 def _register_command(cmd: str):
-    cmd = Command(cmd)
-    return cmd
+    return Command(cmd)
 
 
 def _register_commands(allow_commands: Dict[str, str], check_existence=True):
@@ -72,6 +71,7 @@ def execute(registry: CommandRegistry, args, remainings) -> int:
 
 
 def _parse_arguments(registry: CommandRegistry):
+    assert __version__ is not None
     parser = argparse.ArgumentParser(
         description=f"FuriosaAI SDK CLI (ver. {__version__.version})",
         epilog="",

@@ -53,7 +53,7 @@ class Application:
     def __init__(self, model: NPUServeModel):
         self.model = model
 
-    async def process(self, image: Image.Image) -> int:
+    async def process(self, image: Image.Image) -> str:
         input_tensors = self.preprocess(image)
         output_tensors = await self.inference(input_tensors)
         return self.postprocess(output_tensors)
@@ -83,8 +83,8 @@ application: Application = Application(model)
 
 
 @app.post("/infer")
-async def infer(image: UploadFile) -> Dict:
-    image: Image.Image = Image.open(io.BytesIO(await image.read()))
+async def infer(file: UploadFile) -> Dict:
+    image: Image.Image = Image.open(io.BytesIO(await file.read()))
 
     return {"result": await application.process(image)}
 
