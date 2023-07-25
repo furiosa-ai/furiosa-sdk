@@ -30,7 +30,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = []
+test = [
+    "pytest",
+    "ruff"
+]
 
 cli = ["furiosa-cli == 0.10.*"]
 litmus = ["furiosa-litmus == 0.10.*"]

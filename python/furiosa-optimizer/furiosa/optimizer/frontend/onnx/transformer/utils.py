@@ -208,7 +208,8 @@ def check_value_info(model: onnx.ModelProto) -> None:  # pylint: disable=no-memb
         try:
             if not value_info[name].type.tensor_type.HasField('elem_type'):
                 raise ValueError(
-                    f'elem_type of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
+                    f'elem_type of {name} in value_info is missing. Optimize model before '
+                    'quantization, or shape inference failed.'
                 )
             if value_info[name].type.tensor_type.elem_type != onnx.TensorProto.FLOAT:
                 logger.warning(
@@ -220,13 +221,16 @@ def check_value_info(model: onnx.ModelProto) -> None:  # pylint: disable=no-memb
                 )
             if not value_info[name].type.tensor_type.HasField(
                 'shape'
-            ):  # when shape inference failed, shape field does not exist, unlike empty shape.dim array for scalar.
+            ):  # when shape inference failed, shape field does not exist, unlike empty shape.dim
+                # array for scalar.
                 raise ValueError(
-                    f'shape of {name} in value_info is missing. Optimize model before quantization, or shape inference failed.'
+                    f'shape of {name} in value_info is missing. Optimize model before '
+                    'quantization, or shape inference failed.'
                 )
         except AttributeError as e:
             raise AttributeError(
-                f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, or shape inference failed.)'
+                f'{e} (ValueInfoProto is incomplete. Optimize model before quantization, '
+                'or shape inference failed.)'
             ) from None
 
 

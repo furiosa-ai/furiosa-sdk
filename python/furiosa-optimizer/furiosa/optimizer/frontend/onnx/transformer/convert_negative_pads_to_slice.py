@@ -29,8 +29,10 @@ class Pattern_1(ONNXTransformer):
     if
         1. Pad's pads input (pad.input[1]) is an initializer
         2. at least one of pads value is negative
-        3. Sum of negative pads value in axis i does not exceed corresponding input_shape[i] (if not, model is invalid)
-        4. absolute value of each negative pads in axis i is less than corresponding input_shape[i] (if not, leads to invalid model/'nan' output)
+        3. Sum of negative pads value in axis i does not exceed corresponding input_shape[i]
+          (if not, model is invalid)
+        4. absolute value of each negative pads in axis i is less than corresponding input_shape[i]
+          (if not, leads to invalid model/'nan' output)
     """
 
     pattern_to_match = ['Pad']
@@ -67,8 +69,10 @@ class Pattern_1(ONNXTransformer):
         input_shape = self.get_value_info_shape(pad.input[0])
         pad_per_axis = zip(pads[: len(pads) // 2], pads[len(pads) // 2 :])
 
-        # If sum of negative pad value exceeds input size, output size is negative, which leads to invaiid Pad operator
-        # If one of negative pad value equals input size, original onnx Pad outputs 'nan' intermittently
+        # If sum of negative pad value exceeds input size, output size is negative, which leads to
+        # invaiid Pad operator>
+        # If one of negative pad value equals input size, original onnx Pad outputs 'nan'
+        # intermittently.
         # If one of negative pad value exceeds input size, Pad is invalid
         return all(
             input_size + pad_begin + pad_end >= 0

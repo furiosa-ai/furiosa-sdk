@@ -3,10 +3,8 @@ import glob
 import os
 from typing import List
 
-import yaml
-
 from .errors import ModelNotFound
-from .settings import FileRegistryConfig, ModelConfig, NuxModelConfig
+from .settings import FileRegistryConfig, ModelConfig
 from .utils.loader import load_model_config
 
 

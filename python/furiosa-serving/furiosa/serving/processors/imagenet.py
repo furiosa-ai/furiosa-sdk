@@ -6,10 +6,10 @@ from fastapi import File, UploadFile
 import numpy as np
 from opentelemetry import trace
 
-tracer = trace.get_tracer(__name__)
-
 from .. import ServeModel
 from .base import Processor
+
+tracer = trace.get_tracer(__name__)
 
 
 class ImageNet(Processor):

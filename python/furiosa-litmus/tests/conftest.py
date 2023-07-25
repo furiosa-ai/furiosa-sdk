@@ -1,11 +1,6 @@
 from pathlib import Path
-from typing import Mapping, Tuple
 
-import mnist
-import numpy as np
 import pytest
-
-from furiosa.runtime import session
 
 root = Path(__file__).parent.parent.parent.parent
 

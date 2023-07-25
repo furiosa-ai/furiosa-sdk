@@ -1,6 +1,3 @@
-import os
-
-
 def which(program):
     import os
 

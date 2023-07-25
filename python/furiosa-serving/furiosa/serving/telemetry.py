@@ -154,7 +154,7 @@ def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool
 
 def setup_logger(otlp_enabled: bool) -> None:
     if otlp_enabled:
-        logging_format = "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s"
+        logging_format = "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] [trace_id=%(otelTraceID)s span_id=%(otelSpanID)s resource.service.name=%(otelServiceName)s] - %(message)s"  # noqa: E501
     else:
         logging_format = (
             "%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] - %(message)s"

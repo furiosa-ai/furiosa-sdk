@@ -28,8 +28,8 @@ dynamic = ["description"]
 requires-python = "~=3.8"
 dependencies = [
     "furiosa-runtime == 0.10.*",
-    # Remove upper contraint when https://github.com/tiangolo/fastapi/issues/5857 is fixed
-    "fastapi < 0.89.0",
+    "fastapi",
+    "pydantic-settings",
     "grpcio-tools",
     "mypy-extensions<0.5.0,>=0.4.3",
     "protobuf",
@@ -50,6 +50,7 @@ test = [
     "pytest-asyncio ~= 0.17.2",
     "pytest-cov",
     "requests",
+    "ruff",
     "types-PyYAML",
     "types-protobuf"
 ]
@@ -84,6 +85,10 @@ known_first_party = ["furiosa"]
 line_length = 100
 profile = "black"
 extend_skip_glob = ["**/generated/**"]
+
+[tool.ruff]
+line-length = 100
+exclude = ["generated"]
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

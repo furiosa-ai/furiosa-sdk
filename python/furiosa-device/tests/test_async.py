@@ -1,14 +1,18 @@
+import os
+
 import pytest
 
 from furiosa.device import DeviceConfig, find_device_files, list_devices
 
 
+@pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
 @pytest.mark.asyncio
 async def test_list_devices():
     devices = await list_devices()
     assert len(devices) > 0
 
 
+@pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
 @pytest.mark.asyncio
 async def test_find_device_files():
     config = DeviceConfig.from_str("warboy(1)*2")
@@ -16,6 +20,7 @@ async def test_find_device_files():
     assert len(device_files) == 2
 
 
+@pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
 @pytest.mark.asyncio
 async def test_hwmon_fetcher():
     devices = await list_devices()

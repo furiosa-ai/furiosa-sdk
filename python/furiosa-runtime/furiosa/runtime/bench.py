@@ -1,5 +1,3 @@
-import warnings
-
 try:
     import package_extras
 except ModuleNotFoundError:

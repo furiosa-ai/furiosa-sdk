@@ -36,7 +36,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "mnist", "onnxruntime ~= 1.15.1"]
+test = [
+    "mnist",
+    "onnxruntime ~= 1.15.1",
+    "pytest",
+    "ruff"
+]
 legacy = ["package-extras"]
 
 [project.urls]
@@ -60,6 +65,14 @@ known_first_party = ["furiosa"]
 line_length = 100
 profile = "black"
 extend_skip_glob = ["**/generated/**"]
+
+[tool.ruff]
+line-length = 100
+ignore = [
+    # TODO: Remove when legacy module is deprecated
+    "F401",
+    "F403",
+]
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

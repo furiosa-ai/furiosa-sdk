@@ -40,6 +40,7 @@ test = [
     "pytest-aiohttp",
     "pytest-asyncio ~= 0.17.2",
     "pytest-cov",
+    "ruff",
     "types-aiofiles",
 ]
 
@@ -64,6 +65,9 @@ known_first_party = ["furiosa"]
 line_length = 100
 profile = "black"
 extend_skip_glob = ["**/generated/**"]
+
+[tool.ruff]
+line-length = 100
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

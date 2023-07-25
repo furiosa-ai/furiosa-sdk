@@ -31,7 +31,10 @@ dependencies = ["furiosa-common == 0.10.*"]
 furiosa = "furiosa.cli.main:main"
 
 [project.optional-dependencies]
-test = []
+test = [
+    "pytest",
+    "ruff"
+]
 
 [project.urls]
 Home = "https://furiosa.ai"
@@ -54,6 +57,9 @@ known_first_party = ["furiosa"]
 line_length = 100
 profile = "black"
 extend_skip_glob = ["**/generated/**"]
+
+[tool.ruff]
+line-length = 100
 
 [tool.pytest.ini_options]
 # https://github.com/pytest-dev/pytest-asyncio#auto-mode

@@ -21,8 +21,9 @@ app = serve.app
 
 def detect_npu_devices(use_fusion: bool) -> List[str]:
     """This function tries to find all NPU device files from /dev and return the list."""
-    # If you want to knows how to specify devices, please refer to the section 'How to Specify a NPU device'
-    # at https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb
+
+    # To understand how to specify devices, please refer to section 'How to Specify a NPU device'
+    # https://github.com/furiosa-ai/furiosa-sdk/blob/main/examples/notebooks/AdvancedTopicsInInferenceAPIs.ipynb
     if use_fusion:
         PATTERN = re.compile("npu[0-9]+pe0-1")
     else:
@@ -68,7 +69,8 @@ class Application:
         ]
 
     async def inference(self, tensors: List[np.ndarray]) -> List[np.ndarray]:
-        # The following code runs multiple inferences at the same time and wait until all requests are completed.
+        # The following code runs multiple inferences at the same time and wait until all requests
+        # are completed.
         return await asyncio.gather(*(self.model.predict(tensor) for tensor in tensors))
 
     @staticmethod

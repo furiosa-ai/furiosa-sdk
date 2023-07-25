@@ -246,7 +246,8 @@ LIBNUX.register_signal_handler()
 
 
 def runtime_version() -> str:
-    return (
-        f"{LIBNUX.version().decode('utf-8')} "
-        f"(rev: {LIBNUX.git_short_hash().decode('utf-8')} built at {LIBNUX.build_timestamp().decode('utf-8')})"
-    )
+    version = LIBNUX.version().decode('utf-8')
+    revision = LIBNUX.git_short_hash().decode('utf-8')
+    timestamp = LIBNUX.build_timestamp().decode('utf-8')
+
+    return f"{version} (rev: {revision} build at {timestamp})"

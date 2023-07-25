@@ -12,7 +12,8 @@ from furiosa.optimizer.interfaces.transformer import Transformer
 
 
 class EmbeddingBagPorting(Transformer):
-    # When https://github.com/pytorch/pytorch/issues/58567 issue gets resolved, this transformer is no longer needed.
+    # When https://github.com/pytorch/pytorch/issues/58567 issue gets resolved, this transformer
+    # is no longer needed.
     def __init__(self, batch_size: Optional[int] = 128):
         self.batch_size = batch_size
 
@@ -34,10 +35,12 @@ class EmbeddingBagPorting(Transformer):
 
 
 class EmbeddingBagPattern(ONNXTransformer):
-    """
-    Apply to the DLRM model only.
+    """Apply to the DLRM model only.
+
     Transform onnx-exported EmbeddingBag graph to be equivalent to torch.EmbeddingBag
-    If not applied on DLRM model, onnx simplifier doesn't work because transformed embeddingbag can't handle empty bag.
+    If not applied on DLRM model, onnx simplifier doesn't work because transformed embeddingbag
+    can't handle empty bag.
+
     https://github.com/pytorch/pytorch/blob/55d479aca5e959c5f2fe3089e162db710bb7632d/torch/onnx/symbolic_opset11.py#L836-L902
     """
 

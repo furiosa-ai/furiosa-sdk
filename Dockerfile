@@ -8,6 +8,7 @@ FROM ubuntu:$DIST
 ARG DIST=focal
 ARG HAL_VERSION="0.12.*"
 ARG NUX_VERSION="0.10.*"
+ARG COMPILER_VERSION="0.10.*"
 ARG ONNX_RUNTIME_VERSION="1.15.*"
 ARG ARCHIVE=https://internal-archive.furiosa.dev
 
@@ -47,8 +48,8 @@ RUN --mount=type=secret,id=furiosa.conf,dst=/etc/apt/auth.conf.d/furiosa.conf,re
     apt install --no-install-recommends --assume-yes \
         furiosa-libhal-warboy=$HAL_VERSION \
         furiosa-libnux=$NUX_VERSION \
-        libonnxruntime=$ONNX_RUNTIME_VERSION \
-        furiosa-compiler
+        furiosa-compiler=$COMPILER_VERSION \
+        libonnxruntime=$ONNX_RUNTIME_VERSION
 
     rm -rf /var/lib/apt/lists/*
 EOF

@@ -1,9 +1,8 @@
 from functools import partial
 import os
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Union
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 from fastapi import FastAPI
-import numpy as np
 
 from furiosa.common import transport
 from furiosa.server.model import Model
