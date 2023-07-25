@@ -133,7 +133,7 @@ def validate(
         else:
             print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
             try:
-                onnx_model = onnx.load_model(model_path)
+                onnx_model = onnx.load_model(str(model_path))
                 onnx_model = optimize_model(onnx_model)
             except DecodeError as e:
                 eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
@@ -161,7 +161,7 @@ def validate(
             enf = compile(
                 bytes(quantized_model),
                 target_ir="enf",
-                log_path=reporter.compiler_log_path,
+                log=reporter.compiler_log_path,
                 dot_graph=reporter.dot_graph_path,
                 analyze_memory=reporter.memory_analysis_path,
                 verbose=verbose,
@@ -178,7 +178,8 @@ def validate(
         try:
             from furiosa.runtime.bench import BenchConfig, BenchRunner
 
-            config = BenchConfig(tmp_enf_path, trace_output=str(reporter.trace_path))
+            trace_output = None if reporter.trace_path is None else str(reporter.trace_path)
+            config = BenchConfig(tmp_enf_path, trace_output=trace_output)
             bench = BenchRunner(config, "L")
 
             async def bench_run():
@@ -189,7 +190,7 @@ def validate(
         except RuntimeError as e:
             eprint("[Step 4] Failed")
             return SystemExit(e)
-        except ModuleNotFoundError as _:
+        except ModuleNotFoundError:
             eprint("[Step 4] Skip, there is no furiosa-bench")
 
 

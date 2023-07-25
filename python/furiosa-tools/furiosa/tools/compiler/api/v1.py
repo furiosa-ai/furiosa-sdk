@@ -2,8 +2,7 @@
 import ctypes
 from ctypes import Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 import logging
-from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from furiosa.common.error import is_err
 from furiosa.common.native import LogLevel, find_native_libs
@@ -171,9 +170,9 @@ def __check_target_ir(target_ir: str):
 def compile(
     input_bytes: bytes,
     target_ir: str = "enf",
-    log_path: Optional[str] = None,
-    dot_graph: Optional[Union[str, Path]] = None,
-    analyze_memory: Optional[Union[str, Path]] = None,
+    log: Optional[str] = None,
+    dot_graph: Optional[str] = None,
+    analyze_memory: Optional[str] = None,
     batch_size: Optional[int] = None,
     split_after_lower: Optional[bool] = None,
     auto_batch_size: Optional[bool] = None,
@@ -191,8 +190,7 @@ def compile(
 
     __check_target_ir(target_ir)
 
-    if log_path is not None:
-        log_path = str(log_path).encode(DEFAULT_ENCODING)
+    log_path = log if log is None else str(log).encode(DEFAULT_ENCODING)
 
     options = LIBCOMPILER.fc_create_options()
 
@@ -221,7 +219,7 @@ def compile(
     output_buf = FcBuffer()
     summary_buf = FcBuffer()
     errno = LIBCOMPILER.fc_compile(
-        options, None, None, byref(input_buf), byref(output_buf), byref(summary_buf)
+        options, None, log_path, byref(input_buf), byref(output_buf), byref(summary_buf)
     )
 
     if is_err(errno):

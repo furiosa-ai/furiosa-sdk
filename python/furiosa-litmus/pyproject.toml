@@ -44,6 +44,8 @@ test = [
     "pytest-cov",
     "ruff",
     "types-protobuf",
+    "types-psutil",
+    "types-PyYAML"
 ]
 
 [project.urls]

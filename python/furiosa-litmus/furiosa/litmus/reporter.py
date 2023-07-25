@@ -6,6 +6,7 @@ import platform
 import sys
 import tempfile
 import time
+from typing import Optional, Union
 from zipfile import ZipFile
 
 import distro
@@ -13,15 +14,23 @@ import onnx
 import psutil
 import yaml
 
-from furiosa.device.sync import list_devices
+from furiosa.device.sync import list_devices  # type: ignore
 from furiosa.quantizer import version_dict as quantizer_version
 from furiosa.runtime import version_dict as runtime_version
 from furiosa.tools.compiler.api import version_dict as compiler_version
 
 
 class Reporter:
-    def __init__(self, dump_path: str = None):
-        if dump_path:
+    def __init__(self, dump_path: Optional[str] = None):
+        if dump_path is None:
+            self.dump_path: Union[None, str] = None
+            self.compiler_log_path: Union[None, str] = None
+            self.memory_analysis_path: Union[None, str] = None
+            self.dot_graph_path: Union[None, str] = None
+            self.compile_profiling_path: Union[None, str] = None
+            self.trace_path: Union[None, str] = None
+            self.runtime_profiling_path: Union[None, str] = None
+        else:
             self.dump_path = f"{dump_path}-{int(time.time())}"
             self.tmp_dir = tempfile.TemporaryDirectory(prefix=self.dump_path, dir=".")
             self.meta_path = self.tmp_dir.name + "/meta.yaml"
@@ -37,15 +46,10 @@ class Reporter:
             self.trace_path = self.runtime_dir + "/trace.json"
             self.runtime_profiling_path = self.runtime_dir + "/profiling.json"
             os.makedirs(self.runtime_dir)
-        else:
-            self.dump_path = None
-            self.meta_path = None
-            self.compiler_path = None
-            self.compiler_log_path = None
-            self.memory_analysis_path = None
-            self.dot_graph_path = None
-            self.trace_path = None
-            self.profiling_path = None
+
+    def __del__(self):
+        if self.dump_path:
+            self.tmp_dir.cleanup()
 
     @staticmethod
     def _get_md5_hash(filename):
