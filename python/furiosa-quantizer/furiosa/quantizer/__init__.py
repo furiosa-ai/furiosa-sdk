@@ -16,14 +16,6 @@ __full_version__ = f"Furiosa SDK Quantizer {__version__} (furiosa_quantizer_impl
 __all__ = ["CalibrationMethod", "Calibrator", "ModelEditor", "TensorType", "quantize"]
 
 
-def version_dict():
-    return {
-        "version": furiosa_quantizer_impl.__version__,  # pylint: disable=no-member
-        "rev": furiosa_quantizer_impl.__git_short_hash__,  # pylint: disable=no-member
-        "built": furiosa_quantizer_impl.__build_timestamp__,  # pylint: disable=no-member
-    }
-
-
 def quantize(
     model: Union[onnx.ModelProto, bytes],  # pylint: disable=no-member
     tensor_name_to_range: Mapping[str, Sequence[float]],

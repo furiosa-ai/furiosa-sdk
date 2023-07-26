@@ -6,7 +6,7 @@ import platform
 import sys
 import tempfile
 import time
-from typing import Optional, Union
+from typing import Optional
 from zipfile import ZipFile
 
 import distro
@@ -15,41 +15,82 @@ import psutil
 import yaml
 
 from furiosa.device.sync import list_devices  # type: ignore
-from furiosa.quantizer import version_dict as quantizer_version
-from furiosa.runtime import version_dict as runtime_version
+from furiosa.quantizer import __version__ as quantizer_version
+from furiosa.runtime import __version__ as runtime_version
 from furiosa.tools.compiler.api import version_dict as compiler_version
 
 
-class Reporter:
-    def __init__(self, dump_path: Optional[str] = None):
-        if dump_path is None:
-            self.dump_path: Union[None, str] = None
-            self.compiler_log_path: Union[None, str] = None
-            self.memory_analysis_path: Union[None, str] = None
-            self.dot_graph_path: Union[None, str] = None
-            self.compile_profiling_path: Union[None, str] = None
-            self.trace_path: Union[None, str] = None
-            self.runtime_profiling_path: Union[None, str] = None
+class DummyReporter:
+    def __init__(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, trackback):
+        pass
+
+    def get_compiler_log_path(self):
+        return None
+
+    def get_dot_graph_path(self):
+        return None
+
+    def get_memory_analysis_path(self):
+        return None
+
+    def get_compile_profiling_path(self):
+        return None
+
+    def get_trace_path(self):
+        return None
+
+    def get_runtime_profiling_path(self):
+        return None
+
+    def dump_meta_yaml(self, _):
+        pass
+
+    def make_zip(self):
+        pass
+
+
+class Reporter(DummyReporter):
+    def __new__(cls, dump_path: Optional[str] = None):
+        if dump_path:
+            return super().__new__(cls)
         else:
-            self.dump_path = f"{dump_path}-{int(time.time())}"
-            self.tmp_dir = tempfile.TemporaryDirectory(prefix=self.dump_path, dir=".")
-            self.meta_path = self.tmp_dir.name + "/meta.yaml"
+            return DummyReporter()
 
-            self.compiler_dir = self.tmp_dir.name + "/compiler"
-            self.compiler_log_path = self.compiler_dir + "/compiler.log"
-            self.memory_analysis_path = self.compiler_dir + "/memory-analysis.html"
-            self.dot_graph_path = self.compiler_dir + "/model.dot"
-            self.compile_profiling_path = self.compiler_dir + "/profiling.json"
-            os.makedirs(self.compiler_dir)
+    def __init__(self, dump_path: Optional[str]):
+        self.zip_filename = f"{dump_path}-{int(time.time())}"
+        self.tmp_dir = tempfile.TemporaryDirectory(prefix=self.zip_filename, dir=".")
+        self.compiler_dir = self.tmp_dir.name + "/compiler"
+        self.runtime_dir = self.tmp_dir.name + "/runtime"
+        os.makedirs(self.compiler_dir)
+        os.makedirs(self.runtime_dir)
 
-            self.runtime_dir = self.tmp_dir.name + "/runtime"
-            self.trace_path = self.runtime_dir + "/trace.json"
-            self.runtime_profiling_path = self.runtime_dir + "/profiling.json"
-            os.makedirs(self.runtime_dir)
+    def __exit__(self, type, value, trackback):
+        self.make_zip()
+        self.tmp_dir.cleanup()
 
-    def __del__(self):
-        if self.dump_path:
-            self.tmp_dir.cleanup()
+    def get_compiler_log_path(self):
+        return self.compiler_dir + "/compiler.log"
+
+    def get_dot_graph_path(self):
+        return self.compiler_dir + "/model.dot"
+
+    def get_memory_analysis_path(self):
+        return self.compiler_dir + "/memory-analysis.html"
+
+    def get_compile_profiling_path(self):
+        return self.compiler_dir + "/profiling.json"
+
+    def get_trace_path(self):
+        return self.runtime_dir + "/trace.json"
+
+    def get_runtime_profiling_path(self):
+        return self.runtime_dir + "/profiling.json"
 
     @staticmethod
     def _get_md5_hash(filename):
@@ -58,14 +99,11 @@ class Reporter:
             md5.update(f.read())
         return md5.hexdigest()
 
-    def create_meta_yaml(self, model_path):
-        if self.dump_path is None:
-            return
-
+    def dump_meta_yaml(self, model_path):
         sdk_meta = {
             "compiler": compiler_version(),
-            "runtime": runtime_version(),
-            "quantizer": quantizer_version(),
+            "runtime": runtime_version.__dict__,
+            "quantizer": quantizer_version.__dict__,
         }
 
         env_meta = {
@@ -118,13 +156,11 @@ class Reporter:
             "compiler_config": {},
         }
 
-        with open(self.meta_path, "w") as f:
+        with open(self.tmp_dir.name + "/meta.yaml", "w") as f:
             yaml.dump(meta, f, sort_keys=False)
 
     def make_zip(self):
-        if self.dump_path:
-            with ZipFile(f"{self.dump_path}.zip", "w") as zip_object:
-                for dir, _, filenames in os.walk(self.tmp_dir.name):
-                    for filename in filenames:
-                        zip_object.write(os.path.join(dir, filename))
-            self.tmp_dir.cleanup()
+        with ZipFile(f"{self.zip_filename}.zip", "w") as zip_object:
+            for dir, _, filenames in os.walk(self.tmp_dir.name):
+                for filename in filenames:
+                    zip_object.write(os.path.join(dir, filename))

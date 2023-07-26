@@ -4,7 +4,7 @@ import asyncio
 from pathlib import Path
 import sys
 import tempfile
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from google.protobuf.message import DecodeError
 import numpy as np
@@ -103,8 +103,84 @@ def calibrate_with_random_data(
     return calibrator.compute_range()
 
 
+def step1_load_and_optimize(model_path: Path):
+    print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
+    try:
+        onnx_model = onnx.load_model(str(model_path))
+        onnx_model = optimize_model(onnx_model)
+        print("[Step 1] Passed", flush=True)
+        return onnx_model
+    except DecodeError as e:
+        eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
+        raise SystemExit(e)
+    except Exception as e:
+        eprint("[Step 1] Failed\n")
+        raise e
+
+
+def step2_quantize(onnx_model):
+    print("[Step 2] Checking if the model can be quantized ...", flush=True)
+    try:
+        ranges = calibrate_with_random_data(onnx_model)
+        quantized_model = quantize(onnx_model, ranges)
+        print("[Step 2] Passed", flush=True)
+        return quantized_model
+    except Exception as e:
+        eprint("[Step 2] Failed\n")
+        raise e
+
+
+def step3_compile(quantized_model, reporter, target_npu, verbose, tmpdir):
+    print(
+        f"[Step 3] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
+        flush=True,
+    )
+    try:
+        enf_path = f"{tmpdir}/output.enf"
+        enf = compile(
+            bytes(quantized_model),
+            target_ir="enf",
+            log=reporter.get_compiler_log_path(),
+            dot_graph=reporter.get_dot_graph_path(),
+            analyze_memory=reporter.get_memory_analysis_path(),
+            verbose=verbose,
+            target_npu=target_npu,
+        )
+        with open(enf_path, "wb") as f:
+            f.write(enf)
+        print("[Step 3] Passed")
+        return enf_path
+    except Exception as e:
+        eprint("[Step 3] Failed\n")
+        raise e
+
+
+def step4_inference_once(enf_path, reporter):
+    print("[Step 4] Perform inference once for data collection... (Optional)")
+    try:
+        from furiosa.runtime.bench import BenchConfig, BenchRunner
+
+        config = BenchConfig(enf_path, trace_output=reporter.get_trace_path())
+        bench = BenchRunner(config, "L")
+
+        async def bench_run():
+            await bench.run()
+
+        asyncio.run(bench_run())
+        print("[Step 4] Finished")
+    except RuntimeError as e:
+        eprint("[Step 4] Failed")
+        raise SystemExit(e)
+    except ModuleNotFoundError:
+        eprint("[Step 4] Skip, there is no furiosa-bench")
+
+
 def validate(
-    model_path: Path, reporter: Reporter, skip_quantization: bool, verbose: bool, target_npu: str
+    model_path: Path,
+    dump_path: Optional[str],
+    skip_quantization: bool,
+    verbose: bool,
+    target_npu: str,
 ):
     """
     Validate a given model
@@ -113,85 +189,32 @@ def validate(
     :return: boolean
     """
     with tempfile.TemporaryDirectory() as tmpdir:
-        if not model_path.exists():
-            eprint(f"ERROR: {model_path} does not exist")
+        with Reporter(dump_path) as reporter:
+            if not model_path.exists():
+                eprint(f"ERROR: {model_path} does not exist")
 
-        assert __version__ is not None
-        assert quantizer_ver is not None
+            assert __version__ is not None
+            assert quantizer_ver is not None
 
-        reporter.create_meta_yaml(model_path)
-        print(
-            f"furiosa-quantizer {quantizer_ver.version} (rev. {quantizer_ver.hash[0:9]})",
-            f"furiosa-litmus {__version__.version} (rev. {__version__.hash[0:9]})",
-            file=sys.stderr,
-        )
-        # Try quantization on input models
-        if skip_quantization:
-            print("[Step 1] Skip model loading and optimization")
-            print("[Step 2] Skip model quantization")
-            quantized_model = load_quantized_model(model_path)
-        else:
-            print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
-            try:
-                onnx_model = onnx.load_model(str(model_path))
-                onnx_model = optimize_model(onnx_model)
-            except DecodeError as e:
-                eprint("[Step 1] ERROR: The input file should be a valid ONNX file")
-                return SystemExit(e)
-            except Exception as e:
-                eprint("[Step 1] Failed\n")
-                return e
-            print("[Step 1] Passed", flush=True)
-
-            print("[Step 2] Checking if the model can be quantized ...", flush=True)
-            try:
-                ranges = calibrate_with_random_data(onnx_model)
-                quantized_model = quantize(onnx_model, ranges)
-            except Exception as e:
-                eprint("[Step 2] Failed\n")
-                return e
-            print("[Step 2] Passed", flush=True)
-
-        print(
-            f"[Step 3] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
-            flush=True,
-        )
-        try:
-            tmp_enf_path = f"{tmpdir}/output.enf"
-            enf = compile(
-                bytes(quantized_model),
-                target_ir="enf",
-                log=reporter.compiler_log_path,
-                dot_graph=reporter.dot_graph_path,
-                analyze_memory=reporter.memory_analysis_path,
-                verbose=verbose,
-                target_npu=target_npu,
+            reporter.dump_meta_yaml(model_path)
+            print(
+                f"furiosa-quantizer {quantizer_ver.version} (rev. {quantizer_ver.hash[0:9]})",
+                f"furiosa-litmus {__version__.version} (rev. {__version__.hash[0:9]})",
+                file=sys.stderr,
             )
-            with open(tmp_enf_path, "wb") as f:
-                f.write(enf)
-        except Exception as e:
-            eprint("[Step 3] Failed\n")
-            return e
-        print("[Step 3] Passed")
 
-        print("[Step 4] Perform inference once for data collection... (Optional)")
-        try:
-            from furiosa.runtime.bench import BenchConfig, BenchRunner
+            if skip_quantization:
+                print("[Step 1] Skip model loading and optimization")
+                print("[Step 2] Skip model quantization")
+                quantized_model = load_quantized_model(model_path)
+            else:
+                onnx_model = step1_load_and_optimize(model_path)
+                quantized_model = step2_quantize(onnx_model)
 
-            trace_output = None if reporter.trace_path is None else str(reporter.trace_path)
-            config = BenchConfig(tmp_enf_path, trace_output=trace_output)
-            bench = BenchRunner(config, "L")
+            enf_path = step3_compile(quantized_model, reporter, target_npu, verbose, tmpdir)
+            step4_inference_once(enf_path, reporter)
 
-            async def bench_run():
-                await bench.run()
-
-            asyncio.run(bench_run())
-            print("[Step 4] Finished")
-        except RuntimeError as e:
-            eprint("[Step 4] Failed")
-            return SystemExit(e)
-        except ModuleNotFoundError:
-            eprint("[Step 4] Skip, there is no furiosa-bench")
+    return True
 
 
 def main():
@@ -223,18 +246,13 @@ def main():
     )
     args = parser.parse_args()
 
-    reporter = Reporter(args.dump)
-    err = validate(
+    validate(
         Path(args.model_path),
-        reporter=reporter,
+        dump_path=args.dump,
         skip_quantization=args.skip_quantization,
         verbose=args.verbose,
         target_npu=args.target_npu,
     )
-    reporter.make_zip()
-
-    if isinstance(err, BaseException):
-        raise err
 
 
 if __name__ == "__main__":

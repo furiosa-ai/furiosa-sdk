@@ -20,15 +20,6 @@ except ModuleNotFoundError:
         )
         return __full_version__
 
-    def version_dict() -> dict:
-        import furiosa.native_runtime as rt
-
-        return {
-            "version": rt.__version__,
-            "rev": rt.__git_short_hash__,
-            "built": rt.__build_timestamp__,
-        }
-
     is_legacy = False
 else:
     warnings.warn(
@@ -48,15 +39,6 @@ else:
             rt.build_timestamp().decode("utf-8"),
         )
 
-    def version_dict() -> dict:
-        from .legacy._api import LIBNUX as rt
-
-        return {
-            "version": rt.version().decode("utf-8"),
-            "rev": rt.git_short_hash().decode("utf-8"),
-            "built": rt.build_timestamp().decode("utf-8"),
-        }
-
     is_legacy = True
 
     del package_extras
@@ -68,4 +50,4 @@ __full_version__ = full_version()
 del warnings, get_sdk_version, full_version
 
 
-__all__ = ["__version__", "__full_version__", "is_legacy", "version_dict"]
+__all__ = ["__version__", "__full_version__", "is_legacy"]
