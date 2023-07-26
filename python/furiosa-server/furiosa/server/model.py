@@ -94,7 +94,7 @@ class NuxModel(Model[NuxModelConfig]):
 
         # Uninitialized session pool. Will be loaded in load().
         self.sessions: Optional[List[Union[session.Session, session.AsyncSession]]] = None
-        self.runners: List[Callable] = []
+        self.pool: Optional[itertools.cycle] = None
 
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
@@ -124,13 +124,11 @@ class NuxModel(Model[NuxModelConfig]):
             return tensors
 
     async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
-        assert self.runners is not None
+        assert self.pool is not None
 
-        run = next(iter(self.runners))
+        session = next(self.pool)
 
-        assert run is not None
-
-        return await run(inputs)  # type: ignore
+        return await asynchronous(session.run)(inputs)
 
     async def load(self) -> bool:
         if self.ready:
@@ -162,7 +160,6 @@ class NuxModel(Model[NuxModelConfig]):
                 compiler_config=self._config.compiler_config,  # type: ignore
             )
             sessions.append(blocking)
-            self.runners.append(asynchronous(blocking.run))
 
         return sessions
 
@@ -225,7 +222,9 @@ class AsyncNuxModel(NuxModel):
         loop.call_soon(self.completed, receiver, id, future)
 
     async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
-        sender, receiver = next(self.pool)  # type: ignore
+        assert self.pool is not None
+
+        sender, receiver = next(self.pool)
 
         id = uuid.uuid1()
 
