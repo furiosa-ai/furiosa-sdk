@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import random
 
-import numpy as np
 import pytest
 
 from furiosa.runtime import errors, session
@@ -97,4 +96,7 @@ def test_device_busy(mnist_onnx):
 
     # FIXME: Add specific error variants to furiosa-native-runtime
     with pytest.raises(errors.NativeException):
-        submitter, receiver = session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
+        session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
+
+    submitter.close()
+    receiver.close()
