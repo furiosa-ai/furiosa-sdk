@@ -22,8 +22,8 @@ def test_run_async(mnist_onnx, mnist_images):
 
     assert {next(receiver)[0] for _ in range(count)} == set(range(count))
 
-    submitter.close()
-    receiver.close()
+    assert submitter.close()
+    assert receiver.close()
 
 
 def test_create(mnist_onnx):
@@ -35,8 +35,8 @@ def test_create(mnist_onnx):
         compiler_config={"allow_precision_error": True},
     )
 
-    submitter.close()
-    receiver.close()
+    assert submitter.close()
+    assert receiver.close()
 
 
 def test_timeout(mnist_onnx):
@@ -48,7 +48,7 @@ def test_timeout(mnist_onnx):
     with pytest.raises(Exception):
         receiver.recv(timeout=100)
 
-    submitter.close()
+    assert submitter.close()
 
     # Recv after close
     with pytest.raises(Exception):
@@ -58,12 +58,12 @@ def test_timeout(mnist_onnx):
     with pytest.raises(Exception):
         receiver.recv(timeout=100)
 
-    receiver.close()
+    assert receiver.close()
 
 
 def test_submitter_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
-    submitter.close()
+    assert submitter.close()
 
     # FIXME: Add specific error variants to furiosa-native-runtime
     with pytest.raises(Exception):
@@ -77,17 +77,17 @@ def test_submitter_closed(mnist_onnx):
     with pytest.raises(Exception):
         submitter.summary()
 
-    receiver.close()
+    assert receiver.close()
 
 
 def test_queue_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
-    receiver.close()
+    assert receiver.close()
     # FIXME: Add specific error variants to furiosa-native-runtime
     with pytest.raises(Exception):
         receiver.recv()
 
-    submitter.close()
+    assert submitter.close()
 
 
 @pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
@@ -98,5 +98,5 @@ def test_device_busy(mnist_onnx):
     with pytest.raises(errors.NativeException):
         session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
-    submitter.close()
-    receiver.close()
+    assert submitter.close()
+    assert receiver.close()

@@ -57,12 +57,12 @@ def test_device_busy(mnist_onnx):
     with pytest.raises(Exception):
         session.create(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
-    runner.close()
+    assert runner.close()
 
 
 def test_closed(mnist_onnx):
     runner = session.create(mnist_onnx)
-    runner.close()
+    assert runner.close()
 
     # FIXME: Add specific error variants to furiosa-native-runtime
     with pytest.raises(Exception):
@@ -84,7 +84,7 @@ def test_create(mnist_onnx):
         mnist_onnx, worker_num=1, compiler_config={"allow_precision_error": True}
     )
     assert runner
-    runner.close()
+    assert runner.close()
 
 
 def test_batch(mnist_onnx):
