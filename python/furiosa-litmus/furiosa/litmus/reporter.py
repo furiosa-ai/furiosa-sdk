@@ -130,9 +130,10 @@ class Reporter(DummyReporter):
             "filename": os.path.basename(model_path),
             "size": os.path.getsize(model_path),
             "md5": Reporter._get_md5_hash(model_path),
-            "created_at": datetime.fromtimestamp(os.path.getmtime(model_path)).strftime(
-                "%Y-%m-%dT%H:%M:%S"
-            ),
+            "created_at": {
+                "datetime": datetime.fromtimestamp(os.path.getmtime(model_path)),
+                "timezone": str(time.tzname),
+            },
         }
 
         devices_meta = {}

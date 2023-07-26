@@ -22,12 +22,6 @@ from .reporter import Reporter
 __version__ = get_sdk_version("furiosa.litmus")
 
 
-def load_quantized_model(model_path):
-    with open(model_path, "rb") as f:
-        quantized_model = f.read()
-    return quantized_model
-
-
 def calibrate_with_random_data(
     model: onnx.ModelProto, dataset_size: int = 8
 ) -> Dict[str, Tuple[float, float]]:
@@ -101,6 +95,17 @@ def calibrate_with_random_data(
                 )
         calibrator.collect_data([inputs])
     return calibrator.compute_range()
+
+
+def load_quantized_model(model_path):
+    print("[Step 1 & Step 2] Load quantized model ...")
+    try:
+        with open(model_path, "rb") as f:
+            quantized_model = f.read()
+        return quantized_model
+    except Exception as e:
+        eprint("[Step 1 & Step 2] Failed\n")
+        raise e
 
 
 def step1_load_and_optimize(model_path: Path):
