@@ -4,12 +4,12 @@ import random
 import numpy as np
 import pytest
 
-from furiosa.runtime import is_legacy, session
+from furiosa.runtime import errors, is_legacy, session
 
 
 def test_run(mnist_onnx, mnist_images):
     with session.create(model=mnist_onnx) as runner:
-        # FIXME: Add named tesnor test
+        # FIXME: Add named tensor test
         count = 50
         for _ in range(count):
             idx = random.randrange(0, 9999, 1)
