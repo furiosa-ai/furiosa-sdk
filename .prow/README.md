@@ -25,6 +25,22 @@ This container image does not have entrypoint (command in Kubernetes), and we us
 kubectl apply -f configmap.yaml -n test-pods
 ```
 
+#### Crate Cronjob for nightly publish
+
+For development, publish SDK nightly package on every 11:00(KST) via Kubernetes `Cronjob`.
+
+_Secret `git-credential` is redacted._
+
+```bash
+kubectl apply -f cronjob.yaml -n test-pods
+```
+
+You can run the `Job` manually
+
+```bash
+kubectl create job --from=cronjob/sdk-publish manual-publish -n test-pods
+```
+
 #### Run Tekton Pipeline
 
 The Pod will runs the `tkn` command:

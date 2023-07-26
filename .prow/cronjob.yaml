@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sdk-publish
+spec:
+  timeZone: "Asia/Seoul"
+  schedule: "* 11 * * *"  # Every 11 AM
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: prow-pipeline
+          automountServiceAccountToken: true
+          securityContext:
+            fsGroup: 65533 # to make SSH key readable
+          volumes:
+          - name: entrypoint
+            configMap:
+              defaultMode: 0700
+              name: entrypoint
+          - name: source
+            emptyDir: {}
+          - name: git-secret
+            secret:
+              secretName: git-credential
+          initContainers:
+          - name: git
+            image: k8s.gcr.io/git-sync/git-sync:v3.6.5
+            volumeMounts:
+            - name: git-secret
+              mountPath: /etc/git-secret
+            - name: source
+              mountPath: /workspace
+            securityContext:
+              runAsUser: 65533 # git-sync user
+            env:
+            - name: GIT_SYNC_REPO
+              value: git@github.com:furiosa-ai/furiosa-sdk-private.git
+            - name: GIT_SYNC_BRANCH
+              value: "main"
+            - name: GIT_SYNC_SSH
+              value: "true"
+            - name: GIT_KNOWN_HOSTS
+              value: "false"
+            - name: GIT_SYNC_ROOT
+              value: "/workspace"
+            - name: GIT_SYNC_SUBMODULES
+              value: "off"
+            - name: GIT_SYNC_ONE_TIME
+              value: "true"
+          containers:
+          - name: tkn
+            image: ileixe/tkn-watch:853974f-v941edb36a
+            workingDir: /workspace/source/furiosa-sdk-private.git
+            command:
+            - /bin/entrypoint.sh
+            args:
+            - "--param upload-package=true"
+            volumeMounts:
+            - name: entrypoint
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+            - name: source
+              mountPath: /workspace/source
+          restartPolicy: Never
