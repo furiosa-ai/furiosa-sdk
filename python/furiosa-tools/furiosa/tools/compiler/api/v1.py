@@ -2,8 +2,7 @@
 import ctypes
 from ctypes import Structure, byref, c_bool, c_char_p, c_int, c_ulonglong, c_void_p
 import logging
-from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from furiosa.common.error import is_err
 from furiosa.common.native import LogLevel, find_native_libs
@@ -137,7 +136,7 @@ def __set_ga_param(options, key: str, value: object):
             raise CompilerApiError("pin_tensors must be a boolean value")
 
     elif key.lower() == "init_tactic":
-        if isinstance(value, str) and value.lower() in ['random', 'heuristic']:
+        if isinstance(value, str) and value.lower() in ["random", "heuristic"]:
             LIBCOMPILER.fc_options_ga_init_tactic(options, value.encode(DEFAULT_ENCODING))
         else:
             raise CompilerApiError("init_tactic must be either 'random' or 'heuristic'")
@@ -158,6 +157,11 @@ def version_string() -> str:
     return f"{info.version} " f"(rev: {info.git_hash} " f"built at {info.build_timestamp})"
 
 
+def version_dict() -> dict:
+    info = VersionInfo()
+    return {"version": info.version, "rev": info.git_hash, "built": info.build_timestamp}
+
+
 def __check_target_ir(target_ir: str):
     if target_ir.lower().strip() not in ["dfg", "ldfg", "cdfg", "gir", "sir", "lir", "enf"]:
         raise InvalidTargetIrException(target_ir)
@@ -166,8 +170,9 @@ def __check_target_ir(target_ir: str):
 def compile(
     input_bytes: bytes,
     target_ir: str = "enf",
-    dot_graph: Optional[Union[str, Path]] = None,
-    analyze_memory: Optional[Union[str, Path]] = None,
+    log: Optional[str] = None,
+    dot_graph: Optional[str] = None,
+    analyze_memory: Optional[str] = None,
     batch_size: Optional[int] = None,
     split_after_lower: Optional[bool] = None,
     auto_batch_size: Optional[bool] = None,
@@ -184,6 +189,8 @@ def compile(
     input_buf = FcBuffer(ctypes.cast(input_bytes, c_void_p).value, len(input_bytes))  # type: ignore
 
     __check_target_ir(target_ir)
+
+    log_path = log if log is None else str(log).encode(DEFAULT_ENCODING)
 
     options = LIBCOMPILER.fc_create_options()
 
@@ -212,7 +219,7 @@ def compile(
     output_buf = FcBuffer()
     summary_buf = FcBuffer()
     errno = LIBCOMPILER.fc_compile(
-        options, None, None, byref(input_buf), byref(output_buf), byref(summary_buf)
+        options, None, log_path, byref(input_buf), byref(output_buf), byref(summary_buf)
     )
 
     if is_err(errno):
