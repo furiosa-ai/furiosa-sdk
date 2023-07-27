@@ -75,6 +75,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    /software/cli
    /software/compiler
    /software/quantization
+   /software/performance
    /software/profiler
    FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>
    /software/serving
