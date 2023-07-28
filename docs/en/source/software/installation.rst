@@ -57,8 +57,8 @@ This section may be skipped if you are using the download center, and not the AP
 
   sudo tee -a /etc/apt/auth.conf.d/furiosa.conf > /dev/null <<EOT
     machine archive.furiosa.ai
-    login xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    password xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    login [ACCESS KEY]
+    password [SECRET ACCESS KEY]
   EOT
 
   sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf

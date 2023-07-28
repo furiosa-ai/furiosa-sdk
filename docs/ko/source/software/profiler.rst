@@ -28,9 +28,10 @@
 
 .. code-block:: sh
 
+    git clone https://github.com/furiosa-ai/furiosa-sdk
     cd furiosa-sdk/examples/inferences
     export FURIOSA_PROFILER_OUTPUT_PATH=`pwd`/tracing.json
-    ./image_classification.sh ../assets/images/car.jpeg
+    ./image_classify.py ../assets/images/car.jpg
 
     ls -l ./tracing.json
     -rw-r--r--@ 1 furiosa  furiosa  605054 Jun  15 02:02 tracing.json
@@ -67,9 +68,12 @@ Python 코드에서 프로파일러 컨텍스트(Profiler Context)를 정의하�
     from furiosa.runtime import session, tensor
     from furiosa.runtime.profiler import profile
 
+    # You can find 'examples' directory of the root of furiosa-sdk source tree
+    model_path = "examples/assets/quantized_models/MNISTnet_uint8_quant_without_softmax.tflite"
+
     with open("mnist_trace.json", "w") as output:
         with profile(file=output) as profiler:
-            with session.create("MNISTnet_uint8_quant_without_softmax.tflite") as sess:
+            with session.create(model_path) as sess:
                 input_shape = sess.input(0)
 
                 with profiler.record("warm up") as record:
@@ -108,8 +112,11 @@ Pandas DataFrame을 이용한 트레이스 분석
     from furiosa.runtime import session, tensor
     from furiosa.runtime.profiler import RecordFormat, profile
 
+    # You can find 'examples' directory of the root of furiosa-sdk source tree
+    model_path = "examples/assets/quantized_models/MNISTnet_uint8_quant_without_softmax.tflite"
+
     with profile(format=RecordFormat.PandasDataFrame) as profiler:
-        with session.create("MNISTnet_uint8_quant_without_softmax.tflite") as sess:
+        with session.create(model_path) as sess:
             input_shape = sess.input(0)
 
             with profiler.record("warm up") as record:

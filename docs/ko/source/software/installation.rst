@@ -56,8 +56,8 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 
   sudo tee -a /etc/apt/auth.conf.d/furiosa.conf > /dev/null <<EOT
     machine archive.furiosa.ai
-    login xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    password xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    login [ACCESS KEY]
+    password [SECRET ACCESS KEY]
   EOT
 
   sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf
