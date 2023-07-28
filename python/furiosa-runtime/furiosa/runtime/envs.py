@@ -4,7 +4,7 @@ try:
     import package_extras
 except ModuleNotFoundError:
     warnings.warn(
-        "'furiosa.runtime.compiler' module is deprecated and will be removed in a future release.",
+        "'furiosa.runtime.envs' module is deprecated and will be removed in a future release.",
         category=FutureWarning,
     )
 
