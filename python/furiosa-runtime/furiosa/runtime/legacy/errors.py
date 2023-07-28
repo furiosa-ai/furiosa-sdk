@@ -198,20 +198,20 @@ class SessionClosed(FuriosaError):
 
 
 _errors_to_exceptions = {
-    NativeError.INCOMPATIBLE_MODEL: IncompatibleModel(),
-    NativeError.COMPILATION_FAILED: CompilationFailed(),
-    NativeError.INTERNAL_ERROR: InternalError(),
-    NativeError.INCOMPATIBLE_API_CLIENT_ERROR: IncompatibleApiClientError(),
-    NativeError.INVALID_YAML: InvalidYamlException(),
-    NativeError.API_CLIENT_INIT_FAILED: ApiClientInitFailed(),
-    NativeError.NO_API_KEY: NoApiKeyException(),
-    NativeError.INVALID_SESSION_OPTIONS: InvalidSessionOption(),
-    NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout(),
-    NativeError.SESSION_TERMINATED: SessionTerminated(),
-    NativeError.DEVICE_BUSY: DeviceBusy(),
-    NativeError.TENSOR_NAME_NOT_FOUND: TensorNameNotFound(),
-    NativeError.UNSUPPORTED_FEATURE: UnsupportedFeature(),
-    NativeError.INVALID_COMPILER_CONFIG: InvalidCompilerConfig(),
+    NativeError.INCOMPATIBLE_MODEL: IncompatibleModel,
+    NativeError.COMPILATION_FAILED: CompilationFailed,
+    NativeError.INTERNAL_ERROR: InternalError,
+    NativeError.INCOMPATIBLE_API_CLIENT_ERROR: IncompatibleApiClientError,
+    NativeError.INVALID_YAML: InvalidYamlException,
+    NativeError.API_CLIENT_INIT_FAILED: ApiClientInitFailed,
+    NativeError.NO_API_KEY: NoApiKeyException,
+    NativeError.INVALID_SESSION_OPTIONS: InvalidSessionOption,
+    NativeError.QUEUE_WAIT_TIMEOUT: QueueWaitTimeout,
+    NativeError.SESSION_TERMINATED: SessionTerminated,
+    NativeError.DEVICE_BUSY: DeviceBusy,
+    NativeError.TENSOR_NAME_NOT_FOUND: TensorNameNotFound,
+    NativeError.UNSUPPORTED_FEATURE: UnsupportedFeature,
+    NativeError.INVALID_COMPILER_CONFIG: InvalidCompilerConfig,
 }
 
 
@@ -233,6 +233,6 @@ def into_exception(err: typing.Union[ctypes.c_int, int]) -> NativeException:
         return RuntimeError(msg='NuxErr.SUCCESS cannot be NuxException')
 
     if err in _errors_to_exceptions:
-        return _errors_to_exceptions[err]
+        return _errors_to_exceptions[err]()
 
     return InternalError()
