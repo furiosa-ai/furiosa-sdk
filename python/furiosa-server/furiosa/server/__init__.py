@@ -1,7 +1,7 @@
 """FuriosaAI model server interacting Furiosa NPU."""
 
 from .errors import ModelNotFound, ModelServerError
-from .model import AsyncNuxModel, CPUModel, Model, NuxModel, OpenVINOModel
+from .model import CPUModel, Model, NuxModel, OpenVINOModel
 from .server import ModelServer
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig, ServerConfig
 
@@ -12,7 +12,6 @@ __all__ = [
     "Model",
     "CPUModel",
     "NuxModel",
-    "AsyncNuxModel",
     "OpenVINOModel",
     # Config
     "ModelConfig",

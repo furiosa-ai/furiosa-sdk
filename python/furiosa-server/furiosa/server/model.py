@@ -1,14 +1,11 @@
 """Model class for prediction/explanation."""
 from abc import ABC, abstractmethod
 import asyncio
-from asyncio import Future
-import itertools
 from typing import (
     TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
-    Dict,
     Generic,
     List,
     Optional,
@@ -16,15 +13,11 @@ from typing import (
     Union,
     overload,
 )
-import uuid
 
 import numpy as np
 
-from furiosa.common.thread import asynchronous
-from furiosa.runtime import session
+from furiosa.runtime import Runner, Tensor, TensorArray, TensorDesc, create_runner
 from furiosa.runtime._utils import default_device
-from furiosa.runtime.errors import NativeException
-from furiosa.runtime.tensor import TensorArray, TensorDesc
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
 from .types import (
@@ -93,22 +86,20 @@ class NuxModel(Model[NuxModelConfig]):
     def __init__(self, config: NuxModelConfig):
         super().__init__(config)
 
-        # Uninitialized session pool. Will be loaded in load().
-        self.sessions: Optional[List[Union[session.Session, session.AsyncSession]]] = None
-        self.pool: Optional[itertools.cycle] = None
+        self.runner: Optional[Runner] = None
 
     async def predict(self, payload):
         if isinstance(payload, InferenceRequest):
             # Python list to Numpy array
             inputs = [
                 self.decode(tensor, request)
-                for tensor, request in zip(self.session.inputs(), payload.inputs)
+                for tensor, request in zip(self.runner.model.inputs(), payload.inputs)
             ]
         else:
             inputs = payload
 
         # Infer from Nux
-        tensors = [tensor.numpy() for tensor in await self.run(inputs)]
+        tensors = await self.run(inputs)
 
         if isinstance(payload, InferenceRequest):
             # TensorArray(Numpy array) to Python list
@@ -124,12 +115,11 @@ class NuxModel(Model[NuxModelConfig]):
         else:
             return tensors
 
-    async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
-        assert self.pool is not None
+    async def run(self, inputs: Union[Tensor, TensorArray]) -> Union[Tensor, TensorArray]:
+        assert self.ready
+        assert self.runner is not None
 
-        session = next(self.pool)
-
-        return await asynchronous(session.run)(inputs)
+        return await self.runner.run(inputs)
 
     async def load(self) -> bool:
         if self.ready:
@@ -140,46 +130,22 @@ class NuxModel(Model[NuxModelConfig]):
         devices = self._config.npu_device or default_device()
         assert devices is not None
 
-        self.sessions = await self.create_sessions(devices)
-
-        # Round robin naive session pool
-        self.pool = itertools.cycle(self.sessions)
+        self.runner = await create_runner(
+            self._config.model,
+            device=devices,
+            batch_size=self._config.batch_size,
+            worker_num=self._config.worker_num,
+            compiler_config=self._config.compiler_config,
+        )
 
         return await super().load()
-
-    async def create_sessions(
-        self, devices: str
-    ) -> List[Union[session.Session, session.AsyncSession]]:
-        create = asynchronous(session.create)
-
-        sessions = []
-        for device in devices.split(","):
-            blocking = await create(
-                self._config.model,  # type: ignore
-                device=device,
-                batch_size=self._config.batch_size,  # type: ignore
-                worker_num=self._config.worker_num,  # type: ignore
-                compiler_config=self._config.compiler_config,  # type: ignore
-            )
-            sessions.append(blocking)
-
-        return sessions
 
     async def unload(self):
         if not self.ready:
             return
 
-        for s in self.sessions:
-            s.close()
-
-        self.runners = []
+        await self.runner.close()
         await super().unload()
-
-    @property
-    def session(self) -> session.Session:
-        assert self.ready is True, "Could not access session unless model loaded first"
-        # First session
-        return next(iter(self.sessions))  # type: ignore
 
     # TODO(yan): Extract codecs to support other type conversion
     def encode(self, name: str, payload: np.ndarray) -> ResponseOutput:
@@ -191,70 +157,10 @@ class NuxModel(Model[NuxModelConfig]):
             data=payload.flatten().tolist(),
         )
 
-    def decode(self, tensor: TensorDesc, request_input: RequestInput) -> np.ndarray:
-        return np.array(request_input.data, dtype=tensor.numpy_dtype).reshape(tensor.shape)
-
-
-class AsyncNuxModel(NuxModel):
-    """Model Nux runtime based on AsyncSession."""
-
-    def __init__(self, config: NuxModelConfig):
-        super().__init__(config)
-
-        self.queue: Dict[uuid.UUID, object] = {}
-
-    def completed(self, receiver: session.CompletionQueue, id: uuid.UUID, future: Future):
-        try:
-            context, value = receiver.recv(1)
-        except NativeException:
-            context, value = None, None
-            pass
-
-        # Save response
-        if context is not None:
-            self.queue[context] = value
-
-        if id in self.queue:
-            # Response found
-            future.set_result(self.queue.pop(id))
-            return
-
-        # Try next time
-        loop = asyncio.get_event_loop()
-        loop.call_soon(self.completed, receiver, id, future)
-
-    async def run(self, inputs: Union[np.ndarray, List[np.ndarray]]) -> TensorArray:
-        assert self.pool is not None
-
-        sender, receiver = next(self.pool)
-
-        id = uuid.uuid1()
-
-        sender.submit(inputs, id)
-
-        loop = asyncio.get_event_loop()
-        future = loop.create_future()
-        loop.call_soon(self.completed, receiver, id, future)
-
-        return await future
-
-    async def create_sessions(
-        self, devices: str
-    ) -> List[Union[session.Session, session.AsyncSession]]:
-        create = asynchronous(session.create_async)
-
-        sessions = []
-        for device in devices.split(","):
-            unblocking = await create(
-                self._config.model,
-                device=device,
-                batch_size=self._config.batch_size,
-                worker_num=self._config.worker_num,
-                compiler_config=self._config.compiler_config,
-            )
-            sessions.append(unblocking)
-
-        return sessions
+    def decode(self, tensor_desc: TensorDesc, request_input: RequestInput) -> np.ndarray:
+        return np.array(request_input.data, dtype=tensor_desc.dtype.numpy).reshape(
+            tensor_desc.shape
+        )
 
 
 class CPUModel(Model):

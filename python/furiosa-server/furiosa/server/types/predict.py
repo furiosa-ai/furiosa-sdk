@@ -78,6 +78,9 @@ class InferenceResponse(BaseModel):
     parameters: Optional[Parameters] = None
     outputs: List[ResponseOutput]
 
+    # To use `model_` prefix
+    model_config = ConfigDict(protected_namespaces=())
+
 
 class InferenceErrorResponse(BaseModel):
     error: Optional[str] = None

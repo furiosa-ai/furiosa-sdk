@@ -129,7 +129,6 @@ async def nux(
     name: str,
     location: str,
     *,
-    blocking: bool = True,
     app: FastAPI,
     on_create: Callable[[ServeModel], None],
     version: Optional[str] = None,
@@ -144,7 +143,6 @@ async def nux(
     model = NPUServeModel(
         app,
         name,
-        blocking=blocking,
         model=await transport.read(fallback(location)),
         version=version,
         description=description,
