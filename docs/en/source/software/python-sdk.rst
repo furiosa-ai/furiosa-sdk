@@ -188,8 +188,18 @@ Before installing the furiosa-sdk, you need to update Python's package installer
 
 .. _PythonExtraPackages:
 
-Extra packages 
+Extra packages
 ======================================================
+
+Legacy Runtime/API
+--------------------------------
+Rather than the next-generation runtime and its API newly adoted since 0.10.0,
+you can install furiosa-sdk with the legacy runtime and API as following:
+
+.. code-block:: sh
+
+  pip install 'furiosa-sdk[legacy]'
+
 
 FuriosaAI Models
 --------------------------------
