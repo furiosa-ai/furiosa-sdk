@@ -34,9 +34,9 @@ else:
 
         return "Furiosa SDK Runtime {} (libnux {} {} {})".format(
             __version__,
-            rt.version().decode('utf-8'),
-            rt.git_short_hash().decode('utf-8'),
-            rt.build_timestamp().decode('utf-8'),
+            rt.version().decode("utf-8"),
+            rt.git_short_hash().decode("utf-8"),
+            rt.build_timestamp().decode("utf-8"),
         )
 
     is_legacy = True
