@@ -42,6 +42,7 @@ extensions = [
   'sphinx.ext.autodoc',  # Core library for html generation from docstrings
   'sphinx.ext.autosummary',  # Create neat summary tables
   'sphinx.ext.napoleon',
+  'sphinx.ext.intersphinx',
   'sphinx_tabs.tabs',
   'sphinx_rtd_theme',
 ]
@@ -62,6 +63,8 @@ language = 'en'
 exclude_patterns = [
   # copied to `api/python/modules.rst`
   'api/modules.rst',
+  # copied to `api/python/furiosa.runtime.rst`
+  'api/furiosa.runtime.rst',
 ]
 
 
@@ -91,5 +94,7 @@ sphinx_tabs_disable_tab_closing = True
 
 toc_object_entries = False
 
-# this module is not documented, and will cause imports to fail due to missing libnux
-autodoc_mock_imports = ['furiosa.runtime._api']
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+}
