@@ -169,30 +169,107 @@ Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 furiosa litmus (Checking for model compatibility)
 ----------------------------------------------------------------------
 
-The ``litmus`` command takes the `ONNX`_ model as arguments,
-quantizes them automatically, and attempts to compile up to the final binary, in order to check whether the given model is compatible with the SDK.
+The ``litmus`` is a tool to check quickly if an `ONNX`_ model can work normally with Furiosa SDK using NPU.
+``litmus`` goes through all usage steps of Furiosa SDK, including quantization, compilation, and inferences on FuriosaAI NPU.
+``litmus`` is also a useful bug reporting tool. If you specify ``--dump`` option, ``litmus`` will collect logs and environment information and dump an archive file.
+The archive file can be used to report issues.
+
+The steps executed by ``litmus`` command are as follows.
+
+  - Step1: Load an input model and check it is a valid model.
+  - Step2: Quantize the model with random calibration.
+  - Step3: Compile the quantized model.
+  - Step4: Inference the compiled model using ``furiosa-bench``. This step is skipped if ``furiosa-bench`` was not installed.
+
+
+Usage:
 
 .. code-block:: sh
 
-  $ furiosa litmus yolov4.onnx
-  [Step 1] Checking if the model can be transformed into a quantized model ...
-  Quantization: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 67/67 [00:00<00:00, 85.33it/s]
+  furiosa-litmus [-h] [--dump OUTPUT_PREFIX] [--skip-quantization] [--target-npu TARGET_NPU] [-v] model_path
+
+A simple example using ``litmus`` command is as follows.
+
+.. code-block:: sh
+
+  $ furiosa litmus model.onnx
+  libfuriosa_hal.so --- v0.11.0, built @ 43c901f
+  INFO:furiosa.common.native:loaded native library libfuriosa_compiler.so.0.10.0 (0.10.0-dev d7548b7f6)
+  furiosa-quantizer 0.10.0 (rev. 9ecebb6) furiosa-litmus 0.10.0 (rev. 9ecebb6)
+  [Step 1] Checking if the model can be loaded and optimized ...
   [Step 1] Passed
-  [Step 2] Checking if the model can be compiled to a NPU program ...
+  [Step 2] Checking if the model can be quantized ...
   [Step 2] Passed
+  [Step 3] Checking if the model can be compiled for the NPU family [warboy-2pe] ...
+  [1/6] 🔍   Compiling from onnx to dfg
+  Done in 0.09272794s
+  [2/6] 🔍   Compiling from dfg to ldfg
+  ▪▪▪▪▪ [1/3] Splitting graph(LAS)...Done in 9.034934s
+  ▪▪▪▪▪ [2/3] Lowering graph(LAS)...Done in 20.140083s
+  ▪▪▪▪▪ [3/3] Optimizing graph...Done in 0.019548794s
+  Done in 29.196825s
+  [3/6] 🔍   Compiling from ldfg to cdfg
+  Done in 0.001701888s
+  [4/6] 🔍   Compiling from cdfg to gir
+  Done in 0.015205072s
+  [5/6] 🔍   Compiling from gir to lir
+  Done in 0.0038304s
+  [6/6] 🔍   Compiling from lir to enf
+  Done in 0.020943863s
+  ✨  Finished in 29.331545s
+  [Step 3] Passed
+  [Step 4] Perform inference once for data collection... (Optional)
+  ✨  Finished in 0.000001198s
+  ======================================================================
+  This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
+  1 queries executed with batch size 1
+  Latency stats are as follows
+  QPS(Throughput): 125.00/s
+
+  Per-query latency:
+  Min latency (us)    : 7448
+  Max latency (us)    : 7448
+  Mean latency (us)   : 7448
+  50th percentile (us): 7448
+  95th percentile (us): 7448
+  99th percentile (us): 7448
+  99th percentile (us): 7448
+  [Step 4] Finished
 
 
-Should it fail, you will see an error message like the one below. You can seek help by filing a bug report to
-`FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_.
+If you have quantized model already, you can skip Step1 and Step2 with ``--skip-quantization`` option.
+
 
 .. code-block:: sh
 
-  $ furiosa litmus efficientnet-lite4-11.onnx
+  $ furiosa litmus --skip-quantization quantized-model.onnx
+  libfuriosa_hal.so --- v0.11.0, built @ 43c901f
+  INFO:furiosa.common.native:loaded native library libfuriosa_compiler.so.0.10.0 (0.10.0-dev d7548b7f6)
+  furiosa-quantizer 0.10.0 (rev. 9ecebb6) furiosa-litmus 0.10.0 (rev. 9ecebb6)
+  [Step 1] Skip model loading and optimization
+  [Step 2] Skip model quantization
+  [Step 1 & Step 2] Load quantized model ...
+  [Step 3] Checking if the model can be compiled for the NPU family [warboy-2pe] ...
+  ...
 
-    Stdout:
-    [Step 1] Checking if the model can be transformed into a quantized model ...
 
-    Stderr:
-    /root/miniconda3/envs/furiosa/lib/python3.8/site-packages/onnx/__init__.py:97: RuntimeWarning: Unexpected end-group tag: Not all data was converted
-        decoded = cast(Optional[int], proto.ParseFromString(s))
-    [Step 1] Failed
+You can use the ``--dump <path>`` option to create a `<path>-<unix_epoch>.zip` file that contains metadata necessary for analysis, such as compilation logs, runtime logs, software versions, and execution environments.
+If you have any problems, you can get support through `FuriosaAI customer service center <https://furiosa-ai.atlassian.net/servicedesk/customer/portals>`_ with this zip file.
+
+
+.. code-block:: sh
+
+  $ furiosa litmus --dump archive model.onnx
+  libfuriosa_hal.so --- v0.11.0, built @ 43c901f
+  INFO:furiosa.common.native:loaded native library libfuriosa_compiler.so.0.10.0 (0.10.0-dev d7548b7f6)
+  furiosa-quantizer 0.10.0 (rev. 9ecebb6) furiosa-litmus 0.10.0 (rev. 9ecebb6)
+  [Step 1] Checking if the model can be loaded and optimized ...
+  [Step 1] Passed
+  ...
+
+  $ zipinfo -1 archive-1690438803.zip 
+  archive-16904388032l4hoi3h/meta.yaml
+  archive-16904388032l4hoi3h/compiler/compiler.log
+  archive-16904388032l4hoi3h/compiler/memory-analysis.html
+  archive-16904388032l4hoi3h/compiler/model.dot
+  archive-16904388032l4hoi3h/runtime/trace.json
