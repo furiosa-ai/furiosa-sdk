@@ -69,10 +69,10 @@ class ModelConfig(BaseSettings):
     outputs: Optional[List[MetadataTensor]] = []
 
 
-class NuxModelConfig(ModelConfig):
-    """Model configuration for a Nux model."""
+class NPUModelConfig(ModelConfig):
+    """Model configuration for a NPU model."""
 
-    # Model property for Nux
+    # Model property for NPU
     model: Union[StrictStr, StrictBytes]  # File name string or file binary bytes
 
     npu_device: Optional[str] = None
@@ -80,7 +80,7 @@ class NuxModelConfig(ModelConfig):
     worker_num: Optional[int] = None
     compiler_config: Optional[Dict] = None
 
-    platform: str = "nux"
+    platform: str = "npu"
 
 
 class OpenVINOModelConfig(ModelConfig):

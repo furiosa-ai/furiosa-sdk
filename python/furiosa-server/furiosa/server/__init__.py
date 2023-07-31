@@ -1,9 +1,9 @@
 """FuriosaAI model server interacting Furiosa NPU."""
 
 from .errors import ModelNotFound, ModelServerError
-from .model import CPUModel, Model, NuxModel, OpenVINOModel
+from .model import AsyncNuxModel, CPUModel, Model, NPUModel, NuxModel, OpenVINOModel  # noqa: F401
 from .server import ModelServer
-from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig, ServerConfig
+from .settings import ModelConfig, NPUModelConfig, OpenVINOModelConfig, ServerConfig  # noqa: F401
 
 __all__ = [
     # Server
@@ -11,11 +11,14 @@ __all__ = [
     # Model
     "Model",
     "CPUModel",
-    "NuxModel",
+    "NPUModel",
     "OpenVINOModel",
+    # Deprecated Model
+    "NuxModel",
+    "AsyncNuxModel"
     # Config
     "ModelConfig",
-    "NuxModelConfig",
+    "NPUModelConfig",
     "OpenVINOModelConfig",
     "ServerConfig",
     # Errors

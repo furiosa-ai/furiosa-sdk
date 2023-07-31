@@ -15,11 +15,12 @@ from typing import (
 )
 
 import numpy as np
+from typing_extensions import deprecated
 
 from furiosa.runtime import Runner, Tensor, TensorArray, TensorDesc, create_runner
 from furiosa.runtime._utils import default_device
 
-from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
+from .settings import ModelConfig, NPUModelConfig, OpenVINOModelConfig
 from .types import (
     InferenceRequest,
     InferenceResponse,
@@ -80,10 +81,10 @@ class Model(ABC, Generic[T]):
         pass
 
 
-class NuxModel(Model[NuxModelConfig]):
-    """Model Nux runtime."""
+class NPUModel(Model[NPUModelConfig]):
+    """Model running on NPU."""
 
-    def __init__(self, config: NuxModelConfig):
+    def __init__(self, config: NPUModelConfig):
         super().__init__(config)
 
         self.runner: Optional[Runner] = None
@@ -98,7 +99,6 @@ class NuxModel(Model[NuxModelConfig]):
         else:
             inputs = payload
 
-        # Infer from Nux
         tensors = await self.run(inputs)
 
         if isinstance(payload, InferenceRequest):
@@ -125,7 +125,7 @@ class NuxModel(Model[NuxModelConfig]):
         if self.ready:
             return True
 
-        assert isinstance(self._config, NuxModelConfig)
+        assert isinstance(self._config, NPUModelConfig)
 
         devices = self._config.npu_device or default_device()
         assert devices is not None
@@ -161,6 +161,16 @@ class NuxModel(Model[NuxModelConfig]):
         return np.array(request_input.data, dtype=tensor_desc.dtype.numpy).reshape(
             tensor_desc.shape
         )
+
+
+@deprecated("Use NPUModel instead")
+class NuxModel(NPUModel):
+    ...
+
+
+@deprecated("Use NPUModel instead")
+class AsyncNuxModel(NPUModel):
+    ...
 
 
 class CPUModel(Model):

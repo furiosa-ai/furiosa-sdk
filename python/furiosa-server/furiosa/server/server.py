@@ -5,7 +5,7 @@ from typing import List
 from .api.grpc.server import GRPCServer
 from .api.rest.server import RESTServer
 from .handlers import PredictHandler, RepositoryHandler
-from .model import NuxModel
+from .model import NPUModel
 from .registry import FileRegistry, InMemoryRegistry
 from .repository import Repository
 from .settings import ModelConfig, ServerConfig
@@ -51,4 +51,4 @@ class ModelServer:
     async def load(self):
         for config in await self._repository.list():
             # TODO(yan): Support other model implementation
-            await self._repository.load(NuxModel(config))
+            await self._repository.load(NPUModel(config))

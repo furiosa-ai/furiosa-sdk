@@ -2,7 +2,7 @@ model_config_list:
   - name: mnist
     model: "samples/data/MNISTnet_uint8_quant.tflite"
     version: 1
-    platform: nux
+    platform: npu
     npu_device: npu0pe0
     compiler_config:
       keep_unsignedness: true
@@ -10,5 +10,5 @@ model_config_list:
   - name: ssd
     model: "samples/data/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
     version: 1
-    platform: nux
+    platform: npu
     npu_device: npu0pe1
