@@ -42,20 +42,18 @@ def test_create(mnist_onnx):
 def test_timeout(mnist_onnx):
     submitter, receiver = session.create_async(model=mnist_onnx)
 
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(Exception):
+    with pytest.raises(errors.QueueWaitTimeout):
         receiver.recv(timeout=int(0))
-    with pytest.raises(Exception):
+    with pytest.raises(errors.QueueWaitTimeout):
         receiver.recv(timeout=100)
 
     assert submitter.close()
 
-    # Recv after close
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionTerminated):
         receiver.recv()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionTerminated):
         receiver.recv(timeout=0)
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionTerminated):
         receiver.recv(timeout=100)
 
     assert receiver.close()
@@ -65,16 +63,15 @@ def test_submitter_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
     assert submitter.close()
 
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         submitter.inputs()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         submitter.input_num()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         submitter.outputs()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         submitter.output_num()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         submitter.summary()
 
     assert receiver.close()
@@ -83,8 +80,7 @@ def test_submitter_closed(mnist_onnx):
 def test_queue_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
     assert receiver.close()
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         receiver.recv()
 
     assert submitter.close()
@@ -94,9 +90,8 @@ def test_queue_closed(mnist_onnx):
 def test_device_busy(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(errors.NativeException):
-        session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
+    with pytest.raises(errors.DeviceBusy):
+        submitter, receiver = session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
     assert submitter.close()
     assert receiver.close()

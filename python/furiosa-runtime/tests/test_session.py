@@ -4,12 +4,12 @@ import random
 import numpy as np
 import pytest
 
-from furiosa.runtime import is_legacy, session
+from furiosa.runtime import errors, is_legacy, session
 
 
 def test_run(mnist_onnx, mnist_images):
     with session.create(model=mnist_onnx) as runner:
-        # FIXME: Add named tesnor test
+        # FIXME: Add named tensor test
         count = 50
         for _ in range(count):
             idx = random.randrange(0, 9999, 1)
@@ -34,16 +34,15 @@ def test_buffer_lifetime(mnist_onnx, mnist_images):
 
 def test_run_invalid_input(mnist_onnx):
     with session.create(model=mnist_onnx) as runner:
-        # FIXME: Add specific error variants to furiosa-native-runtime
-        with pytest.raises(Exception):
+        with pytest.raises(errors.InvalidInput):
             runner.run(np.zeros((1, 28, 28, 1), dtype=np.float16))
 
-        with pytest.raises(Exception):
+        with pytest.raises(errors.InvalidInput):
             runner.run(np.zeros((2, 28, 28, 2), dtype=runner.input(0).dtype.numpy_dtype))
 
         assert runner.run([np.zeros((1, 1, 28, 28), np.float32)])
 
-        with pytest.raises(Exception):
+        with pytest.raises(errors.InvalidInput):
             runner.run([np.zeros((1, 28, 28, 1), np.uint8), np.zeros((1, 28, 28, 1), np.uint8)])
 
     # FIXME: Add Named tensor test
@@ -53,8 +52,7 @@ def test_run_invalid_input(mnist_onnx):
 def test_device_busy(mnist_onnx):
     runner = session.create(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(Exception):
+    with pytest.raises(errors.DeviceBusy):
         session.create(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
     assert runner.close()
@@ -64,18 +62,17 @@ def test_closed(mnist_onnx):
     runner = session.create(mnist_onnx)
     assert runner.close()
 
-    # FIXME: Add specific error variants to furiosa-native-runtime
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.inputs()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.input_num()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.outputs()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.output_num()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.summary()
-    with pytest.raises(Exception):
+    with pytest.raises(errors.SessionClosed):
         runner.run(None)
 
 
@@ -97,7 +94,7 @@ def test_batch(mnist_onnx):
 
 def test_invalid_config(mnist_onnx):
     invalid_config = {"remove_lower": 1}  # Correct value type is boolean
-    # FIXME: Add specific error variants to furiosa-native-runtime
 
+    # FIXME: Add specific compiler errors to furiosa-native-runtime
     with pytest.raises(Exception):
         session.create(mnist_onnx, compiler_config=invalid_config)
