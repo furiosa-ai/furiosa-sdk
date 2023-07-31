@@ -78,6 +78,7 @@ class InferenceResponse(BaseModel):
     parameters: Optional[Parameters] = None
     outputs: List[ResponseOutput]
 
+    # FIXME(mg): This was manually added. Replace codegen template later
     # To use `model_` prefix
     model_config = ConfigDict(protected_namespaces=())
 
