@@ -160,17 +160,17 @@ furiosa
 furiosa compile
 --------------------
 
-``compile`` 명령은 `TFLite <https://www.tensorflow.org/lite>`_, `ONNX <https://onnx.ai/>`_
+``compile`` 명령은 `ONNX <https://onnx.ai/>`_, `TFLite <https://www.tensorflow.org/lite>`_
 형식의 모델을 컴파일하여 FuriosaAI NPU를 사용하는 프로그램을 생성한다.
 자세한 설명과 옵션은 :ref:`CompilerCli` 페이지에서 찾을 수 있다.
 
 .. _Litmus:
 
-furiosa litmus (모델 적합 여부 검사)
+furiosa litmus (모델 호환성 검사 도구)
 --------------------------------------------
 
 ``litmus`` 명령은 `ONNX`_ 모델을 받아 Furiosa SDK 및 Furiosa NPU와 호환되는지 빠르게 검사할 수 있는 도구이다.
-``litmus``는 원본 ONNX 모델로부터 SDK를 이용해 추론하는 전 과정을 수행하고 각 과정이 잘 동작하는지 확인한다. ``litmus`` 는 버그 리포팅에도 유용하게 쓸 수 있다.
+``litmus`` 는 원본 ONNX 모델로부터 SDK를 이용해 추론하는 전 과정을 수행하고 각 과정이 잘 동작하는지 확인한다. ``litmus`` 는 버그 리포팅에도 유용하게 쓸 수 있다.
 ``--dump`` 옵션을 주면, 각 과정에서 생성되는 로그와 환경 정보를 수집하여 zip 파일로 묶어 출력한다. 버그 리포팅 시에 이 파일을 같이 첨부하면 도움을 더 빠르게 받을 수 있다.
 
 ``litmus`` 명령이 실행하는 단계는 다음과 같다.
@@ -255,7 +255,6 @@ furiosa litmus (모델 적합 여부 검사)
 ``--dump <path>`` 옵션을 사용하여 컴파일 로그, 런타임 로그, 소프트웨어 버전 및 실행환경 등 분석에 필요한 메타데이터를 모은 `<path>-<unix_epoch>.zip` 파일을 생성할 수 있다.
 컴파일에 실패하거나 실행에 실패하는 등 문제가 있다면 이 파일을 가지고 `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portal/1>`_ 을 통해 지원을 받을 수 있다.
 
-
 .. code-block:: sh
 
   $ furiosa litmus --dump archive model.onnx
@@ -272,3 +271,95 @@ furiosa litmus (모델 적합 여부 검사)
   archive-16904388032l4hoi3h/compiler/memory-analysis.html
   archive-16904388032l4hoi3h/compiler/model.dot
   archive-16904388032l4hoi3h/runtime/trace.json
+
+
+.. _Bench:
+
+furiosa bench (벤치마크 도구)
+---------------------------------------------------------------------------------
+
+``bench`` 명령은 다양한 런타임 설정을 통해 주어진 모델을 실행시켜 지연시간 및 처리량을 얻을수 있다. 
+
+문법 개요
+
+.. code-block:: sh
+  
+  $ furiosa-bench --help 
+  USAGE:
+    furiosa-bench [OPTIONS] <model-path>
+
+    OPTIONS:
+        -b, --batch <number>                       Sets the number of batch size, which should be exponents of two [default: 1]
+        -o, --output <bench-result-path>           Create json file that has information about the benchmark
+        -C, --compiler-config <compiler-config>    Sets a file path for compiler configuration (YAML format)
+        -d, --devices <devices>                    Designates NPU devices to be used (e.g., "warboy(2)*1" or "npu0pe0-1")
+        -h, --help                                 Prints help information
+        -t, --io-threads <number>                  Sets the number of I/O Threads [default: 1]
+            --duration <min-duration>              Sets the minimum test time in seconds. Both min_query_count and min_duration should be met to finish the test
+                                                  [default: 0]
+        -n, --queries <min-query-count>            Sets the minimum number of test queries. Both min_query_count and min_duration_ms should be met to finish the
+                                                  test [default: 1]
+        -T, --trace-output <trace-output>          Sets a file path for profiling result (Chrome Trace JSON format)
+        -V, --version                              Prints version information
+        -v, --verbose                              Print verbose log
+        -w, --workers <number>                     Sets the number of workers [default: 1]
+            --workload <workload>                  Sets the bench workload which can be either latency-oriented (L) or throughput-oriented (T) [default: L]
+
+    ARGS:
+        <model-path>
+
+
+MODEL_PATH 는 ONNX, TFLite 혹은 furiosa-compiler를 통해 생성된 ENF를 의미한다.  
+
+벤치마크 결과 경로를 특정하지 않은 사용 예시
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2   
+
+    ======================================================================
+    This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
+    1000 queries executed with batch size 1
+    Latency stats are as follows
+    QPS(Throughput): 34.40/s
+
+    Per-query latency:
+    Min latency (us)    : 8399
+    Max latency (us)    : 307568
+    Mean latency (us)   : 29040
+    50th percentile (us): 19329
+    95th percentile (us): 62797
+    99th percentile (us): 79874
+    99th percentile (us): 307568
+  
+``output`` 인자에 파일 이름을 지정하면 벤치마크 실행 결과를 아래와 같이 json 형식으로 파일에 기록한다.
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2 -o mnist.json | cat mnist.json
+
+    {
+        "model_data": {
+            "path": "./mnist-8.onnx",
+            "md5": "d7cd24a0a76cd492f31065301d468c3d  ./mnist-8.onnx"
+        },
+        "compiler_version": "0.10.0-dev (rev: 2d862de8a built_at: 2023-07-13T20:05:04Z)",
+        "hal_version": "Version: 0.12.0-2+nightly-230716",
+        "git_revision": "fe6f77a",
+        "result": {
+            "mode": "Latency",
+            "total run time": "30025 us",
+            "total num queries": 1000,
+            "batch size": 1,
+            "qps": "33.31/s",
+            "latency stats": {
+                "min": "8840 us",
+                "max": "113254 us",
+                "mean": "29989 us",
+                "50th percentile": "18861 us",
+                "95th percentile": "64927 us",
+                "99th percentile": "87052 us",
+                "99.9th percentile": "113254 us"
+            }
+        }
+    }  
