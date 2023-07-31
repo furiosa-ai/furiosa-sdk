@@ -1341,12 +1341,7 @@ Profiler
 
 .. module:: furiosa.runtime.profiler
 
-.. versionadded:: 0.10
-
-The `furiosa.runtime.profiler` module provides a basic profiler facility.
-This module requires Pydantic_.
-
-.. _Pydantic: https://pydantic.dev
+The `furiosa.runtime.profiler` module provides a basic :ref:`profiling<Profiling>` facility.
 
 .. class:: RecordFormat
 
@@ -1361,13 +1356,13 @@ This module requires Pydantic_.
 
     Profiler target resource to be recorded.
 
-    .. property:: ALL
-                  CPU
-                  NPU
+    .. property:: All
+                  Cpu
+                  Npu
         :classmethod:
         :type: Resource
 
-.. class:: profile(resource=Resource.ALL, format=RecordFormat.ChromeTrace, **config)
+.. class:: profile(resource=Resource.All, format=RecordFormat.ChromeTrace, file=None)
 
     Profile context manager::
 
@@ -1378,48 +1373,223 @@ This module requires Pydantic_.
                 with profiler.record("Inference"):
                     ... # Profiler recorded with span named 'Inference'
 
-    :param Resource resource: Target resource to be profiled. e.g. CPU or NPU.
+    Please note that activating profiler incurs non-trivial performance overhead.
+
+    :param Resource resource: Target resource to be profiled. e.g. `~Resource.Cpu` or `~Resource.Npu`.
     :param RecordFormat format: Profiler format. e.g. ChromeTrace.
-    :param config: Format specific config. You need to pass valid arguments for the format.
-    :raise pydantic.error_wrappers.ValidationError: Raise when config validation failed.
+    :param file: File that traces will be written to. If the file is not given, temporary file will be used. Format of traces writter to the file depends on the record format: Chrome tracing for `~RecordFormat.ChromeTrace` and CSV for `~RecordFormat.PandasDataFrame`.
 
-    .. admonition:: Configuration arguments
+    :raise runtime.ProfilerErorr: Raise when failed to create profiler with given configuration.
 
-        .. TODO: explain them
+    .. versionchanged:: 0.10.0
+        Record format-dependent parameter `config` is replaced by parameter `file`.
 
-        `RecordFormat.ChromeTrace` supports:
+    .. method:: record(name: str)
+        
+        Returns a profiler record context manager. 
 
-        * **extra** (`str`) -- Defaults to :code:`"forbid"`
-        * **arbitrary_types_allowed** (`bool`) -- Defaults to :code:`True`
-        * **json_encoders** (`dict[type, callable]`) -- Defaults to a single callable for `io.IOBase`
-
-        `RecordFormat.PandasDataFrame` supports:
-
-        * **extra** (`str`) -- Defaults to :code:`"allow"`
-        * **arbitrary_types_allowed** (`bool`) -- Defaults to :code:`True`
-
-    .. method:: record(name='', warm_up=False)
-
-        Create profiler span with specified name.
+        At the enter of the context, profiler span trace with specified name starts, and ends at the exit of the context.
+        Traces for execution within the context will be recorded as a child of the created span.
 
         :param str name: Profiler record span name.
-        :param bool warm_up: If true, do not record profiler result, and just warm up.
+        :rtype: ProfilerRecordObject
 
-    .. TODO: following methods are undocumented
+    .. method:: pause()
+
+        Pause profiling temporarily within the profiling context.
+
+        Profiler stops recording traces and works with minimal overhead until `~profile.resume` is called.
+        If the profiler is already in a paused state, it does nothing.
+        This method can be called arbitrary number of times within the profiling context.
+        Note that this method doesn't affect the time measurment of the profiler, meaning that it just acts as if no events occured during pause, creating empty interval.
+
+        .. versionadded:: 0.10
+
+    .. method:: resume()
+
+        Resume paused profiling.
+
+        If the profiler is not in a paused state, this method does nothing.
+        For more details on paused state, see `~profile.pause`.
+
+        .. versionadded:: 0.10
 
     .. method:: get_pandas_dataframe()
-    .. method:: get_pandas_dataframe_with_filter(column, value)
+
+        Returns a `~pandas.DataFrame` for recorded traces.
+
+        The returned dataframe will look like:
+
+            .. code-block:: sh
+
+                                            trace_id    parent_span_id           span_id                start                  end      cat                     name  thread.id  dram_base  pe_index  execution_index  instruction_index  operator_index        dur
+                0    6ffe9ac3080814bc134ae4c5e58269e0  0000000000000000  a61dd01a47ce8dee  1690798389820453606  1690798390204660478  Runtime                  Compile         35       <NA>      <NA>             <NA>               <NA>            <NA>  384206872
+                1    079f8437488528d5768780162ed59374  0000000000000000  2d18b0e17e760325  1690798390205840825  1690798390267819096  Runtime            ProgramBinary         26       <NA>      <NA>             <NA>               <NA>            <NA>   61978271
+                2    fb4610c2fd1be67e63e01ca9169b6fef  0000000000000000  2a092524d04a4077  1690798390267849007  1690798390267857471  Runtime             AllocateDram         26       <NA>      <NA>             <NA>               <NA>            <NA>       8464
+                3    009b425f06ca0065a64f0586d1a999b0  0000000000000000  cdac229f8d8569d7  1690798389793627190  1690798390268011450  Runtime                 Register          1       <NA>      <NA>             <NA>               <NA>            <NA>  474384260
+                4    348ee82fdf97fad9f782cc12a58d447d  0000000000000000  59b5a5d06439f9f1  1690798390270474367  1690798390270526470  Runtime                  Enqueue         32       <NA>      <NA>             <NA>               <NA>            <NA>      52103
+                5    27efb2c82a5ac93bed911142e9187c45  174b38c90d1f7a10  ff7c4f8798d75b63  1690798390270558295  1690798390270570293  Runtime               FeedInputs         32       <NA>      <NA>             <NA>               <NA>            <NA>      11998
+
+        :rtype: pandas.DataFrame
+
+    .. method:: get_pandas_dataframe_with_filter(column: str, value: str)
+
+        Returns a DataFrame only containing rows whose column ``column`` has a value ``value`` in the DataFrame returned by `~profile.get_pandas_dataframe`.
+
+        :param str column: name of the column used for filtering.
+        :param str value: column value for target rows.
+        
+        :rtype: pandas.DataFrame
+
     .. method:: get_cpu_pandas_dataframe()
+    
+        Returns a `~pandas.DataFrame` for execution on CPU whose category is "Runtime".
+
+        :rtype: pandas.DataFrame
+    
     .. method:: get_npu_pandas_dataframe()
+
+        Returns a `~pandas.DataFrame` for execution on NPU whose category is "NPU".
+
+        :rtype: pandas.DataFrame
+
     .. method:: print_npu_operators()
+
+        Print npu operator report to the terminal.
+        
+        Each row contains information for different NPU operator.
+
+        The output will look like:
+
+            .. code-block:: sh
+
+                ┌─────────────────────────┬──────────────────────┬───────┐
+                │ name                    ┆ average_elapsed (ns) ┆ count │
+                ╞═════════════════════════╪══════════════════════╪═══════╡
+                │ LowLevelConv2d          ┆ 5119.9375            ┆ 64    │
+                │ LowLevelDepthwiseConv2d ┆ 1091.0               ┆ 56    │
+                │ LowLevelPad             ┆ 561.482143           ┆ 56    │
+                │ LowLevelExpand          ┆ 2.0                  ┆ 16    │
+                │ LowLevelSlice           ┆ 2.0                  ┆ 16    │
+                │ LowLevelReshape         ┆ 2.0                  ┆ 232   │
+                └─────────────────────────┴──────────────────────┴───────┘
+
     .. method:: print_npu_executions()
+        
+        Print npu execution report to the terminal.
+        Each row contains information for each NPU task execution.
+
+        The output will look like:
+
+            .. code-block:: sh
+
+                ┌─────────────────┬─────────────────┬──────────┬────────────────┬───────────┬─────────┬────────────┐
+                │ trace_id        ┆ span_id         ┆ pe_index ┆ execution_inde ┆ NPU Total ┆ NPU Run ┆ NPU IoWait │
+                │                 ┆                 ┆          ┆ x              ┆           ┆         ┆            │
+                ╞═════════════════╪═════════════════╪══════════╪════════════════╪═══════════╪═════════╪════════════╡
+                │ 39ffc55ef7b2177 ┆ 555899badb3f8e5 ┆ 0        ┆ 0              ┆ 116971    ┆ 105186  ┆ 11785      │
+                │ 5338e9fa2d1fb70 ┆ 8               ┆          ┆                ┆           ┆         ┆            │
+                │ f1              ┆                 ┆          ┆                ┆           ┆         ┆            │
+                │ 9c8aa64bbb878e3 ┆ 4e9a13e698f4fa1 ┆ 0        ┆ 0              ┆ 117011    ┆ 105186  ┆ 11825      │
+                │ b62194f8dec670e ┆ 9               ┆          ┆                ┆           ┆         ┆            │
+                │ 3c              ┆                 ┆          ┆                ┆           ┆         ┆            │
+                │ 0ce2a8ce2c591e3 ┆ 5cd8a081758f41c ┆ 0        ┆ 0              ┆ 116961    ┆ 105185  ┆ 11776      │
+                │ 4e92e0c421f3946 ┆ 4               ┆          ┆                ┆           ┆         ┆            │
+                │ 14              ┆                 ┆          ┆                ┆           ┆         ┆            │
+                │ a941ace17a2c5e6 ┆ a3726d0ebb2705c ┆ 0        ┆ 0              ┆ 116909    ┆ 105186  ┆ 11723      │
+                │ 15a8f05d8872fa9 ┆ d               ┆          ┆                ┆           ┆         ┆            │
+                │ 32              ┆                 ┆          ┆                ┆           ┆         ┆            │
+                └─────────────────┴─────────────────┴──────────┴────────────────┴───────────┴─────────┴────────────┘
+
     .. method:: print_external_operators()
+
+        Print external operator report to the terminal.
+
+        The output will look like:
+
+            .. code-block:: sh
+
+                ┌────────────────────────────┬──────────────────┬───────────┬────────────┬────────────────┬────────┐
+                │ trace_id                   ┆ span_id          ┆ thread.id ┆ name       ┆ operator_index ┆ dur    │
+                ╞════════════════════════════╪══════════════════╪═══════════╪════════════╪════════════════╪════════╡
+                │ 7d65ff7ae5587d3345d5df5a77 ┆ 53e3fb9c02964361 ┆ 35        ┆ Quantize   ┆ 0              ┆ 175246 │
+                │ ebfaad                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 33371e09f89cfa06c41286df13 ┆ 8d5a00c6e4e8c2c0 ┆ 35        ┆ Lower      ┆ 1              ┆ 183803 │
+                │ 11a30f                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 9f7df939abc20da11431c18024 ┆ 064dacd9a108c4a0 ┆ 35        ┆ Unlower    ┆ 2              ┆ 60459  │
+                │ c41af1                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 1bda703f4ffc878a4294ec6253 ┆ cb2f103208d2fa45 ┆ 35        ┆ Dequantize ┆ 3              ┆ 19468  │
+                │ 3ac8d0                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 9f769c8951f39d98e6ee216e34 ┆ 91c0bdd8c5b81327 ┆ 35        ┆ Quantize   ┆ 0              ┆ 85724  │
+                │ 6bc7e5                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 048e5cab6d4d676e4e6b10e827 ┆ 714834cb8dc59f4b ┆ 35        ┆ Lower      ┆ 1              ┆ 306893 │
+                │ 6b5489                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 6bb481ca3b1eab843b795a7865 ┆ 46d538d7b4c72d25 ┆ 35        ┆ Unlower    ┆ 2              ┆ 73313  │
+                │ 49558b                     ┆                  ┆           ┆            ┆                ┆        │
+                │ e0f13a5fb0bf2942ed16171844 ┆ 71a432e3e3dc55f6 ┆ 35        ┆ Dequantize ┆ 3              ┆ 37079  │
+                │ ccb293                     ┆                  ┆           ┆            ┆                ┆        │
+                │ c3b2fdba80f16f781e4b313af3 ┆ 066e3916590edf38 ┆ 35        ┆ Quantize   ┆ 0              ┆ 67805  │
+                │ a571b6                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 4bebe5f61e84d502f5b5dc7d22 ┆ 9dfb32069b2b5a98 ┆ 35        ┆ Lower      ┆ 1              ┆ 310303 │
+                │ 1e4f5a                     ┆                  ┆           ┆            ┆                ┆        │
+                │ b8cabf53ae39a4ad18144af26c ┆ cb767fbdd718da89 ┆ 35        ┆ Unlower    ┆ 2              ┆ 72378  │
+                │ e136c9                     ┆                  ┆           ┆            ┆                ┆        │
+                │ e40956dda5ecc0a1774e39377b ┆ 090d9cbd5e60032a ┆ 35        ┆ Dequantize ┆ 3              ┆ 33951  │
+                │ 1ef245                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 3d13f40c0966940439adcce4c1 ┆ 4702a924e4b6d38b ┆ 35        ┆ Quantize   ┆ 0              ┆ 76999  │
+                │ 9981a4                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 53746b998038e994a5e378f9a2 ┆ 522b7a9e354de2b3 ┆ 35        ┆ Lower      ┆ 1              ┆ 339339 │
+                │ 8caa5a                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 76a2080bc0917db26b7313e29a ┆ 4b1b0bf55f344258 ┆ 35        ┆ Unlower    ┆ 2              ┆ 74708  │
+                │ 81def3                     ┆                  ┆           ┆            ┆                ┆        │
+                │ 4c0a04dc669b04416f18e781d6 ┆ 8eb55fb2b618933a ┆ 35        ┆ Dequantize ┆ 3              ┆ 33661  │
+                │ afc3c6                     ┆                  ┆           ┆            ┆                ┆        │
+                └────────────────────────────┴──────────────────┴───────────┴────────────┴────────────────┴────────┘
+
     .. method:: print_inferences()
+
+        Print inference summary to the terminal.
+
+        The output will look like:
+
+            .. code-block:: sh
+
+                ┌──────────────────────────────────┬──────────────────┬───────────┬─────────┐
+                │ trace_id                         ┆ span_id          ┆ thread.id ┆ dur     │
+                ╞══════════════════════════════════╪══════════════════╪═══════════╪═════════╡
+                │ b5edc4d40493df2028d186d4073d5487 ┆ a61af3b9ad70b956 ┆ 1         ┆ 4430749 │
+                │ 983e136f80e1c070dca3ad854f37cf97 ┆ f2dd4e899d52531d ┆ 1         ┆ 4181392 │
+                │ dada8a5830272b5d255fda801568fc5e ┆ cda7127619be5c33 ┆ 1         ┆ 4275757 │
+                │ 6ad054709f76095c86fba6dcd9254ca0 ┆ 9d7f199a445003aa ┆ 1         ┆ 4215571 │
+                └──────────────────────────────────┴──────────────────┴───────────┴─────────┘
+
     .. method:: print_summary()
-    .. method:: export_chrome_trace(filename)
 
+        Print overall summary to the terminal.
 
+        The output will look like:
 
+            .. code-block:: sh
+
+                ================================================
+                  Inference Results Summary
+                ================================================
+                Inference counts                : 4
+                Min latency (ns)                : 4181392
+                Max latency (ns)                : 4430749
+                Mean latency (ns)               : 4275867
+                Median latency (ns)             : 4245664
+                90.0 percentile Latency (ns)    : 4384251
+                95.0 percentile Latency (ns)    : 4407500
+                97.0 percentile Latency (ns)    : 4416800
+                99.0 percentile Latency (ns)    : 4426099
+                99.9 percentile Latency (ns)    : 4430284
+
+    .. method:: export_chrome_trace(filename: str)
+    
+        Export profiled data to a chrome tracing file. 
+        
+        :param str filename: filename to write.
 
 
 .. _Diagnostics:
