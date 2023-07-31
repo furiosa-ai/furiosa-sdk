@@ -8,7 +8,7 @@ import numpy as np
 from opentelemetry import trace
 
 from furiosa.common.thread import asynchronous
-from furiosa.runtime.tensor import TensorDesc
+from furiosa.runtime import TensorDesc
 from furiosa.server import (
     CPUModel,
     Model,
