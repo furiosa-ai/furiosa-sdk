@@ -2,12 +2,16 @@ import pytest
 
 
 def test_utils():
-    from furiosa.runtime import Axis, DataType, Model, ModelSource, Tensor, TensorDesc, is_legacy
-
-    # FIXME: Cannot import TensorArray. See more details at
-    # https://github.com/furiosa-ai/furiosa-sdk-private/issues/710
-    with pytest.raises(ImportError):
-        from furiosa.runtime import TensorArray
+    from furiosa.runtime import (
+        Axis,
+        DataType,
+        Model,
+        ModelSource,
+        Tensor,
+        TensorArray,
+        TensorDesc,
+        is_legacy,
+    )
 
 
 def test_runner():
