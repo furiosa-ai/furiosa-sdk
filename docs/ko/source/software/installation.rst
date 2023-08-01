@@ -8,13 +8,13 @@
 사용하기 위해 반드시 설치해야 하는 패키지들의 설치 방법을 설명한다.
 이 필수 패키지들은 커널 드라이버, 펌웨어, 런타임 라이브러리이며
 다운로드 센터에서 로그인하여 직접 다운 받거나 개발자 사이트에서
-발급한 APT 서버와 PIP 서버를 통해 다운로드 받을 수 있다.
+발급한 APT 서버와 PyPI 서버를 통해 다운로드 받을 수 있다.
 
 
 .. note::
 
-  다운로드 센터나 개발자 사이트는 FuriosaAI의 평가 프로그램 등록하면
-  제공 되며 현재는 contact@furiosa.ai로 문의하여 평가 프로그램을 요청할 수 있다.
+  다운로드 센터나 개발자 사이트는 FuriosaAI의 평가 프로그램을 등록하면 제공되며
+  현재는 contact@furiosa.ai 로 문의하여 평가 프로그램을 요청할 수 있다.
 
 .. _MinimumRequirements:
 
@@ -95,7 +95,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 필수 패키지 설치
 =====================================================================
 
-위에 설명에 따라 APT 서버를 등록했거나 다운로드 사이트에 가입했다면 필수 패키지인
+위의 설명에 따라 APT 서버를 등록했거나 다운로드 사이트에 가입했다면 필수 패키지인
 NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
 
 .. tabs::
@@ -190,4 +190,49 @@ NPU 커널 드라이버, 펌웨어, 런타임을 설치할 수 있다.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.7.0-?
+  sudo apt-get install -y furiosa-libnux=0.9.1-?
+
+
+.. _UpgradeFirmware:
+
+NPU 펌웨어 업데이트
+=====================================================================
+
+APT 저장소를 통해 NPU 장치의 펌웨어 관리 도구를 설치하고 업데이트할 수 있다.
+
+1. ``apt list`` 로 설치 가능한 버전을 확인한다.
+
+    .. code-block:: sh
+
+        sudo apt list -a 'furiosa-firmware-*'
+
+        Listing... Done
+        furiosa-firmware-image/focal 1.7.1 amd64
+        furiosa-firmware-image/focal 1.7.0 amd64
+        furiosa-firmware-image/focal 1.5.0 amd64
+        furiosa-firmware-image/focal 1.4.0 amd64
+        furiosa-firmware-image/focal 1.2.0 amd64
+
+        furiosa-firmware-tools/focal 1.5.0-2 amd64
+        furiosa-firmware-tools/focal 1.4.0-2 amd64
+        furiosa-firmware-tools/focal 1.3.0-2 amd64
+        furiosa-firmware-tools/focal 1.2.0-2 amd64
+
+
+2. ``apt-get install`` 명령에 옵션으로 패키지 이름과 버전을 지정한다. 버전을 명시하지 않을 경우 최신 버전이 설치된다.
+
+    .. code-block:: sh
+
+        sudo apt-get install furiosa-firmware-tools
+
+  또는
+
+    .. code-block:: sh
+
+        sudo apt-get install furiosa-firmware-tools furiosa-firmware-image=1.7.1
+
+
+.. warning::
+
+    컨테이너 환경에서의 펌웨어 업데이트는 정의되어 있지 않은 행동을 유발한다.
+    따라서 이 작업은 반드시 호스트 머신에서 실행되어야 하므로 주의를 요한다.

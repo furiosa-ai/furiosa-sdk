@@ -129,10 +129,12 @@ you will be able to install the required packages - NPU kernel driver, firmware,
 
 .. _AddUserToFuriosaGroup:
 
-Adding a user to the furiosa Group
-------------------------------------
+Adding a user to the ``furiosa`` Group
+-----------------------------------------
 
-Linux is a multi-user operating system that enables file and device access for both the owner and users within a specific group. The NPU device driver creates a group called ``furiosa`` and restricts access to NPU devices exclusively to users who are members of the ``furiosa`` group. To add a user to a member of ``furiosa`` group, please run as following:
+Linux is a multi-user operating system that enables file and device access for both the owner and users within a specific group.
+The NPU device driver creates a group called ``furiosa`` and restricts access to NPU devices exclusively to users who are members of the ``furiosa`` group.
+To add a user to a member of ``furiosa`` group, please run as following:
 
 .. code-block:: sh
 
@@ -194,4 +196,11 @@ you may designate the version that you want and install as follows.
 
 .. code-block:: sh
 
-  sudo apt-get install -y furiosa-libnux=0.6.0-2
+  sudo apt-get install -y furiosa-libnux=0.9.1-?
+
+
+.. _UpgradeFirmware:
+
+NPU Firmware Update
+=====================================================================
+
