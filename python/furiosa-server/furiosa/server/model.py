@@ -22,9 +22,9 @@ import numpy as np
 
 from furiosa.common.thread import asynchronous
 from furiosa.runtime import session
+from furiosa.runtime._utils import default_device
 from furiosa.runtime.errors import NativeException
 from furiosa.runtime.tensor import TensorArray, TensorDesc
-from furiosa.runtime.utils import default_device
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
 from .types import (
