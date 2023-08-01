@@ -139,11 +139,8 @@ class NuxModel(Model[NuxModelConfig]):
 
         assert isinstance(self._config, NuxModelConfig)
 
-        devices = (
-            self._config.npu_device
-            if self._config.npu_device is not None
-            else os.environ.get("NPU_DEVNAME", DEFAULT_DEVNAME)
-        )
+        devices = self._config.npu_device or os.environ.get("NPU_DEVNAME", DEFAULT_DEVNAME)
+        assert devices is not None
 
         self.sessions = await self.create_sessions(devices)
 
