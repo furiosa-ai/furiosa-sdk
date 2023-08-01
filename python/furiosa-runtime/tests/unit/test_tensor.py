@@ -1,6 +1,5 @@
 import random
 
-import mnist
 import numpy as np
 
 from furiosa.runtime import session
