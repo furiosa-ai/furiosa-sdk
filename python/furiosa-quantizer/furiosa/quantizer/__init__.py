@@ -7,13 +7,21 @@ import onnx
 
 import furiosa.common.utils
 from furiosa.quantizer.calibrator import CalibrationMethod, Calibrator
-from furiosa.quantizer.editor import ModelEditor, TensorType
+from furiosa.quantizer.editor import ModelEditor, TensorType, get_output_names, get_pure_input_names
 
 __version__ = furiosa.common.utils.get_sdk_version(__name__)
 
 __full_version__ = f"Furiosa SDK Quantizer {__version__} (furiosa_quantizer_impl {furiosa_quantizer_impl.__version__} {furiosa_quantizer_impl.__git_short_hash__} {furiosa_quantizer_impl.__build_timestamp__})"  # pylint: disable=no-member # noqa: E501
 
-__all__ = ["CalibrationMethod", "Calibrator", "ModelEditor", "TensorType", "quantize"]
+__all__ = [
+    "CalibrationMethod",
+    "Calibrator",
+    "get_pure_input_names",
+    "get_output_names",
+    "ModelEditor",
+    "TensorType",
+    "quantize",
+]
 
 
 def quantize(
