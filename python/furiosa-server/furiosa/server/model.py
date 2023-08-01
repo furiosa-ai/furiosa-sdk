@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 import asyncio
 from asyncio import Future
 import itertools
-import os
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -25,6 +24,7 @@ from furiosa.common.thread import asynchronous
 from furiosa.runtime import session
 from furiosa.runtime.errors import NativeException
 from furiosa.runtime.tensor import TensorArray, TensorDesc
+from furiosa.runtime.utils import default_device
 
 from .settings import ModelConfig, NuxModelConfig, OpenVINOModelConfig
 from .types import (
@@ -34,8 +34,6 @@ from .types import (
     RequestInput,
     ResponseOutput,
 )
-
-DEFAULT_DEVNAME = "npu0pe0-1"
 
 T = TypeVar("T", bound=ModelConfig)
 
@@ -139,7 +137,7 @@ class NuxModel(Model[NuxModelConfig]):
 
         assert isinstance(self._config, NuxModelConfig)
 
-        devices = self._config.npu_device or os.environ.get("NPU_DEVNAME", DEFAULT_DEVNAME)
+        devices = self._config.npu_device or default_device()
         assert devices is not None
 
         self.sessions = await self.create_sessions(devices)

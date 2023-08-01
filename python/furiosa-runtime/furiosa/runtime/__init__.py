@@ -4,6 +4,8 @@ import warnings
 
 from furiosa.common.utils import get_sdk_version
 
+from . import utils
+
 try:
     import package_extras
 except ModuleNotFoundError:
@@ -51,4 +53,4 @@ __full_version__ = full_version()
 del warnings, get_sdk_version, full_version
 
 
-__all__ = ["__version__", "__full_version__", "is_legacy"]
+__all__ = ["__version__", "__full_version__", "is_legacy", "utils"]
