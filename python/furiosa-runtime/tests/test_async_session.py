@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import random
+from textwrap import dedent
 
 import pytest
 
@@ -9,6 +10,16 @@ from furiosa.runtime import errors, session
 
 def test_run_async(mnist_onnx, mnist_images):
     submitter, receiver = session.create_async(model=Path(mnist_onnx), input_queue_size=50)
+
+    summary = dedent(
+        """\
+        Inputs:
+        {0: TensorDesc(name="Input3", shape=(1, 1, 28, 28), dtype=FLOAT32, format=NCHW, size=3136, len=784)}
+        Outputs:
+        {0: TensorDesc(name="Plus214_Output_0", shape=(1, 10), dtype=FLOAT32, format=??, size=40, len=10)}
+    """  # noqa: E501
+    ).strip()
+    assert submitter.summary() == summary
 
     count = 50
     for i in range(count):
@@ -22,8 +33,8 @@ def test_run_async(mnist_onnx, mnist_images):
 
     assert {next(receiver)[0] for _ in range(count)} == set(range(count))
 
-    assert submitter.close()
-    assert receiver.close()
+    submitter.close()
+    receiver.close()
 
 
 def test_create(mnist_onnx):
@@ -35,8 +46,8 @@ def test_create(mnist_onnx):
         compiler_config={"allow_precision_error": True},
     )
 
-    assert submitter.close()
-    assert receiver.close()
+    submitter.close()
+    receiver.close()
 
 
 def test_timeout(mnist_onnx):
@@ -47,7 +58,7 @@ def test_timeout(mnist_onnx):
     with pytest.raises(errors.QueueWaitTimeout):
         receiver.recv(timeout=100)
 
-    assert submitter.close()
+    submitter.close()
 
     with pytest.raises(errors.SessionTerminated):
         receiver.recv()
@@ -56,12 +67,12 @@ def test_timeout(mnist_onnx):
     with pytest.raises(errors.SessionTerminated):
         receiver.recv(timeout=100)
 
-    assert receiver.close()
+    receiver.close()
 
 
 def test_submitter_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
-    assert submitter.close()
+    submitter.close()
 
     with pytest.raises(errors.SessionClosed):
         submitter.inputs()
@@ -74,16 +85,16 @@ def test_submitter_closed(mnist_onnx):
     with pytest.raises(errors.SessionClosed):
         submitter.summary()
 
-    assert receiver.close()
+    receiver.close()
 
 
 def test_queue_closed(mnist_onnx):
     submitter, receiver = session.create_async(mnist_onnx)
-    assert receiver.close()
+    receiver.close()
     with pytest.raises(errors.SessionClosed):
         receiver.recv()
 
-    assert submitter.close()
+    submitter.close()
 
 
 @pytest.mark.skipif(os.getenv("NPU_DEVNAME") is None, reason="No NPU_DEVNAME defined")
@@ -93,5 +104,5 @@ def test_device_busy(mnist_onnx):
     with pytest.raises(errors.DeviceBusy):
         submitter, receiver = session.create_async(mnist_onnx, device=os.getenv("NPU_DEVNAME"))
 
-    assert submitter.close()
-    assert receiver.close()
+    submitter.close()
+    receiver.close()
