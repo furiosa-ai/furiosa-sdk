@@ -1,3 +1,4 @@
+# Tests for legacy API `Session`
 import os
 import random
 from textwrap import dedent

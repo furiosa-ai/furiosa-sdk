@@ -21,7 +21,8 @@ import uuid
 import numpy as np
 
 from furiosa.common.thread import asynchronous
-from furiosa.runtime import envs, session
+from furiosa.runtime import session
+from furiosa.runtime._utils import default_device
 from furiosa.runtime.errors import NativeException
 from furiosa.runtime.tensor import TensorArray, TensorDesc
 
@@ -136,7 +137,8 @@ class NuxModel(Model[NuxModelConfig]):
 
         assert isinstance(self._config, NuxModelConfig)
 
-        devices = self._config.npu_device or envs.current_npu_device()
+        devices = self._config.npu_device or default_device()
+        assert devices is not None
 
         self.sessions = await self.create_sessions(devices)
 
