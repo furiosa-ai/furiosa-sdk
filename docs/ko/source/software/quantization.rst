@@ -10,8 +10,8 @@
 하드웨어에서 더 효율적으로 처리가 가능해져 추론 속도를 향상시킬 수 있다.
 
 FuriosaAI의 1세대 NPU인 Warboy는 8bit 정수형(int8) 모델만 지원한다.
-FuriosaAI SDK는 실수형 데이터 타입 기반의 모델을 지원하기 위해 
-실수형 데이터 타입인 float16, float32 기반 모델을 양자화하여
+FuriosaAI SDK는 실수형 데이터 타입 기반의 모델을 지원하기 위해
+실수형 데이터 타입인 float32 기반 모델을 양자화하여
 int8 데이터 타입 모델로 변환하는 도구를 제공한다.
 이 도구를 사용하면 NPU를 활용하여 다양한 모델을 가속할 수 있다.
 
@@ -100,8 +100,8 @@ FuriosaAI SDK가 지원하는 양자화 방식은  *post-training 8-bit quantiza
 --------------------------------------
 
 * 대칭 양자화와 달리 실수 범위의 중심이 0일 필요가 없어 더 정교한 양자화가 가능하다.
-* 비대칭 양자화는 대칭 양자화와 달리 zero-point를 계산에 포함하여 하드웨어 구현이 상대적으로 복잡하다. 그리고 양자화된 텐서 간 계산을 위하여 추가적인 비용이 소요된다.
-* Warboy는 비대칭 양자화를 기본으로 지원한다. 또한 다양한 보정 방식을 제공하고 있다.
+* 비대칭 양자화는 대칭 양자화와 달리 zero-point를 계산에 포함하여 하드웨어 구현이 상대적으로 복잡하다.
+* Warboy는 비대칭 양자화 방식을 지원한다. 그리고 다양한 보정 방식을 제공하고 있다.
 
 
 양자화 매개변수
@@ -161,7 +161,7 @@ QAT (Quantization Aware Training)
 
 
 
-FuriosaAI SDK의 보정 방식
+FuriosaAI SDK의 보정 방식 (Calibration Method)
 ======================================
 
 FuriosaAI SDK는 기본적으로 Post Training Static Quantization을 보정 방식으로 사용하고 있다.
@@ -339,10 +339,10 @@ FuriosaAI SDK의 양자화 과정
     editor = ModelEditor(onnx_model)
 
     # input 텐서의 자료형을 uint8로 변환
-    editor.retype_input_as('input', TensorType.U8)
+    editor.convert_input_type('input', TensorType.U8)
 
     # output 텐서의 자료형을 int8로 변환
-    editor.retype_output_as('output', TensorType.I8, (0, 1))
+    editor.convert_output_type('output', TensorType.I8, (0, 1))
 
 위 API에 대한 자세한 설명은 :ref:`성능 최적화 문서 <PerformanceOptimization>` 를 참고할 수 있다.
 
