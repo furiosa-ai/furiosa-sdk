@@ -20,7 +20,7 @@ Floating Point 모델들을 Post Training Quantization을 사용하여 변환할
 FuriosaAI SDK를 사용하여 추론을 위해 범용적으로 사용되고 있는 TensorFlowLite와 ONNX 포맷으로 훈련 또는
 Export된 모델들을 컴파일하여 FuriosaAI Warboy에서 가속할 수 있다.
 
-FuriosaAI Warboy의 하드웨어 스펙
+하드웨어 스펙
 ----------------------------------
 5 billion transistor로 구성되어 있고, 180mm^2에 2GHz로 동작하고 INT8 기준 64 TOPS의 Peak Performance를 갖는다.
 또한 LPDDR4x에 대해 최대 4266을 지원하며 66GB/s의 DRAM Bandwidth를 갖으며, PCIe Gen4 8x을 지원한다.
@@ -61,17 +61,17 @@ FuriosaAI Warboy의 하드웨어 스펙
 
 \
 
-FuriosaAI Warboy의 성능
-------------------------------
-MLCommons 에 제출된 결과는
+MLPerf 성능
+---------------------------------
+
+MLPerf 에 제출된 결과는
 `MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_ 에서
 확인할 수 있다.
 
 .. _SupportedOperators:
 
-******************************************
-Warboy 가속 지원 연산자 목록
-******************************************
+가속 지원 연산자 목록
+----------------------------------
 
 FuriosaAI Warboy 및 SDK 에서는
 `Tensorflow Lite <https://www.tensorflow.org/lite>`_ 모델과 `ONNX <https://onnx.ai/>`_ 가 지원하는
@@ -80,7 +80,7 @@ FuriosaAI Warboy 및 SDK 에서는
 .. note::
 
     Warboy에서 가속되지 않는 연산자는 CPU에서 수행된다.
-    Warboy 가속 연산자라도 특정 조건을 만족하지 않을 경우는 다수의 연산자로 분할되어 Warboy 실행되거나 CPU 에서 실행될 수 있다.
+    Warboy 가속 연산자라도 특정 조건을 만족하지 않을 경우는 다수의 연산자로 분할되어 Warboy에서 실행되거나 CPU 에서 실행될 수 있다.
     모델의 가중치가 Warboy 메모리 보다 크거나 특정 연산을 처리하기에 Warboy 메모리가 부족한 경우가 이에 해당한다.
 
 .. list-table:: Warboy 가속 지원 연산자
