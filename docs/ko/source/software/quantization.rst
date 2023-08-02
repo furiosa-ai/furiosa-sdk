@@ -339,10 +339,10 @@ FuriosaAI SDK의 양자화 과정
     editor = ModelEditor(onnx_model)
 
     # input 텐서의 자료형을 uint8로 변환
-    editor.convert_input_type('input', TensorType.U8)
+    editor.convert_input_type('input', TensorType.UINT8)
 
     # output 텐서의 자료형을 int8로 변환
-    editor.convert_output_type('output', TensorType.I8, (0, 1))
+    editor.convert_output_type('output', TensorType.INT8, (0, 1))
 
 위 API에 대한 자세한 설명은 :ref:`성능 최적화 문서 <PerformanceOptimization>` 를 참고할 수 있다.
 
