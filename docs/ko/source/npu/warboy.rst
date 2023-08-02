@@ -2,7 +2,7 @@
 FuriosaAI Warboy
 **********************************
 
-FuriosaAI 1세대 NPU(Neural Processing Unit) Warboy는 딥러닝 추론에 최적화된 칩으로 적은 비용으로 높은 딥러닝 추론 성능을 낸다.
+FuriosaAI 1세대 NPU (Neural Processing Unit) Warboy는 딥러닝 추론에 최적화된 칩으로 적은 비용으로 높은 딥러닝 추론 성능을 낸다.
 FuriosaAI Warboy는 작은 배치 크기의 추론 요청에도 칩의 모든 자원을 효율적으로 활용하여 낮은 응답속도 (latency)를 달성한다.
 주요 CNN 모델들을 온칩 메모리에 최대한 저장하여 메모리 입출력에 사용하는 에너지를 최소화한다.
 
@@ -10,7 +10,7 @@ Warboy는 Image Classification, Object Detection, OCR, Super Resolution, Pose Es
 다양한 Vision Task에 사용되는 주요 CNN 모델들을 지원한다.
 State-of-the-Art CNN 모델에서 높은 정확도와 연산효율을 가능하게 하는 Depthwise/Group Convolution 같은 연산에서 월등히 차별화된 성능을 보여준다.
 
-Warboy는 64 TOPS의 성능을 내고 32MB SRAM을 장착했다. Warboy는 2개의 Processing Element (PE)로 구성되어, 각각 32 TOPS의 성능을 갖는
+Warboy는 64 TOPS의 성능을 내고 32MB SRAM을 장착했다. Warboy는 2개의 PE (Processing Element)로 구성되어, 각각 32 TOPS의 성능을 갖는
 독립적인 디바이스로 사용할 수 있다. 전체 64 TOPS의 성능으로 모델의 응답속도를 극대화해야 하는 경우에는 2개의 PE를 1개의 큰 PE로 fusion 하여 사용할 수 있다.
 사용자의 모델 크기 혹은 성능 요구에 따라, fusion 하여 응답속도를 최소화 하거나 각 PE를 독립적으로 사용하여 처리량을 최대화 할 수 있다.
 
@@ -70,21 +70,20 @@ MLCommons 에 제출된 결과는
 .. _SupportedOperators:
 
 ******************************************
-NPU 가속 지원 연산자 목록
+Warboy 가속 지원 연산자 목록
 ******************************************
 
-FuriosaAI NPU와 SDK 에서는
+FuriosaAI Warboy 및 SDK 에서는
 `Tensorflow Lite <https://www.tensorflow.org/lite>`_ 모델과 `ONNX <https://onnx.ai/>`_ 가 지원하는
 아래 연산자들을 가속할 수 있다. 연산자 이름은 `ONNX`_ 를 기준으로 한다.
 
 .. note::
 
-    NPU 가속을 지원하지 않는 경우에는 CPU에서 동작하게 된다.
-    또한 NPU 가속을 지원하는 일부 연산자는 특정 조건을 만족하지 않을 경우 다수의 연산자로 분할되어 동작하거나
-    CPU 에서 동작할 수 있다. 모델의 가중치가 NPU 메모리 보다 크거나 NPU의 메모리로
-    특정 연산을 처리하기에 부족한 경우가 한 가지 예이다.
+    Warboy에서 가속되지 않는 연산자는 CPU에서 수행된다.
+    Warboy 가속 연산자라도 특정 조건을 만족하지 않을 경우는 다수의 연산자로 분할되어 Warboy 실행되거나 CPU 에서 실행될 수 있다.
+    모델의 가중치가 Warboy 메모리 보다 크거나 특정 연산을 처리하기에 Warboy 메모리가 부족한 경우가 이에 해당한다.
 
-.. list-table:: NPU 가속 지원 연산자
+.. list-table:: Warboy 가속 지원 연산자
    :widths: 50 200
    :header-rows: 1
 
