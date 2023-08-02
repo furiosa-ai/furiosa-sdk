@@ -21,7 +21,7 @@ so as to minimize response time, or 2) utilized independently to maximize throug
 
 FuriosaAI SDK provides the compiler, runtime software, and profiling tools for the FuriosaAI Warboy.
 It also supports the INT8 quantization scheme, used as a standard in TensorFLow and PyTorch, while providing tools to convert Floating Point models using Post Training Quantization.
-With the FuriosaAI SDK, users can compile trained or exported models in formats commonly used for inference (TensorFlowLite or ONNX), and accelerate them on FuriosaAI Warboy.
+With the FuriosaAI SDK, users can compile trained or exported models in formats commonly used for inference (TFLite or ONNX), and accelerate them on FuriosaAI Warboy.
 
 HW Specifications
 ----------------------------------

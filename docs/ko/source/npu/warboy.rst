@@ -17,7 +17,7 @@ Warboy는 64 TOPS의 성능을 내고 32MB SRAM을 장착했다. Warboy는 2개�
 FuriosaAI SDK는 FuriosaAI Warboy를 위한 컴파일러, 런타임 소프트웨어 및 프로파일링 도구를 제공한다.
 또한 TensorFlow, PyTorch에서 표준적으로 사용하는 INT8 Quantization Scheme을 지원하며,
 Floating Point 모델들을 Post Training Quantization을 사용하여 변환할 수 있는 도구를 제공한다.
-FuriosaAI SDK를 사용하여 추론을 위해 범용적으로 사용되고 있는 TensorFlowLite와 ONNX 포맷으로 훈련 또는
+FuriosaAI SDK를 사용하여 추론을 위해 범용적으로 사용되고 있는 TFLite와 ONNX 포맷으로 훈련 또는
 Export된 모델들을 컴파일하여 FuriosaAI Warboy에서 가속할 수 있다.
 
 하드웨어 스펙
