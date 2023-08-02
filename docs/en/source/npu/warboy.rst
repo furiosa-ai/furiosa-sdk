@@ -2,13 +2,11 @@
 FuriosaAI Warboy
 **********************************
 
-FuriosaAI's first generation NPU Warboy is a chip with an architecture optimized for deep learning inference.
-It demonstrates high performance for deep learning inference while maintaining cost-efficiency.
-FuriosaAI Warboy is optimized for inferences with low batch sizes; for inference requests with low batch sizes,
-all of the chip's resources are maximally utilized to achieve low latency.
-
-The large on-chip memory is also able to retain most major CNN models, thereby eliminating memory bottlenecks,
-and achieving high energy efficiency.
+FuriosaAI's first generation NPU Warboy is a chip with an architecture optimized for deep learning inference. It
+demonstrates high performance for deep learning inference while maintaining cost-efficiency. FuriosaAI Warboy is
+optimized for inferences with low batch sizes; for inference requests with low batch sizes, all of the chip's
+resources are maximally utilized to achieve low latency. The large on-chip memory is also able to retain most major
+CNN models, thereby eliminating memory bottlenecks, and achieving high energy efficiency.
 
 Warboy supports key CNN models used in various vision tasks, including
 Image Classification, Object Detection, OCR, Super Resolution, and Pose Estimation.
@@ -61,11 +59,6 @@ It also supports a maximum of 4266 for LPDDR4x. Warboy has a DRAM bandwidth of 6
    * - Peak Memory Bandwidth
      - 66 GB/s
 
-
-MLPerf
-------------------------------
-Results submitted to MLPerf can be found at
-`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 
 .. _SupportedOperators:
 
@@ -160,7 +153,22 @@ The names of the operators use `ONNX`_ as a reference.
    * - `Unsqueeze <https://github.com/onnx/onnx/blob/master/docs/Operators.md#unsqueeze>`_
      -
 
+
+MLPerf
+------------------------------
+Results submitted to MLPerf can be found at
+`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
+
+
+.. figure:: ../../../imgs/mlperf_eng.png
+  :alt: Warboy MLPerf Results
+  :class: with-shadow
+  :width: 800px
+  :align: center
+
+\
+
 See Also
 =================================
-* `MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 * `MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_
+* `MLPerf™ Inference Edge v0.5 Results <https://mlcommons.org/en/inference-edge-05/>`_

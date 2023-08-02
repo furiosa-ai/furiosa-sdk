@@ -61,13 +61,6 @@ Export된 모델들을 컴파일하여 FuriosaAI Warboy에서 가속할 수 있�
 
 \
 
-MLPerf 성능
----------------------------------
-
-MLPerf 에 제출된 결과는
-`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_ 에서
-확인할 수 있다.
-
 .. _SupportedOperators:
 
 가속 지원 연산자 목록
@@ -170,7 +163,23 @@ FuriosaAI Warboy 및 SDK 에서는
    * - `Unsqueeze <https://github.com/onnx/onnx/blob/master/docs/Operators.md#unsqueeze>`_
      -
 
+MLPerf 성능
+---------------------------------
+
+MLPerf 에 제출된 결과는
+`MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_ 에서
+확인할 수 있다.
+
+
+.. figure:: ../../../imgs/mlperf.png
+  :alt: Warboy MLPerf Results
+  :class: with-shadow
+  :width: 800px
+  :align: center
+
+\
+
 관련 문서
 =================================
-* `MLPerf™ Inference Edge v2.0 Results <https://mlcommons.org/en/inference-edge-20/>`_
 * `MLPerf™ Inference Edge v1.1 Results <https://mlcommons.org/en/inference-edge-11/>`_
+* `MLPerf™ Inference Edge v0.5 Results <https://mlcommons.org/en/inference-edge-05/>`_
