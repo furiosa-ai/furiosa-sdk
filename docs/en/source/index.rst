@@ -14,9 +14,7 @@ This document explains FuriosaAI NPU and its SDKs.
 
 FuriosaAI NPU
 -------------------------------------------------
-* :doc:`/npu/intro`
-* :ref:`Introduction to FuriosaAI Warboy <IntroToWarboy>`: Warboy HW specification and its performance
-* :doc:`/npu/supported_operators`
+* :doc:`Introduction to FuriosaAI Warboy </npu/warboy>`: HW specification, performance, and supported operators
 
 FuriosaAI Software
 -------------------------------------------------
@@ -58,13 +56,11 @@ Other Links
 
 
 .. toctree::
-   :caption: FuriosaAI NPU
+   :maxdepth: 1
    :hidden:
-   :maxdepth: 2
+   :caption: FuriosaAI NPU
 
-   /npu/intro
-   /npu/supported_operators
-
+   /npu/warboy
 
 .. toctree::
    :maxdepth: 1
