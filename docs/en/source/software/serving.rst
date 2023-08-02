@@ -112,19 +112,19 @@ you can use a configuration file based on Yaml.
 .. code-block:: yaml
 
     model_config_list:
-    - name: mnist
-        path: "samples/data/MNISTnet_uint8_quant.tflite"
-        version: 1
-        platform: nux
-        npu_device: npu0pe0
+      - name: mnist
+        model: "samples/data/MNISTnet_uint8_quant.tflite"
+        version: "1"
+        platform: npu
+        npu_device: warboy(1)*1
         compiler_config:
-            keep_unsignedness: true
-            split_unit: 0
-    - name: ssd
-        path: "samples/data/tflite/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
-        version: 1
-        platform: nux
-        npu_device: npu0pe1
+          keep_unsignedness: true
+          split_unit: 0
+      - name: ssd
+        model: "samples/data/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
+        version: "1"
+        platform: npu
+        npu_device: warboy(1)*1
 
 When you run a model sever with a configuration file,
 you need to specify ``--model-config`` as following.
@@ -136,15 +136,40 @@ You can find the model files described in the above example from
     $ cd furiosa-sdk/python/furiosa-server
     $ furiosa server --model-config samples/model_config_example.yaml
     libfuriosa_hal.so --- v0.11.0, built @ 43c901f
-    Saving the compilation log into /root/.local/state/furiosa/logs/compile-20230509151914-axpfej.log
-    Using furiosa-compiler 0.9.0 (rev: e626c458c built at 2023-04-19T13:49:26Z)
-    2023-05-09T06:19:14.560585Z  INFO nux::npu: Npu (npu0pe0) is being initialized
-    2023-05-09T06:19:14.565216Z  INFO nux: NuxInner create with pes: [PeId(0)]
-    Saving the compilation log into /root/.local/state/furiosa/logs/compile-20230509151914-d063sw.log
-    Using furiosa-compiler 0.9.0 (rev: e626c458c built at 2023-04-19T13:49:26Z)
-    2023-05-09T06:19:14.591795Z  INFO nux::npu: Npu (npu0pe1) is being initialized
-    2023-05-09T06:19:14.595298Z  INFO nux: NuxInner create with pes: [PeId(0)]
-    INFO:     Started server process [1184080]
+    2023-08-02T07:42:42.263133Z  INFO furiosa_rt_core::driver::event_driven::device: DeviceManager has detected 1 NPUs
+    2023-08-02T07:42:42.267247Z  INFO furiosa_rt_core::driver::event_driven::device: [1] npu:6:1 (warboy-b0, 64dpes)
+    2023-08-02T07:42:42.267264Z  INFO furiosa_rt_core::driver::event_driven::coord: furiosa-rt (v0.10.0-rc6, rev: d021ff71d, built_at: 2023-07-31T19:05:26Z) is being initialized
+    2023-08-02T07:42:42.267269Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:1-io-thread-0 thread has started
+    2023-08-02T07:42:42.267398Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:1-commit-thread thread has started
+    2023-08-02T07:42:42.267405Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:1-io-thread-1 thread has started
+    2023-08-02T07:42:42.270837Z  INFO furiosa_rt_core::driver::event_driven::coord: Loaded libcompiler 0.10.0 (rev: f8f05c built: 2023-07-26T09:49:17Z)
+    2023-08-02T07:42:42.270851Z  INFO furiosa_rt_core::driver::event_driven::coord: Loaded libhal-warboy 0.11.0 (rev: 43c901f built: 2023-04-19T14:04:55Z)
+    2023-08-02T07:42:42.271144Z  INFO furiosa_rt_core::driver::event_driven::coord: [NONAME] Runtime has started
+    2023-08-02T07:42:42.273772Z  INFO furiosa_rt_core::driver::event_driven::coord: Model#0001 is being loaded to npu:6:1
+    2023-08-02T07:42:42.283260Z  INFO furiosa_rt_core::driver::event_driven::coord: Compiling Model#0001 (target: warboy-b0, 64dpes, file: MNISTnet_uint8_quant.tflite, size: 18.2 kiB)
+    2023-08-02T07:42:42.299091Z  INFO furiosa_rt_core::driver::event_driven::coord: Model#0001 has been compiled successfully (took 0 secs)
+    2023-08-02T07:42:42.299293Z  INFO furiosa_rt_core::dag: Task Statistics: TaskStats { cpu: 5, npu: 1, alias: 0, coalesce: 0 }
+    2023-08-02T07:42:42.300701Z  INFO furiosa_rt_core::driver::event_driven::coord: NpuApi (AsyncNpuApiImpl) has started..
+    2023-08-02T07:42:42.300721Z  INFO furiosa_rt_core::driver::event_driven::coord: Creating 1 Contexts on npu:6:1 (DRAM usage: 6.0 kiB / 16.0 GiB, SRAM usage: 124.0 kiB / 64.0 MiB)
+    2023-08-02T07:42:42.300789Z  INFO furiosa_rt_core::driver::event_driven::coord: npu:6:1 has scheduled to Model#0001
+    2023-08-02T07:42:42.304216Z  WARN furiosa_rt_core::consts::envs: NPU_DEVNAME will be deprecated. Use FURIOSA_DEVICES instead.
+    2023-08-02T07:42:42.313084Z  INFO furiosa_rt_core::driver::event_driven::device: DeviceManager has detected 1 NPUs
+    2023-08-02T07:42:42.315470Z  INFO furiosa_rt_core::driver::event_driven::device: [1] npu:6:0 (warboy-b0, 64dpes)
+    2023-08-02T07:42:42.315483Z  INFO furiosa_rt_core::driver::event_driven::coord: furiosa-rt (v0.10.0-rc6, rev: d021ff71d, built_at: 2023-07-31T19:05:26Z) is being initialized
+    2023-08-02T07:42:42.315560Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:0-io-thread-1 thread has started
+    2023-08-02T07:42:42.315610Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:0-io-thread-0 thread has started
+    2023-08-02T07:42:42.315657Z  INFO furiosa_rt_core::npu::async_impl::threaded: npu:6:0-commit-thread thread has started
+    2023-08-02T07:42:42.319127Z  INFO furiosa_rt_core::driver::event_driven::coord: Loaded libcompiler 0.10.0 (rev: f8f05c built: 2023-07-26T09:49:17Z)
+    2023-08-02T07:42:42.319141Z  INFO furiosa_rt_core::driver::event_driven::coord: Loaded libhal-warboy 0.11.0 (rev: 43c901f built: 2023-04-19T14:04:55Z)
+    2023-08-02T07:42:42.319364Z  INFO furiosa_rt_core::driver::event_driven::coord: [NONAME] Runtime has started
+    2023-08-02T07:42:42.324283Z  INFO furiosa_rt_core::driver::event_driven::coord: Model#0002 is being loaded to npu:6:0
+    2023-08-02T07:42:42.333521Z  INFO furiosa_rt_core::driver::event_driven::coord: Compiling Model#0002 (target: warboy-b0, 64dpes, file: SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite, size: 5.2 MiB)
+    2023-08-02T07:42:42.814260Z  INFO furiosa_rt_core::driver::event_driven::coord: Model#0002 has been compiled successfully (took 0 secs)
+    2023-08-02T07:42:42.815406Z  INFO furiosa_rt_core::dag: Task Statistics: TaskStats { cpu: 26, npu: 1, alias: 0, coalesce: 0 }
+    2023-08-02T07:42:42.893745Z  INFO furiosa_rt_core::driver::event_driven::coord: NpuApi (AsyncNpuApiImpl) has started..
+    2023-08-02T07:42:42.893772Z  INFO furiosa_rt_core::driver::event_driven::coord: Creating 1 Contexts on npu:6:0 (DRAM usage: 1.0 MiB / 16.0 GiB, SRAM usage: 14.8 MiB / 64.0 MiB)
+    2023-08-02T07:42:42.894265Z  INFO furiosa_rt_core::driver::event_driven::coord: npu:6:0 has scheduled to Model#0002
+    INFO:     Started server process [2448540]
     INFO:     Waiting for application startup.
     INFO:     Application startup complete.
     INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)

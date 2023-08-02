@@ -1,14 +1,14 @@
 model_config_list:
   - name: mnist
     model: "samples/data/MNISTnet_uint8_quant.tflite"
-    version: 1
+    version: "1"
     platform: npu
-    npu_device: npu0pe0
+    npu_device: warboy(1)*1
     compiler_config:
       keep_unsignedness: true
       split_unit: 0
   - name: ssd
     model: "samples/data/SSD512_MOBILENET_V2_BDD_int_without_reshape.tflite"
-    version: 1
+    version: "1"
     platform: npu
-    npu_device: npu0pe1
+    npu_device: warboy(1)*1
