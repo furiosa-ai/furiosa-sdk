@@ -53,6 +53,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
 기타 링크
 --------------------------------------------------
 * `FuriosaAI 홈페이지 <https://furiosa.ai>`_
+* `Furiosa SDK 사용자 게시판 <https://furiosa-ai.discourse.group/>`_
 * `FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>`_
 * :ref:`BugReport`
 
@@ -104,6 +105,7 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
    :hidden:
    :caption: 고객 지원
 
+   Furiosa SDK 사용자 게시판 <https://furiosa-ai.discourse.group/>
    FuriosaAI 고객지원 센터 <https://furiosa-ai.atlassian.net/servicedesk/customer/portals/>
    /customer-support/bugs
 
