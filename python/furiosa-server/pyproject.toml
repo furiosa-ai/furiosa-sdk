@@ -33,16 +33,14 @@ dependencies = [
     "pydantic-settings",
     "grpcio-tools",
     "protobuf",
-    "pydantic-settings",
     "toml",
     "typer",
-    "uvicorn"
+    "uvicorn",
 ]
 
 [project.optional-dependencies]
 test = [
     "datamodel-code-generator",
-    "grpcio-tools",
     "httpx",
     "mypy",
     "mypy-protobuf",
@@ -54,11 +52,9 @@ test = [
     "requests",
     "ruff",
     "types-PyYAML",
-    "types-protobuf"
+    "types-protobuf",
 ]
-openvino = [
-    "openvino"
-]
+openvino = ["openvino"]
 
 [project.urls]
 Home = "https://furiosa.ai"
@@ -94,7 +90,7 @@ explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = "furiosa.server.api.grpc.*"
-ignore_errors  = true
+ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "grpc"

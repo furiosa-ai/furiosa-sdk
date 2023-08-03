@@ -8,14 +8,13 @@ import numpy as np
 from opentelemetry import trace
 
 from furiosa.common.thread import asynchronous
-from furiosa.runtime.tensor import TensorDesc
+from furiosa.runtime import TensorDesc
 from furiosa.server import (
-    AsyncNuxModel,
     CPUModel,
     Model,
     ModelConfig,
-    NuxModel,
-    NuxModelConfig,
+    NPUModel,
+    NPUModelConfig,
     OpenVINOModel,
     OpenVINOModelConfig,
 )
@@ -134,8 +133,6 @@ class NPUServeModel(ServeModel):
         app: FastAPI,
         name: str,
         *,
-        # TODO: Converge two implementions into one when ready.
-        blocking: bool = True,
         model: Union[str, bytes],
         version: Optional[str] = None,
         description: Optional[str] = None,
@@ -148,7 +145,7 @@ class NPUServeModel(ServeModel):
     ):
         super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
-        self._config = NuxModelConfig(
+        self._config = NPUModelConfig(
             name=name,
             model=model,
             version=version,
@@ -159,27 +156,29 @@ class NPUServeModel(ServeModel):
             compiler_config=compiler_config,
         )
 
-        self._model = (NuxModel if blocking else AsyncNuxModel)(self._config)
+        self._model = NPUModel(self._config)
 
     async def predict(self, payload: Union[np.ndarray, List[np.ndarray]]) -> List[np.ndarray]:
         with tracer.start_as_current_span("{}:predict".format(self._name)):
             return await self._model.predict(payload)
 
     @property
-    def inner(self) -> NuxModel:
+    def inner(self) -> NPUModel:
         return self._model
 
     @property
-    def config(self) -> NuxModelConfig:
+    def config(self) -> NPUModelConfig:
         return self._config
 
     @property
     def inputs(self) -> List[TensorDesc]:
-        return self._model.session.model.inputs()
+        assert self._model.runner
+        return self._model.runner.model.inputs()
 
     @property
     def outputs(self) -> List[TensorDesc]:
-        return self._model.session.model.outputs()
+        assert self._model.runner
+        return self._model.runner.model.outputs()
 
 
 class CPUServeModel(ServeModel):

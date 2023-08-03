@@ -23,7 +23,7 @@ MODEL_CONFIG_EXAMPLE = {
             "model": "samples/data/MNISTnet_uint8_quant.tflite",
             "version": MODEL_VERSION,
             "compiler_config": {"keep_unsignedness": True, "split_unit": 0},
-            "platform": "nux",
+            "platform": "npu",
         }
     ]
 }
@@ -168,7 +168,7 @@ def test_model_metadata(client):
         "inputs": [],
         "name": MODEL_NAME,
         "outputs": [],
-        "platform": "nux",
+        "platform": "npu",
         "versions": [MODEL_VERSION],
     }
 
@@ -183,7 +183,7 @@ def test_model_version_metadata(client):
         "inputs": [],
         "name": MODEL_NAME,
         "outputs": [],
-        "platform": "nux",
+        "platform": "npu",
         "versions": [MODEL_VERSION],
     }
 

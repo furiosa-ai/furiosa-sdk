@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 import yaml
 
-from ..settings import ModelConfig, NuxModelConfig, ServerConfig
+from ..settings import ModelConfig, NPUModelConfig, ServerConfig
 
 
 def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
@@ -12,12 +12,12 @@ def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
     source = stream if isinstance(stream, MutableMapping) else yaml.safe_load(stream)
 
     def config(model):
-        return NuxModelConfig if model["platform"] == "nux" else ModelConfig
+        return NPUModelConfig if model["platform"] == "npu" else ModelConfig
 
-    return [config(model).parse_obj(model) for model in source["model_config_list"]]
+    return [config(model).model_validate(model) for model in source["model_config_list"]]
 
 
 def load_server_config(stream: Union[TextIOWrapper, Dict]) -> ServerConfig:
     """Load a server config from opened file (file-like object) or Python dictionary."""
     source = stream if isinstance(stream, MutableMapping) else yaml.safe_load(stream)
-    return ServerConfig.parse_obj(source)
+    return ServerConfig.model_validate(source)
