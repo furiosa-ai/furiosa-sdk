@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import inspect
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from fastapi import FastAPI
@@ -7,13 +6,11 @@ from fastapi.routing import Mount
 import numpy as np
 from opentelemetry import trace
 
-from furiosa.common.thread import asynchronous
 from furiosa.runtime import TensorDesc
 from furiosa.server import (
-    CPUModel,
+    FuriosaRTModel,
     Model,
     ModelConfig,
-    NPUModel,
     NPUModelConfig,
     OpenVINOModel,
     OpenVINOModelConfig,
@@ -127,7 +124,7 @@ class ServeModel(ABC):
         return self._method("trace", *args, **kwargs)
 
 
-class NPUServeModel(ServeModel):
+class FuriosaRTServeModel(ServeModel):
     def __init__(
         self,
         app: FastAPI,
@@ -156,14 +153,14 @@ class NPUServeModel(ServeModel):
             compiler_config=compiler_config,
         )
 
-        self._model = NPUModel(self._config)
+        self._model = FuriosaRTModel(self._config)
 
     async def predict(self, payload: Union[np.ndarray, List[np.ndarray]]) -> List[np.ndarray]:
         with tracer.start_as_current_span("{}:predict".format(self._name)):
             return await self._model.predict(payload)
 
     @property
-    def inner(self) -> NPUModel:
+    def inner(self) -> FuriosaRTModel:
         return self._model
 
     @property
@@ -179,50 +176,6 @@ class NPUServeModel(ServeModel):
     def outputs(self) -> List[TensorDesc]:
         assert self._model.runner
         return self._model.runner.model.outputs()
-
-
-class CPUServeModel(ServeModel):
-    def __init__(
-        self,
-        app: FastAPI,
-        name: str,
-        *,
-        predict: Callable[[Any, Any], Union[Awaitable[Any], Any]],
-        version: Optional[str] = None,
-        description: Optional[str] = None,
-        preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
-        postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
-    ):
-        super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
-
-        self._config = ModelConfig(
-            name=name, version=version, description=description, platform="CPU"
-        )
-
-        if not inspect.iscoroutinefunction(predict):
-            predict = asynchronous(predict)
-
-        self._model = CPUModel(self._config, predict=predict)
-
-    async def predict(self, *args: Any, **kwargs: Any) -> Any:
-        with tracer.start_as_current_span("{}:predict (cpu)".format(self._name)):
-            return await self._model.predict(*args, **kwargs)
-
-    @property
-    def inner(self) -> Model:
-        return self._model
-
-    @property
-    def config(self) -> ModelConfig:
-        return self._config
-
-    @property
-    def inputs(self) -> List[TensorDesc]:
-        raise NotImplementedError("CPUServerModel inputs() not yet supported")
-
-    @property
-    def outputs(self) -> List[TensorDesc]:
-        raise NotImplementedError("CPUServerModel outputs() not yet supported")
 
 
 class OpenVINOServeModel(ServeModel):

@@ -10,7 +10,7 @@ from furiosa.server.registry import InMemoryRegistry
 from furiosa.server.repository import Repository
 
 from .apps.repository import repository
-from .model import CPUServeModel, NPUServeModel, OpenVINOServeModel, ServeModel
+from .model import FuriosaRTServeModel, OpenVINOServeModel, ServeModel
 from .telemetry import setup_metrics, setup_otlp
 
 
@@ -53,8 +53,7 @@ class ServeAPI:
             self._models[model.inner] = model
 
         constructors = {
-            "nux": partial(nux, app=self.app, on_create=register),
-            "python": partial(python, app=self.app, on_create=register),
+            "furiosart": partial(furiosart, app=self.app, on_create=register),
             "openvino": partial(openvino, app=self.app, on_create=register),
         }
 
@@ -100,32 +99,7 @@ def fallback(location: str) -> str:
         return "file://" + location
 
 
-async def python(
-    name: str,
-    predict: Callable[[Any, Any], Awaitable[Any]],
-    *,
-    app: FastAPI,
-    on_create: Callable[[ServeModel], None],
-    version: Optional[str] = None,
-    description: Optional[str] = None,
-    preprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
-    postprocess: Optional[Callable[[Any, Any], Awaitable[Any]]] = None,
-) -> CPUServeModel:
-    model = CPUServeModel(
-        app,
-        name,
-        version=version,
-        description=description,
-        predict=predict,
-        preprocess=preprocess,
-        postprocess=postprocess,
-    )
-
-    on_create(model)
-    return model
-
-
-async def nux(
+async def furiosart(
     name: str,
     location: str,
     *,
@@ -139,8 +113,8 @@ async def nux(
     batch_size: Optional[int] = None,
     worker_num: Optional[int] = None,
     compiler_config: Optional[Dict] = None,
-) -> NPUServeModel:
-    model = NPUServeModel(
+) -> FuriosaRTServeModel:
+    model = FuriosaRTServeModel(
         app,
         name,
         model=await transport.read(fallback(location)),

@@ -60,19 +60,19 @@ serve = ServeAPI()
 
 
 # Load model from local disk
-imagenet: ServeModel = synchronous(serve.model("nux"))(
+imagenet: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
 
 # Load model from HTTP
-resnet: ServeModel = synchronous(serve.model("nux"))(
+resnet: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
      location='https://raw.githubusercontent.com/onnx/models/main/vision/classification/resnet/model/resnet50-v1-12.onnx'
 )
 
 # Load model from S3 (Auth environment variable for aioboto library required)
-densenet: ServeModel = synchronous(serve.model("nux"))(
+densenet: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
      location='s3://furiosa/models/93d63f654f0f192cc4ff5691be60fb9379e9d7fd'
 )
@@ -98,7 +98,7 @@ import numpy as np
 serve = ServeAPI()
 
 
-model: ServeModel = synchronous(serve.model("nux"))(
+model: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
@@ -163,7 +163,7 @@ from furiosa.serving.processors import ImageNet
 
 serve = ServeAPI()
 
-model: ServeModel = synchronous(serve.model("nux"))(
+model: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
@@ -227,12 +227,12 @@ from furiosa.serving.processors import ImageNet, SegmentNet
 
 serve = ServeAPI()
 
-imagenet: ServeModel = synchronous(serve.model("nux"))(
+imagenet: ServeModel = synchronous(serve.model("furiosart"))(
     'imagenet',
     location='./examples/assets/models/image_classification.onnx'
 )
 
-segmentnet: ServeModel = synchronous(serve.model("nux"))(
+segmentnet: ServeModel = synchronous(serve.model("furiosart"))(
     'segmentnet',
     location='./examples/assets/models/image_segmentation.onnx'
 )

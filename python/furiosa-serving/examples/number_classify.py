@@ -10,7 +10,7 @@ import numpy as np
 import uvicorn
 
 from furiosa.common.thread import synchronous
-from furiosa.serving import NPUServeModel, ServeAPI
+from furiosa.serving import FuriosaRTServeModel, ServeAPI
 
 # Main serve API
 serve = ServeAPI()
@@ -38,7 +38,7 @@ def detect_npu_devices(use_fusion: bool) -> List[str]:
 
 
 # Define model
-model: NPUServeModel = synchronous(serve.model("nux"))(
+model: FuriosaRTServeModel = synchronous(serve.model("furiosart"))(
     "MNIST",
     location="./assets/models/MNISTnet_uint8_quant_without_softmax.tflite",
     # A Model can have a pool of multiple devices.
@@ -50,7 +50,7 @@ model: NPUServeModel = synchronous(serve.model("nux"))(
 
 
 class Application:
-    def __init__(self, model: NPUServeModel):
+    def __init__(self, model: FuriosaRTServeModel):
         self.model = model
 
     async def process(self, image: Image.Image) -> str:
