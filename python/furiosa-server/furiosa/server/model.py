@@ -1,18 +1,7 @@
 """Model class for prediction/explanation."""
 from abc import ABC, abstractmethod
 import asyncio
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Generic,
-    List,
-    Optional,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import TYPE_CHECKING, Generic, List, Optional, TypeVar, Union, overload
 
 import numpy as np
 from typing_extensions import deprecated
@@ -81,7 +70,7 @@ class Model(ABC, Generic[T]):
         pass
 
 
-class NPUModel(Model[NPUModelConfig]):
+class FuriosaRTModel(Model[NPUModelConfig]):
     """Model running on NPU."""
 
     def __init__(self, config: NPUModelConfig):
@@ -164,30 +153,13 @@ class NPUModel(Model[NPUModelConfig]):
 
 
 @deprecated("Use NPUModel instead")
-class NuxModel(NPUModel):
+class NuxModel(FuriosaRTModel):
     ...
 
 
 @deprecated("Use NPUModel instead")
-class AsyncNuxModel(NPUModel):
+class AsyncNuxModel(FuriosaRTModel):
     ...
-
-
-class CPUModel(Model):
-    """Model runing on CPU."""
-
-    def __init__(
-        self,
-        config: ModelConfig,
-        *,
-        predict: Callable[[Any, Any], Awaitable[Any]],
-    ):
-        super().__init__(config)
-
-        self._predict = predict
-
-    async def predict(self, *args: Any, **kwargs: Any) -> Any:
-        return await self._predict(*args, **kwargs)
 
 
 class OpenVINOModel(Model):
