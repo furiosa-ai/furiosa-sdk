@@ -14,9 +14,7 @@ FuriosaAI NPU 및 SDK |release| 문서
 
 FuriosaAI NPU
 -------------------------------------------------
-* :doc:`FurisaAI NPU 소개</npu/intro>`
-* :ref:`FuriosaAI Warboy 소개 <IntroToWarboy>`: Warboy 하드웨어 사양, 성능 등 자세한 소개
-* :doc:`/npu/supported_operators`
+* :doc:`FurisaAI Warboy </npu/warboy>`: 하드웨어 사양, 성능, 가속 연산자 소개
 
 FuriosaAI Software
 -------------------------------------------------
@@ -59,13 +57,11 @@ FuriosaAI SDK 튜토리얼 및 코드 예제
 
 
 .. toctree::
-   :caption: FuriosaAI NPU
+   :maxdepth: 1
    :hidden:
-   :maxdepth: 2
+   :caption: FuriosaAI NPU
 
-   /npu/intro
-   /npu/supported_operators
-
+   /npu/warboy
 
 .. toctree::
    :maxdepth: 1
