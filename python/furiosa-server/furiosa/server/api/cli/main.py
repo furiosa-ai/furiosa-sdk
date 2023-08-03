@@ -9,7 +9,7 @@ import typer
 from furiosa.common.thread import synchronous
 
 from ...server import ModelServer
-from ...settings import NPUModelConfig, RESTServerConfig, ServerConfig
+from ...settings import FuriosaRTModelConfig, RESTServerConfig, ServerConfig
 from ...utils.loader import load_model_config, load_server_config
 
 
@@ -73,7 +73,9 @@ async def start(
             raise typer.Exit(1)
     else:
         # Create a NPUModel config if model config is not provided
-        model_configs = [NPUModelConfig(model=model_path, name=model_name, version=model_version)]
+        model_configs = [
+            FuriosaRTModelConfig(model=model_path, name=model_name, version=model_version)
+        ]
 
     await ModelServer(config, model_configs).start()
 

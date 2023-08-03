@@ -9,7 +9,7 @@ from typing_extensions import deprecated
 from furiosa.runtime import Runner, Tensor, TensorArray, TensorDesc, create_runner
 from furiosa.runtime._utils import default_device
 
-from .settings import ModelConfig, NPUModelConfig, OpenVINOModelConfig
+from .settings import FuriosaRTModelConfig, ModelConfig, OpenVINOModelConfig
 from .types import (
     InferenceRequest,
     InferenceResponse,
@@ -70,10 +70,10 @@ class Model(ABC, Generic[T]):
         pass
 
 
-class FuriosaRTModel(Model[NPUModelConfig]):
+class FuriosaRTModel(Model[FuriosaRTModelConfig]):
     """Model running on NPU."""
 
-    def __init__(self, config: NPUModelConfig):
+    def __init__(self, config: FuriosaRTModelConfig):
         super().__init__(config)
 
         self.runner: Optional[Runner] = None
@@ -114,7 +114,7 @@ class FuriosaRTModel(Model[NPUModelConfig]):
         if self.ready:
             return True
 
-        assert isinstance(self._config, NPUModelConfig)
+        assert isinstance(self._config, FuriosaRTModelConfig)
 
         devices = self._config.npu_device or default_device()
         assert devices is not None
