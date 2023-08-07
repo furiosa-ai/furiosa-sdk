@@ -9,9 +9,9 @@ from opentelemetry import trace
 from furiosa.runtime import TensorDesc
 from furiosa.server import (
     FuriosaRTModel,
+    FuriosaRTModelConfig,
     Model,
     ModelConfig,
-    NPUModelConfig,
     OpenVINOModel,
     OpenVINOModelConfig,
 )
@@ -142,7 +142,7 @@ class FuriosaRTServeModel(ServeModel):
     ):
         super().__init__(app, name, preprocess=preprocess, postprocess=postprocess)
 
-        self._config = NPUModelConfig(
+        self._config = FuriosaRTModelConfig(
             name=name,
             model=model,
             version=version,
@@ -164,7 +164,7 @@ class FuriosaRTServeModel(ServeModel):
         return self._model
 
     @property
-    def config(self) -> NPUModelConfig:
+    def config(self) -> FuriosaRTModelConfig:
         return self._config
 
     @property

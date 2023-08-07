@@ -69,7 +69,7 @@ class ModelConfig(BaseSettings):
     outputs: Optional[List[MetadataTensor]] = []
 
 
-class NPUModelConfig(ModelConfig):
+class FuriosaRTModelConfig(ModelConfig):
     """Model configuration for a NPU model."""
 
     # Model property for NPU

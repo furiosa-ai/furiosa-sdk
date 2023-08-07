@@ -197,8 +197,8 @@ spec:
             cd $(workspaces.source.path)/python
 
             VERSION=$(grep -Po "version = (\\K[^']+)" furiosa-sdk/pyproject.toml)
-            # Add nghtly version (+ hour: %H) to prioritize local installed package
-            SDK_VERSION=$(echo $VERSION | sed "s/dev[0-9]\+/dev$(date +'%y%m%d%H')/") make set-version
+            # Set VERSION to x.y.99 get priority over internal PYPI's nightly, rc versions
+            SDK_VERSION="$(echo $VERSION | cut -d '.' -f -2).99\"" make set-version
     params:
       - name: bump-image
         value: $(tasks.build.results.IMAGE_URL)

@@ -3,7 +3,7 @@ import asyncio
 from ..errors import ModelNotFound
 from ..model import FuriosaRTModel
 from ..repository import Repository
-from ..settings import ModelConfig, NPUModelConfig
+from ..settings import FuriosaRTModelConfig, ModelConfig
 from ..types import (
     RepositoryIndexRequest,
     RepositoryIndexResponse,
@@ -57,7 +57,7 @@ class RepositoryHandler:
         model_config = await self._repository.find(name)
 
         # TODO(yan): Abtract Model here
-        assert isinstance(model_config, NPUModelConfig)
+        assert isinstance(model_config, FuriosaRTModelConfig)
 
         return await self._repository.load(FuriosaRTModel(model_config))
 
