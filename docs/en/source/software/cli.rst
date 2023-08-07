@@ -7,12 +7,12 @@ Through the command line tools, Furiosa SDK provides functions such as monitorin
 .. _Toolkit:
 
 furiosa-toolkit
-===================================
+############################################################
 ``furiosa-toolkit`` provides a command line tool that enables users to manage and check the information of NPU devices.
 
 
 furiosa-toolkit installation
---------------------------------------
+========================================
 To use this command line tool, you first need to install the kernel driver as shown in :ref:`RequiredPackages`.
 Subsequently, follow the instructions below to install furiosa-toolkit.
 
@@ -26,8 +26,8 @@ Subsequently, follow the instructions below to install furiosa-toolkit.
 
 
 
-furiosactl instructions
-----------------------------------------
+furiosactl
+========================================
 The furiosactl command provides a variety of subcommands and has the ability to obtain information or control the device.
 
 .. code-block:: sh
@@ -36,7 +36,7 @@ The furiosactl command provides a variety of subcommands and has the ability to 
 
 
 ``furiosactl info``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 After installing the kernel driver, you can use the ``furiosactl`` command to check whether the NPU device is recognized.
 Currently, this command provides the ``furiosactl info`` command to output temperature, power consumption and PCI information of the NPU device.
 If the device is not visible with this command after mounting it on the machine, :ref:`RequiredPackages` to install the driver.
@@ -60,7 +60,7 @@ If you add the ``--full`` option to the ``info`` command, you can see the device
   +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
 
 ``furiosactl list``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 The ``list`` subcommand provides information about the device files available on the NPU device.
 You can also check whether each core present in the NPU is in use or idle.
 
@@ -75,7 +75,7 @@ You can also check whether each core present in the NPU is in use or idle.
 
 
 ``furiosactl ps``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 The ``ps`` subcommand prints information about the OS process currently occupying the NPU device.
 
 .. code-block:: sh
@@ -89,7 +89,7 @@ The ``ps`` subcommand prints information about the OS process currently occupyin
 
 
 ``furiosactl top`` (experimental)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 The ``top`` subcommand is used to view utilization by NPU unit over time.
 The output has the following meaning
 By default, utilization is calculated every 1 second, but you can set the calculation interval yourself with the ``--interval`` option. (unit: ms)
@@ -132,8 +132,101 @@ By default, utilization is calculated every 1 second, but you can set the calcul
     2023-03-21T09:45:58.13929122Z   152616    npu1pe0-1      49.06     94.94     5.06   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
 
 
+.. _FuriosaBench:
+
+furiosa-bench (Benchmark Tool)
+#############################################
+
+``furiosa-bench`` command carries out a benchmark with a ONNX or TFLite model and a workload using furiosa-runtime. A benchmark result includes tail latency and QPS.
+
+The arguments of the command are as follows:
+
+.. code-block:: sh
+  
+  $ furiosa-bench --help 
+  USAGE:
+    furiosa-bench [OPTIONS] <model-path>
+
+    OPTIONS:
+        -b, --batch <number>                       Sets the number of batch size, which should be exponents of two [default: 1]
+        -o, --output <bench-result-path>           Create json file that has information about the benchmark
+        -C, --compiler-config <compiler-config>    Sets a file path for compiler configuration (YAML format)
+        -d, --devices <devices>                    Designates NPU devices to be used (e.g., "warboy(2)*1" or "npu0pe0-1")
+        -h, --help                                 Prints help information
+        -t, --io-threads <number>                  Sets the number of I/O Threads [default: 1]
+            --duration <min-duration>              Sets the minimum test time in seconds. Both min_query_count and min_duration should be met to finish the test
+                                                  [default: 0]
+        -n, --queries <min-query-count>            Sets the minimum number of test queries. Both min_query_count and min_duration_ms should be met to finish the
+                                                  test [default: 1]
+        -T, --trace-output <trace-output>          Sets a file path for profiling result (Chrome Trace JSON format)
+        -V, --version                              Prints version information
+        -v, --verbose                              Print verbose log
+        -w, --workers <number>                     Sets the number of workers [default: 1]
+            --workload <workload>                  Sets the bench workload which can be either latency-oriented (L) or throughput-oriented (T) [default: L]
+
+    ARGS:
+        <model-path>
+
+
+MODEL_PATH is the file path of ONNX, TFLite or ENF (format produced by :ref:`CompilerCli`). 
+
+The following is an example usage of furiosa-bench without an output path option (i.e., ``--output`` ):
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2   
+
+    ======================================================================
+    This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
+    1000 queries executed with batch size 1
+    Latency stats are as follows
+    QPS(Throughput): 34.40/s
+
+    Per-query latency:
+    Min latency (us)    : 8399
+    Max latency (us)    : 307568
+    Mean latency (us)   : 29040
+    50th percentile (us): 19329
+    95th percentile (us): 62797
+    99th percentile (us): 79874
+    99th percentile (us): 307568
+  
+If an output path is specified, furiosa-bench will save a JSON document as follows:
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2 -o mnist.json
+  $ cat mnist.json
+
+    {
+        "model_data": {
+            "path": "./mnist-8.onnx",
+            "md5": "d7cd24a0a76cd492f31065301d468c3d  ./mnist-8.onnx"
+        },
+        "compiler_version": "0.10.0-dev (rev: 2d862de8a built_at: 2023-07-13T20:05:04Z)",
+        "hal_version": "Version: 0.12.0-2+nightly-230716",
+        "git_revision": "fe6f77a",
+        "result": {
+            "mode": "Latency",
+            "total run time": "30025 us",
+            "total num queries": 1000,
+            "batch size": 1,
+            "qps": "33.31/s",
+            "latency stats": {
+                "min": "8840 us",
+                "max": "113254 us",
+                "mean": "29989 us",
+                "50th percentile": "18861 us",
+                "95th percentile": "64927 us",
+                "99th percentile": "87052 us",
+                "99.9th percentile": "113254 us"
+            }
+        }
+    }  
+
+
 furiosa
-===================================
+#############################################
 
 The ``furiosa`` command is a meta-command line tool that can be used by installing the `Python SDK <PythonSDK>`.
 Additional subcommands are also added when the extension package is installed.
@@ -158,7 +251,7 @@ Verifying installation.
 
 
 furiosa compile
---------------------
+=======================================
 
 The ``compile`` command compiles models such as `ONNX <https://onnx.ai/>`_ and `TFLite <https://www.tensorflow.org/lite>`_, generating programs that utilize FuriosaAI NPU.
 
@@ -167,7 +260,7 @@ Detailed explanations and options can be found in the :ref:`CompilerCli` page.
 .. _Litmus:
 
 furiosa litmus (Model Compatibility Checker)
-----------------------------------------------------------------------
+========================================================
 
 The ``litmus`` is a tool to check quickly if an `ONNX`_ model can work normally with Furiosa SDK using NPU.
 ``litmus`` goes through all usage steps of Furiosa SDK, including quantization, compilation, and inferences on FuriosaAI NPU.
@@ -273,94 +366,3 @@ If you have any problems, you can get support through `FuriosaAI customer servic
   archive-16904388032l4hoi3h/compiler/model.dot
   archive-16904388032l4hoi3h/runtime/trace.json
 
-
-.. _Bench:
-
-furiosa bench (Benchmark Tool)
----------------------------------------------------------------------------------
-
-``bench`` command carries out a benchmark with a ONNX or TFLite model and a workload using furiosa-runtime. A benchmark result includes tail latency and QPS.
-
-The arguments of the command are as follows.
-
-.. code-block:: sh
-  
-  $ furiosa-bench --help 
-  USAGE:
-    furiosa-bench [OPTIONS] <model-path>
-
-    OPTIONS:
-        -b, --batch <number>                       Sets the number of batch size, which should be exponents of two [default: 1]
-        -o, --output <bench-result-path>           Create json file that has information about the benchmark
-        -C, --compiler-config <compiler-config>    Sets a file path for compiler configuration (YAML format)
-        -d, --devices <devices>                    Designates NPU devices to be used (e.g., "warboy(2)*1" or "npu0pe0-1")
-        -h, --help                                 Prints help information
-        -t, --io-threads <number>                  Sets the number of I/O Threads [default: 1]
-            --duration <min-duration>              Sets the minimum test time in seconds. Both min_query_count and min_duration should be met to finish the test
-                                                  [default: 0]
-        -n, --queries <min-query-count>            Sets the minimum number of test queries. Both min_query_count and min_duration_ms should be met to finish the
-                                                  test [default: 1]
-        -T, --trace-output <trace-output>          Sets a file path for profiling result (Chrome Trace JSON format)
-        -V, --version                              Prints version information
-        -v, --verbose                              Print verbose log
-        -w, --workers <number>                     Sets the number of workers [default: 1]
-            --workload <workload>                  Sets the bench workload which can be either latency-oriented (L) or throughput-oriented (T) [default: L]
-
-    ARGS:
-        <model-path>
-
-
-MODEL_PATH is the file path of ONNX, TFLite or ENF(format produced by using :ref:`CompilerCli`). 
-
-The following is an example usage of furiosa-bench without an output path option (i.e., ``--output`` ):
-
-.. code-block:: sh
-
-  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2   
-
-    ======================================================================
-    This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
-    1000 queries executed with batch size 1
-    Latency stats are as follows
-    QPS(Throughput): 34.40/s
-
-    Per-query latency:
-    Min latency (us)    : 8399
-    Max latency (us)    : 307568
-    Mean latency (us)   : 29040
-    50th percentile (us): 19329
-    95th percentile (us): 62797
-    99th percentile (us): 79874
-    99th percentile (us): 307568
-  
-If an output path is specified, furiosa-bench will save a json document as the following:
-
-.. code-block:: sh
-
-  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2 -o mnist.json | cat mnist.json
-
-    {
-        "model_data": {
-            "path": "./mnist-8.onnx",
-            "md5": "d7cd24a0a76cd492f31065301d468c3d  ./mnist-8.onnx"
-        },
-        "compiler_version": "0.10.0-dev (rev: 2d862de8a built_at: 2023-07-13T20:05:04Z)",
-        "hal_version": "Version: 0.12.0-2+nightly-230716",
-        "git_revision": "fe6f77a",
-        "result": {
-            "mode": "Latency",
-            "total run time": "30025 us",
-            "total num queries": 1000,
-            "batch size": 1,
-            "qps": "33.31/s",
-            "latency stats": {
-                "min": "8840 us",
-                "max": "113254 us",
-                "mean": "29989 us",
-                "50th percentile": "18861 us",
-                "95th percentile": "64927 us",
-                "99th percentile": "87052 us",
-                "99.9th percentile": "113254 us"
-            }
-        }
-    }  

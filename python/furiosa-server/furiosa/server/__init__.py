@@ -3,7 +3,7 @@
 from .errors import ModelNotFound, ModelServerError
 from .model import AsyncNuxModel, FuriosaRTModel, Model, NuxModel, OpenVINOModel
 from .server import ModelServer
-from .settings import ModelConfig, NPUModelConfig, OpenVINOModelConfig, ServerConfig
+from .settings import FuriosaRTModelConfig, ModelConfig, OpenVINOModelConfig, ServerConfig
 
 __all__ = [
     # Server
@@ -17,7 +17,7 @@ __all__ = [
     "AsyncNuxModel",
     # Config
     "ModelConfig",
-    "NPUModelConfig",
+    "FuriosaRTModelConfig",
     "OpenVINOModelConfig",
     "ServerConfig",
     # Errors

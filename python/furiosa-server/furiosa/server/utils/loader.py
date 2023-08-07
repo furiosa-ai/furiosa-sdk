@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 
 import yaml
 
-from ..settings import ModelConfig, NPUModelConfig, ServerConfig
+from ..settings import FuriosaRTModelConfig, ModelConfig, ServerConfig
 
 
 def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
@@ -12,7 +12,7 @@ def load_model_config(stream: Union[TextIOWrapper, Dict]) -> List[ModelConfig]:
     source = stream if isinstance(stream, MutableMapping) else yaml.safe_load(stream)
 
     def config(model):
-        return NPUModelConfig if model["platform"] == "npu" else ModelConfig
+        return FuriosaRTModelConfig if model["platform"] == "npu" else ModelConfig
 
     return [config(model).model_validate(model) for model in source["model_config_list"]]
 

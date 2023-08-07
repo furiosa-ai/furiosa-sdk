@@ -3,6 +3,7 @@ import os
 from typing import Any, Awaitable, Callable, Dict, Optional
 
 from fastapi import FastAPI
+from typing_extensions import deprecated
 
 from furiosa.common import transport
 from furiosa.server.model import Model
@@ -52,8 +53,13 @@ class ServeAPI:
             # Keep inner model config for model discovery
             self._models[model.inner] = model
 
+        @deprecated("Use furiosart instead")
+        async def nux(*args: Any, **kwargs: Any) -> FuriosaRTServeModel:
+            return await furiosart(*args, **kwargs)
+
         constructors = {
             "furiosart": partial(furiosart, app=self.app, on_create=register),
+            "nux": partial(nux, app=self.app, on_create=register),
             "openvino": partial(openvino, app=self.app, on_create=register),
         }
 

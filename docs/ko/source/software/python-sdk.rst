@@ -144,8 +144,8 @@ furiosa-sdk를 설치하기에 앞서, Python의 패키지 설치 도구를 최�
 
   .. code-block:: sh
     
-      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
-      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk)
 
 
 

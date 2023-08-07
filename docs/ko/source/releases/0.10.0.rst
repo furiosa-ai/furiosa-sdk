@@ -1,0 +1,338 @@
+*********************************************************
+Release Notes - 0.10.0
+*********************************************************
+
+Furiosa SDK 0.10.0은 메이저 릴리스(Major Release)로
+여러 장치를 지원하는 차세대 런타임 엔진,
+모델의 양자화 연산자를 제거하여 성능을 향샹 시키는 최적화 기능의 사용성 개선,
+NPU 사용률 등의 여러 지표를 OpenMetrics 형식으로 제공하는 기능 등을 포함한다.
+furiosa-litmus는 리포팅 목적의 정보 수집이 가능하도록 개선 되었으며,
+furiosa-compiler 명령행 도구의 파이썬 의존성 제거, 벤치마크 명령행 도구 추가 등의 기능 개선이 이루어졌다.
+그 외에도 다수의 기능 추가, 버그 수정, 성능 개선 등을 포함한다.
+
+.. list-table:: 컴포넌트 버전 정보
+   :widths: 200 50
+   :header-rows: 1
+
+   * - 패키지 이름
+     - 버전
+   * - NPU Driver
+     - 1.9.2
+   * - NPU Firmware Tools
+     - 1.5.1
+   * - NPU Firmware Image
+     - 1.7.3
+   * - HAL (Hardware Abstraction Layer)
+     - 0.11.0
+   * - Furiosa Compiler
+     - 0.10.0
+   * - Furiosa Quantizer
+     - 0.10.0
+   * - Furiosa Runtime
+     - 0.10.0
+   * - Python SDK (furiosa-server, furiosa-serving, ..)
+     - 0.10.0
+   * - NPU Toolkit (furiosactl)
+     - 0.11.0
+   * - NPU Device Plugin
+     - 0.10.1
+   * - NPU Feature Discovery
+     - 0.2.0
+
+설치 또는 업그레이드 방법
+################################################################
+APT 패키지 관리자 사용하고 있다면 다음과 같이 업그레이드할 수 있다.
+
+.. code-block:: sh
+
+  apt-get update && apt-get upgrade
+
+특정 패키지를 지정해서 업그레이드 하고 싶다면 다음과 같이 실행 한다.
+APT 패키지 관리자 설정 및 설치 방법에 대한 자세한 설명은 :ref:`RequiredPackages` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+  apt-get update && \
+  apt-get install -y furiosa-driver-warboy furiosa-libnux
+
+펌웨어 업그레이드는 다음과 같이 실행한다.
+
+.. code-block:: sh
+
+    apt-get update && \
+    apt-get install -y furiosa-firmware-tools furiosa-firmware-image
+
+파이썬 패키지 업그레이드는 다음과 같이 실행한다. 새로 추가된 기능들을 사용하기 위해서는 패키지 설치와 관련된 도구들이 최신 버전으로 먼저 업데이트 되어야 한다.
+파이썬 패키지 설치와 환경 설정에 대한 자세한 설명은 :ref:`PythonSDK` 에서 찾을 수 있다.
+
+.. code-block:: sh
+
+    pip install --upgrade pip setuptools wheel
+    pip install --upgrade furiosa-sdk
+
+.. warning::
+
+  pip를 업그레이드 할 때 아래 오류를 접한다면, ``pip install --upgrade pip`` 명령을 통해 pip를 먼저 업그레이드 해야 한다.
+
+  .. code-block:: sh
+
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk)
+
+주요 변경 사항
+################################################################
+
+차세대 런타임 엔진(FuriosaRT) 도입 및 런타임 개선
+================================================================
+
+0.10.0 릴리스는 차세대 런타임 Furiosa Runtime (FuriosaRT)를 포함한다. FuriosaRT는
+새로 설계된 런타임 라이브러리로 향후 더 많은 기능을 제공할 수 있도록 설계되었으며 다양한 워크로드에서 높은 성능을 제공한다.
+FuriosaRT는 추론을 제공하는 핵심 라이브러리로 Python API를 제공 할 뿐 아니라 ``furiosa-bench`` 와 ``furiosa-litmus``
+같은 명령행 도구, 그리고 서빙 프레임워크 등에서 사용된다. FuriosaRT는 기존 런타임과
+거의 호환될 뿐 아니라 다음과 같은 새로운 기능을 포함한다.
+
+
+새 API 도입
+-----------------------------------
+
+FuriosaRT는 파이썬 `asyncio <https://docs.python.org/3/library/asyncio.html>`_ 를
+사용한 비동기(async) API를 새로이 지원한다. 기존의 동기 API는 배치 작업에는 충분하였으나
+개별적 요청에 따라 추론을 해야 서빙 시나리오에서는 부족함이 있었다. 새로운 런타임에서는 비동기 API가
+기본적으로 지원되며, 기존 기능을 유지하면서도 더 간결하게 사용할 수 있도록 많은 부분이 다듬어졌다.
+새 API에 대한 상세한 설명은 `Furiosa SDK API Reference - furiosa.runtime <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html>`_
+에서 찾아 볼 수 있다.
+
+.. _RELEASE_0_10_0_DeviceSelector:
+
+멀티 NPU 지원 및 장치 설정 방법 개선
+---------------------------------------------
+
+FuriosaRT에서는 하나의 세션에서 다수의 장치를 지원한다. 따라서 별도 구현 없이도 다수의 장치를 이용하여 고성능 추론을 수행할 수 있다.
+또한, 개선된 장치 지정 방법을 제공한다. 기존에는 환경변수
+``NPU_DEVNAME`` 또는 ``session.create(.., device=”..”)`` 와 같은 API를 이용해서 ``devfs`` 의
+장치파일 이름을 직접 설정해야 했다. 이 방법은 다양한 환경에서 그대로 적용하기 어렵고 많은 장치를 사용해야 하는 경우
+설정이 복잡했다.
+
+이번 릴리스 부터 ``devfs`` 이름을 연상 시키는 환경 변수 ``NPU_DEVNAME`` 대신
+``FURIOSA_DEVICES`` 라는 새로운 환경변수가 도입되었다. 또한 이 환경 변수는
+NPU 종류, 구성, 개수를 표현하는 텍스트 설정을 받아 들인다.
+
+.. code-block:: sh
+
+  export FURIOSA_DEVICES="warboy(2)*8"
+
+
+위 예제는 FuriosaRT가 시스템에서 가용한 2-PE 퓨전된 8개의 Warboy를 찾아 사용하게 한다.
+또한 아래 예와 같이 특정 장치의 식별자를 지정하는 방법도 지원한다.
+
+.. code-block:: sh
+
+  export FURIOSA_DEVICES="npu:0:0-1,npu:1:0-1"
+
+
+하위 호환성 보장을 위해 FuriosaRT는 ``NPU_DEVNAME`` 환경 변수도 여전히 지원하며
+``npu0pe0-1`` 과 기존 설정 방법도 여전히 사용 가능하다. 그러나 향후 릴리스에서 ``NPU_DEVNAME`` 환경변수는
+제거될 예정이다.
+
+자세한 장치 설정 방법은 `Furiosa SDK API Reference - Device Specification <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html#device-specification>`_ 에서 찾아볼 수 있다.
+
+
+처리량(throughput) 향상
+---------------------------------------------
+기존 런타임보다 처리량(throughput)이 크게 향상되었다. 또한, `worker_num <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html#runner-api>`_
+설정을 통해 제어되는 워커(worker 또는 NPU 스레드)가 기존에는 2를 초과하면 성능이 크게 향상되지 않았으나
+FuriosaRT에서는 모델에 따라 10 이상에서도 성능이 향상되는 것을 관찰하였다.
+이번 릴리스부터 포함된 ``furiosa-bench`` 를 이용해
+Resnet50, YOLOv5m, YOLOv5L, SSD ResNet34, SSD MobileNet 모델의 처리량 벤치마크를 수행하였고
+``worker_num >= 4`` 조건에서 모델에 따라 수 퍼센트에서 수십 퍼센트까지 성능이 향상되는 것을 관찰할 수 있었다.
+모델 서버와 서빙 프레임워크 개선
+================================================================
+``furiosa-server``, ``furioa-serving`` 은 각각 모델의 서빙을 제공하는 웹 서버와
+서빙 애플리케이션을 개발하기 위한 라이브러리이다.
+
+이번 릴리스에서는 차세대 런타임인 FuriosaRT를 사용하도록 개선되었으며 구체적인 개선 사항은 다음과 같다.
+
+* :ref:`RELEASE_0_10_0_DeviceSelector` 이 그대로 적용되어 다수의 장치를 쉽게 설정할 수 있다.
+* FuriosaRT가 제공하는 `asyncio <https://docs.python.org/3/library/asyncio.html>`_ 기반의 새 API를 사용하도록 내부가 개선되어 더 적은 리소스로 더 높은 성능을 낼 수 있다.
+* FuriosaRT의 성능 향상 혜택을 그대로 볼 수 있다. 즉, 더 성능 높은 워커 수를 이용할 수 있다.
+
+모델 서버에 대한 자세한 설명은 :ref:`ModelServing` 을 참고한다.
+
+모델 양자화 도구(quantization tool) 개선
+================================================================
+``furiosa-quantizer`` 는 트레이닝 된 모델을 양자화된 모델로 변환(post-training quantization) 해주는
+라이브러리이다. 이번 0.10.0 릴리스에는 양자화 도구의 사용성을 크게 개선 하였으며 이를 위해
+``furiosa.quantizer.quantize()`` 함수의 일부 파라미터가 변경되었다.
+
+기존 문제점
+-----------------------------------------------------------------
+``furiosa.quantizer.quantize()`` 함수는 모델 양자화 도구의 핵심 함수로
+ONNX 모델을 양자화된 모델(quantized model)로 변환하여 반환한다.
+입력 타입을 ``float32`` 대신 ``uint8`` 로 직접 사용할 수 있도록 하는 ``with_quantize``
+파라미터를 제공하는데, 이미지와 같이 원본 데이터(픽셀 값)이 ``uint8`` 로 표현되는 경우에 실행 중 양자화 과정을 생략할 수 있어
+큰 성능 향상을 기대할 수 있다.
+예를 들면, YOLOv5 Large 같은 모델의 경우 이 옵션을 사용하면 60.639 ms 에서 0.277 ms 로 실행 시간이 크게 개선된다.
+
+동일한 방법으로 출력 타입도 ``float32`` 대신 ``unt8`` 로 직접 사용할 수 있도록 하는 ``normalized_pixel_outputs``
+옵션을 제공하는데 모델의 출력이 RGB 형태로 표현되는 이미지이거나, 정수 값으로 직접 사용 가능한 경우 선택할 수 있다.
+이 옵션 역시 큰 성능 향상을 기대할 수 있다.
+
+응용에 따라 두 옵션이 사용 가능한 경우 수배에서 수백배까지도 실행 시간을 단축시킬 수 있다.
+그러나 다음과 같은 한계와 피드백이 있었다.
+
+* 모델의 출력이 이미지가 아닌 경우 파라미터 이름 ``normalized_pixel_outputs`` 가 의미를 잘 표현하지 못한다.
+* ``normalized_pixel_outputs`` 옵션은 지정된 출력 텐서의 범위를 0과 1 사이 실수로 전제하는데 다양한 응용에 적용하는데 한계가 있다.
+* ``with_quantize``, ``normalized_pixel_outputs`` 옵션 모두 ``uint8`` 타입만 지원했으며 ``int8`` 타입을 지원하지 못했다.
+
+개선 사항
+-----------------------------------------------------------------
+* ``furiosa.quantizer.quantize()`` 에서 ``with_quantize``, ``normalized_pixel_outputs`` 가 파라미터에서 제거 된다.
+* 대신 `ModelEditor <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.quantizer.html#furiosa.quantizer.ModelEditor>`_ 추가되어 모델의 입력/출력 타입에 대한 상세한 최적화 옵션을 설정할 수 있으며 다음 기능을 제공한다.
+  * ``convert_input_type(tensor_name, TensorType)`` 메소드는 텐서 이름을 받아 해당 입력 텐서에 해당되는
+  ``quantize`` 연산자를 제거하고 입력 타입을 ``TensorType`` 으로 변경한다.
+  * ``convert_output_type(tensor_name, TensorType, tensor_range)`` 메소드는 텐서 이름을 받아 해당 출력 텐서에 해당되는
+  ``dequantize`` 연산자를 제거하고 입력 타입을 ``TensorType`` 으로 변경하고 주어진 ``tensor_range`` 범위에 맞게 스케일하도록 모델을 수정한다.
+* ``convert_{output,input}_type`` 함수는 텐서 이름을 사용하기 때문에 ``furiosa.quantizer`` 모듈 아래 ``get_pure_input_names(ModelProto)`` ``get_output_names(ModelProto)`` 같은 헬퍼 함수를 사용하여 텐서 이름을 얻어야 한다.
+
+.. note::
+
+  이번 릴리즈에 포함된 ``furiosa.quantizer.quantize()`` 에서 ``with_quantize``, ``normalized_pixel_outputs``
+  가 파라미터에서 제거 된 것은 기존 코드를 수정해야 하는 변경이다.
+
+더 자세한 내용은 `ModelEditor <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.quantizer.html#furiosa.quantizer.ModelEditor>`_ 의
+API 레퍼런스를 참고할 수 있으며 실제 적용 예는 :ref:`Tutorial` 의 예제 코드에서 찾아볼 수 있다.
+
+컴파일러 개선
+=====================
+0.10.0의 컴파일러는 `Dequantize` 연산자의 NPU 가속을 지원한다. 따라서 `Dequantize` 연산을 잘 활용할 수 있는
+모델은 성능이 개선될 수 있다. `Dequantize` 연산자 가속과 관련된 다른 최적화 관련 옵션은 최적화 가이드에서 찾아볼 수 있다.
+
+또한, 컴파일러 결과 캐시 기능이 충분히 안정화 되었다고 판단되어 결과 캐쉬 유효기간이 기존 2일에서 30일로 변경된다.
+:ref:`CompilerCache` 에서 자세한 설명을 찾아볼 수 있다.
+
+그 외에도 컴파일러 명령행 도구는 다음 사항이 개선되었다.
+
+* ``furiosa compile`` 대신 ``furiosa-compiler`` 명령을 직접 사용할 수 있다.
+* ``furiosa-compiler`` 명령은 네이티브 실행 파일(native executable)이 되어 Python 실행 환경을 요구하지 않는다.
+* ``apt install furiosa-compiler`` 명령을 통해 컴파일러를 설치할 수 있다.
+* Python 의존성을 가지는 기존 ``furiosa compile`` 명령는 현재는 호환성을 위해 유지되며 향후 릴리스에서 제거 될 수 있다.
+
+컴파일러 명령행 도구의 자세한 사용법은 :ref:`CompilerCli` 에서 찾아볼 수 있다.
+
+성능 프로파일러(Profiler) 개선
+================================================================
+성능 프로파일러는 추론의 실제 실행시간을 구간별로 측정하여 성능 분석을 돕는 도구이다.
+이번 릴리스에서는 :ref:`ProfilerEnabledByContext` 기능에 임시 중단/재개 기능이 추가 되었다.
+
+사용자는 프로파일링 컨텍스트 내에서 전/후처리 시간, 워밍업(warming up) 시간 등 프로파일링이 불필요한 구간을
+제외하고 프로파일링 함으로써 프로파일링에 소요되는 오버헤드 및 프로파일링 결과물의 크기를 줄일 수 있다.
+``profile.pause()`` 와 ``profile.resume()`` 함수를 호출하여 프로파일링을 임시로 중단/재개할 수 있다.
+자세한 사용법과 예제는 :ref:`TemporarilyDisablingProfiler` 에서 찾아볼 수 있다.
+
+furiosa-litmus 개선
+================================================================
+``furiosa-litmus`` 는 모델에 대한 NPU와 Furiosa SDK의 호환성을 검사하는 도구이다.
+0.10.0 릴리스에서는 ``furiosa-litmus`` 명령행 도구에 에러 리포팅을 위한 정보 수집 기능이 추가되었다.
+또한 검사하는 단계가 3단계에서 4단계로 확장되었으며 4단계는 모델을 실제 런타임에서 실행하여 추론 성능을 측정한다.
+
+``furiosa-litmus`` 실행 시 ``--dump <OUTPUT_PREFIX>`` 옵션을 사용하면
+각 단계별로 출력되는 로그와 컴파일 단계에서 생성하는 메타데이터, 추론 단계에서 수집하는 프로파일링 결과를 모아
+``<OUTPUT_PREFIX>-<unix_epoch>.zip`` 파일로 저장한다.
+
+.. code-block:: sh
+
+  $ furiosa-litmus <MODEL_PATH> --dump <OUTPUT_PREFIX>
+
+수집된 정보에는 모델 자체를 포함하지 않으며 모델 네트워크의 메타데이터, 메모리 사용량,
+환경 정보(파이썬 버전, SDK, 컴파일러의 버전 및 주요 의존 라이브러리 버전) 등을 포함한다.
+``unzip`` 명령으로 직접 압축을 풀어 내용을 확인할 수 있으며
+버그 리포팅 시 해당 파일을 첨부하면 진단 및 분석에 도움이 된다.
+
+
+furiosa-bench 명령행 도구 추가
+================================================================
+성능 벤치마크 명령행 도구인 ``furiosa-bench`` 가 추가되었다.
+새로 도입되는 furiosa-bench 커맨드는 다양한
+워크로드와 런타임 설정을 간단하게 제어할 수 있는 옵션을 제공한다. 지연 시간과 처리량 위주 워크로드를 선택 가능하며
+얼마나 많은 장치를 사용할지, 얼마나 오래 수행할지 등을 옵션으로 설정할 수 있다. ONNX와 Tflite 모델을
+사용할 수 있으며 모델을 furiosa-compiler로 컴파일한 ENF 파일도 사용할 수 있다.
+커맨드의 자세한 설명은 :ref:`FuriosaBench` 에서 찾아볼 수 있다.
+
+처리량(throughput) 벤치마크 예시
+
+.. code-block::
+
+  $ furiosa-bench ./model.onnx --workload throughput -n 10000 --devices "warboy(1)*2" --workers 8 --batch 8
+
+
+지연시간(latency) 벤치마크 예시
+
+.. code-block::
+
+  $ furiosa-bench ./model.onnx --workload latency -n 10000 --devices "warboy(2)*1"
+
+
+설치는 다음과 같이 APT 패키지 관리자를 통해 설치할 수 있다.
+
+.. code-block::
+
+  $ apt install furiosa-bench
+
+
+
+furiosa-toolkit 개선
+================================================================
+furiosa-toolkit은 NPU 관리 및 상태 모니터링 기능을 제공하는 명령행 도구의 집합이다.
+이번 릴리스에 포함된 도구들은 다음 주요 개선 내용을 포함한다.
+
+**furiosactl의 출력 포맷 추가**
+
+이전까지는 ``list``, ``info`` 등의 서브 커맨드 실행 시 아스키를 이용한 표 형식으로 내용을 출력하고 있었다.
+이번 릴리스에는 ``--format`` 옵션을 통해 ``json``, ``yaml`` 과 같은 구조적 데이터로 출력하는 기능이 추가되었다.
+따라서 사용자는 출력 결과를 파일로 저장하거나 파이프라인을 통해 다른 도구 또는 스크립트로 전달하여 다양한 방식으로 활용할 수 있다.
+
+
+.. code-block::
+
+  $ furiosactl info --format json
+  [{"dev_name":"npu7","product_name":"warboy","device_uuid":"<device_uuid>","device_sn":"<device_sn>","firmware":"1.6.0, 7a3b908","temperature":"47°C","power":"0.99 W","pci_bdf":"0000:d6:00.0","pci_dev":"492:0"}]
+
+  $ furiosactl info --format yaml
+  - dev_name: npu7
+    product_name: warboy
+    device_uuid: <device_uuid>
+    device_sn: <device_sn>
+    firmware: 1.6.0, 7a3b908
+    temperature: 47°C
+    power: 0.98 W
+    pci_bdf: 0000:d6:00.0
+    pci_dev: 492:0
+
+또한 ``info`` 서브 커맨드에 추가/개선된 사항이 있다.
+
+* NPU 클럭 속도(Clock Frequency) 항목을 추가하였다.
+* PCI 카드 전체에서 사용하는 전력(power)을 표시하도록 개선하였다.
+
+**furiosa-npu-metrics-exporter 개선**
+
+``furiosa-npu-metrics-exporter`` 커맨드는 NPU의 성능 및 상태
+지표들을 `OpenMetrics <https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md>`_
+형식으로 서빙하는 웹서버이다. 이 지표들은 Prometheus 를 비롯한 OpenMetrics 호환 수집 도구를 통해 수집할 수 있다.
+
+0.10.0 릴리스에 포함된 버전은 NPU의 클럭 속도(Clock Frequency)와 NPU 사용률(NPU Utialization)을
+출력 지표로 포함하도록 개선되었다. NPU 사용률 기능은 아직 실험적인 기능으로 아래와 같이 ``--enable-npu-utilization``
+옵션을 통해 활성화해야 한다.
+
+.. code-block::
+
+  furiosa-npu-metrics-exporter --enable-npu-utilization
+
+
+또한, 기존에는 도커 이미지를 통해서만 제공되었던 ``furiosa-npu-metrics-exporter`` 명령행 도구는
+이번 릴리스부터는 ``furiosa-toolkit`` 패키지에 포함되어 다음과 같이 APT 패키지 관리자 설치할 수 있도록 개선되었다.
+
+.. code-block::
+
+  apt install furiosa-toolkit
+
+
