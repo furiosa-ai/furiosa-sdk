@@ -300,14 +300,6 @@ FuriosaAI SDK의 양자화 과정
      - mAP 0.3757
      - mAP 0.37373 (Symmetric Entropy)
      - 99.476%
-   * - SSD MobileNet
-     - mAP 0.23
-     - mAP 0.23215 (Symmetric Min-Max)
-     - 100.93%
-   * - SSD ResNet34
-     - mAP 0.20
-     - mAP 0.21626 (Asymmetric Min-Max)
-     - 108.13%
    * - YOLOX-l
      - mAP 0.497
      - mAP 0.48524 (Asymmetric 99.99%-Percentile)
