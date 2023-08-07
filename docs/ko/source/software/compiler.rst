@@ -10,34 +10,86 @@ FuriosaAI의 컴파일러는 `TFLite <https://www.tensorflow.org/lite>`_ 와 `On
 
 .. _CompilerCli:
 
-``furiosa compile``
+``furiosa-compiler``
 -------------------------------------------------
 컴파일러는 추론 API의 Session을 초기화 하는 과정에서 모델과 NPU를 초기화할 때
 자동으로 호출되어 사용되는 것이 가장 일반적인 사용 방법이다.
-그러나 쉘에서 명령행 도구인 ``furiosa compile`` 이용해 직접 모델을 컴파일하여 프로그램을 생성해볼 수 있다.
-``furiosa compile`` 명령은 :ref:`PythonSDK` 를 설치하면 사용 가능해진다.
-
-명령의 인자는 다음과 같다. ``MODEL_PATH`` 는
-`TFLite <https://www.tensorflow.org/lite>`_ 나 `Onnx <https://onnx.ai/>`_ 파일의 경로이다.
+그러나 쉘에서 명령행 도구인 ``furiosa-compiler`` 이용해 직접 모델을 컴파일하여 프로그램을 생성해볼 수 있다.
+``furiosa-compiler`` 명령은 다음 APT 명령으로 설치할 수 있다.
 
 .. code-block:: sh
 
-  furiosa compile MODEL_PATH [-o OUTPUT] [--target-npu TARGET_NPU] [--batch BATCH_SIZE]
+  $ apt install furiosa-compiler
 
 
-`-o OUTPUT` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
+``furiosa-compiler`` 명령의 전체적인 사용법은 다음과 같다.
+
+.. code-block:: sh
+
+  $ furiosa-compiler --help
+
+  Furiosa SDK Compiler v0.10.0 (f8f05c8ea 2023-07-31T19:30:30Z)
+
+  Usage: furiosa-compiler [OPTIONS] <SOURCE>
+
+  Arguments:
+    <SOURCE>
+            Path to source file (tflite, onnx, and other IR formats, such as dfg, cdfg, gir, lir)
+
+  Options:
+    -o, --output <OUTPUT>
+            Writes output to <OUTPUT>
+
+            [default: output.<TARGET_IR>]
+
+    -b, --batch-size <BATCH_SIZE>
+            Specifies the batch size which is effective when SOURCE is TFLite, ONNX, or DFG
+
+        --target-ir <TARGET_IR>
+            (experimental) Target IR - possible values: [enf]
+
+            [default: enf]
+
+        --target-npu <TARGET_NPU>
+            Target NPU family - possible values: [warboy, warboy-2pe]
+
+            [default: warboy-2pe]
+
+        --dot-graph <DOT_GRAPH>
+            Filename to write DOT-formatted graph to
+
+        --analyze-memory <ANALYZE_MEMORY>
+            Analyzes the memory allocation and save the report to <ANALYZE_MEMORY>
+
+    -v, --verbose
+            Shows details about the compilation process
+
+        --no-cache
+            Disables the compiler result cache
+
+    -h, --help
+            Print help (see a summary with '-h')
+
+    -V, --version
+            Print version
+
+``SOURCE`` 는
+`TFLite <https://www.tensorflow.org/lite>`_ 나 `ONNX <https://onnx.ai/>`_ 파일의 경로이며
+NPU 가속을 위해서는 :ref:`ModelQuantization` 의 결과로 생성된 모델을 사용해야 한다.
+
+``-o OUTPUT`` 은 생략 가능한 옵션이며 지정한다면 출력되는 파일 이름을 지정할 수 있다.
 생략했을 때 기본 출력 파일 이름은 ``output.enf`` 이다. ENF는 Executable NPU Format의 확장자이다.
 예를 들면 아래와 같이 실행하면 기본으로 ``output.enf`` 파일을 생성한다.
 
 .. code-block:: sh
 
-  furiosa compile foo.onnx
+  furiosa-compiler foo.onnx
 
 아래와 같이 직접 출력 파일 이름을 지정하면 ``foo.enf`` 파일로 생성된다.
 
 .. code-block::
 
-  furiosa compile foo.onnx -o foo.enf
+  furiosa-compiler foo.onnx -o foo.enf
 
 ``--target-npu`` 는 생성한 바이너리가 목표로하는 NPU를 지정하게 한다.
 
@@ -59,13 +111,13 @@ FuriosaAI의 컴파일러는 `TFLite <https://www.tensorflow.org/lite>`_ 와 `On
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy
+  furiosa-compiler foo.onnx --target-npu warboy
 
 2개의 PE (Processing Element)를 Fusing 해서 사용하는 경우는 아래와 같이 실행한다.
 
 .. code-block::
 
-  furiosa compile foo.onnx --target-npu warboy-2pe
+  furiosa-compiler foo.onnx --target-npu warboy-2pe
 
 ``--batch-size`` 옵션은 추론 API를 통해 추론을 실행할 때
 입력으로 전달할 샘플의 개수인 `배치 크기` 를 지정하게 한다.
@@ -94,7 +146,7 @@ NPU의 활용도를 높일 수 있고 추론을 실행하는 과정을 공유하
 
 .. code-block::
 
-  furiosa compile foo.onnx --batch-size 2
+  furiosa-compiler foo.onnx --batch-size 2
 
 
 ENF 파일의 활용
@@ -108,13 +160,16 @@ ENF 파일을 한번 생성하여 재사용하면 컴파일을 과정을 생략�
 서빙해야 하는 경우 유용하게 활용할 수 있다.
 
 예를 들면, :ref:`CompilerCli` 사용법을 참고하여 ENF 파일을 생성하고
-아래 처럼 :ref:`PythonSDK <PythonSDK>` 를 사용할 때 ``session.create()``
-함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로 ``Session`` 객체를 생성한다.
+아래 처럼 :ref:`PythonSDK <PythonSDK>` 를 사용할 때 ``create_runner()``
+함수에 인자로 ENF 파일을 전달하면 컴파일 과정을 거치지 않고 즉각적으로 ``Runner`` 객체를 생성한다.
+
 
 .. code-block:: python
 
-  from furiosa.runtime import session
-  sess = session.create("foo.enf")
+  from furiosa.runtime import sync
+
+  with sync.create_runner("path/to/model.enf") as runner:
+    outputs = runner.run(inputs)
 
 
 .. _CompilerCache:
@@ -149,7 +204,7 @@ scheme 으로 시작하는 URL을 설정하면 Redis 클러스터를 캐쉬 스�
   # When you want to specify a Redis cluster over SSL as the cache storage
   export FC_CACHE_STORE_URL=rediss://:<PASSWORD>@127.0.0.1:25945
 
-캐쉬는 기본으로 72시간(3일)의 유효시간을 가지고 있으며 환경변수 ``FC_CACHE_LIFETIME`` 를 통해 초 단위 설정을 통해
+캐쉬는 기본으로 30일의 유효기간을 가지고 있으며 환경변수 ``FC_CACHE_LIFETIME`` 를 통해 초 단위 설정을 통해
 오버라이드 가능하다.
 
 .. code-block:: sh

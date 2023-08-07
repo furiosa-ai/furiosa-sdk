@@ -137,8 +137,8 @@ Before installing the furiosa-sdk, you need to update Python's package installer
 
   .. code-block:: sh
     
-      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
-      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.10.* (from furiosa-quantizer==0.10.*->furiosa-sdk)
 
 
 .. tabs::

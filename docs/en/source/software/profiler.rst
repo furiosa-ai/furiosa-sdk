@@ -1,7 +1,7 @@
 .. _Profiling:
 
 ***********************************
-Performance profiling
+Performance Profiling
 ***********************************
 
 Low latency and high throughput performance are critical factors in many DNN applications.
@@ -9,7 +9,7 @@ For performance optimization, model developers and ML engineers must understand 
 To assist developers with this process, Furiosa SDK provides a profiling tool.
 
 Trace Analysis
----------------------------------------------------
+===========================================================
 Trace analysis provides structured data on execution time by step, by actually executing model inference task.
 You can also visualize the data using the `Trace Event Profiling Tool <https://www.chromium.org/developers/how-tos/trace-event-profiling-tool/>`_ function of the Chrome web browser.
 
@@ -17,7 +17,9 @@ Though small, trace generation generates temporal overheads as it measures time 
 It is thus not enabled by default. You can create trace by using one of the following methods.
 
 
-Enabling trace generation through environment variables
+.. _ProfilerEnabledByEnv:
+
+Tracing via Environment Variable
 ============================================================
 You can enable trace generation by setting the path of the file to which the trace result will be written in ``FURIOSA_PROFILER_OUTPUT_PATH``. The advantage of this method is that the code remains unchanged. The downside is that you cannot set a specific section or category for measurement.
 
@@ -47,7 +49,9 @@ If you enter ``chrome://tracing`` in Chrome's address bar, the trace viewer will
 
 \
 
-Enabling trace generation through profiler context
+.. _ProfilerEnabledByContext:
+
+Tracing via Profiler Context
 ============================================================
 You can also trace a model inference performance by using a Profiler Context in your Python code. The advantages of this method, in comparison to the tracing by environment variable, are as follows:
 
@@ -71,18 +75,18 @@ The above is a code example using a profiling context. Once the above Python cod
 
 .. _TemporarilyDisablingProfiler:
 
-Temporarily disabling profiler within the context
-============================================================
+Pause/Resume of Profiler Context
+------------------------------------------------------------
 Tracing long-running jobs can cause following problems:
 
 * Produce large trace files which take huge disk space and are difficult to be shared.
 * Make it hard to identify interesting section when the trace is visualized, without additional processing.
 * Take much time to produce trace files.
 
-To avoid this, the profiler provides an additional API to temporarily disable profiler within the context.
+To avoid the above issues, the profiler provides an additional API to temporarily pause or resume a profiler within the context.
 Users can exclude execution they do not want to profile, thereby reducing profiling overhead and trace file size.
 
-Below is an example of pausing profiler not to trace warmup phase between ``profile.pause`` and ``profile.resume``.
+The below is an example of pausing profiler not to trace ``warm up`` phase between ``profile.pause`` and ``profile.resume``.
 
 .. include:: ../../../../examples/profiler/temporary_disable.py
     :code:
@@ -90,7 +94,7 @@ Below is an example of pausing profiler not to trace warmup phase between ``prof
 .. _PandasProfilingAnalysis:
 
 Trace analysis using Pandas DataFrame
-============================================================
+------------------------------------------------------------
 With the measured tracing data, in addition to visualizing it with Chrome Trace Format, it can also be expressed and used in Pandas DataFrame, commonly used for data analysis. These are the advantages in comparison to Chrome Trace Format.
 
 * Can be used directly in Python Interpreter or Jupyter Notebook interactive shell

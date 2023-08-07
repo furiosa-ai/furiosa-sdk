@@ -156,7 +156,7 @@ Furiosa Model에 blocking API 도입
 ================================================================
 모델 바이너리를 가져오는 작업은 네트워크를 통해 무거운 파일을 가져오는 것이라 0.5.0 에서
 non-blocking API로 작성되었지만, 0.7.0 부터 개발 편의성을 위해 blocking API를 기본으로 노출한다.
-기존의 non-blocking API는 `furiosa.models.nonblocking`의 하위 모듈을 통해 접근할 수 있다.
+기존의 non-blocking API는 ``furiosa.models.nonblocking`` 의 하위 모듈을 통해 접근할 수 있다.
 
 기존 코드
     .. code-block:: python

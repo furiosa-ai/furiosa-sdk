@@ -8,12 +8,12 @@ FuriosaAI SDK는 NPU 디바이스 정보를 출력 하거나 모델 컴파일, �
 .. _Toolkit:
 
 furiosa-toolkit
-===================================
+############################################################
 ``furiosa-toolkit`` 은 NPU 장치를 관리하고 정보를 확인하는 명령형 도구를 제공한다.
 
 
 furiosa-toolkit 설치
---------------------------------------
+========================================
 이 명령형 도구 사용을 위해서는 사전에 :ref:`RequiredPackages` 를 따라 커널 드라이버를 설치해야 한다.
 그 이후에는 아래 설명을 따라 furiosa-toolkit 을 설치한다.
 
@@ -27,8 +27,8 @@ furiosa-toolkit 설치
 
 
 
-furiosactl 사용법
-----------------------------------------
+furiosactl
+========================================
 furiosactl 커맨드는 다양한 서브 커맨드를 제공하고 장치의 정보를 얻거나 제어하는 기능을 가지고 있다.
 
 문법 개요:
@@ -38,7 +38,7 @@ furiosactl 커맨드는 다양한 서브 커맨드를 제공하고 장치의 정
     furiosactl <sub command> [option] ..
 
 ``furiosactl info``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 ``info`` 서브 커맨드를 통해 머신이 인식한 NPU 장치의 정보를 확인할 수 있다.
 이 명령은 NPU 장치의 온도, PCI 정보 등을 출력한다. 만약 머신에 장치를 장착한 후에도 장치가 이 명령으로 보이지 않는다면,
 :ref:`RequiredPackages` 를 따라 드라이버 설치해야 한다.
@@ -61,7 +61,7 @@ furiosactl 커맨드는 다양한 서브 커맨드를 제공하고 장치의 정
   +------+--------+--------------------------------------+-------------------+----------------+-------+--------+--------------+---------+
 
 ``furiosactl list``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 ``list`` 서브 커맨드는 NPU 장치에서 사용할 수 있는 device file의 정보를 제공한다.
 NPU에 존재하는 각 코어가 사용 중인지 유휴 상태인지 여부를 확인할 수도 있다.
 
@@ -75,7 +75,7 @@ NPU에 존재하는 각 코어가 사용 중인지 유휴 상태인지 여부를
   +------+------------------------------+-----------------------------------+
 
 ``furiosactl ps``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 ``ps`` 서브 커맨드는 현재 NPU 장치를 점유하고 있는 OS 프로세스의 정보를 출력해준다.
 
 .. code-block:: sh
@@ -89,7 +89,7 @@ NPU에 존재하는 각 코어가 사용 중인지 유휴 상태인지 여부를
 
 
 ``furiosactl top`` (experimental)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------
 ``top`` 서브 커맨드는 시간의 흐름에 따른 NPU 장치 별 사용률을 확인하는데 사용한다.
 출력 항목은 다음의 의미를 나타낸다.
 기본적으로 1초 간격으로 사용률을 계산하지만, ``--interval`` 옵션을 통해 계산 주기를 직접 설정할 수 있다. (단위: ms)
@@ -132,8 +132,101 @@ NPU에 존재하는 각 코어가 사용 중인지 유휴 상태인지 여부를
     2023-03-21T09:45:58.13929122Z   152616    npu1pe0-1      49.06     94.94     5.06   ./npu_runtime_test -n 10000 results/ResNet-CTC_kor1_200_nightly3_128dpes_8batches.enf
 
 
+.. _FuriosaBench:
+
+furiosa-bench (벤치마크 도구)
+####################################
+
+``furiosa-bench`` 명령은 다양한 런타임 설정을 통해 주어진 모델을 실행시켜 지연시간 및 처리량을 얻을 수 있다.
+
+문법 개요
+
+.. code-block:: sh
+  
+  $ furiosa-bench --help 
+  USAGE:
+    furiosa-bench [OPTIONS] <model-path>
+
+    OPTIONS:
+        -b, --batch <number>                       Sets the number of batch size, which should be exponents of two [default: 1]
+        -o, --output <bench-result-path>           Create json file that has information about the benchmark
+        -C, --compiler-config <compiler-config>    Sets a file path for compiler configuration (YAML format)
+        -d, --devices <devices>                    Designates NPU devices to be used (e.g., "warboy(2)*1" or "npu0pe0-1")
+        -h, --help                                 Prints help information
+        -t, --io-threads <number>                  Sets the number of I/O Threads [default: 1]
+            --duration <min-duration>              Sets the minimum test time in seconds. Both min_query_count and min_duration should be met to finish the test
+                                                  [default: 0]
+        -n, --queries <min-query-count>            Sets the minimum number of test queries. Both min_query_count and min_duration_ms should be met to finish the
+                                                  test [default: 1]
+        -T, --trace-output <trace-output>          Sets a file path for profiling result (Chrome Trace JSON format)
+        -V, --version                              Prints version information
+        -v, --verbose                              Print verbose log
+        -w, --workers <number>                     Sets the number of workers [default: 1]
+            --workload <workload>                  Sets the bench workload which can be either latency-oriented (L) or throughput-oriented (T) [default: L]
+
+    ARGS:
+        <model-path>
+
+
+MODEL_PATH 는 ONNX, TFLite 혹은 furiosa-compiler를 통해 생성된 ENF를 의미한다.  
+
+벤치마크 결과 경로를 특정하지 않은 사용 예시
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2   
+
+    ======================================================================
+    This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
+    1000 queries executed with batch size 1
+    Latency stats are as follows
+    QPS(Throughput): 34.40/s
+
+    Per-query latency:
+    Min latency (us)    : 8399
+    Max latency (us)    : 307568
+    Mean latency (us)   : 29040
+    50th percentile (us): 19329
+    95th percentile (us): 62797
+    99th percentile (us): 79874
+    99th percentile (us): 307568
+  
+``output`` 인자에 파일 이름을 지정하면 벤치마크 실행 결과를 아래와 같이 json 형식으로 파일에 기록한다.
+
+.. code-block:: sh
+
+  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2 -o mnist.json
+  $ cat mnist.json
+
+    {
+        "model_data": {
+            "path": "./mnist-8.onnx",
+            "md5": "d7cd24a0a76cd492f31065301d468c3d  ./mnist-8.onnx"
+        },
+        "compiler_version": "0.10.0-dev (rev: 2d862de8a built_at: 2023-07-13T20:05:04Z)",
+        "hal_version": "Version: 0.12.0-2+nightly-230716",
+        "git_revision": "fe6f77a",
+        "result": {
+            "mode": "Latency",
+            "total run time": "30025 us",
+            "total num queries": 1000,
+            "batch size": 1,
+            "qps": "33.31/s",
+            "latency stats": {
+                "min": "8840 us",
+                "max": "113254 us",
+                "mean": "29989 us",
+                "50th percentile": "18861 us",
+                "95th percentile": "64927 us",
+                "99th percentile": "87052 us",
+                "99.9th percentile": "113254 us"
+            }
+        }
+    }
+    
+
 furiosa
-===================================
+####################################
 
 ``furiosa`` 커맨드는 :ref:`Python SDK <PythonSDK>` 를 설치하면 사용할 수 있는 메타 명령형 도구이다.
 또한 확장 패키지를 설치하면 추가 하위 커맨드(subcommand) 가 추가 된다.
@@ -158,7 +251,7 @@ furiosa
 
 
 furiosa compile
---------------------
+=======================================
 
 ``compile`` 명령은 `ONNX <https://onnx.ai/>`_, `TFLite <https://www.tensorflow.org/lite>`_
 형식의 모델을 컴파일하여 FuriosaAI NPU를 사용하는 프로그램을 생성한다.
@@ -167,7 +260,7 @@ furiosa compile
 .. _Litmus:
 
 furiosa litmus (모델 호환성 검사 도구)
---------------------------------------------
+===============================================
 
 ``litmus`` 명령은 `ONNX`_ 모델을 받아 Furiosa SDK 및 Furiosa NPU와 호환되는지 빠르게 검사할 수 있는 도구이다.
 ``litmus`` 는 원본 ONNX 모델로부터 SDK를 이용해 추론하는 전 과정을 수행하고 각 과정이 잘 동작하는지 확인한다. ``litmus`` 는 버그 리포팅에도 유용하게 쓸 수 있다.
@@ -272,94 +365,3 @@ furiosa litmus (모델 호환성 검사 도구)
   archive-16904388032l4hoi3h/compiler/model.dot
   archive-16904388032l4hoi3h/runtime/trace.json
 
-
-.. _Bench:
-
-furiosa bench (벤치마크 도구)
----------------------------------------------------------------------------------
-
-``bench`` 명령은 다양한 런타임 설정을 통해 주어진 모델을 실행시켜 지연시간 및 처리량을 얻을수 있다. 
-
-문법 개요
-
-.. code-block:: sh
-  
-  $ furiosa-bench --help 
-  USAGE:
-    furiosa-bench [OPTIONS] <model-path>
-
-    OPTIONS:
-        -b, --batch <number>                       Sets the number of batch size, which should be exponents of two [default: 1]
-        -o, --output <bench-result-path>           Create json file that has information about the benchmark
-        -C, --compiler-config <compiler-config>    Sets a file path for compiler configuration (YAML format)
-        -d, --devices <devices>                    Designates NPU devices to be used (e.g., "warboy(2)*1" or "npu0pe0-1")
-        -h, --help                                 Prints help information
-        -t, --io-threads <number>                  Sets the number of I/O Threads [default: 1]
-            --duration <min-duration>              Sets the minimum test time in seconds. Both min_query_count and min_duration should be met to finish the test
-                                                  [default: 0]
-        -n, --queries <min-query-count>            Sets the minimum number of test queries. Both min_query_count and min_duration_ms should be met to finish the
-                                                  test [default: 1]
-        -T, --trace-output <trace-output>          Sets a file path for profiling result (Chrome Trace JSON format)
-        -V, --version                              Prints version information
-        -v, --verbose                              Print verbose log
-        -w, --workers <number>                     Sets the number of workers [default: 1]
-            --workload <workload>                  Sets the bench workload which can be either latency-oriented (L) or throughput-oriented (T) [default: L]
-
-    ARGS:
-        <model-path>
-
-
-MODEL_PATH 는 ONNX, TFLite 혹은 furiosa-compiler를 통해 생성된 ENF를 의미한다.  
-
-벤치마크 결과 경로를 특정하지 않은 사용 예시
-
-.. code-block:: sh
-
-  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2   
-
-    ======================================================================
-    This benchmark was executed with latency-workload which prioritizes latency of individual queries over throughput.
-    1000 queries executed with batch size 1
-    Latency stats are as follows
-    QPS(Throughput): 34.40/s
-
-    Per-query latency:
-    Min latency (us)    : 8399
-    Max latency (us)    : 307568
-    Mean latency (us)   : 29040
-    50th percentile (us): 19329
-    95th percentile (us): 62797
-    99th percentile (us): 79874
-    99th percentile (us): 307568
-  
-``output`` 인자에 파일 이름을 지정하면 벤치마크 실행 결과를 아래와 같이 json 형식으로 파일에 기록한다.
-
-.. code-block:: sh
-
-  $ furiosa-bench mnist-8.onnx --workload L -n 1000 -w 8 -t 2 -o mnist.json | cat mnist.json
-
-    {
-        "model_data": {
-            "path": "./mnist-8.onnx",
-            "md5": "d7cd24a0a76cd492f31065301d468c3d  ./mnist-8.onnx"
-        },
-        "compiler_version": "0.10.0-dev (rev: 2d862de8a built_at: 2023-07-13T20:05:04Z)",
-        "hal_version": "Version: 0.12.0-2+nightly-230716",
-        "git_revision": "fe6f77a",
-        "result": {
-            "mode": "Latency",
-            "total run time": "30025 us",
-            "total num queries": 1000,
-            "batch size": 1,
-            "qps": "33.31/s",
-            "latency stats": {
-                "min": "8840 us",
-                "max": "113254 us",
-                "mean": "29989 us",
-                "50th percentile": "18861 us",
-                "95th percentile": "64927 us",
-                "99th percentile": "87052 us",
-                "99.9th percentile": "113254 us"
-            }
-        }
-    }  
