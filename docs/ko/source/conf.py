@@ -21,7 +21,7 @@ project = 'FuriosaAI NPU 및 Software 문서'
 copyright = '2023, FuriosaAI, Inc.'
 author = 'FuriosaAI, Inc.'
 
-version = "0.10.0.rc0"
+version = "0.10.0rc1"
 
 # The full version, including alpha/beta/rc tags
 relase = "0.10.0"
