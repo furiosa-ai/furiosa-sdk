@@ -9,7 +9,10 @@ from . import _utils
 try:
     import package_extras
 except ModuleNotFoundError:
-    from furiosa.native_runtime import *
+    try:
+        from furiosa.native_runtime import *
+    except ImportError as e:
+        raise e from None
 
     def full_version() -> str:
         """Returns a full version from furiosa-rt version"""
