@@ -1,6 +1,8 @@
+from contextlib import asynccontextmanager
 from functools import partial
 import os
-from typing import Any, Awaitable, Callable, Dict, Optional
+from pathlib import Path
+from typing import Any, Awaitable, Callable, Dict, Optional, Union
 
 from fastapi import FastAPI
 from typing_extensions import deprecated
@@ -21,7 +23,9 @@ class ServeAPI:
         repository: Repository = repository,
         **kwargs: Any,
     ):
-        self._app = FastAPI(**kwargs, on_startup=[self.load, self.setup_telemetry])
+        self._app = FastAPI(**kwargs, lifespan=self.lifespan)
+        # setup_telemetry() adds middleware so it must be called before FastAPI begins
+        self.setup_telemetry()
         self._models: Dict[Model, ServeModel] = {}
         self._repository = repository
         self._registry = next(
@@ -39,6 +43,12 @@ class ServeAPI:
 
         self._repository.on_load = self._on_load
         self._repository.on_unload = self._on_unload
+
+    @asynccontextmanager
+    async def lifespan(self, app: FastAPI):
+        await self.load()
+        yield
+        await self.unload()
 
     @property
     def app(self) -> FastAPI:
@@ -72,9 +82,13 @@ class ServeAPI:
             )
 
     async def load(self):
-        for inner, serve_model in self._models.items():
+        for inner in self._models.keys():
             # Load models via repository
             await self._repository.load(inner)
+
+    async def unload(self):
+        for serve_model in self._models.values():
+            await serve_model.unload()
 
     def setup_telemetry(self):
         app_name = os.environ.get("FURIOSA_SERVING_APP_NAME", "furiosa-serving")
@@ -96,7 +110,8 @@ class ServeAPI:
         serve_model.hide()
 
 
-def fallback(location: str) -> str:
+def fallback(location: Union[str, Path]) -> str:
+    location = str(location)
     # Add file prefix if the scheme is not discoverable
     try:
         with transport.supported(location):
@@ -107,7 +122,7 @@ def fallback(location: str) -> str:
 
 async def furiosart(
     name: str,
-    location: str,
+    location: Union[str, Path],
     *,
     app: FastAPI,
     on_create: Callable[[ServeModel], None],
@@ -140,7 +155,7 @@ async def furiosart(
 
 async def openvino(
     name: str,
-    location: str,
+    location: Union[str, Path],
     *,
     app: FastAPI,
     on_create: Callable[[ServeModel], None],

@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+import asyncio
+import functools
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Union
 
 from fastapi import FastAPI
@@ -17,6 +19,16 @@ from furiosa.server import (
 )
 
 tracer = trace.get_tracer(__name__)
+
+
+def is_async_callable(obj: Any) -> bool:
+    # Copied from https://github.com/encode/starlette/blob/7349c60a/starlette/_utils.py#L33
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+
+    return asyncio.iscoroutinefunction(obj) or (
+        callable(obj) and asyncio.iscoroutinefunction(obj.__call__)
+    )
 
 
 class ServeModel(ABC):
@@ -40,7 +52,10 @@ class ServeModel(ABC):
 
     async def preprocess(self, *args: Any, **kwargs: Any) -> Any:
         with tracer.start_as_current_span("{}:preprocess".format(self._name)):
-            return await self._preprocess(*args, **kwargs)
+            if is_async_callable(self._postprocess):
+                return await self._preprocess(*args, **kwargs)
+            else:
+                return self._preprocess(*args, **kwargs)
 
     @abstractmethod
     async def predict(self, *args: Any, **kwargs: Any) -> Any:
@@ -48,7 +63,10 @@ class ServeModel(ABC):
 
     async def postprocess(self, *args: Any, **kwargs: Any) -> Any:
         with tracer.start_as_current_span("{}:postprocess".format(self._name)):
-            return await self._postprocess(*args, *kwargs)
+            if is_async_callable(self._postprocess):
+                return await self._postprocess(*args, *kwargs)
+            else:
+                return self._postprocess(*args, *kwargs)
 
     @property
     @abstractmethod
@@ -90,6 +108,9 @@ class ServeModel(ABC):
         # Unregister path operation functions to hide endpoint
         for route in targets:
             self._app.routes.remove(route)
+
+    async def unload(self) -> Any:
+        ...
 
     def _method(self, kind: str, *args, **kwargs) -> Callable:
         def decorator(func):
@@ -158,6 +179,10 @@ class FuriosaRTServeModel(ServeModel):
     async def predict(self, payload: Union[np.ndarray, List[np.ndarray]]) -> List[np.ndarray]:
         with tracer.start_as_current_span("{}:predict".format(self._name)):
             return await self._model.predict(payload)
+
+    async def unload(self):
+        await self._model.unload()
+        await super().unload()
 
     @property
     def inner(self) -> FuriosaRTModel:

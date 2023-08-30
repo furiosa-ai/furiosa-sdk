@@ -1,4 +1,3 @@
-from .base import Processor
-from .imagenet import ImageNet
+from . import imagenet
 
-__all__ = ["Processor", "ImageNet"]
+__all__ = ["imagenet"]

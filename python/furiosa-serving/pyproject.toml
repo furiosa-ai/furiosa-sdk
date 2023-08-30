@@ -31,6 +31,7 @@ dependencies = [
 
     "Pillow",
     "python-multipart",
+    "httpx",
 
     "prometheus-client",
     "opentelemetry-instrumentation-fastapi",
@@ -47,7 +48,7 @@ test = [
     "pytest-asyncio ~= 0.17.2",
     "pytest-cov",
     "ruff",
-    "types-Pillow"
+    "types-Pillow",
 ]
 openvino = [
     "furiosa-server[openvino] == 0.10.*",

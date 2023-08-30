@@ -30,6 +30,7 @@ dependencies = [
     "furiosa-runtime == 0.10.*",
 
     "fastapi",
+    "httpx",
     "pydantic-settings",
     "grpcio-tools",
     "protobuf",
@@ -41,7 +42,6 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "datamodel-code-generator",
-    "httpx",
     "mypy",
     "mypy-protobuf",
     "mypy-extensions",

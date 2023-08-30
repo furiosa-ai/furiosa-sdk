@@ -152,13 +152,11 @@ You can also find documentations for the _sub applications_ at `localhost:8000/{
 
 Furiosa serving provides several _processors_ which are predefined pre/post process functions to convert your data for each model.
 
-You can directly use the `preprocess()`, `postprocess()` from `Processor` instance or use the `Processor` in the form of decorator. When used as a decorator, `Processor` call `preprocess()` and `postprocess()` before and after your function respectively.
-
 ```python
 import numpy as np
 from furiosa.common.thread import synchronous
 from furiosa.serving import ServeModel, ServeAPI
-from furiosa.serving.processors import ImageNet
+from furiosa.serving.processors import imagenet
 
 
 serve = ServeAPI()
@@ -169,60 +167,25 @@ model: ServeModel = synchronous(serve.model("furiosart"))(
 )
 
 @model.post("/models/imagenet/infer")
-@ImageNet(model=model, label='./examples/assets/labels/ImageNetLabels.txt')  # This makes infer() Callable[[UploadFile], Dict]
-async def infer(tensor: np.ndarray) -> np.ndarray:
-    return await model.predict(tensor)
-```
-
-For better understanding, this approximately describes how `infer()` function works internally
-
-```python
-# Create processor
-processor = ImageNet(model=model, label='./examples/assets/labels/ImageNetLabels.txt')
-
-# API endpoint signature replaced with ImageNet.preprocess()
-def infer(image: PIL.image) -> Dict:
-
-    # Preprocess image from API client from processor
-    tensor: np.ndarray = processor.preprocess(image)
-
-    # Call your function from tensor above
-    output: np.ndarray = infer(tensor)
-
-    # Postprocess output above from processor
-    response: Dict = processor.postprocess(output)
-
-    # Return response in the form of Dict which is defined at ImageNet.postprocess()
-    return response
-```
-
-Note that you **must** call _processor_ decorator first to pass correct function signature to FastAPI route decoartor which will be used argument validation.
-
-```python
-# Correct:
-@model.post("/models/imagenet/infer")
-@ImageNet(tensor=model.inputs[0], label='./examples/assets/labels/ImageNetLabels.txt')  # This makes infer() Callable[[UploadFile], Dict]
-async def infer(tensor: np.ndarray) -> np.ndarray:
-    ...
-
-# Wrong:
-@ImageNet(tensor=model.inputs[0], label='./examples/assets/labels/ImageNetLabels.txt')  # This makes infer() Callable[[UploadFile], Dict]
-@model.post("/models/imagenet/infer")
-async def infer(tensor: np.ndarray) -> np.ndarray:
-    ...
+async def infer(image: UploadFile = File(...)) -> Dict:
+    shape = model.inputs[0].shape
+    input = await imagenet.preprocess(shape, image)
+    output = await model.predict(input)
+    return await imagenet.postprocess(
+        output[0], label='./examples/assets/labels/ImageNetLabels.txt'
+    )
 ```
 
 ### Compose models
 
 You can composite multiple models using [FastAPI dependency injection](https://fastapi.tiangolo.com/tutorial/dependencies/).
 
-> :warning: This example below is not actually working as there is no SegmentNet in processors yet
+> :warning: This example below is not actually working as there is no segmentnet in processors yet
 
 ```python
 from fastapi import Depends
 from furiosa.common.thread import synchronous
 from furiosa.serving import ServeModel, ServeAPI
-from furiosa.serving.processors import ImageNet, SegmentNet
 
 
 serve = ServeAPI()
@@ -239,13 +202,19 @@ segmentnet: ServeModel = synchronous(serve.model("furiosart"))(
 
 # Note that no "imagenet.post()" here not to expose the endpoint
 async def classify(image: UploadFile = File(...)) -> List[np.ndarray]:
-    tensors: List[np.arrary] = ImageNet(tensor=imagenet.inputs[0]).preprocess(image)
+    from furiosa.serving.processors.imagenet import preprocess
+
+    tensors: List[np.arrary] = await preprocess(
+        imagenet.inputs[0].shape, image
+    )
     return await imagenet.predict(tensors)
 
 @segmentnet.post("/models/composed/infer")
 async def segment(tensors: List[np.ndarray] = Depends(classify)) -> Dict:
+    from furiosa.serving.processors.segmentnet import postprocess
+
     tensors = await model.predict(tensors)
-    return SegmentNet(tensor=segmentnet.inputs[0]).postprocess(tensors)
+    return await postprocess(tensors)
 ```
 
 ### Example 1
@@ -325,7 +294,7 @@ examples$ curl -X 'POST' \
   'http://127.0.0.1:8000/infer' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'image=@assets/images/1234567890.jpg'
+  -F 'file=@assets/images/1234567890.jpg'
 
 ```
 

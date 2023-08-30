@@ -1,13 +1,13 @@
 import asyncio
 import io
 import os
+from pathlib import Path
 import re
 from typing import Dict, List
 
 from PIL import Image
 from fastapi import UploadFile
 import numpy as np
-import uvicorn
 
 from furiosa.common.thread import synchronous
 from furiosa.serving import FuriosaRTServeModel, ServeAPI
@@ -40,7 +40,7 @@ def detect_npu_devices(use_fusion: bool) -> List[str]:
 # Define model
 model: FuriosaRTServeModel = synchronous(serve.model("furiosart"))(
     "MNIST",
-    location="./assets/models/MNISTnet_uint8_quant_without_softmax.tflite",
+    location=Path(__file__).parent / "assets/models/MNISTnet_uint8_quant_without_softmax.tflite",
     # A Model can have a pool of multiple devices.
     npu_device=",".join(
         detect_npu_devices(True)
@@ -90,4 +90,6 @@ async def infer(file: UploadFile) -> Dict:
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
