@@ -3,6 +3,7 @@ import hashlib
 import multiprocessing
 import os
 import platform
+import subprocess as sp
 import sys
 import tempfile
 import time
@@ -17,7 +18,6 @@ import yaml
 from furiosa.device.sync import list_devices  # type: ignore
 from furiosa.quantizer import __version__ as quantizer_version
 from furiosa.runtime import __version__ as runtime_version
-from furiosa.tools.compiler.api import version_dict as compiler_version
 
 
 class DummyReporter:
@@ -101,7 +101,9 @@ class Reporter(DummyReporter):
 
     def dump_meta_yaml(self, model_path):
         sdk_meta = {
-            "compiler": compiler_version(),
+            "compiler": sp.run(
+                ["furiosa-compiler", "--version"], capture_output=True, text=True
+            ).stdout.strip(),
             "runtime": runtime_version.__dict__,
             "quantizer": quantizer_version.__dict__,
         }

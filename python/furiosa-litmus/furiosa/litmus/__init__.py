@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 from pathlib import Path
+import subprocess as sp
 import sys
 import tempfile
 from typing import Dict, Optional, Tuple
@@ -15,7 +16,6 @@ from furiosa.optimizer import optimize_model
 from furiosa.quantizer import CalibrationMethod, Calibrator
 from furiosa.quantizer import __version__ as quantizer_ver
 from furiosa.quantizer import quantize
-from furiosa.tools.compiler.api import compile
 
 from .reporter import Reporter
 
@@ -97,17 +97,6 @@ def calibrate_with_random_data(
     return calibrator.compute_range()
 
 
-def load_quantized_model(model_path):
-    print("[Step 1 & Step 2] Load quantized model ...")
-    try:
-        with open(model_path, "rb") as f:
-            quantized_model = f.read()
-        return quantized_model
-    except Exception as e:
-        eprint("[Step 1 & Step 2] Failed\n")
-        raise e
-
-
 def step1_load_and_optimize(model_path: Path):
     print("[Step 1] Checking if the model can be loaded and optimized ...", flush=True)
     try:
@@ -123,38 +112,61 @@ def step1_load_and_optimize(model_path: Path):
         raise e
 
 
-def step2_quantize(onnx_model):
+def step2_quantize(onnx_model, tmpdir):
     print("[Step 2] Checking if the model can be quantized ...", flush=True)
     try:
         ranges = calibrate_with_random_data(onnx_model)
         quantized_model = quantize(onnx_model, ranges)
+        quantized_model_path = f"{tmpdir}/quantized_model.onnx"
+        with open(quantized_model_path, "wb") as f:
+            f.write(quantized_model)
+
         print("[Step 2] Passed", flush=True)
-        return quantized_model
+        return quantized_model_path
     except Exception as e:
         eprint("[Step 2] Failed\n")
         raise e
 
 
-def step3_compile(quantized_model, reporter, target_npu, verbose, tmpdir):
+def step3_compile(quantized_model_path, reporter, target_npu, verbose, tmpdir):
     print(
         f"[Step 3] Checking if the model can be compiled for the NPU family [{target_npu}] ...",
         flush=True,
     )
     try:
         enf_path = f"{tmpdir}/output.enf"
-        enf = compile(
-            bytes(quantized_model),
-            target_ir="enf",
-            log=reporter.get_compiler_log_path(),
-            dot_graph=reporter.get_dot_graph_path(),
-            analyze_memory=reporter.get_memory_analysis_path(),
-            verbose=verbose,
-            target_npu=target_npu,
-        )
-        with open(enf_path, "wb") as f:
-            f.write(enf)
-        print("[Step 3] Passed")
-        return enf_path
+        cmd = [
+            "furiosa-compiler",
+            quantized_model_path,
+            "--output",
+            enf_path,
+            "--target-npu",
+            target_npu,
+        ]
+        if reporter.get_dot_graph_path() is not None:
+            cmd += ["--dot-graph", reporter.get_dot_graph_path()]
+        if reporter.get_memory_analysis_path() is not None:
+            cmd += ["--analyze-memory", reporter.get_memory_analysis_path()]
+        if verbose:
+            cmd += ["--verbose"]
+
+        compile = sp.run(cmd, capture_output=True, text=True)
+
+        log_path = reporter.get_compiler_log_path()
+        if log_path is not None:
+            with open(log_path, "w") as f:
+                f.write(compile.stderr)
+                f.write(compile.stdout)
+        else:
+            print(compile.stderr)
+            print(compile.stdout)
+
+        if compile.returncode == 0:
+            print("[Step 3] Passed")
+            return enf_path
+        else:
+            print("[Step 3] Failed\n")
+            raise SystemExit()
     except Exception as e:
         eprint("[Step 3] Failed\n")
         raise e
@@ -211,12 +223,12 @@ def validate(
             if skip_quantization:
                 print("[Step 1] Skip model loading and optimization")
                 print("[Step 2] Skip model quantization")
-                quantized_model = load_quantized_model(model_path)
+                quantized_model_path = model_path
             else:
                 onnx_model = step1_load_and_optimize(model_path)
-                quantized_model = step2_quantize(onnx_model)
+                quantized_model_path = step2_quantize(onnx_model, tmpdir)
 
-            enf_path = step3_compile(quantized_model, reporter, target_npu, verbose, tmpdir)
+            enf_path = step3_compile(quantized_model_path, reporter, target_npu, verbose, tmpdir)
             step4_inference_once(enf_path, reporter)
 
     return True
