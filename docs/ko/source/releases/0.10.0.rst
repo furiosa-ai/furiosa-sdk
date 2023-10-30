@@ -97,7 +97,7 @@ FuriosaRT는 추론을 제공하는 핵심 라이브러리로 Python API를 제�
 
 FuriosaRT는 파이썬 `asyncio <https://docs.python.org/3/library/asyncio.html>`_ 를
 사용한 비동기(async) API를 새로이 지원한다. 기존의 동기 API는 배치 작업에는 충분하였으나
-개별적 요청에 따라 추론을 해야 서빙 시나리오에서는 부족함이 있었다. 새로운 런타임에서는 비동기 API가
+개별적 요청에 따라 추론을 해야 하기에 서빙 시나리오에서는 부족함이 있었다. 새로운 런타임에서는 비동기 API가
 기본적으로 지원되며, 기존 기능을 유지하면서도 더 간결하게 사용할 수 있도록 많은 부분이 다듬어졌다.
 새 API에 대한 상세한 설명은 `Furiosa SDK API Reference - furiosa.runtime <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html>`_
 에서 찾아 볼 수 있다.
@@ -145,6 +145,7 @@ FuriosaRT에서는 모델에 따라 10 이상에서도 성능이 향상되는 �
 이번 릴리스부터 포함된 ``furiosa-bench`` 를 이용해
 Resnet50, YOLOv5m, YOLOv5L, SSD ResNet34, SSD MobileNet 모델의 처리량 벤치마크를 수행하였고
 ``worker_num >= 4`` 조건에서 모델에 따라 수 퍼센트에서 수십 퍼센트까지 성능이 향상되는 것을 관찰할 수 있었다.
+
 모델 서버와 서빙 프레임워크 개선
 ================================================================
 ``furiosa-server``, ``furioa-serving`` 은 각각 모델의 서빙을 제공하는 웹 서버와
@@ -188,10 +189,8 @@ ONNX 모델을 양자화된 모델(quantized model)로 변환하여 반환한다
 -----------------------------------------------------------------
 * ``furiosa.quantizer.quantize()`` 에서 ``with_quantize``, ``normalized_pixel_outputs`` 가 파라미터에서 제거 된다.
 * 대신 `ModelEditor <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.quantizer.html#furiosa.quantizer.ModelEditor>`_ 추가되어 모델의 입력/출력 타입에 대한 상세한 최적화 옵션을 설정할 수 있으며 다음 기능을 제공한다.
-  * ``convert_input_type(tensor_name, TensorType)`` 메소드는 텐서 이름을 받아 해당 입력 텐서에 해당되는
-  ``quantize`` 연산자를 제거하고 입력 타입을 ``TensorType`` 으로 변경한다.
-  * ``convert_output_type(tensor_name, TensorType, tensor_range)`` 메소드는 텐서 이름을 받아 해당 출력 텐서에 해당되는
-  ``dequantize`` 연산자를 제거하고 입력 타입을 ``TensorType`` 으로 변경하고 주어진 ``tensor_range`` 범위에 맞게 스케일하도록 모델을 수정한다.
+    * ``convert_input_type(tensor_name, TensorType)`` 메소드는 텐서 이름을 받아 해당 입력 텐서에 해당되는 ``quantize`` 연산자를 제거하고 입력 타입을 ``TensorType`` 으로 변경한다.
+    * ``convert_output_type(tensor_name, TensorType, tensor_range)`` 메소드는 텐서 이름을 받아 해당 출력 텐서에 해당되는 ``dequantize`` 연산자를 제거하고 출력 타입을 ``TensorType`` 으로 변경하고 주어진 ``tensor_range`` 범위에 맞게 스케일하도록 모델을 수정한다.
 * ``convert_{output,input}_type`` 함수는 텐서 이름을 사용하기 때문에 ``furiosa.quantizer`` 모듈 아래 ``get_pure_input_names(ModelProto)`` ``get_output_names(ModelProto)`` 같은 헬퍼 함수를 사용하여 텐서 이름을 얻어야 한다.
 
 .. note::
@@ -215,7 +214,7 @@ API 레퍼런스를 참고할 수 있으며 실제 적용 예는 :ref:`Tutorial`
 * ``furiosa compile`` 대신 ``furiosa-compiler`` 명령을 직접 사용할 수 있다.
 * ``furiosa-compiler`` 명령은 네이티브 실행 파일(native executable)이 되어 Python 실행 환경을 요구하지 않는다.
 * ``apt install furiosa-compiler`` 명령을 통해 컴파일러를 설치할 수 있다.
-* Python 의존성을 가지는 기존 ``furiosa compile`` 명령는 현재는 호환성을 위해 유지되며 향후 릴리스에서 제거 될 수 있다.
+* Python 의존성을 가지는 기존 ``furiosa compile`` 명령은 현재는 호환성을 위해 유지되며 향후 릴리스에서 제거 될 수 있다.
 
 컴파일러 명령행 도구의 자세한 사용법은 :ref:`CompilerCli` 에서 찾아볼 수 있다.
 

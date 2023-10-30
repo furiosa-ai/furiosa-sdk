@@ -59,7 +59,7 @@ Once you install the package as above, you can compile using the C SDK.
 C header files and static libraries are located in the ``/usr/include/furiosa``
 and ``/usr/lib/x86_64-linux-gnu`` directories respectively.
 They are the system paths that gcc looks to find C headers and libraries by default,
-so you can simply compile C applications with only ``-lnux`` option as the following:
+so you can simply compile C applications with only ``-lnux`` option as follows:
 
 
 .. code-block:: sh

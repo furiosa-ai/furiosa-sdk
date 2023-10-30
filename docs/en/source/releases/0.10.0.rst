@@ -1,0 +1,363 @@
+*********************************************************
+Release Notes - 0.10.0
+*********************************************************
+
+Furiosa SDK 0.10.0 is a major release which includes the followings:
+
+* Adds the next generation runtime engine (FuriosaRT) with higher performance and multi-device features
+
+* Improves usability of optimization for vision models by removing quantization operators from models
+
+* Supports OpenMetrics format in Metrics Exporter and provide more metrics such as NPU utilization
+
+* Improves furiosa-litmus to collect and dump from the diagnosis steps for reporting
+
+* Removes Python dependencies from ``furiosa-compiler`` command
+
+* Adds the new benchmark tool ``furiosa-bench``
+
+This release also includes a number of other feature additions, bug fixes, and performance improvements.
+
+.. list-table:: Component versions
+   :widths: 200 50
+   :header-rows: 1
+
+   * - Package Name
+     - Version
+   * - NPU Driver
+     - 1.9.2
+   * - NPU Firmware Tools
+     - 1.5.1
+   * - NPU Firmware Image
+     - 1.7.3
+   * - HAL (Hardware Abstraction Layer)
+     - 0.11.0
+   * - Furiosa Compiler
+     - 0.10.0
+   * - Furiosa Quantizer
+     - 0.10.0
+   * - Furiosa Runtime
+     - 0.10.0
+   * - Python SDK (furiosa-server, furiosa-serving, ..)
+     - 0.10.0
+   * - NPU Toolkit (furiosactl)
+     - 0.11.0
+   * - NPU Device Plugin
+     - 0.10.1
+   * - NPU Feature Discovery
+     - 0.2.0
+
+Installing the latest SDK or Upgrading
+################################################################
+If you are using APT repository, the upgrade process is simple.
+Please run as follows. If you are not familiar with how to use FurioaAI's APT repository,
+please find more detais from :ref:`RequiredPackages`.
+
+.. code-block:: sh
+
+  apt-get update && apt-get upgrade
+
+You can also upgrade specific packages as follows:
+
+.. code-block:: sh
+
+  apt-get update && \
+  apt-get install -y furiosa-driver-warboy furiosa-libnux
+
+You can upgrade firmware as follows:
+
+.. code-block:: sh
+
+    apt-get update && \
+    apt-get install -y furiosa-firmware-tools furiosa-firmware-image
+
+You can upgrade Python package as follows:
+
+.. code-block:: sh
+
+    pip install --upgrade pip setuptools wheel
+    pip install --upgrade furiosa-sdk
+
+.. warning::
+  When installing or upgrading the furiosa-sdk without updating pip to the latest version,
+  you may encounter the following errors.
+
+  .. code-block:: sh
+
+      ERROR: Could not find a version that satisfies the requirement furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk) (from versions: none)
+      ERROR: No matching distribution found for furiosa-quantizer-impl==0.9.* (from furiosa-quantizer==0.9.*->furiosa-sdk)
+
+
+Major changes
+################################################################
+
+Next Generation Runtime Engine, FuriosaRT
+================================================================
+
+SDK 0.10.0 includes the next-generation runtime engine called `FuriosaRT`.
+FuriosaRT is a newly designed runtime library that offers more advanced features and
+high performance in various workloads.
+Many components, such as furiosa-litmus, furiosa-bench, and furiosa-seving,
+are based on FuriosaRT, and the benefits of the new runtime engine are reflected in these components.
+FuriosaRT provides the backward compatibility with the previous runtime and
+includes the following new features:
+
+New Runtime API
+-----------------------------------
+FuriosaRT introduces a native asynchronous
+API based on Python's asyncio <https://docs.python.org/3/library/asyncio.html>.
+The existing APIs were sufficient for batch applications,
+but it requires extra code to implement high-performance serving applications,
+handling many concurrent individual requests. The new API natively supports asynchronous execution.
+With the new API, users can easily write their applications running on existing web frameworks
+such as `FastAPI <https://fastapi.tiangolo.com/>`_
+
+The new API introduced many advanced features, and you can learn more about the details at
+`Furiosa SDK API Reference - furiosa.runtime <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html>`_
+
+.. _RELEASE_0_10_0_DeviceSelector:
+
+Multi-device Support and Improvement on Device Configuration
+-------------------------------------------------------------
+
+FuriosaRT natively supports multiple devices with a single session. This feature leads
+to high-performance inference using multiple devices without extra implementations.
+Furthermore, FuriosaRT adopts more abstracted way to specify NPU devices.
+Before 0.9.0 release, users used to set device file names (e.g., ``npu0pe0-1``) explicitly
+in the environment variable ``NPU_DEVNAME`` or  ``session.create(.., device=”..”)``.
+This way was inconvinient in many cases because users need
+to find all available device files and specify them manually.
+
+FuriosaRT allows users to specify NPU arch, count of NPUs in a textutal representation.
+This representation is allowed in the new environment variable ``FURIOSA_DEVICES`` as follows:
+
+.. code-block:: sh
+
+  export FURIOSA_DEVICES="warboy(2)*8"
+
+The above example lets FuriosaRT to find 8 Warboys, each of which is configured as two PEs fusion in the system.
+
+.. code-block:: sh
+
+  export FURIOSA_DEVICES="npu:0:0-1,npu:1:0-1"
+
+
+For backward compatibility, FuriosaRT still supports ``NPU_DEVNAME`` environment variable.
+However, ``NPU_DEVNAME`` will be deprecated in a future release.
+
+You can find more details about the device configuration at
+`Furiosa SDK API Reference - Device Specification <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html#device-specification>`_.
+
+
+Higher Throughput
+---------------------------------------------
+According to our benchmark, FuriosaRT shows significantly improved throughput
+compared to the previous runtime. In particular, `worker_num <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.runtime.html#runner-api>`_
+configuration became more effective in FuriosaRT. For example, in the previous runtime,
+higher than 2 ``worker_num`` did not show significant performance improvement in most cases.
+However, in FuriosaRT, we observed that performance improvement is still significant even with ``worker_num >= 10``.
+We carried out benchmarking with Resnet50, YOLOv5m, YOLOv5L, SSD ResNet34, and SSD MobileNet models through
+``furiosa-bench`` command introduced in this release. We observed that performance improvement
+is significantly up to tens of percent depending on the model with ``worker_num >= 4``.
+
+Model Server and Serving Framework
+================================================================
+``furiosa-server`` and ``furioa-serving`` are a web server and a web framework respectively for serving models.
+The improvements of FuriosaRT are also reflected to the model server and serving framework.
+
+* :ref:`RELEASE_0_10_0_DeviceSelector` can be used to configure multiple NPU devices in ``furiosa-server`` and ``furioa-serving``
+* New `asyncio <https://docs.python.org/3/library/asyncio.html>`_-based API that FuriosaRT offers is introduced to handle more concurrent requests with less resources.
+* The model server and serving framework inherit the performance characteristics of FuriosaRT. Also, more ``worker_num`` can be used to improve the performance of the model server.
+
+Please refer to :ref:`ModelServing` to learn more about the model server and serving framework.
+
+Model Quantization Tool
+================================================================
+The furiosa-quantizer is a library that transforms trained models into quantized models
+through the post-training quantization. In 0.10.0 release,
+the usability of the quantization tool has been improved,
+so some parameters of the ``furiosa.quantizer.quantize()`` API have a few breaking changes.
+
+Motivation for Change
+-----------------------------------------------------------------
+``furiosa.quantizer.quantize()`` function is a core function of the model quantization tool.
+``furiosa.quantizer.quantize()`` transforms an ONNX model into a quantized model and returns it. The function has
+the parameter ``with_quantize`` that allows the model to accept directly the ``uint8`` type
+instead of ``float32``, also enabling skipping the quantization process for inferences
+when the original data type (e.g., pixel values) is uint8.
+This option can result in significant performance improvements.
+For instance, YOLOv5 Large with this option can dramatically reduce the execution time
+from 60.639 ms to 0.277 ms.
+
+Similarly, ``normalized_pixel_outputs`` option allows to directly use ``unt8`` type for outputs
+instead of ``float32``. This option can be useful when the model output is an image in RGB format
+or when it can be directly used as an integer value. This option shows significant performance boosts.
+
+In certain applications, two options can reduce execution time by several times to hundreds of times.
+However, there were the following limitations and feedback:
+
+* The parameter ``normalized_pixel_outputs`` was ambiguous in expressing the purpose clearly.
+* ``normalized_pixel_outputs`` assumes the output tensor value ranged from 0 to 1 in floating-point, and it had limited in real application.
+* ``with_quantize`` and ``normalized_pixel_outputs`` options only supported ``uint8`` type, and didn't support ``int8`` type.
+
+What Changed
+-----------------------------------------------------------------
+* Removed the parameters ``with_quantize`` and ``normalized_pixel_outputs`` from ``furiosa.quantizer.quantize()``
+* Instead, added the class `ModelEditor <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.quantizer.html#furiosa.quantizer.ModelEditor>`_, allowing more options for model input/output types that offers following optimizations:
+    * ``convert_input_type(tensor_name, TensorType)`` method takes a tensor name, removes the corresponding quantize operator, and changes the input type to a given ``TensorType``.
+    * ``convert_output_type(tensor_name, TensorType, tensor_range)`` method takes a tensor name, removes the corresponding dequantize operator, and changes the output type to ``TensorType``, then modifies the scale of the model output to a given ``tensor_range``.
+* Since the ``convert_{output,input}_type`` methods are based on tensor names, users should be able to find tensor names from an original ONNX model.
+For that, ``furiosa.quantizer`` module provides ``get_pure_input_names(ModelProto)`` and ``get_output_names(ModelProto)`` functions to retrieve tensor names from the original ONNX model.
+
+
+.. note::
+
+  The removal of ``with_quantize``, ``normalized_pixel_outputs`` parameters from ``furiosa.quantizer.quantize()``
+  is a breaking change that requires modifying existing code.
+
+Please refer to `ModelEditor <https://furiosa-ai.github.io/docs/v0.10.0/en/api/python/furiosa.quantizer.html#furiosa.quantizer.ModelEditor>`_
+to learn more about the ModelEditor API and find examples from :ref:`Tutorial`.
+
+
+Compiler
+================================================================
+Since this release, the compiler supports NPU acceleration for the `Dequantize` operator.
+So, the latency or throughput of models that include `Dequantize` operators can be enhanced.
+More details of this performance optimization can be found from :ref:`PerformanceOptimization`.
+
+Since 0.10.0, the default lifetime of compiler cache has increased from 2 days to 30 days.
+Please refer to :ref:`CompilerCache` to learn the details of compiler cache feature.
+
+``furiosa-compiler`` command in 0.10.0 release also has the following improvements:
+
+* Add ``furiosa-compiler`` command in addition to ``furiosa-compile`` command
+* ``furiosa-compiler`` and ``furiosa-compile`` commands as a native executable
+  and do not require any Python runtime environment.
+* ``furiosa-compiler`` is now available as an APT package, you can install via ``apt install furiosa-compiler``.
+* ``furiosa compile`` is kept for backward compatibility, and it will be removed in a future release.
+
+Please visit :ref:`CompilerCli` to learn more about `furiosa-compiler` command.
+
+Performance Profiler
+================================================================
+The performance profiler is a tool that helps users to analyze performance by measuring
+the actual execution time of inferences.
+Since 0.10.0, :ref:`ProfilerEnabledByContext` API provides the pause/resume features.
+
+This feature allows users to skip unnecessary steps like pre/post processing or warming up times,
+leading to the reduction of the profiling overhead and the size of the profile result files.
+Literally, calling ``profile.pause()`` method immediately stops the profliling, and
+``profile.resume()`` resumes the profiling again.
+The profiler will not collect any profiling information between both method calls.
+Please refer to :ref:`TemporarilyDisablingProfiler` to learn more about the profiling API.
+
+furiosa-litmus
+================================================================
+``furiosa-litmus`` is a command-line tool that checks the compatibility of models
+with the NPU and Furiosa SDK. Since 0.10.0, ``furiosa-litmus`` has a new feature to collect
+logs, profiling information, and an environment information for error reporting.
+This feature is enabled if ``--dump <OUTPUT_PREFIX>`` option is specified.
+The collected data is saved into a zip file named ``<OUTPUT_PREFIX>-<unix_epoch>.zip``.
+
+.. code-block:: sh
+
+  $ furiosa-litmus <MODEL_PATH> --dump <OUTPUT_PREFIX>
+
+The collected information does not include the model itself
+but does contain only metadata of the model, memory usage, and environmental information
+(e.g., Python version, SDK, compiler version, and dependency library versions).
+You can directly unzip the zip file to check the contents.
+When reporting bugs, attaching this file will be very helpful for error dianosis and analysis.
+
+
+New Benchmark Tool 'furiosa-bench'
+================================================================
+The new benchmark tool, ``furiosa-bench``, has been added since 0.10.0.
+``furiosa-bench`` command offers various options to run a diverse workloads with certain runtime settings.
+Users can choose either latency-oriented or throughput-oriented workload, and can specify
+the number of devices, how long time to run, and runtime settings. ``furiosa-bench`` accepts
+both ONNX and Tflite models as well as an ENF file compiled by the furiosa-compiler.
+More details about the command can be found at :ref:`FuriosaBench`.
+
+
+An example of a throughput benchmark
+
+.. code-block::
+
+  $ furiosa-bench ./model.onnx --workload throughput -n 10000 --devices "warboy(1)*2" --workers 8 --batch 8
+
+
+An example of a latency benchmark
+
+.. code-block::
+
+  $ furiosa-bench ./model.onnx --workload latency -n 10000 --devices "warboy(2)*1"
+
+
+``furiosa-bench`` can be installed through apt package manager as follows:
+
+.. code-block::
+
+  $ apt install furiosa-bench
+
+
+
+furiosa-toolkit
+================================================================
+furiosa-toolkit is a collection of command line tools that provide NPU management and NPU device
+monitoring. Since 0.10.0, ``furiosa-toolkit`` includes the following improvements:
+
+
+**Improvements of furiosactl**
+
+Before 0.10.0, the sub-commands like ``list``, ``info`` print out a tabular text.
+Since 0.10.0, ``furiosactl`` newly provides ``--format`` option, allowing to
+print out the result in a structured format like ``json`` or ``yaml``.
+It will be useful when a users implements a shell pipeline or a script to process
+the output of ``furiosactl``.
+
+
+.. code-block::
+
+  $ furiosactl info --format json
+  [{"dev_name":"npu7","product_name":"warboy","device_uuid":"<device_uuid>","device_sn":"<device_sn>","firmware":"1.6.0, 7a3b908","temperature":"47°C","power":"0.99 W","pci_bdf":"0000:d6:00.0","pci_dev":"492:0"}]
+
+  $ furiosactl info --format yaml
+  - dev_name: npu7
+    product_name: warboy
+    device_uuid: <device_uuid>
+    device_sn: <device_sn>
+    firmware: 1.6.0, 7a3b908
+    temperature: 47°C
+    power: 0.98 W
+    pci_bdf: 0000:d6:00.0
+    pci_dev: 492:0
+
+Also, the subcommand ``info`` results in two more metrics:
+
+* NPU Clock Frequency
+* Entire power consumption of card
+
+**Improvements of furiosa-npu-metrics-exporter**
+
+``furiosa-npu-metrics-exporter`` is a HTTP server to export NPU metrics and status
+in `OpenMetrics <https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md>`_ format.
+The metrics that ``furiosa-npu-metrics-exporter``
+exports can be collected by Prometheus and other OpenMetrics compatible collectors.
+
+Since 0.10.0, ``furiosa-npu-metrics-exporter`` includes NPU clock frequency and NPU utilization
+as metrics. NPU utilziation is still an experimental feature, and it is disabled by default.
+To enable this feature, you need to specify ``--enable-npu-utilization`` option as follows:
+
+.. code-block::
+
+  furiosa-npu-metrics-exporter --enable-npu-utilization
+
+Additionally, ``furiosa-npu-metrics-exporter`` is now available as an APT package
+in addition to the docker image. You can install it as follows:
+
+.. code-block::
+
+  apt install furiosa-toolkit
+
+

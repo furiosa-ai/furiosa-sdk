@@ -27,6 +27,7 @@ FuriosaAI Software
 * :doc:`/software/quantization`
 * `FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>`_
 * :doc:`/software/kubernetes_support`
+* :doc:`/software/vm_support`
 
 FuriosaAI SDK Tutorial and Examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -45,8 +46,8 @@ Serving, Model Deployment, MLOps
 
 References
 -------------------------------------------------
-* `C SDK Reference <https://furiosa-ai.github.io/docs/v0.5.0/en/api/c/index.html>`_
-* :doc:`Python API Reference </api/python/modules>`
+* `C Language SDK Reference <https://furiosa-ai.github.io/docs/v0.9.0/en/api/c/index.html>`_
+* :doc:`Python SDK Reference </api/python/modules>`
 
 Other Links
 --------------------------------------------------
@@ -74,10 +75,12 @@ Other Links
    /software/cli
    /software/compiler
    /software/quantization
+   /software/performance
    /software/profiler
    FuriosaAI Model Zoo <https://furiosa-ai.github.io/furiosa-models/latest/>
    /software/serving
    /software/kubernetes_support
+   /software/vm_support
    /software/tutorials
    /software/references
 
@@ -87,6 +90,7 @@ Other Links
    :hidden:
    :caption: Release Notes
 
+   /releases/0.10.0.rst
    /releases/0.9.0.rst
    /releases/0.8.0.rst
    /releases/0.7.0.rst
@@ -111,6 +115,7 @@ Other Links
    :hidden:
    :caption: Previous Documents
 
+   v0.9.0 <https://furiosa-ai.github.io/docs/v0.9.0/en/>
    v0.8.0 <https://furiosa-ai.github.io/docs/v0.8.0/en/>
    v0.6.0 <https://furiosa-ai.github.io/docs/v0.6.0/en/>
    v0.5.0 <https://furiosa-ai.github.io/docs/v0.5.0/en/>

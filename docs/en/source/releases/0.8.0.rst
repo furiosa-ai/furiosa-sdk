@@ -49,14 +49,14 @@ You can find more details about APT repository setup at
     apt-get update && \
     apt-get install -y furiosa-driver-pdma furiosa-libhal-warboy furiosa-libnux furiosactl
 
-You can upgrade firmware as following:
+You can upgrade firmware as follows:
 
     .. code-block:: sh
 
         apt-get update && \
         apt-get install -y furiosa-firmware-tools furiosa-firmware-image
 
-You can upgrade Python package as following:
+You can upgrade Python package as follows:
 
     .. code-block:: sh
 

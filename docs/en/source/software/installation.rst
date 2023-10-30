@@ -134,7 +134,7 @@ Adding a user to the ``furiosa`` Group
 
 Linux is a multi-user operating system that enables file and device access for both the owner and users within a specific group.
 The NPU device driver creates a group called ``furiosa`` and restricts access to NPU devices exclusively to users who are members of the ``furiosa`` group.
-To add a user to a member of ``furiosa`` group, please run as following:
+To add a user to a member of ``furiosa`` group, please run as follows:
 
 .. code-block:: sh
 
@@ -142,7 +142,7 @@ To add a user to a member of ``furiosa`` group, please run as following:
 
 
 Replace <username> with the name of the user you want to add to the ``furiosa`` group.
-For example, in order to add the current user (i.e., ``$USER``) to the ``furiosa`` group, you can run as the following:
+For example, in order to add the current user (i.e., ``$USER``) to the ``furiosa`` group, you can run as follows:
 
 .. code-block:: sh
 

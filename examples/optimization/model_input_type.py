@@ -39,7 +39,7 @@ ranges = calibrator.compute_range()
 editor = ModelEditor(onnx_model)
 input_tensor_name = get_pure_input_names(onnx_model)[0]
 
-# input 텐서의 자료형을 uint8로 변환
+# Convert the input type to uint8
 editor.convert_input_type(input_tensor_name, TensorType.UINT8)
 
 graph = quantize(onnx_model, ranges)

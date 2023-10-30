@@ -54,7 +54,7 @@ You can run model sever command by running ``furiosa server`` in your shell.
 
 
 To run simply a model server with ``tflite`` or ``onnx``, you need to specify
-just the model path and its name as following:
+just the model path and its name as follows:
 
 .. code-block:: sh
 
@@ -127,7 +127,7 @@ you can use a configuration file based on Yaml.
         npu_device: warboy(1)*1
 
 When you run a model sever with a configuration file,
-you need to specify ``--model-config`` as following.
+you need to specify ``--model-config`` as follows.
 You can find the model files described in the above example from
 `furiosa-models/samples <https://github.com/furiosa-ai/furiosa-sdk/tree/main/python/furiosa-server/samples>`_.
 
