@@ -922,9 +922,10 @@ so submitting inputs too quickly or failing to receive outputs in time will bloc
 
         async with runtime.create_queue("path/to/model.onnx",
                                         ) as (submitter, receiver):
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(submit_task(submitter))
-                tg.create_task(recv_task(receiver))
+            submit_task = asyncio.create_task(submit_with(submitter))
+            recv_task = asyncio.create_task(recv_with(receiver))
+            await submit_task
+            await recv_task
 
 .. function:: create_queue(model, *, device=None, worker_num=None, batch_size=None, input_queue_size=None, output_queue_size=None)
     :async:
@@ -1067,12 +1068,26 @@ so submitting inputs too quickly or failing to receive outputs in time will bloc
 
         .. note::
             This method does not support ``timeout`` unlike others,
-            because `asyncio.timeout` provides an idiomatic way to do that::
+            because `asyncio.wait_for` provides an idiomatic way to do that::
+
+                try:
+                    async def recv():
+                        context, outputs = await receiver.recv()
+
+                    task = asyncio.create_task(recv())
+                    await asyncio.wait_for(task, timeout=10)
+                except asyncio.TimeoutError:  # Not the built-in `TimeoutError`!
+                    print('Timed out!')
+
+        ..
+            (hidden until 3.11 is officially supported)
+
+            Or `asyncio.timeout` for Python 3.11 or later::
 
                 try:
                     async with asyncio.timeout(10):
                         context, outputs = await receiver.recv()
-                except asyncio.TimeoutError:  # Not the built-in `TimeoutError`!
+                except TimeoutError:
                     print('Timed out!')
 
     .. method:: close()
