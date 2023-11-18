@@ -6,16 +6,14 @@ Driver, Firmware, and Runtime Installation
 
 Here, we explain how to install the packages necessary to use
 the various SW components provided by FuriosaAI.
-
-These required packages are kernel drivers, firmware, and runtime library,
-and can be downloaded either directly through the download center,
-or through the APT/PIP servers as issued on the developer site.
+The required packages are composed of kernel drivers, firmware, and runtime library,
+and they can be easily installed via the APT package manager.
 
 .. note::
 
-  The download center and developer site will be provided upon registration
-  to the FuriosaAI evaluation program. Currently, the request for registration
-  can be done through contact@furiosa.ai.
+  You will be able to login `FuriosaAI IAM <https://iam.furiosa.ai>`_ and create a new API key
+  upon registration to the FuriosaAI evaluation program.
+  Currently, the request for registration can be done through contact@furiosa.ai.
 
 .. _MinimumRequirements:
 
@@ -34,7 +32,6 @@ APT server configuration
 
 In order to use the APT server as provided by FuriosaAI, the APT server must be configured
 on Ubuntu or Debian Linux as delineated below.
-This section may be skipped if you are using the download center, and not the APT.
 
 
 1. Install the necessary packages to access HTTPS-based APT server.
@@ -48,17 +45,19 @@ This section may be skipped if you are using the download center, and not the AP
 
 .. code-block:: sh
 
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E
+  wget -q -O- https://archive.furiosa.ai/furiosa-apt-key.gpg \
+  | gpg --dearmor \
+  | sudo tee /etc/apt/keyrings/furiosa-apt-key.gpg > /dev/null
 
-3. Issue the API key from FuriosaAI developer center, and configure the API key as follows:
+3. Generate a new API key from `FuriosaAI IAM <https://iam.furiosa.ai>`_, and configure the API key as follows:
 
 
 .. code-block:: sh
 
   sudo tee -a /etc/apt/auth.conf.d/furiosa.conf > /dev/null <<EOT
     machine archive.furiosa.ai
-    login [ACCESS KEY]
-    password [SECRET ACCESS KEY]
+    login [KEY (ID)]
+    password [PASSWORD]
   EOT
 
   sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf
@@ -76,7 +75,7 @@ This section may be skipped if you are using the download center, and not the AP
       .. code-block:: sh
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu focal restricted
+        deb [arch=amd64 signed-by=/etc/apt/keyrings/furiosa-apt-key.gpg] https://archive.furiosa.ai/ubuntu focal restricted
         EOT
 
   .. tab:: Ubuntu 22.04 (Debian Bookworm)
@@ -86,7 +85,7 @@ This section may be skipped if you are using the download center, and not the AP
       .. code-block:: sh
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu jammy restricted
+        deb [arch=amd64 signed-by=/etc/apt/keyrings/furiosa-apt-key.gpg] https://archive.furiosa.ai/ubuntu jammy restricted
         EOT
 
 

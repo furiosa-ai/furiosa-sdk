@@ -7,14 +7,14 @@
 이 장에서는 FuriosaAI가 제공하는 다양한 소프트웨어 컴포넌트를
 사용하기 위해 반드시 설치해야 하는 패키지들의 설치 방법을 설명한다.
 이 필수 패키지들은 커널 드라이버, 펌웨어, 런타임 라이브러리이며
-다운로드 센터에서 로그인하여 직접 다운 받거나 개발자 사이트에서
-발급한 APT 서버와 PyPI 서버를 통해 다운로드 받을 수 있다.
+APT 패키지 관리자를 통해 쉽게 설치할 수 있다.
 
 
 .. note::
 
-  다운로드 센터나 개발자 사이트는 FuriosaAI의 평가 프로그램을 등록하면 제공되며
-  현재는 contact@furiosa.ai 로 문의하여 평가 프로그램을 요청할 수 있다.
+  FuriosaAI 평가 프로그램을 등록하고 나면 `FuriosaAI IAM <https://iam.furiosa.ai>`_ 에
+  로그인하여 API 키를 발급받고 APT 서버를 이용할 수 있다.
+  FuriosaAI 평가 프로그램을 등록은 contact@furiosa.ai 로 요청할 수 있다.
 
 .. _MinimumRequirements:
 
@@ -32,8 +32,7 @@ APT 서버 설정
 =====================================================================
 
 FuriosaAI에서 제공하는 APT 서버를 사용하려면 아래 설명에 따라 APT 서버를
-Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다운로드 센터를 사용한다면
-이 섹션을 건너뛰어도 좋다.
+Ubuntu 또는 Debian 리눅스에 설정한다.
 
 
 1. HTTPS 기반의 APT 서버 접근을 위해 필요 패키지를 설치 한다.
@@ -47,7 +46,9 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 
 .. code-block:: sh
 
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 5F03AFA423A751913F249259814F888B20B09A7E
+  wget -q -O- https://archive.furiosa.ai/furiosa-apt-key.gpg \
+  | gpg --dearmor \
+  | sudo tee /etc/apt/keyrings/furiosa-apt-key.gpg > /dev/null
 
 3. FuriosaAI 개발자 센터에서 API 키를 발급하고 발급한 API 키를 아래와 같이 설정한다.
 
@@ -56,8 +57,8 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
 
   sudo tee -a /etc/apt/auth.conf.d/furiosa.conf > /dev/null <<EOT
     machine archive.furiosa.ai
-    login [ACCESS KEY]
-    password [SECRET ACCESS KEY]
+    login [KEY (ID)]
+    password [PASSWORD]
   EOT
 
   sudo chmod 400 /etc/apt/auth.conf.d/furiosa.conf
@@ -75,7 +76,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
       .. code-block:: sh
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu focal restricted
+        deb [arch=amd64 signed-by=/etc/apt/keyrings/furiosa-apt-key.gpg] https://archive.furiosa.ai/ubuntu focal restricted
         EOT
 
   .. tab:: Ubuntu 22.04 (Debian Bookworm)
@@ -85,7 +86,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다. APT를 사용하지 않고 다�
       .. code-block:: sh
 
         sudo tee -a /etc/apt/sources.list.d/furiosa.list <<EOT
-        deb [arch=amd64] https://archive.furiosa.ai/ubuntu jammy restricted
+        deb [arch=amd64 signed-by=/etc/apt/keyrings/furiosa-apt-key.gpg] https://archive.furiosa.ai/ubuntu jammy restricted
         EOT
 
 
