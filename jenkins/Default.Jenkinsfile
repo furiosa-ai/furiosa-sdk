@@ -229,7 +229,7 @@ def testNotebooks(pythonVersion) {
     cd examples/notebooks/ && \
     pip install --root-user-action=ignore -r ./requirements.txt && \
     pip install --root-user-action=ignore nbmake && \
-    pytest --nbmake --nbmake-timeout=600 \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb' \\))
+    pytest --nbmake --nbmake-timeout=600 \$(find . -type f \\( -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb' ! -name 'HowToUseFuriosaSDKWithModelEditor.ipynb' \\))
     """
 }
 

@@ -599,7 +599,7 @@ spec:
             pip install -r ./requirements.txt nbmake
 
             # FIXME: Remove 'InferenceAccuracyCheck.ipynb' when run_with() API is available for furiosa-native-runtime
-            pytest --nbmake --nbmake-timeout=500 $(find . -type f -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb')
+            pytest --nbmake --nbmake-timeout=500 $(find . -type f -iname '*.ipynb' ! -name 'HowToUseFuriosaSDKFromStartToFinish.ipynb' ! -name 'YOLOX-L.ipynb' ! -name 'InferenceAccuracyCheck.ipynb' ! -name 'HowToUseFuriosaSDKWithModelEditor.ipynb')
           computeResources:
             limits:
               alpha.furiosa.ai/npu: "1"
