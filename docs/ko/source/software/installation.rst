@@ -46,6 +46,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다.
 
 .. code-block:: sh
 
+  mkdir -p /etc/apt/keyrings && \
   wget -q -O- https://archive.furiosa.ai/furiosa-apt-key.gpg \
   | gpg --dearmor \
   | sudo tee /etc/apt/keyrings/furiosa-apt-key.gpg > /dev/null
