@@ -40,7 +40,7 @@ Ubuntu 또는 Debian 리눅스에 설정한다.
 .. code-block:: sh
 
   sudo apt update
-  sudo apt install -y ca-certificates apt-transport-https gnupg
+  sudo apt install -y ca-certificates apt-transport-https gnupg wget
 
 2. FuriosaAI의 공개 Signing 키를 등록 한다.
 

@@ -39,7 +39,7 @@ on Ubuntu or Debian Linux as delineated below.
 .. code-block:: sh
 
   sudo apt update
-  sudo apt install -y ca-certificates apt-transport-https gnupg
+  sudo apt install -y ca-certificates apt-transport-https gnupg wget
 
 2. Register the FuriosaAI public Signing key.
 
