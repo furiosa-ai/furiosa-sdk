@@ -24,7 +24,6 @@ except ModuleNotFoundError:
             rt.__git_short_hash__,
             rt.__build_timestamp__,
         )
-        return __full_version__
 
     is_legacy = False
 else:
