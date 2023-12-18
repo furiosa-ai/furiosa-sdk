@@ -152,7 +152,8 @@ class Pattern_4(ONNXTransformer):
 
         batch_norm = matched_nodes[0]
         prev = self.find_prev_node(batch_norm.input[0])
-        assert prev is not None
+        if prev is None:
+            return base_node.input
         if utils.is_op_type(prev.op_type, ['Conv']):
             return base_node.input
 
