@@ -27,10 +27,10 @@ sys.path.append(os.path.abspath('../../../python/furiosa-serving/'))
 project = 'Furiosa SDK Documentation'
 copyright = '2023 FuriosaAI, Inc.'
 author = 'FuriosaAI, Inc.'
-version = "0.10.2rc0"
+version = "0.10.2"
 
 # The full version, including alpha/beta/rc tags
-release = "0.10.2rc0"
+release = "0.10.2"
 
 # -- General configuration ---------------------------------------------------
 
