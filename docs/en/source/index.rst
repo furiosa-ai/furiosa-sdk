@@ -1,8 +1,8 @@
 ****************************************************
-FuriosaAI NPU & SDK |release| Documents
+FuriosaAI Warboy & SDK |release| Documents
 ****************************************************
 
-This document explains FuriosaAI NPU and its SDKs.
+This document explains FuriosaAI Warboy and its SDKs.
 
 .. note::
 
@@ -12,7 +12,7 @@ This document explains FuriosaAI NPU and its SDKs.
    Please contact contact@furiosa.ai to learn how to start the EAP.
 
 
-FuriosaAI NPU
+FuriosaAI Warboy
 -------------------------------------------------
 * :doc:`Introduction to FuriosaAI Warboy </npu/warboy>`: HW specification, performance, and supported operators
 

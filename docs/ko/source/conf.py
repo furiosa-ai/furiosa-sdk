@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'FuriosaAI NPU 및 Software 문서'
+project = 'FuriosaAI Warboy 및 Software 문서'
 copyright = '2023, FuriosaAI, Inc.'
 author = 'FuriosaAI, Inc.'
 

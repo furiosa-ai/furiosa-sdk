@@ -1,8 +1,8 @@
 ****************************************************
-FuriosaAI NPU 및 SDK |release| 문서
+FuriosaAI Warboy 및 SDK |release| 문서
 ****************************************************
 
-이 문서는 FuriosaAI NPU 소개와 NPU 활용에 필요한 Software 설치 및 사용 방법을 제공한다.
+이 문서는 FuriosaAI Warbo 소개와 NPU 활용에 필요한 Software 설치 및 사용 방법을 제공한다.
 
 .. note::
 
@@ -12,7 +12,7 @@ FuriosaAI NPU 및 SDK |release| 문서
    평가 프로그램을 시작할 수 있다.
 
 
-FuriosaAI NPU
+FuriosaAI Warboy
 -------------------------------------------------
 * :doc:`FurisaAI Warboy </npu/warboy>`: 하드웨어 사양, 성능, 가속 연산자 소개
 
