@@ -67,7 +67,7 @@ jobs:
           git push
           # if we run `gh run list` right after push, we'll miss the latest commit
           sleep 5
-          export RUN_ID=$(gh run list | head -n 1 | grep -Po "[\d]{10}")
+          export RUN_ID=$(gh run list --json databaseId --limit 1 | jq -r '.[0].databaseId')
           echo "RUN_ID: $RUN_ID"
           gh run watch $RUN_ID
           # github comment
@@ -142,7 +142,7 @@ jobs:
           git push
           # if we run `gh run list` right after push, we'll miss the latest commit
           sleep 5
-          export RUN_ID=$(gh run list | head -n 1 | grep -Po "[\d]{10}")
+          export RUN_ID=$(gh run list --json databaseId --limit 1 | jq -r '.[0].databaseId')
           echo "RUN_ID: $RUN_ID"
           gh run watch $RUN_ID
           # github comment
