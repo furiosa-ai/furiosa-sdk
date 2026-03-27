@@ -17,7 +17,7 @@ spec:
       nodeSelector:
         feature.node.kubernetes.io/pci-1ed2.present: "true"
       containers:
-      - image: ghcr.io/furiosa-ai/npu-metrics-exporter:0.1.0
+      - image: ghcr.io/furiosa-ai/npu-metrics-exporter:0.1.1
         name: furiosa-npu-metrics-exporter
         ports:
         - containerPort: 6254
